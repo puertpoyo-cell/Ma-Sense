@@ -73,13 +73,18 @@ UserSettings        (단일 레코드)
 | scheduledWeekday | Int | `5` | 1(일)~7(토), `Calendar` weekday |
 | scheduledHour | Int | `20` | 투약 시각 (시) |
 | scheduledMinute | Int | `0` | 투약 시각 (분) |
+| endDate | Date? |  | 처방 종료일. 새 처방을 시작하면 이전 처방의 endDate = 새 처방 startDate 전날로 자동 설정 |
 | nextClinicDate | Date? |  | 다음 진료일 |
 | doseLabel | String? |  | 사용자가 적는 자유 메모 ("2.5", "두 번째 단계" 등). 앱은 해석하지 않음 |
-| isActive | Bool | `true` | 현재 처방 여부. 활성은 항상 1개 |
+| isActive | Bool | `true` | 현재 처방 여부. 활성은 항상 1개 (= `endDate == nil`인 것) |
 | doses | [Dose] | `[]` | `@Relationship(deleteRule: .cascade, inverse: \Dose.prescription)` |
 | createdAt | Date | `.now` |  |
 
 `scheduledTime: DateComponents`는 CloudKit transformable 처리가 번거로워 `scheduledHour`/`scheduledMinute` 두 Int로 분해했다.
+
+**처방 이력 (체인)**: 처방은 삭제하지 않고 `startDate` 오름차순으로 쌓인다. 별도 `previous` 관계 없이 `startDate`/`endDate`로 시간순을 복원한다. 리포트와 기록 탭은 이 체인에서 "처방 전환 지점"(각 처방의 `startDate`)과 그때의 `doseLabel`을 읽어 표시만 한다 — 앱은 `doseLabel`을 파싱·비교·해석하지 않는다.
+
+파생값: `prescriptionTimeline(in:)` — 기간 안의 처방 목록을 `(startDate, doseLabel?)` 배열로 돌려줌 (`Rules/PrescriptionRules.swift`).
 
 파생값 (저장하지 않음, `Rules/`에서 계산):
 - `totalDoses = penCount * dosesPerPen`

@@ -140,14 +140,20 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 - 사용자가 4·8·12주 중 선택 가능
 - 리포트 생성 시각과 기간을 PDF 하단에 명시
 
-## R13. 처방 소진 추정
+## R13. 처방 소진 추정과 처방 전환
 
 ```swift
 func exhaustionEstimate(p: PrescriptionSnapshot, doses: [DoseSnapshot], calendar: Calendar) -> Date?
+func prescriptionTimeline(all: [PrescriptionSnapshot], in period: DateInterval) -> [PrescriptionMarker]
+struct PrescriptionMarker { let startDate: Date; let label: String?; let isFirstInPeriod: Bool }
 ```
 
-- `remainingDoses == 0` → nil
-- 그 외 다음 마디부터 `remainingDoses`개째 마디의 `scheduledDate`
+- 새 처방 시작(`startNewPrescription`)은 Rules가 아니라 서비스 계층에서: 이전 활성 처방의 `endDate = 새 startDate - 1일`, `isActive = false`, 새 처방 `isActive = true`. 트랜잭션 하나로
+- `prescriptionTimeline`은 기간과 겹치는 처방을 `startDate` 오름차순으로 돌려주고, 기간 시작 전에 이미 시작된 처방은 `isFirstInPeriod = true`로 표시 (리포트에서 "기간 시작 시점의 처방"으로 쓰임)
+- `label`은 사용자 메모 그대로. 비어 있으면 "처방 변경"으로만 표시
+- 소진 추정:
+  - `remainingDoses == 0` → nil
+  - 그 외 다음 마디부터 `remainingDoses`개째 마디의 `scheduledDate`
 
 ## 테스트 체크리스트
 
@@ -159,3 +165,4 @@ func exhaustionEstimate(p: PrescriptionSnapshot, doses: [DoseSnapshot], calendar
 - [ ] R7 샘플 없는 주 nil 처리
 - [ ] R8 정확히 -1.0%일 때 안내 없음 (초과만)
 - [ ] R9 소수점 반올림
+- [ ] R13 처방 전환 시 이전 처방 endDate·isActive 갱신, 기간 경계에 걸친 처방의 isFirstInPeriod
