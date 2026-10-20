@@ -163,16 +163,22 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 - 설정에 기본 기간을 저장할 수 있다 (2026-10-22 결정, `UserSettings.reportDefaultPeriod`). 리포트 탭을 열 때 `defaultPeriod(saved:hasActivePrescription:hasNextClinicDate:)`: 저장 값이 고를 수 있는 값이면 그것, 아니면(저장 안 함 = 자동, 활성 처방 없이 "직전 진료 이후", 선택지에 없는 주 수) 위 기본값
 - 리포트 생성 시각과 기간을 PDF 하단에 명시
 
-## R13. 처방 소진 추정
+## R13. 처방 소진 추정과 처방 전환
 
 ```swift
 func exhaustionEstimate(p: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, calendar: Calendar) -> Date?
 func nextSequence(doses: [DoseSnapshot]) -> Int                        // 취소 제외 기록 수 + 1
 func penPosition(sequence: Int, dosesPerPen: Int) -> (pen: Int, position: Int)
+func prescriptionTimeline(all: [PrescriptionSnapshot], in period: DateInterval) -> [PrescriptionMarker]
+struct PrescriptionMarker { let startDate: Date; let label: String?; let isFirstInPeriod: Bool }
 ```
 
-- `remainingDoses == 0` → nil
-- 그 외 남은 회차를 모두 쓰는 마지막 마디의 `scheduledDate` (= R1 `cycles(until: .distantFuture)`의 마지막 마디). 누락이 있으면 그만큼 뒤로 밀린다
+- 새 처방 시작(`startNewPrescription`)은 Rules가 아니라 서비스 계층에서: 이전 활성 처방의 `endDate = 새 startDate - 1일`, `isActive = false`, 새 처방 `isActive = true`. 트랜잭션 하나로
+- `prescriptionTimeline`은 기간과 겹치는 처방을 `startDate` 오름차순으로 돌려주고, 기간 시작 전에 이미 시작된 처방은 `isFirstInPeriod = true`로 표시 (리포트에서 "기간 시작 시점의 처방"으로 쓰임)
+- `label`은 사용자 메모 그대로. 비어 있으면 "처방 변경"으로만 표시
+- 소진 추정:
+  - `remainingDoses == 0` → nil
+  - 그 외 남은 회차를 모두 쓰는 마지막 마디의 `scheduledDate` (= R1 `cycles(until: .distantFuture)`의 마지막 마디). 누락이 있으면 그만큼 뒤로 밀린다
 
 ## 테스트 체크리스트
 
@@ -184,3 +190,4 @@ func penPosition(sequence: Int, dosesPerPen: Int) -> (pen: Int, position: Int)
 - [x] R7 샘플 없는 주 nil 처리
 - [x] R8 정확히 -1.0 kg일 때 안내 없음 (초과만), 기준은 % 아닌 kg
 - [x] R9 소수점 반올림
+- [ ] R13 처방 전환 시 이전 처방 endDate·isActive 갱신, 기간 경계에 걸친 처방의 isFirstInPeriod (main C, 코드 미반영)

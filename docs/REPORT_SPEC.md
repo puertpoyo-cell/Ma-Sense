@@ -41,7 +41,7 @@
 ### B. 요약 4칸 (가로 4등분)
 | 칸 | 값 | 보조 |
 |---|---|---|
-| 투약 | "8회 / 예정 8회" | 누락 n회 (0이면 "누락 없음") |
+| 투약 | "8회 / 예정 8회" | 누락 n회 (0이면 "누락 없음"), 기간 내 처방 전환 n회 |
 | 체중 | "-3.2 kg" (기간 시작 대비) | 시작 → 현재 kg |
 | 컨디션 체크 | "14 / 16회 응답" | |
 | 남은 회차 | "2회" | 소진 예상일 |
@@ -54,6 +54,7 @@
 - 누락 마디: 점선 테두리 + "기록 없음"
 - 예정일과 실제일이 2일 이상 차이: 실제 날짜 옆 소형 "(+2d)"
 - 부위 로테이션은 아이콘 없이 텍스트. 의사가 "같은 부위 연속" 여부를 한눈에 보게
+- **처방 전환 표시**: `prescriptionTimeline`의 각 마커를 해당 마디 칸 왼쪽에 세로 실선 1px로 긋고, 위에 소형 라벨로 `doseLabel` 텍스트(비어 있으면 "처방 변경")와 날짜. 기간 시작 전에 시작된 처방(`isFirstInPeriod`)은 첫 칸 왼쪽에 같은 방식으로 "기간 시작 시 처방: {label}". 앱은 라벨을 해석하지 않으며, 의사가 "언제 단계가 바뀌었는지"를 읽는 용도
 
 ### D. 체중 추이
 - 주 평균 라인 (R7), 샘플 없는 주는 끊김
@@ -88,6 +89,7 @@ struct ClinicReport {            // Rules/ReportBuilder.swift 가 생성, 뷰는
     let period: DateInterval
     let summary: Summary           // B
     let cycles: [CycleCell]        // C
+    let prescriptionMarkers: [PrescriptionMarker]  // C 세로선
     let weight: [WeekPoint]        // D
     let symptoms: [SymptomRow]     // E
     let quality: QualitySection?   // F, nil이면 섹션 생략
@@ -104,7 +106,7 @@ struct ClinicReport {            // Rules/ReportBuilder.swift 가 생성, 뷰는
 
 - [ ] 12주 데이터로 A4 1장 안에 들어감 (XXL Dynamic Type은 PDF에 적용하지 않음, 고정 크기)
 - [ ] 흑백 인쇄로 모든 정보 구분 가능
-- [ ] 누락·심각도 3·날짜 차이가 텍스트로 드러남
+- [ ] 누락·심각도 3·날짜 차이·처방 전환이 텍스트로 드러남
 - [ ] 전문의약품 상표, 용량 수치 해석, 평가어("좋음/나쁨/충분/부족") 없음
 - [ ] 생성 3초 이내 (iPhone 13 기준)
 - [ ] `ShareLink`로 AirDrop·메시지·파일 저장 가능, 파일명 `Masense_Report_2026-10-27.pdf`
