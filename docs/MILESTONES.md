@@ -9,7 +9,9 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [ ] Xcode 프로젝트 `Masense` 생성 (iOS 17, SwiftUI, SwiftData 체크 해제 후 수동 구성)
 - [ ] `CLAUDE.md` 폴더 구조대로 그룹 생성
 - [ ] `DesignSystem/` 토큰 (`Color+Tokens`, `Spacing`, `Typography`), `FrostCard`, `PrimaryButton`, `RecordedToast`
-- [ ] `App/MasenseApp.swift` — `ModelContainer` 구성 (SchemaV1), 다크 고정
+- [ ] App Groups capability 추가 (`group.com.puertpoyo.masense`)
+- [ ] `App/ModelContainer+Masense.swift` — App Group 경로에 `ModelContainer` 구성 (SchemaV1), 미리보기·테스트용 in-memory 팩토리
+- [ ] `App/MasenseApp.swift` — 다크 고정, 컨테이너 주입
 - [ ] `Localizable.xcstrings` 생성, `COMPLIANCE.md` 3.2 고정 문구 등록
 - [ ] `MasenseTests` 타깃, 더미 테스트 1개 통과
 - [ ] 탭 3개 빈 화면 + 설정 push
@@ -108,3 +110,4 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2026-10-20 | 투약 간격을 `intervalDays`로 모델링, UI는 주 1회만 | v2 확장 대비, 스키마 변경 회피 |
 | 2026-10-20 | `doseLabel`은 자유 메모, 앱이 해석 안 함 | 용량 판단 금지선 |
 | 2026-10-20 | 빨강·초록 색 금지 | 판단하지 않는 원칙의 시각화 |
+| 2026-10-21 | SwiftData 스토어를 App Group 컨테이너에 배치 | v2 위젯·Live Activity·Watch가 같은 스토어 공유, 이전 비용 회피 |

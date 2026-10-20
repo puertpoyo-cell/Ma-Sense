@@ -9,7 +9,8 @@
 ## 스택 (변경 금지)
 
 - iOS 17+, Swift 5.10+, SwiftUI
-- 저장: SwiftData, 온디바이스 전용. 서버·Supabase·CloudKit 동기화 없음 (v1 범위)
+- 저장: SwiftData. 스토어 파일은 **App Group 컨테이너**(`group.com.puertpoyo.masense`)에 둠 — v2 위젯·Live Activity·Watch가 같은 스토어를 읽기 위함. 서버·Supabase 없음
+- 동기화: v1은 꺼 둠(`cloudKitDatabase: .none`). 단, 스키마는 처음부터 CloudKit 호환 규칙을 지켜 나중에 스위치만 켜면 되게 함 (`DATA_MODEL.md` 원칙)
 - 체중·운동·제지방량: HealthKit (읽기 전용)
 - 알림: `UserNotifications` 로컬 알림
 - 리포트: PDFKit + SwiftUI `ImageRenderer`
@@ -97,6 +98,6 @@ xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' 
 ## 사람에게 꼭 묻는 것
 
 - 의료 경계에 걸릴 수 있는 문구나 기능 (조금이라도 애매하면)
-- 새 패키지, 새 권한(Info.plist 키) 추가
+- 새 패키지, 새 권한(Info.plist 키), 새 Capability(App Group, iCloud 등) 추가
 - 데이터 모델 스키마 변경 (마이그레이션 필요)
 - 결제 상품 구성 변경
