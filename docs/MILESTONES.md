@@ -37,6 +37,8 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [ ] 로컬 구매 테스트용 `.storekit` 구성 파일 — App Store Connect에 상품을 만든 뒤 Xcode에서 "Sync this file with an app in App Store Connect"로 생성 (가격·이름이 ASC 값을 따른다). 스킴 Run > Options > StoreKit Configuration에 지정 — 사람
 - [x] 번들 ID 확정 — `com.masense.app` (테스트 `com.masense.app.tests`), 2026-10-22 사람 결정
 - [ ] 서명 팀 선택 — Xcode Signing & Capabilities (사람)
+- [ ] `Rules/ExportCodec.swift` + `ExportService` — 내보내기·가져오기 (`EXPORT_FORMAT.md`), round-trip 테스트 + fixture (main E, D4에서)
+- [ ] Info.plist `UTExportedTypeDeclarations` (`.masense.json`) (main E, D4에서)
 
 ### M1-c 화면
 - [x] S0 온보딩 4페이지 (HealthKit 버튼은 Info.plist 키 추가 전까지 숨김)
@@ -193,3 +195,4 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2026-10-21 | 스키마는 v1부터 CloudKit 호환 규칙 적용 (unique 금지, 기본값/옵셔널, 관계 옵셔널), 동기화는 꺼 둠 | 기기 교체·분실 대비, 나중에 스위치만 켜면 되게 |
 | 2026-10-21 | 처방을 삭제하지 않고 startDate/endDate 체인으로 보관, 리포트 타임라인에 처방 전환 세로선 + doseLabel 표시 | 의사가 "언제 단계가 바뀌었나"를 바로 읽게. 라벨은 표시만, 해석 안 함 |
 | 2026-10-21 | v1은 주 1회(7일) 전용. intervalDays 필드는 7 고정으로만 보유 | 매일·격주 주기는 컨디션 창·알림 64개 제한과 충돌, v2에서 R1·R4·R5 재설계 |
+| 2026-10-21 | 내보내기·가져오기 JSON 스키마 확정 (formatVersion 1, 평탄화·ID 참조, HealthKit 샘플은 가져오기 제외) | 동기화 켜기 전 기기 교체 수단, 사용자 데이터 소유권 |

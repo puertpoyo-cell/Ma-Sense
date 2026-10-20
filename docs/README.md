@@ -13,6 +13,7 @@
 | `RULES.md` | 비즈니스 로직 규칙. 카운트다운, 컨디션 체크 윈도우, 감량 속도 안내, 단백질 목표 계산 등 | Claude Code |
 | `REPORT_SPEC.md` | 진료 전 리포트 PDF의 레이아웃·데이터·생성 규칙 | Claude Code + 디자인 |
 | `DESIGN_SYSTEM.md` | 색·타이포·간격 토큰, 글래스 카드 스타일, 컴포넌트 목록 | Claude Code + 디자인 |
+| `EXPORT_FORMAT.md` | 데이터 내보내기·가져오기 JSON 스키마, 버전·병합 규칙 | Claude Code |
 | `COMPLIANCE.md` | 의료 경계선, 문구 가이드, 면책, App Store 심사 체크리스트, 상표 확인 | 사람 |
 | `MILESTONES.md` | 빌드 순서, 마일스톤별 완료 기준, 작업 분해 | 사람 + Claude Code |
 

@@ -106,3 +106,4 @@ xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' 
 - 새 패키지, 새 권한(Info.plist 키), 새 Capability(App Group, iCloud 등) 추가
 - 데이터 모델 스키마 변경 (마이그레이션 필요)
 - 결제 상품 구성 변경
+- `EXPORT_FORMAT.md`의 `formatVersion` 올리기 (이전 버전 fixture와 마이그레이션 필요)
