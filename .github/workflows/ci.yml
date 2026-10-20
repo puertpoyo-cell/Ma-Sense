@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: xcodebuild test (iOS Simulator)
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Pick an available iPhone simulator
+        id: sim
+        run: |
+          set -euo pipefail
+          # 러너 이미지마다 시뮬레이터 이름이 달라서(iPhone 16, 17 ...) 사용 가능한 첫 iPhone을 고른다.
+          NAME=$(xcrun simctl list devices available -j \
+            | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone")) | .name] | first')
+          if [ -z "$NAME" ] || [ "$NAME" = "null" ]; then
+            echo "No iPhone simulator available" >&2
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "Using simulator: $NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Build and test
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Masense.xcodeproj \
+            -scheme Masense \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            test

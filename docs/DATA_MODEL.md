@@ -36,7 +36,8 @@ UserSettings        (단일 레코드)
 | dosesPerPen | Int | 펜당 회차 (기본 4) |
 | intervalDays | Int | 투약 간격, 기본 7. UI는 7만 노출 |
 | scheduledWeekday | Int | 1(일)~7(토), `Calendar` weekday |
-| scheduledTime | DateComponents | hour, minute |
+| scheduledHour | Int | 예정 시각 (0~23) |
+| scheduledMinute | Int | 예정 분 (0~59) |
 | nextClinicDate | Date? | 다음 진료일 |
 | doseLabel | String? | 사용자가 적는 자유 메모 ("2.5", "두 번째 단계" 등). 앱은 해석하지 않음 |
 | isActive | Bool | 현재 처방 여부. 활성은 항상 1개 |
@@ -44,6 +45,7 @@ UserSettings        (단일 레코드)
 | createdAt | Date | |
 
 파생값 (저장하지 않음, `Rules/`에서 계산):
+- `scheduledTime: DateComponents` = `(hour: scheduledHour, minute: scheduledMinute)`. `DateComponents`를 그대로 저장하지 않는 이유는 SwiftData의 Codable 저장이 `calendar`·`timeZone` 같은 중첩 값에서 불안정하기 때문
 - `totalDoses = penCount * dosesPerPen`
 - `usedDoses = doses.filter { !$0.isCancelled }.count`
 - `remainingDoses = totalDoses - usedDoses`
