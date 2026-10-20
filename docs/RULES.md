@@ -2,6 +2,10 @@
 
 `Masense/Rules/`의 순수 함수 사양입니다. 모든 함수는 `Calendar`와 `now: Date`를 인자로 받고, SwiftUI·SwiftData를 import하지 않으며, 각 규칙에 단위 테스트가 있어야 합니다.
 
+## 전제: 주 1회 전용
+
+v1의 모든 규칙은 **7일 간격 주 1회 투약**을 전제로 한다. `Prescription.intervalDays`는 항상 7이며 Rules는 이 값을 읽지 않는다. 다른 주기(매일, 격주)는 v2 이후 별도 결정 — 그때 R1·R4·R5가 함께 바뀐다.
+
 ## R1. 마디(Cycle) 계산
 
 ```swift
@@ -10,8 +14,8 @@ func cycles(for p: PrescriptionSnapshot, until end: Date, calendar: Calendar) ->
 ```
 
 - 첫 마디 `scheduledDate` = `startDate` 이후 첫 `scheduledWeekday` + `scheduledHour`:`scheduledMinute`
-- 이후 마디 = 이전 + `intervalDays`
-- 마디 구간 `interval` = `[scheduledDate - 2일, scheduledDate + intervalDays - 2일)` — 예정일 이틀 전부터 그 마디로 본다 (미리 맞는 경우 수용)
+- 이후 마디 = 이전 + 7일
+- 마디 구간 `interval` = `[scheduledDate - 2일, scheduledDate + 5일)` — 예정일 이틀 전부터 그 마디로 본다 (미리 맞는 경우 수용)
 - `totalDoses` 개수만큼 생성. 처방이 소진되면 그 이후 마디는 만들지 않음
 
 테스트: 목요일 20:00, 7일 간격, 시작일이 금요일인 경우 첫 마디는 다음 목요일.

@@ -69,7 +69,7 @@ UserSettings        (단일 레코드)
 | startDate | Date | `.now` | 처방 시작일 |
 | penCount | Int | `1` | 처방받은 펜 수 |
 | dosesPerPen | Int | `4` | 펜당 회차 |
-| intervalDays | Int | `7` | 투약 간격, 기본 7. UI는 7만 노출 |
+| intervalDays | Int | `7` | **v1은 항상 7.** UI·Rules는 주 1회를 전제로 하며 이 값을 읽지 않는다. 필드만 미리 두어 나중에 다른 주기를 열 때 스키마 변경을 피함 |
 | scheduledWeekday | Int | `5` | 1(일)~7(토), `Calendar` weekday |
 | scheduledHour | Int | `20` | 투약 시각 (시) |
 | scheduledMinute | Int | `0` | 투약 시각 (분) |
@@ -90,7 +90,7 @@ UserSettings        (단일 레코드)
 - `totalDoses = penCount * dosesPerPen`
 - `usedDoses = doses.filter { !$0.isCancelled }.count`
 - `remainingDoses = totalDoses - usedDoses`
-- `estimatedExhaustionDate = startDate + remainingDoses * intervalDays`
+- `estimatedExhaustionDate` = R13 (주 단위 마디 기준)
 
 ### Dose — 투약
 

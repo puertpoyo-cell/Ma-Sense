@@ -128,6 +128,7 @@ Settings는 오늘 탭 우상단 gear → NavigationStack push
 ## S9. 처방 입력 (PrescriptionSheet)
 
 - 시작일, 투약 요일, 시각, 펜 수, 펜당 회차(기본 4), 다음 진료일(선택), 메모(`doseLabel`, 자유 입력, 플레이스홀더 "메모")
+- 투약 간격 선택 UI는 없음 — 주 1회 고정
 - "용량"이라는 단어를 레이블에 쓰지 않는다. 메모 필드일 뿐
 - 새 처방 시작 시 이전 처방은 `endDate` 설정 + `isActive = false` (R13). 이전 처방은 삭제되지 않고 이력으로 남음
 
