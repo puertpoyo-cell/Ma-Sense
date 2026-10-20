@@ -22,11 +22,11 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 ### M1-a 모델·규칙
 - [x] `Models/` SchemaV1 5개 모델 (`DATA_MODEL.md`)
 - [x] `Rules/CycleRules.swift` R1·R2·R3 + 테스트 (`Rules/Snapshots.swift`, `Models/Snapshots+Models.swift` 포함)
-- [ ] `Rules/NotificationRules.swift` R4 + 테스트
-- [ ] `Rules/ConditionRules.swift` R5 + 테스트
-- [ ] `Rules/SiteRules.swift` R6 + 테스트
-- [ ] `Rules/WeightRules.swift` R7 + 테스트
-- [ ] `Rules/PrescriptionRules.swift` R13 + 테스트
+- [x] `Rules/NotificationRules.swift` R4 + 테스트
+- [x] `Rules/ConditionRules.swift` R5 + 테스트
+- [x] `Rules/SiteRules.swift` R6 + 테스트
+- [x] `Rules/WeightRules.swift` R7 + 테스트
+- [x] `Rules/PrescriptionRules.swift` R13 + 테스트
 
 ### M1-b 서비스
 - [ ] `NotificationService` — 권한, 4주 재등록, Dose 기록 시 취소

@@ -11,6 +11,8 @@ struct PrescriptionSnapshot: Equatable {
     let scheduledWeekday: Int
     let scheduledHour: Int
     let scheduledMinute: Int
+    /// 펜당 회차. 회차 표시 "펜 m의 k번째"에 쓴다
+    let dosesPerPen: Int
     /// `penCount * dosesPerPen`
     let totalDoses: Int
     let nextClinicDate: Date?
@@ -21,6 +23,7 @@ struct PrescriptionSnapshot: Equatable {
         scheduledWeekday: Int,
         scheduledHour: Int,
         scheduledMinute: Int = 0,
+        dosesPerPen: Int = 4,
         totalDoses: Int,
         nextClinicDate: Date? = nil
     ) {
@@ -29,6 +32,7 @@ struct PrescriptionSnapshot: Equatable {
         self.scheduledWeekday = scheduledWeekday
         self.scheduledHour = scheduledHour
         self.scheduledMinute = scheduledMinute
+        self.dosesPerPen = dosesPerPen
         self.totalDoses = totalDoses
         self.nextClinicDate = nextClinicDate
     }

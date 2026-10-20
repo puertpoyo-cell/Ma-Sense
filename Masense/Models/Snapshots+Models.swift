@@ -11,6 +11,7 @@ extension Prescription {
             scheduledWeekday: scheduledWeekday,
             scheduledHour: scheduledHour,
             scheduledMinute: scheduledMinute,
+            dosesPerPen: dosesPerPen,
             totalDoses: totalDoses,
             nextClinicDate: nextClinicDate
         )

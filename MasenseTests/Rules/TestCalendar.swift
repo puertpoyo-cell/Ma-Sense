@@ -6,6 +6,7 @@ enum TestCalendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
         calendar.locale = Locale(identifier: "ko_KR")
+        calendar.firstWeekday = 1 // 일요일 시작
         return calendar
     }()
 

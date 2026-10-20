@@ -39,8 +39,13 @@ enum NextDose { case due(Cycle, remaining: TimeInterval), overdue(Cycle, elapsed
 ## R4. 알림 스케줄
 
 ```swift
-func notificationPlan(p: PrescriptionSnapshot, settings: SettingsSnapshot, doses: [DoseSnapshot], now: Date, calendar: Calendar) -> [PlannedNotification]
+func notificationPlan(p: PrescriptionSnapshot, settings: SettingsSnapshot, doses: [DoseSnapshot], checks: [ConditionCheckSnapshot], now: Date, calendar: Calendar) -> [PlannedNotification]
+struct PlannedNotification { let id: String; let kind: NotificationKind; let fireDate: Date; let argument: Int? }
 ```
+
+- `id`는 결정적(`dose.due.<마디>`, `condition.h24.<기록 id>`, `clinic.soon` …)이라 재등록해도 중복이 없다
+- `reminderEnabled`가 꺼지면 투약·저녁·소진 알림을 만들지 않고, `conditionCheckEnabled`가 꺼지면 컨디션 알림을 만들지 않는다. 진료 알림은 `nextClinicDate`만 있으면 만든다
+- 이미 지난 시각(`fireDate <= now`)은 만들지 않는다
 
 | 종류 | 시점 | 조건 | 문구 키 |
 |---|---|---|---|
@@ -68,10 +73,12 @@ func openConditionWindows(dose: DoseSnapshot, checks: [ConditionCheckSnapshot], 
 ## R6. 바디맵 표시
 
 ```swift
-func siteHistory(doses: [DoseSnapshot], limit: Int = 4) -> [(BodySite, Date)]
+struct SiteUse { let site: BodySite; let date: Date }
+func siteHistory(doses: [DoseSnapshot], limit: Int = 4) -> [SiteUse]
+func recencyRank(of site: BodySite, in history: [SiteUse]) -> Int?   // 0이 가장 최근, 없으면 nil
 ```
 
-- 최근 4회 사용 부위와 날짜를 돌려줌. UI는 최근 순으로 진하게 표시
+- 최근 4회 사용 부위와 날짜를 돌려줌. UI는 최근 순으로 진하게 표시 (`Color.siteRecent(rank:)`)
 - **추천하지 않는다.** "다음은 왼쪽 허벅지" 같은 제안 없음. 사용자가 보고 고름
 
 ## R7. 체중 추이
@@ -82,7 +89,8 @@ struct WeekPoint { let weekStart: Date; let averageKg: Double?; let sampleCount:
 ```
 
 - 주 단위 평균. 샘플 없는 주는 `nil`로 두고 선을 끊음 (보간 금지)
-- 같은 날 여러 샘플이면 평균
+- 같은 날 여러 샘플이면 먼저 하루 평균으로 묶고, 그 하루 평균들의 평균을 주 평균으로 한다
+- 결과는 오래된 주부터 `weeks`개, 마지막이 `now`가 속한 주. 주 시작은 `calendar.firstWeekday`
 
 ## R8. 감량 속도 안내 (M2)
 
@@ -145,19 +153,21 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 ## R13. 처방 소진 추정
 
 ```swift
-func exhaustionEstimate(p: PrescriptionSnapshot, doses: [DoseSnapshot], calendar: Calendar) -> Date?
+func exhaustionEstimate(p: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, calendar: Calendar) -> Date?
+func nextSequence(doses: [DoseSnapshot]) -> Int                        // 취소 제외 기록 수 + 1
+func penPosition(sequence: Int, dosesPerPen: Int) -> (pen: Int, position: Int)
 ```
 
 - `remainingDoses == 0` → nil
-- 그 외 다음 마디부터 `remainingDoses`개째 마디의 `scheduledDate`
+- 그 외 남은 회차를 모두 쓰는 마지막 마디의 `scheduledDate` (= R1 `cycles(until: .distantFuture)`의 마지막 마디). 누락이 있으면 그만큼 뒤로 밀린다
 
 ## 테스트 체크리스트
 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
 - [x] R2 예정 시각 직전·직후 `.due`/`.overdue` 전환
 - [x] R3 과거 Dose 추가로 누락 해제
-- [ ] R4 4주 제한, 재등록 시 중복 없음
-- [ ] R5 창 경계값 (12h, 36h, 96h)
-- [ ] R7 샘플 없는 주 nil 처리
+- [x] R4 4주 제한, 재등록 시 중복 없음
+- [x] R5 창 경계값 (12h, 36h, 96h)
+- [x] R7 샘플 없는 주 nil 처리
 - [ ] R8 정확히 -1.0%일 때 안내 없음 (초과만)
 - [ ] R9 소수점 반올림
