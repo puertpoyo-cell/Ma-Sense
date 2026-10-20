@@ -4,7 +4,27 @@
 
 ## 원칙
 
-- 온디바이스 전용. `ModelConfiguration(isStoredInMemoryOnly: false, cloudKitDatabase: .none)`
+### 저장 위치 — App Group 컨테이너
+
+- 스토어 파일은 App Group `group.com.puertpoyo.masense`의 컨테이너에 둔다. 앱 샌드박스 기본 경로를 쓰지 않는다.
+- 이유: v2 후보인 잠금화면 위젯·Live Activity·Apple Watch 컴패니언이 **같은 스토어를 읽기만 하면** 되게 하기 위함. 나중에 옮기면 스토어 파일 이전과 사용자 데이터 마이그레이션이 필요하다.
+- 구성 예시 (`App/ModelContainer+Masense.swift`):
+
+```swift
+let groupID = "group.com.puertpoyo.masense"
+let url = FileManager.default
+    .containerURL(forSecurityApplicationGroupIdentifier: groupID)!
+    .appendingPathComponent("Masense.store")
+let config = ModelConfiguration("Masense", schema: schema, url: url,
+                                cloudKitDatabase: .none)
+```
+
+- Xcode: 앱 타깃에 App Groups capability 추가, 위젯·Watch 타깃이 생기면 같은 그룹 ID 추가
+- 쓰기는 앱 타깃만. 위젯 등 익스텐션은 읽기 전용으로 쓰고, 기록 액션은 딥링크로 앱을 연다 (동시 쓰기 회피)
+- 테스트·미리보기는 `isStoredInMemoryOnly: true`로 App Group을 쓰지 않는다
+
+### 공통
+
 - 모든 모델에 `id: UUID`, `createdAt: Date` 포함
 - 날짜는 `Date`로 저장하고 해석은 `Calendar.current` 주입
 - 삭제는 소프트 삭제 없이 실제 삭제. 단, `Dose`는 리포트 무결성 때문에 "취소됨" 플래그 사용
