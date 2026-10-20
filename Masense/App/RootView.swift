@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// 탭 3개 + 설정 push (SCREENS.md 내비게이션 구조). 앱은 다크 고정.

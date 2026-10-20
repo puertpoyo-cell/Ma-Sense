@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// S1 오늘 (홈). M0에서는 빈 상태만 그린다. 카드 스택은 M1-c에서 채운다.

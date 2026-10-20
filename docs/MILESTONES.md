@@ -6,21 +6,22 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 
 완료 기준: 빈 앱이 빌드·실행되고, 테스트 타깃이 돌고, 디자인 토큰이 보인다.
 
-- [ ] Xcode 프로젝트 `Masense` 생성 (iOS 17, SwiftUI, SwiftData 체크 해제 후 수동 구성)
-- [ ] `CLAUDE.md` 폴더 구조대로 그룹 생성
-- [ ] `DesignSystem/` 토큰 (`Color+Tokens`, `Spacing`, `Typography`), `FrostCard`, `PrimaryButton`, `RecordedToast`
-- [ ] `App/MasenseApp.swift` — `ModelContainer` 구성 (SchemaV1), 다크 고정
-- [ ] `Localizable.xcstrings` 생성, `COMPLIANCE.md` 3.2 고정 문구 등록
-- [ ] `MasenseTests` 타깃, 더미 테스트 1개 통과
-- [ ] 탭 3개 빈 화면 + 설정 push
+- [x] Xcode 프로젝트 `Masense` 생성 (iOS 17, SwiftUI, SwiftData 체크 해제 후 수동 구성)
+- [x] `CLAUDE.md` 폴더 구조대로 그룹 생성
+- [x] `DesignSystem/` 토큰 (`Color+Tokens`, `Spacing`, `Typography`), `FrostCard`, `PrimaryButton`, `RecordedToast`
+- [x] `App/MasenseApp.swift` — `ModelContainer` 구성 (SchemaV1), 다크 고정
+- [x] `Localizable.xcstrings` 생성, `COMPLIANCE.md` 3.2 고정 문구 등록
+- [x] `MasenseTests` 타깃, 더미 테스트 1개 통과
+- [x] 탭 3개 빈 화면 + 설정 push
+- [x] GitHub Actions CI (`.github/workflows/ci.yml`, macOS 러너 `xcodebuild test`)
 
 ## M1 — 투약 루프 MVP (2~3주)
 
 완료 기준: 온보딩 → 투약 기록 → 컨디션 체크 → 리포트 PDF까지 한 바퀴가 돈다. TestFlight 1차.
 
 ### M1-a 모델·규칙
-- [ ] `Models/` SchemaV1 5개 모델 (`DATA_MODEL.md`)
-- [ ] `Rules/CycleRules.swift` R1·R2·R3 + 테스트
+- [x] `Models/` SchemaV1 5개 모델 (`DATA_MODEL.md`)
+- [x] `Rules/CycleRules.swift` R1·R2·R3 + 테스트 (`Rules/Snapshots.swift`, `Models/Snapshots+Models.swift` 포함)
 - [ ] `Rules/NotificationRules.swift` R4 + 테스트
 - [ ] `Rules/ConditionRules.swift` R5 + 테스트
 - [ ] `Rules/SiteRules.swift` R6 + 테스트
@@ -108,3 +109,6 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2026-10-20 | 투약 간격을 `intervalDays`로 모델링, UI는 주 1회만 | v2 확장 대비, 스키마 변경 회피 |
 | 2026-10-20 | `doseLabel`은 자유 메모, 앱이 해석 안 함 | 용량 판단 금지선 |
 | 2026-10-20 | 빨강·초록 색 금지 | 판단하지 않는 원칙의 시각화 |
+| 2026-10-21 | `Prescription.scheduledTime`은 `scheduledHour`·`scheduledMinute` Int 2개로 저장, `DateComponents`는 계산 속성 | SwiftData Codable 저장 안정성 |
+| 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
+| 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |

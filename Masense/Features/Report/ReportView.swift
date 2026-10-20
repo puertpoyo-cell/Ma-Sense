@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// S5 리포트. M0에서는 빈 상태만. 기간 선택·미리보기·내보내기는 M1-d에서.

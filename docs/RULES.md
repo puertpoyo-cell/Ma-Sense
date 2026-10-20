@@ -6,13 +6,15 @@
 
 ```swift
 struct Cycle { let index: Int; let scheduledDate: Date; let interval: DateInterval }
-func cycles(for p: PrescriptionSnapshot, until end: Date, calendar: Calendar) -> [Cycle]
+func cycles(for p: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, until end: Date, calendar: Calendar) -> [Cycle]
 ```
 
-- 첫 마디 `scheduledDate` = `startDate` 이후 첫 `scheduledWeekday` + `scheduledTime`
-- 이후 마디 = 이전 + `intervalDays`
+- 첫 마디 `scheduledDate` = `startDate` 당일 또는 그 이후 첫 `scheduledWeekday` + `scheduledTime`. 시작일이 예정 요일과 같은 날이면 그날이 첫 마디
+- 이후 마디 = 첫 마디 + `intervalDays × index` (누적 오차 없음)
 - 마디 구간 `interval` = `[scheduledDate - 2일, scheduledDate + intervalDays - 2일)` — 예정일 이틀 전부터 그 마디로 본다 (미리 맞는 경우 수용)
-- `totalDoses` 개수만큼 생성. 처방이 소진되면 그 이후 마디는 만들지 않음
+- 처방이 소진되면 그 이후 마디는 만들지 않음. 소진은 "쓰인 회차"로 센다: 기록이 있는 마디와 현재·미래 마디는 회차를 쓰고, 지나간 누락 마디는 쓰지 않는다. 그래서 누락이 있으면 마디가 그만큼 뒤로 늘어나 `remainingDoses`와 맞는다
+- `until`은 `scheduledDate` 상한. 전체를 원하면 `.distantFuture` (회차 수로 끝난다)
+- `intervalDays < 3`이면 구간을 만들 수 없어 빈 배열
 
 테스트: 목요일 20:00, 7일 간격, 시작일이 금요일인 경우 첫 마디는 다음 목요일.
 
@@ -151,9 +153,9 @@ func exhaustionEstimate(p: PrescriptionSnapshot, doses: [DoseSnapshot], calendar
 
 ## 테스트 체크리스트
 
-- [ ] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
-- [ ] R2 자정 직전·직후 `.due`/`.overdue` 전환
-- [ ] R3 과거 Dose 추가로 누락 해제
+- [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
+- [x] R2 예정 시각 직전·직후 `.due`/`.overdue` 전환
+- [x] R3 과거 Dose 추가로 누락 해제
 - [ ] R4 4주 제한, 재등록 시 중복 없음
 - [ ] R5 창 경계값 (12h, 36h, 96h)
 - [ ] R7 샘플 없는 주 nil 처리

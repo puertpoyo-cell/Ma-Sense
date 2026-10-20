@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// S4 기록. M0에서는 빈 상태만. 세그먼트(투약/컨디션/체중)는 M1-c에서.
