@@ -29,9 +29,12 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] `Rules/PrescriptionRules.swift` R13 + 테스트
 
 ### M1-b 서비스
-- [ ] `NotificationService` — 권한, 4주 재등록, Dose 기록 시 취소
-- [ ] `HealthKitService` — 권한, `bodyMass` 읽기, 캐시 upsert (프로토콜 + Fake)
-- [ ] `StoreService` — StoreKit 2 비소모성 1종, 복원 (프로토콜 + Fake)
+- [x] `NotificationService` — 권한, 4주 재등록, Dose 기록 시 취소 (`NotificationCoordinator`가 저장 데이터 → R4 → 등록)
+- [x] `HealthKitService` — 권한, `bodyMass` 읽기, 캐시 upsert (`WeightSyncService`, 프로토콜 + Fake)
+- [x] `StoreService` — StoreKit 2 비소모성 1종, 복원 (프로토콜 + Fake)
+- [ ] HealthKit capability(entitlement) + `NSHealthShareUsageDescription` 추가 — 사람 확인 필요 (CLAUDE.md "새 권한")
+- [ ] StoreKit 상품 ID 확정 (현재 코드 기본값 `com.masense.pro`) + 로컬 테스트용 `.storekit` 구성 파일 — 사람 확인 필요
+- [ ] 번들 ID 확정 (현재 `com.masense.Masense`) — Xcode Signing에서 팀 선택 시 함께
 
 ### M1-c 화면
 - [ ] S0 온보딩 4페이지
