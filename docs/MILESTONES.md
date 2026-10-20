@@ -190,3 +190,4 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
 | 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |
 | 2026-10-21 | SwiftData 스토어를 App Group 컨테이너에 배치 | v2 위젯·Live Activity·Watch가 같은 스토어 공유, 이전 비용 회피 |
+| 2026-10-21 | 스키마는 v1부터 CloudKit 호환 규칙 적용 (unique 금지, 기본값/옵셔널, 관계 옵셔널), 동기화는 꺼 둠 | 기기 교체·분실 대비, 나중에 스위치만 켜면 되게 |
