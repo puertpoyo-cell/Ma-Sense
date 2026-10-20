@@ -23,9 +23,24 @@ let config = ModelConfiguration("Masense", schema: schema, url: url,
 - 쓰기는 앱 타깃만. 위젯 등 익스텐션은 읽기 전용으로 쓰고, 기록 액션은 딥링크로 앱을 연다 (동시 쓰기 회피)
 - 테스트·미리보기는 `isStoredInMemoryOnly: true`로 App Group을 쓰지 않는다
 
+### CloudKit 호환 규칙 (v1부터 적용, 동기화는 꺼 둠)
+
+v1은 `cloudKitDatabase: .none`이지만, 기기 교체·분실 대비로 나중에 **개인 iCloud(private database)** 동기화를 켤 수 있도록 스키마를 처음부터 호환되게 잡는다. 개인 iCloud는 사용자 본인 계정에만 저장되므로 "외부 서버 전송 없음" 메시지와 충돌하지 않는다 (켤 때 문구를 "iCloud에 백업됩니다"로 갱신).
+
+SwiftData + CloudKit이 요구하는 제약을 모든 `@Model`에 적용한다:
+
+1. **`@Attribute(.unique)` 금지.** `id: UUID`는 unique 없이 `= UUID()` 기본값으로만 둔다. 중복 방지는 앱 로직에서 (예: `healthKitUUID` 조회 후 upsert).
+2. **모든 저장 속성은 기본값이 있거나 옵셔널.** 비옵셔널 `Date`, `Int`, `Bool`, `String`, enum은 반드시 `= 기본값`.
+3. **관계는 전부 옵셔널**, to-many는 `[T]? = []` 또는 `[T] = []`. `deleteRule: .cascade`는 허용, `.deny`는 금지.
+4. **enum은 `String` rawValue + `Codable`.** 저장은 rawValue로. 배열(`[SymptomEntry]`)은 Codable 구조체 배열로 저장 (SwiftData가 transformable로 처리).
+5. 스키마 변경은 **추가만** (필드 추가, 새 모델). 이름 변경·삭제·타입 변경은 CloudKit 스키마와 충돌하므로 새 필드 추가 + 옛 필드 방치로 처리.
+6. 컨테이너 ID는 `iCloud.com.puertpoyo.masense`로 예약해 두고, v1에서는 Capability를 켜지 않는다.
+
+아래 표의 "기본값" 열이 이 규칙을 반영한다. 기본값 열이 비어 있으면 옵셔널(`nil`)이다.
+
 ### 공통
 
-- 모든 모델에 `id: UUID`, `createdAt: Date` 포함
+- 모든 모델에 `id: UUID = UUID()`, `createdAt: Date = .now` 포함
 - 날짜는 `Date`로 저장하고 해석은 `Calendar.current` 주입
 - 삭제는 소프트 삭제 없이 실제 삭제. 단, `Dose`는 리포트 무결성 때문에 "취소됨" 플래그 사용
 - 전문의약품 상표를 식별자·enum case·주석에 쓰지 않는다
@@ -48,20 +63,23 @@ UserSettings        (단일 레코드)
 
 ### Prescription — 처방
 
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| id | UUID | |
-| startDate | Date | 처방 시작일 |
-| penCount | Int | 처방받은 펜 수 |
-| dosesPerPen | Int | 펜당 회차 (기본 4) |
-| intervalDays | Int | 투약 간격, 기본 7. UI는 7만 노출 |
-| scheduledWeekday | Int | 1(일)~7(토), `Calendar` weekday |
-| scheduledTime | DateComponents | hour, minute |
-| nextClinicDate | Date? | 다음 진료일 |
-| doseLabel | String? | 사용자가 적는 자유 메모 ("2.5", "두 번째 단계" 등). 앱은 해석하지 않음 |
-| isActive | Bool | 현재 처방 여부. 활성은 항상 1개 |
-| doses | [Dose] | `@Relationship(deleteRule: .cascade, inverse: \Dose.prescription)` |
-| createdAt | Date | |
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| startDate | Date | `.now` | 처방 시작일 |
+| penCount | Int | `1` | 처방받은 펜 수 |
+| dosesPerPen | Int | `4` | 펜당 회차 |
+| intervalDays | Int | `7` | 투약 간격, 기본 7. UI는 7만 노출 |
+| scheduledWeekday | Int | `5` | 1(일)~7(토), `Calendar` weekday |
+| scheduledHour | Int | `20` | 투약 시각 (시) |
+| scheduledMinute | Int | `0` | 투약 시각 (분) |
+| nextClinicDate | Date? |  | 다음 진료일 |
+| doseLabel | String? |  | 사용자가 적는 자유 메모 ("2.5", "두 번째 단계" 등). 앱은 해석하지 않음 |
+| isActive | Bool | `true` | 현재 처방 여부. 활성은 항상 1개 |
+| doses | [Dose] | `[]` | `@Relationship(deleteRule: .cascade, inverse: \Dose.prescription)` |
+| createdAt | Date | `.now` |  |
+
+`scheduledTime: DateComponents`는 CloudKit transformable 처리가 번거로워 `scheduledHour`/`scheduledMinute` 두 Int로 분해했다.
 
 파생값 (저장하지 않음, `Rules/`에서 계산):
 - `totalDoses = penCount * dosesPerPen`
@@ -71,18 +89,18 @@ UserSettings        (단일 레코드)
 
 ### Dose — 투약
 
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| id | UUID | |
-| administeredAt | Date | 실제 투약 시각 |
-| scheduledFor | Date | 예정일 (마디 기준점) |
-| site | BodySite | 주사 부위 |
-| sequence | Int | 처방 내 회차 (1부터) |
-| note | String? | 자유 메모 |
-| isCancelled | Bool | 잘못 기록 취소용. 리포트에서는 제외 |
-| prescription | Prescription? | |
-| conditionChecks | [ConditionCheck] | `@Relationship(deleteRule: .cascade, inverse: \ConditionCheck.dose)` |
-| createdAt | Date | |
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| administeredAt | Date | `.now` | 실제 투약 시각 |
+| scheduledFor | Date | `.now` | 예정일 (마디 기준점) |
+| siteRaw | String | `"abdomenUpperLeft"` | `BodySite` rawValue. 계산 프로퍼티 `site: BodySite`로 접근 |
+| sequence | Int | `1` | 처방 내 회차 (1부터) |
+| note | String? |  | 자유 메모 |
+| isCancelled | Bool | `false` | 잘못 기록 취소용. 리포트에서는 제외 |
+| prescription | Prescription? |  |  |
+| conditionChecks | [ConditionCheck] | `[]` | `@Relationship(deleteRule: .cascade, inverse: \ConditionCheck.dose)` |
+| createdAt | Date | `.now` |  |
 
 ### BodySite — 주사 부위 (enum, Codable, String rawValue)
 
@@ -95,20 +113,20 @@ enum BodySite: String, Codable, CaseIterable {
 }
 ```
 
-표시명은 `Localizable.xcstrings`에서. 그룹: `abdomen`, `thigh`, `upperArm`.
+표시명은 `Localizable.xcstrings`에서. 그룹: `abdomen`, `thigh`, `upperArm`. 저장은 `siteRaw: String`이며 모델에 `var site: BodySite { get set }` 계산 프로퍼티를 둔다. 다른 enum(`ConditionWindow`, `AppetiteLevel`, `WeightSource`, `MealSlot`, `SessionKind`, `Intensity`, `SessionSource`)도 같은 패턴(`xxxRaw` 저장 + 계산 프로퍼티).
 
 ### ConditionCheck — 컨디션 체크
 
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| id | UUID | |
-| checkedAt | Date | 응답 시각 |
-| window | ConditionWindow | `.h24` 또는 `.h48` |
-| symptoms | [SymptomEntry] | Codable 배열로 저장 |
-| appetite | AppetiteLevel | `.normal`, `.reduced`, `.veryReduced` |
-| note | String? | |
-| dose | Dose? | |
-| createdAt | Date | |
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| checkedAt | Date | `.now` | 응답 시각 |
+| windowRaw | String | `"h24"` | `ConditionWindow` rawValue |
+| symptoms | [SymptomEntry] | `[]` | Codable 배열 (transformable) |
+| appetiteRaw | String | `"normal"` | `AppetiteLevel` rawValue |
+| note | String? |  |  |
+| dose | Dose? |  |  |
+| createdAt | Date | `.now` |  |
 
 ```swift
 enum ConditionWindow: String, Codable { case h24, h48 }
@@ -132,28 +150,28 @@ enum AppetiteLevel: String, Codable { case normal, reduced, veryReduced }
 
 ### WeightSample — 체중
 
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| id | UUID | |
-| measuredAt | Date | |
-| kilograms | Double | |
-| source | WeightSource | `.healthKit`, `.manual` |
-| healthKitUUID | UUID? | HealthKit 샘플 UUID (중복 방지) |
-| leanBodyMassKg | Double? | M2, HealthKit `leanBodyMass` 또는 수동 |
-| createdAt | Date | |
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| measuredAt | Date | `.now` |  |
+| kilograms | Double | `0` |  |
+| sourceRaw | String | `"manual"` | `WeightSource` rawValue: healthKit / manual |
+| healthKitUUID | UUID? |  | HealthKit 샘플 UUID. unique 제약 없이 조회 후 upsert |
+| leanBodyMassKg | Double? |  | M2, HealthKit `leanBodyMass` 또는 수동 |
+| createdAt | Date | `.now` |  |
 
 HealthKit에서 읽은 샘플은 캐시로 저장. 동기화 시 `healthKitUUID` 기준 upsert. HealthKit 샘플이 삭제되면 캐시도 삭제.
 
 ### ProteinEntry — 단백질 채우기 (M2)
 
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| id | UUID | |
-| date | Date | 그 날 00:00 (로컬) |
-| meal | MealSlot | `.breakfast`, `.lunch`, `.dinner`, `.snack` |
-| foods | [ProteinFood] | 체크한 식품들 |
-| estimatedGrams | Int | 식품별 기본값 합산. 사용자가 덮어쓸 수 있음 |
-| createdAt | Date | |
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| date | Date | `.now` | 그 날 00:00 (로컬) |
+| mealRaw | String | `"breakfast"` | `MealSlot` rawValue |
+| foodsRaw | [String] | `[]` | `ProteinFood` rawValue 배열 |
+| estimatedGrams | Int | `0` | 식품별 기본값 합산. 사용자가 덮어쓸 수 있음 |
+| createdAt | Date | `.now` |  |
 
 ```swift
 enum MealSlot: String, Codable, CaseIterable { case breakfast, lunch, dinner, snack }
@@ -167,49 +185,51 @@ enum ProteinFood: String, Codable, CaseIterable {
 
 ### StrengthSession — 근력운동 마디 (M2)
 
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| id | UUID | |
-| startedAt | Date | |
-| durationMinutes | Int | |
-| kind | SessionKind | `.strength`, `.walk`, `.stretch`, `.rest` |
-| intensity | Intensity | `.light`, `.moderate`, `.vigorous` |
-| source | SessionSource | `.manual`, `.healthKit` |
-| healthKitUUID | UUID? | |
-| note | String? | |
-| createdAt | Date | |
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| startedAt | Date | `.now` |  |
+| durationMinutes | Int | `0` |  |
+| kindRaw | String | `"strength"` | `SessionKind`: strength / walk / stretch / rest |
+| intensityRaw | String | `"moderate"` | `Intensity`: light / moderate / vigorous |
+| sourceRaw | String | `"manual"` | `SessionSource`: manual / healthKit |
+| healthKitUUID | UUID? |  |  |
+| note | String? |  |  |
+| createdAt | Date | `.now` |  |
 
 `.rest`는 "쉬는 날도 기록"을 위해 존재. 리포트의 근력운동 횟수에는 `.strength`만 집계.
 
 ### HabitCheck — 기본 습관 (M2, P2)
 
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| id | UUID | |
-| date | Date | 그 날 00:00 |
-| water | Bool | |
-| fiber | Bool | |
-| sleep | Bool | |
-| createdAt | Date | |
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| date | Date | `.now` | 그 날 00:00 |
+| water | Bool | `false` |  |
+| fiber | Bool | `false` |  |
+| sleep | Bool | `false` |  |
+| createdAt | Date | `.now` |  |
 
 ### UserSettings — 단일 레코드
 
-| 필드 | 타입 | 설명 |
-|---|---|---|
-| id | UUID | |
-| hasAcceptedRoleNotice | Bool | "처방은 의사, 기록은 마선생" 확인 |
-| hasConfirmedAdult | Bool | 만 19세 이상 확인 |
-| reminderEnabled | Bool | |
-| eveningReminderHour | Int | 미기록 리마인드 시각, 기본 20 |
-| conditionCheckEnabled | Bool | |
-| clinicReminderDaysBefore | Int | 기본 1 |
-| exhaustionReminderDosesLeft | Int | 남은 회차가 이 값일 때 진료 예약 알림, 기본 2 |
-| proteinTargetGrams | Int? | 사용자/의료진 입력. nil이면 안내만 |
-| bodyWeightForGuideKg | Double? | 1.2~1.6 g/kg 안내 계산용. 최근 체중 자동 사용 가능 |
-| healthKitAuthorized | Bool | |
-| hasPurchasedPro | Bool | StoreKit 검증 결과 캐시. 진실 원천은 StoreKit |
-| reportTheme | String | 기본 `"midnight"` |
-| createdAt | Date | |
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| hasAcceptedRoleNotice | Bool | `false` | "처방은 의사, 기록은 마선생" 확인 |
+| hasConfirmedAdult | Bool | `false` | 만 19세 이상 확인 |
+| reminderEnabled | Bool | `true` |  |
+| eveningReminderHour | Int | `20` | 미기록 리마인드 시각 |
+| conditionCheckEnabled | Bool | `true` |  |
+| clinicReminderDaysBefore | Int | `1` |  |
+| exhaustionReminderDosesLeft | Int | `2` | 남은 회차가 이 값일 때 진료 예약 알림 |
+| proteinTargetGrams | Int? |  | 사용자/의료진 입력. nil이면 안내만 |
+| bodyWeightForGuideKg | Double? |  | 1.2~1.6 g/kg 안내 계산용. 최근 체중 자동 사용 가능 |
+| healthKitAuthorized | Bool | `false` |  |
+| hasPurchasedPro | Bool | `false` | StoreKit 검증 결과 캐시. 진실 원천은 StoreKit |
+| reportTheme | String | `"midnight"` |  |
+| createdAt | Date | `.now` |  |
+
+단일 레코드는 CloudKit에서 기기마다 하나씩 생겨 충돌할 수 있다. 동기화를 켤 때는 `createdAt`이 가장 이른 레코드를 정본으로 삼고 나머지를 병합·삭제하는 규칙을 `Rules/SettingsMerge.swift`에 둔다 (v1은 해당 없음).
 
 ## HealthKit 매핑
 

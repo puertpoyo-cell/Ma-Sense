@@ -9,7 +9,7 @@ struct Cycle { let index: Int; let scheduledDate: Date; let interval: DateInterv
 func cycles(for p: PrescriptionSnapshot, until end: Date, calendar: Calendar) -> [Cycle]
 ```
 
-- 첫 마디 `scheduledDate` = `startDate` 이후 첫 `scheduledWeekday` + `scheduledTime`
+- 첫 마디 `scheduledDate` = `startDate` 이후 첫 `scheduledWeekday` + `scheduledHour`:`scheduledMinute`
 - 이후 마디 = 이전 + `intervalDays`
 - 마디 구간 `interval` = `[scheduledDate - 2일, scheduledDate + intervalDays - 2일)` — 예정일 이틀 전부터 그 마디로 본다 (미리 맞는 경우 수용)
 - `totalDoses` 개수만큼 생성. 처방이 소진되면 그 이후 마디는 만들지 않음
@@ -43,7 +43,7 @@ func notificationPlan(p: PrescriptionSnapshot, settings: SettingsSnapshot, doses
 | 종류 | 시점 | 조건 | 문구 키 |
 |---|---|---|---|
 | 투약 | 마디 `scheduledDate` | 그 마디에 Dose 없음 | `notif.dose.due` "오늘은 투약일입니다" |
-| 저녁 리마인드 | 같은 날 `eveningReminderHour`:00 | 여전히 Dose 없음, `scheduledTime` < eveningReminderHour | `notif.dose.evening` "아직 기록이 없습니다" |
+| 저녁 리마인드 | 같은 날 `eveningReminderHour`:00 | 여전히 Dose 없음, `scheduledHour` < eveningReminderHour | `notif.dose.evening` "아직 기록이 없습니다" |
 | 컨디션 24h | Dose.administeredAt + 24h | `conditionCheckEnabled`, 해당 window 체크 없음 | `notif.condition.h24` "투약 후 하루, 컨디션을 기록해 주세요" |
 | 컨디션 48h | + 48h | 동일 | `notif.condition.h48` |
 | 진료 | `nextClinicDate - clinicReminderDaysBefore` 09:00 | nextClinicDate 있음 | `notif.clinic.soon` "내일 진료입니다. 리포트를 준비해 두세요" |
