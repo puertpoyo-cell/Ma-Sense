@@ -5,9 +5,14 @@ import SwiftUI
 /// 샘플 없는 주는 선을 끊는다 (R7 보간 금지).
 struct WeekChart: View {
     let points: [WeekPoint]
+    /// 투약일 세로 눈금 (리포트 D)
+    var tickDates: [Date] = []
     var lineColor: Color = .accent
     var gridColor: Color = .inkTertiary
     var labelColor: Color = .inkSecondary
+    var labelFont: Font = .caption2
+    /// y축에 최소·최대 2개 라벨만 (리포트 D)
+    var minMaxYAxisOnly = false
 
     private struct Plotted: Identifiable {
         let weekStart: Date
@@ -30,35 +35,56 @@ struct WeekChart: View {
         return result
     }
 
-    var body: some View {
-        Chart(plotted) { item in
-            LineMark(
-                x: .value("week", item.weekStart),
-                y: .value("kg", item.kilograms),
-                series: .value("segment", item.segment)
-            )
-            .foregroundStyle(lineColor)
-            .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+    private var yValues: [Double] {
+        let values = plotted.map(\.kilograms)
+        guard let low = values.min(), let high = values.max() else { return [] }
+        return low == high ? [low] : [low, high]
+    }
 
-            PointMark(
-                x: .value("week", item.weekStart),
-                y: .value("kg", item.kilograms)
-            )
-            .foregroundStyle(lineColor)
-            .symbolSize(24)
+    var body: some View {
+        Chart {
+            ForEach(tickDates, id: \.self) { date in
+                RuleMark(x: .value("dose", date))
+                    .foregroundStyle(gridColor.opacity(0.6))
+                    .lineStyle(StrokeStyle(lineWidth: 0.5, dash: [2, 2]))
+            }
+            ForEach(plotted) { item in
+                LineMark(
+                    x: .value("week", item.weekStart),
+                    y: .value("kg", item.kilograms),
+                    series: .value("segment", item.segment)
+                )
+                .foregroundStyle(lineColor)
+                .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+
+                PointMark(
+                    x: .value("week", item.weekStart),
+                    y: .value("kg", item.kilograms)
+                )
+                .foregroundStyle(lineColor)
+                .symbolSize(24)
+            }
         }
         .chartYScale(domain: .automatic(includesZero: false))
         .chartXAxis {
             AxisMarks(values: .stride(by: .weekOfYear, count: 2)) { _ in
                 AxisGridLine().foregroundStyle(gridColor.opacity(0.5))
                 AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
+                    .font(labelFont)
                     .foregroundStyle(labelColor)
             }
         }
         .chartYAxis {
-            AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) { _ in
-                AxisGridLine().foregroundStyle(gridColor.opacity(0.5))
-                AxisValueLabel().foregroundStyle(labelColor)
+            if minMaxYAxisOnly {
+                AxisMarks(position: .leading, values: yValues) { _ in
+                    AxisGridLine().foregroundStyle(gridColor.opacity(0.5))
+                    AxisValueLabel().font(labelFont).foregroundStyle(labelColor)
+                }
+            } else {
+                AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) { _ in
+                    AxisGridLine().foregroundStyle(gridColor.opacity(0.5))
+                    AxisValueLabel().font(labelFont).foregroundStyle(labelColor)
+                }
             }
         }
         .accessibilityLabel(Text("weight.trend12.a11y"))

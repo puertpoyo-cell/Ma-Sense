@@ -35,9 +35,14 @@ enum HistoryModel {
         var rows: [DoseRow] = []
 
         for (offset, history) in ordered.enumerated() {
-            let end = offset + 1 < ordered.count ? min(ordered[offset + 1].prescription.startDate, now) : now
-            let cycles = CycleRules.cycles(for: history.prescription, doses: history.doses, now: now, until: end, calendar: calendar)
-                .filter { $0.scheduledDate < end || end == now }
+            let nextStart = offset + 1 < ordered.count ? ordered[offset + 1].prescription.startDate : nil
+            let cycles = CycleRules.pastCycles(
+                for: history.prescription,
+                doses: history.doses,
+                nextStart: nextStart,
+                now: now,
+                calendar: calendar
+            )
             let missed = CycleRules.missedCycles(cycles: cycles, doses: history.doses, now: now)
             rows += missed.map { cycle in
                 DoseRow(

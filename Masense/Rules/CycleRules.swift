@@ -137,4 +137,18 @@ enum CycleRules {
             cycle.interval.end <= now && Self.doses(in: cycle, from: doses).isEmpty
         }
     }
+
+    /// 예정일이 지금까지 온 마디. 보관된 처방은 다음 처방 시작(`nextStart`) 전까지만 본다.
+    /// 처방을 바꾼 뒤에도 이전 처방의 마디가 계속 이어져 누락으로 쌓이지 않게 하려는 것 (기록 탭·리포트 공용).
+    static func pastCycles(
+        for p: PrescriptionSnapshot,
+        doses: [DoseSnapshot],
+        nextStart: Date?,
+        now: Date,
+        calendar: Calendar
+    ) -> [Cycle] {
+        let end = nextStart.map { min($0, now) } ?? now
+        return cycles(for: p, doses: doses, now: now, until: end, calendar: calendar)
+            .filter { $0.scheduledDate < end || end == now }
+    }
 }

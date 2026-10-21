@@ -117,4 +117,12 @@ struct SettingsSnapshot: Equatable {
 struct WeightSampleSnapshot: Equatable {
     let measuredAt: Date
     let kilograms: Double
+    /// 리포트 D 섹션 출처 표기
+    let source: WeightSource
+
+    init(measuredAt: Date, kilograms: Double, source: WeightSource = .manual) {
+        self.measuredAt = measuredAt
+        self.kilograms = kilograms
+        self.source = source
+    }
 }

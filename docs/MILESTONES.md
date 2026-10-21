@@ -48,10 +48,12 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] WeightEntrySheet (`WeightEntryModel` + 테스트)
 
 ### M1-d 리포트
-- [ ] `Rules/ReportBuilder.swift` — `ClinicReport` 생성, 섹션 A~E·G·H + 스냅샷 테스트
-- [ ] `ReportView` 미리보기 (SwiftUI, 라이트 강제)
-- [ ] `ReportRenderer` — `ImageRenderer` → PDF, `ShareLink`
-- [ ] 구매 게이트
+- [x] `Rules/ReportBuilder.swift` — `ClinicReport` 생성, 섹션 A~E·G·H + 테스트 (R12 기간 포함, 스냅샷 대신 값 비교)
+- [x] `ReportView` 미리보기 (SwiftUI, 라이트 강제) — `ReportPage`(A4 고정 크기) + `ReportPreviewView`(폭 맞춤 축소)
+- [x] `ReportRenderer` — `ImageRenderer` → PDF, `ShareLink` (PDFKit으로 A4 1장 검증)
+- [x] 구매 게이트 (`ReportPurchaseSheet`)
+- [ ] 리포트 기본 기간을 설정에 저장 — `UserSettings` 필드 추가(스키마 변경)라 사람 확인 필요. 지금은 R12 기본값을 매번 계산
+- [ ] 실기기에서 12주·증상 10개·메모 5줄 리포트가 A4 한 장에 들어가는지 육안 확인 (넘침 안내는 미구현)
 
 ### M1-e 마감
 - [ ] 접근성 점검 (VoiceOver, Dynamic Type XXL)

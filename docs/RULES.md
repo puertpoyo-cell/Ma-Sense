@@ -147,6 +147,10 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 ## R12. 리포트 기간
 
 - 기본: `nextClinicDate`가 있으면 직전 진료일(이전 처방 startDate) ~ 오늘, 없으면 최근 8주
+  - 구현 해석: "직전 진료일" = 현재(활성) 처방의 `startDate` (진료 후 새 처방을 입력하므로). 활성 처방이 없거나 시작일이 미래면 최근 8주
+  - "최근 n주" = 오늘을 포함한 7×n일. 주 수 표기는 기간 일수를 7로 나눠 올림
+- 마디 칸은 기간 안 예정일 기준, 최대 12칸(최근 12개). 보관된 처방은 다음 처방 시작 전까지의 마디만 (`CycleRules.pastCycles`)
+- 컨디션 응답률 분모 = 기간 안 투약 중 창이 열린(투약 후 12h·36h 경과) 개수
 - 사용자가 4·8·12주 중 선택 가능
 - 리포트 생성 시각과 기간을 PDF 하단에 명시
 
