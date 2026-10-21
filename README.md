@@ -16,6 +16,11 @@
 - `docs/DESIGN_SYSTEM.md` 디자인 토큰
 - `docs/COMPLIANCE.md` 의료 경계·문구·심사
 - `docs/MILESTONES.md` 빌드 순서와 진행 상황
+- `docs/TESTFLIGHT.md` TestFlight 절차와 베타 안내문
+- `docs/APP_STORE.md` 스토어 문구·스크린샷·심사 준비
+- `docs/PRIVACY.md` 개인정보 처리방침 초안 (게시용 `docs/privacy/index.html`)
+
+사람이 정할 값은 `docs/MILESTONES.md`의 "사람 확인 대기" 표에 모여 있습니다.
 
 ## 스택
 
@@ -31,3 +36,6 @@ xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' 
 ```
 
 GitHub Actions(`.github/workflows/ci.yml`)가 푸시마다 macOS 러너에서 같은 테스트를 돌립니다.
+금지선 점검도 함께 돕니다: `python3 scripts/compliance_check.py`
+
+스크린샷용 예시 데이터: 스킴 실행 인자에 `-seedSampleData` (DEBUG, 빈 저장소일 때만).

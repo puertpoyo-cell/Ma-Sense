@@ -410,6 +410,6 @@ struct HistoryView: View {
     NavigationStack {
         HistoryView()
     }
-    .modelContainer(ModelContainer.preview)
+    .modelContainer(ModelContainer.previewWithSampleData)
     .preferredColorScheme(.dark)
 }

@@ -132,6 +132,6 @@ struct ReportView: View {
     NavigationStack {
         ReportView()
     }
-    .modelContainer(ModelContainer.preview)
+    .modelContainer(ModelContainer.previewWithSampleData)
     .preferredColorScheme(.dark)
 }

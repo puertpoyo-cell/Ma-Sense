@@ -431,6 +431,6 @@ struct TodayView: View {
     NavigationStack {
         TodayView()
     }
-    .modelContainer(ModelContainer.preview)
+    .modelContainer(ModelContainer.previewWithSampleData)
     .preferredColorScheme(.dark)
 }

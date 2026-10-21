@@ -93,16 +93,35 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] 리포트 테마 3종 (`accent` 교체, 설정에서 구매 후 선택)
 
 ### M2-d 마감
-- [ ] 금지선 재확인 (판단어 grep: 좋음, 부족, 충분, 성공, 달성)
-- [ ] TestFlight 2차
+- [x] 금지선 재확인 (판단어 grep: 좋음, 부족, 충분, 성공, 달성) — `scripts/compliance_check.py`, 기록은 COMPLIANCE.md 8
+- [ ] TestFlight 2차 — 사람
 
 ## M3 — 출시 준비 (1주)
 
-- [ ] `COMPLIANCE.md` 6 출시 전 확인 전부
-- [ ] 스토어 스크린샷 (약물명·용량 없음)
-- [ ] 스토어 설명 (COMPLIANCE 4.5 방향)
-- [ ] 연령 등급 설문
-- [ ] 심사 제출
+- [ ] `COMPLIANCE.md` 6 출시 전 확인 전부 — 사람
+- [x] 스크린샷 가이드·예시 데이터 (`docs/APP_STORE.md` 2, `SampleData` + `-seedSampleData`)
+- [ ] 스토어 스크린샷 촬영 (약물명·용량 없음) — 사람
+- [x] 스토어 설명 초안 (COMPLIANCE 4.5 방향, `docs/APP_STORE.md` 1)
+- [ ] 연령 등급 설문 — 사람 (`docs/APP_STORE.md` 4)
+- [ ] 심사 제출 — 사람 (심사 메모 초안 `docs/APP_STORE.md` 5)
+
+## 사람 확인 대기 (한곳에 모음)
+
+코드는 아래 값이 정해지기 전에도 동작하도록 해 두었다. 정해지면 표시된 곳만 바꾸면 된다.
+
+| # | 항목 | 바꿀 곳 | 정하기 전 동작 |
+|---|---|---|---|
+| 1 | 번들 ID·서명 팀 | Xcode Signing (현재 `com.masense.Masense`) | 시뮬레이터·CI는 서명 없이 동작 |
+| 2 | 인앱 구매 상품 ID | `StoreService.productID` (현재 `com.masense.pro`) | 상품을 못 불러오면 구매 버튼이 안 보임, 복원 버튼만 |
+| 3 | HealthKit 사용 (capability + `NSHealthShareUsageDescription`) | Xcode 타깃 Info·Capabilities | Health 연동 UI 전부 숨김 |
+| 4 | 개인정보 처리방침 게시 URL·시행일·문의 이메일 | `AppConfig.privacyPolicyURL`, `docs/privacy/index.html` | 설정에 처리방침 링크 숨김 |
+| 5 | 단백질 권고 범위 출처 | `AppConfig.proteinGuideSource` | 설정의 권고 범위 안내 숨김 (목표 입력은 동작) |
+| 6 | 감량 속도 일반 권고 출처 | `AppConfig.paceGuideSource` | 체중 카드의 감량 속도 안내(R8) 숨김 |
+| 7 | 맨몸 예시 루틴 문구 검토 | `Localizable.xcstrings`의 `exercise.routine.*` | 초안 그대로 표시 (일반 건강관리 정보 고지와 함께) |
+| 8 | 리포트 기본 기간을 설정에 저장할지 | `UserSettings` 필드 추가 (스키마 변경 → V3 + 마이그레이션) | R12 기본값을 매번 계산 |
+| 9 | 앱 이름·부제·아이콘 (브랜딩 논의) | 스토어 문구, `INFOPLIST_KEY_CFBundleDisplayName`, AppIcon | 작업명 "마선생" |
+| 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장 | — | — |
+| 11 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
 
 ## 작업 분해 규칙
 
