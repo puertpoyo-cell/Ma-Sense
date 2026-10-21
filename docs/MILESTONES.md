@@ -98,6 +98,8 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 
 ## D1 — 디자인 시스템 Blueprint Edition 적용 (2026-10-21)
 
+> 실기기·시뮬레이터 육안 확인(도면 셀 정렬, 교차점 마커 위치, 큰 글자)은 사람 확인 대기 표 10번에 포함
+
 완료 기준: DESIGN_SYSTEM.md(Blueprint Edition)의 토큰·컴포넌트가 기존 화면에 반영되고 기존 테스트가 그대로 통과한다.
 
 - [x] DESIGN_SYSTEM.md 교체·정리 (초안과 코드 차이는 8절), SCREENS 1-1·RULES R6·R10·R11 동기화
@@ -105,8 +107,8 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] `FrostCard` 하이라이트 그라데이션 보더 + 등장 모션, `BlueprintDivider`·`BlueprintCell`·`BlueprintSplit`, `DimensionValue`
 - [x] `CountdownHero` 하이브리드 (24시간 기준 D-n / D-Day + 시간·분, D+n, 우측 예정 시간·회차 셀)
 - [x] 홈 카드 도면 셀화 (체중, 오늘의 마디)
-- [ ] `BodyMapView` 직전 1회 강조 + "① 마지막 / ② 이전" 이력 행
-- [ ] `SymptomChip` 0|1|2|3 세그먼트 트랙, 심각도 3 볼드 + 하이라이트 테두리
+- [x] `BodyMapView` 직전 1회 강조 + "① 마지막 / ② 이전" 이력 행
+- [x] `SymptomChip` 0|1|2|3 세그먼트 트랙, 심각도 3 볼드 + 하이라이트 테두리
 - [x] R10 `isLowAppetiteDay` / R11 `isLowConditionDay` 분리
 - [x] 시트 detent·그래버, `RecordedToast` 햅틱, 스파크라인 눈금 4pt, `MealSlotRow` 8pt, `WeekChart` y축 최소·최대
 - [x] 리포트 라이트 토큰(`paper*`), 금지 아이콘 점검(`pills`, `scalemass`, `exclamationmark.triangle`) 추가

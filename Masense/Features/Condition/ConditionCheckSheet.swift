@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// S3 컨디션 체크. 증상 10개 칩 → 탭하면 0~3 강도 선택. 대처법은 안내하지 않는다 (COMPLIANCE.md 2.1-7).
+/// S3 컨디션 체크. 증상 10개, 줄마다 0~3 강도 트랙. 대처법은 안내하지 않는다 (COMPLIANCE.md 2.1-7).
 struct ConditionCheckSheet: View {
     var onSaved: () -> Void = {}
 
@@ -9,7 +9,6 @@ struct ConditionCheckSheet: View {
     @Environment(\.modelContext) private var context
     @Environment(\.services) private var services
     @State private var model: ConditionCheckModel
-    @State private var focused: Symptom?
 
     init(dose: Dose, window: ConditionWindow, onSaved: @escaping () -> Void = {}) {
         _model = State(initialValue: ConditionCheckModel(dose: dose, window: window))
@@ -53,37 +52,20 @@ struct ConditionCheckSheet: View {
         .presentationBackground(Color.midnightElevated)
     }
 
+    /// 증상 10개, 줄마다 0 | 1 | 2 | 3 트랙 (DESIGN_SYSTEM.md 5.4)
     private var symptoms: some View {
         VStack(alignment: .leading, spacing: Spacing.s3) {
             sectionTitle("condition.symptoms")
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: Spacing.s2) {
+            Text("condition.scale")
+                .font(Typography.caption)
+                .foregroundStyle(Color.inkSecondary)
+            VStack(spacing: 0) {
+                BlueprintDivider(crosshair: .none)
                 ForEach(Symptom.allCases) { symptom in
-                    SymptomChip(
-                        title: symptom.localizedName,
-                        severity: model.severity(of: symptom),
-                        isFocused: focused == symptom
-                    ) {
-                        focused = focused == symptom ? nil : symptom
+                    SymptomChip(title: symptom.localizedName, severity: model.severity(of: symptom)) { value in
+                        model.setSeverity(value, for: symptom)
                     }
-                }
-            }
-            if let focused {
-                VStack(alignment: .leading, spacing: Spacing.s2) {
-                    Text(focused.localizedName)
-                        .font(Typography.label)
-                        .foregroundStyle(Color.ink)
-                    Picker(
-                        focused.localizedName,
-                        selection: Binding(
-                            get: { model.severity(of: focused) },
-                            set: { model.setSeverity($0, for: focused) }
-                        )
-                    ) {
-                        ForEach(SymptomEntry.severityRange, id: \.self) { value in
-                            Text(SymptomChip.severityLabel(value)).tag(value)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                    BlueprintDivider(crosshair: .none)
                 }
             }
         }

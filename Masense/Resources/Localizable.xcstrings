@@ -177,13 +177,30 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Shows the last four sites used, with dates. Darker means more recent."
+            "value": "The last site is shown solid; the three before it are shown faintly."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "최근 4회 사용한 부위와 날짜입니다. 최근일수록 진하게 표시됩니다."
+            "value": "직전 1회는 진하게, 그 전 3회는 옅게 표시됩니다."
+          }
+        }
+      }
+    },
+    "bodymap.last %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① Last: %1$@ (%2$@)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "① 마지막: %1$@ (%2$@)"
           }
         }
       }
@@ -201,6 +218,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "왼쪽"
+          }
+        }
+      }
+    },
+    "bodymap.previous %@ %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ Earlier: %2$@ (%3$@)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 이전: %2$@ (%3$@)"
           }
         }
       }
@@ -286,6 +320,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "식욕"
+          }
+        }
+      }
+    },
+    "condition.scale": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0 none · 1 mild · 2 moderate · 3 severe"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0 없음 · 1 약함 · 2 보통 · 3 심함"
           }
         }
       }

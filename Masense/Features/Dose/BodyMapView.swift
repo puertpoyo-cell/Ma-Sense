@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// 정면 실루엣 위 8구역. 최근 4회 사용 부위에 날짜와 농도를 표시한다 (R6).
-/// **추천 표시 없음.** 사용자가 보고 고른다. 실루엣은 성별 표현 없는 중성 아웃라인.
+/// 정면 1장 고정 실루엣 위 8구역 (DESIGN_SYSTEM.md 5.3, R6).
+/// 직전 1회는 `accent`로 채우고 아래 "① 마지막" 칩, 이전 2~4회는 은은한 채움·얇은 테두리와 "② 이전" 텍스트.
+/// **추천 표시 없음.** 화살표·"다음은" 같은 제안 없이 사용자가 보고 고른다. 실루엣은 성별 표현 없는 중성 아웃라인.
 struct BodyMapView: View {
     @Binding var selection: BodySite?
     let history: [SiteUse]
@@ -29,8 +30,36 @@ struct BodyMapView: View {
             .foregroundStyle(Color.inkSecondary)
             .frame(width: Self.canvas.width)
             .accessibilityHidden(true)
+
+            historyRows
+                .padding(.top, Spacing.s2)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    // MARK: 이력 행
+
+    private static let previousMarkers = ["②", "③", "④"]
+
+    @ViewBuilder
+    private var historyRows: some View {
+        if let last = history.first {
+            VStack(alignment: .leading, spacing: Spacing.s2) {
+                Text("bodymap.last \(last.site.localizedName) \(shortDate(last.date))")
+                    .font(Typography.label)
+                    .foregroundStyle(Color.ink)
+                    .padding(.horizontal, Spacing.s3)
+                    .padding(.vertical, Spacing.s2)
+                    .background(Color.accentSoft, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
+                ForEach(Array(history.dropFirst().prefix(Self.previousMarkers.count).enumerated()), id: \.offset) { index, use in
+                    Text("bodymap.previous \(Self.previousMarkers[index]) \(use.site.localizedName) \(shortDate(use.date))")
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.inkSecondary)
+                        .padding(.horizontal, Spacing.s3)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     // MARK: 실루엣
@@ -74,8 +103,6 @@ struct BodyMapView: View {
         let rank = SiteRules.recencyRank(of: site, in: history)
         let lastUse = rank.map { history[$0] }
         let isSelected = selection == site
-        // 진한 두 단계(1.0, 0.7) 위에서는 어두운 글자
-        let darkText = rank.map { $0 < 2 } ?? false
 
         return Button {
             selection = site
@@ -84,19 +111,13 @@ struct BodyMapView: View {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(fill(rank: rank, isSelected: isSelected))
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .stroke(isSelected ? Color.ink : Color.frostBorder, lineWidth: isSelected ? 2 : 1)
-                VStack(spacing: 2) {
-                    if isSelected {
-                        Image(systemName: "checkmark")
-                            .font(.caption.weight(.bold))
-                    }
-                    if let lastUse {
-                        Text(verbatim: shortDate(lastUse.date))
-                            .font(.system(size: 10, weight: .medium))
-                            .monospacedDigit()
-                    }
+                    .strokeBorder(border(rank: rank, isSelected: isSelected), lineWidth: isSelected ? 1.5 : (rank.map { $0 > 0 } == true ? 0.75 : 1))
+                if isSelected {
+                    // 색만으로 선택을 알리지 않도록 체크 아이콘
+                    Image(systemName: "checkmark")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Color.midnight)
                 }
-                .foregroundStyle(darkText ? Color.midnight : Color.ink)
             }
             .frame(width: rect.width, height: rect.height)
             .contentShape(Rectangle())
@@ -107,9 +128,19 @@ struct BodyMapView: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
+    /// 선택: accent 채움. 직전 1회: accent 1.0. 이전 2~4회: 0.45 → 0.25. 나머지: frost
     private func fill(rank: Int?, isSelected: Bool) -> Color {
+        if isSelected { return Color.accent }
         if let rank { return Color.siteRecent(rank: rank) }
-        return isSelected ? Color.accentSoft : Color.frost
+        return Color.frost
+    }
+
+    /// 선택: ink 1.5px. 이전 2~4회: 얇은 accent 테두리. 나머지: frostBorder
+    private func border(rank: Int?, isSelected: Bool) -> Color {
+        if isSelected { return Color.ink }
+        if let rank, rank > 0 { return Color.accent.opacity(0.6) }
+        if rank == 0 { return Color.accent }
+        return Color.frostBorder
     }
 
     private func shortDate(_ date: Date) -> String {
