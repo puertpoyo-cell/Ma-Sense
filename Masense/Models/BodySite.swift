@@ -25,6 +25,6 @@ enum BodySite: String, Codable, CaseIterable, Identifiable {
     }
 
     var localizedName: String {
-        String(localized: String.LocalizationValue("site.\(rawValue)"))
+        L10n.string("site." + rawValue)
     }
 }

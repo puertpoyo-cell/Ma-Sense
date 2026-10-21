@@ -40,12 +40,12 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] S0 온보딩 4페이지 (HealthKit 버튼은 Info.plist 키 추가 전까지 숨김)
 - [x] S9 PrescriptionSheet (`PrescriptionFormModel` + 테스트, 홈 빈 상태에서 열기)
 - [x] `AppServices` DI (live/fake), 포그라운드 진입 시 알림 재등록
-- [ ] S1 TodayView: 1-1 카운트다운, 1-2 컨디션, 1-3 체중, 1-5 진료
-- [ ] S2 DoseLogSheet + `BodyMapView`
-- [ ] S3 ConditionCheckSheet
+- [x] S1 TodayView: 1-1 카운트다운, 1-2 컨디션, 1-3 체중, 1-5 진료 (`TodayModel` + 테스트, `WeekSparkline`)
+- [x] S2 DoseLogSheet + `BodyMapView` (`DoseLogModel` + 테스트)
+- [x] S3 ConditionCheckSheet (`ConditionCheckModel` + 테스트, `SymptomChip`)
 - [ ] S4 HistoryView 투약·컨디션·체중
 - [ ] S6 SettingsView 처방·알림·연동·구매·데이터·정보
-- [ ] WeightEntrySheet
+- [x] WeightEntrySheet (`WeightEntryModel` + 테스트)
 
 ### M1-d 리포트
 - [ ] `Rules/ReportBuilder.swift` — `ClinicReport` 생성, 섹션 A~E·G·H + 스냅샷 테스트

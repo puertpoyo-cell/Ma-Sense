@@ -15,8 +15,17 @@ enum Symptom: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
 
     var localizedName: String {
-        String(localized: String.LocalizationValue("symptom.\(rawValue)"))
+        L10n.string("symptom." + rawValue)
     }
+}
+
+extension ConditionWindow {
+    /// "투약 후 24시간" / "투약 후 48시간"
+    var titleKey: String { "condition.window." + rawValue }
+}
+
+extension AppetiteLevel {
+    var titleKey: String { "appetite." + rawValue }
 }
 
 struct SymptomEntry: Codable, Hashable {
