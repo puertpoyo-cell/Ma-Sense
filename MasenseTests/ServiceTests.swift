@@ -7,12 +7,20 @@ import Testing
 // M1-b 서비스. 실제 HealthKit·StoreKit·UserNotifications 대신 Fake를 주입한다 (CLAUDE.md 테스트·빌드).
 @MainActor
 struct ServiceTests {
-    private func makeContext() throws -> ModelContext {
-        try ModelContainer.masense(inMemory: true).mainContext
+    // 컨테이너가 해제되면 mainContext를 쓰는 순간 크래시하므로 테스트 동안 붙잡아 둔다.
+    // Swift Testing은 테스트마다 새 인스턴스를 만들어 테스트끼리 격리된다.
+    private let container: ModelContainer
+
+    init() throws {
+        container = try ModelContainer.masense(inMemory: true)
+    }
+
+    private func makeContext() -> ModelContext {
+        container.mainContext
     }
 
     @Test func notificationCoordinatorRegistersPlanFromStoredData() async throws {
-        let context = try makeContext()
+        let context = makeContext()
         let prescription = Prescription(
             startDate: TestCalendar.date(2026, 10, 16, 9),
             penCount: 3,
@@ -39,14 +47,14 @@ struct ServiceTests {
     }
 
     @Test func notificationCoordinatorWithoutPrescriptionRegistersNothing() async throws {
-        let context = try makeContext()
+        let context = makeContext()
         let fake = FakeNotificationService()
         await NotificationCoordinator(service: fake, calendar: TestCalendar.seoul).refresh(context: context, now: .now)
         #expect(fake.pending.isEmpty)
     }
 
     @Test func activatingPrescriptionArchivesPrevious() throws {
-        let context = try makeContext()
+        let context = makeContext()
         let first = Prescription(startDate: TestCalendar.date(2026, 9, 1), penCount: 1, scheduledWeekday: 5, scheduledHour: 20)
         let second = Prescription(startDate: TestCalendar.date(2026, 10, 16), penCount: 2, scheduledWeekday: 5, scheduledHour: 20)
         try Prescription.activate(first, in: context)
@@ -57,7 +65,7 @@ struct ServiceTests {
     }
 
     @Test func userSettingsIsSingleRecord() throws {
-        let context = try makeContext()
+        let context = makeContext()
         let a = try UserSettings.current(in: context)
         let b = try UserSettings.current(in: context)
         #expect(a.persistentModelID == b.persistentModelID)
@@ -65,7 +73,7 @@ struct ServiceTests {
     }
 
     @Test func weightSyncUpsertsUpdatesAndDeletes() async throws {
-        let context = try makeContext()
+        let context = makeContext()
         let reader = FakeHealthKitService()
         let calendar = TestCalendar.seoul
         let now = TestCalendar.date(2026, 10, 22, 12)

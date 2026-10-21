@@ -44,4 +44,12 @@ jobs:
             -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
             -skipPackagePluginValidation \
             CODE_SIGNING_ALLOWED=NO \
+            -resultBundlePath TestResults.xcresult \
             test
+
+      - name: Show test failures
+        if: failure()
+        run: |
+          # 크래시·실패 원인은 xcodebuild 로그에 안 나오고 결과 번들에만 남는다
+          xcrun xcresulttool get test-results summary --path TestResults.xcresult --format json \
+            | jq '{result, failedTests, testFailures}' || true
