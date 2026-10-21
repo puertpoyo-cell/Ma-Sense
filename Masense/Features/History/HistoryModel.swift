@@ -134,3 +134,45 @@ enum HistoryModel {
         }
     }
 }
+
+// MARK: 습관 (M2)
+
+extension HistoryModel {
+    struct HabitDay: Identifiable, Equatable {
+        let date: Date
+        /// 단백질 목표가 있으면 채운 날, 없으면 기록한 날
+        let proteinMarked: Bool
+        /// 근력운동(`.strength`)을 한 날. 걷기·스트레칭·쉬기는 넣지 않는다
+        let strengthDone: Bool
+        var id: Date { date }
+    }
+
+    /// 월 캘린더 칸. 주 시작 요일(`calendar.firstWeekday`)에 맞춰 앞을 nil로 채운다. 점수·연속일 없음
+    static func habitMonth(
+        containing date: Date,
+        proteins: [ProteinEntrySnapshot],
+        sessions: [StrengthSessionSnapshot],
+        proteinTarget: Int?,
+        calendar: Calendar
+    ) -> [HabitDay?] {
+        guard let month = calendar.dateInterval(of: .month, for: date) else { return [] }
+        let leading = (calendar.component(.weekday, from: month.start) - calendar.firstWeekday + 7) % 7
+        var cells: [HabitDay?] = Array(repeating: nil, count: leading)
+        var day = month.start
+        while day < month.end {
+            let dayProteins = ProteinRules.entries(on: day, from: proteins, calendar: calendar)
+            let proteinMarked: Bool
+            if let target = proteinTarget, target > 0 {
+                proteinMarked = ProteinRules.proteinDayStatus(entries: dayProteins, target: target)
+                    == .met(estimated: dayProteins.reduce(0) { $0 + $1.estimatedGrams }, target: target)
+            } else {
+                proteinMarked = !dayProteins.isEmpty
+            }
+            let strengthDone = sessions.contains { $0.kind == .strength && calendar.isDate($0.startedAt, inSameDayAs: day) }
+            cells.append(HabitDay(date: day, proteinMarked: proteinMarked, strengthDone: strengthDone))
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
+            day = next
+        }
+        return cells
+    }
+}

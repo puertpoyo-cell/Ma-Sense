@@ -1,10 +1,10 @@
 import SwiftData
 import SwiftUI
 
-/// S4 기록. 세그먼트: 투약 / 컨디션 / 체중. 습관은 M2.
+/// S4 기록. 세그먼트: 투약 / 컨디션 / 체중 / 습관(M2).
 struct HistoryView: View {
     private enum Segment: String, CaseIterable, Hashable {
-        case dose, condition, weight
+        case dose, condition, weight, habits
 
         var titleKey: LocalizedStringKey { LocalizedStringKey("history.segment." + rawValue) }
     }
@@ -29,7 +29,12 @@ struct HistoryView: View {
     @Query(sort: \Prescription.startDate) private var prescriptions: [Prescription]
     @Query(sort: \ConditionCheck.checkedAt) private var checks: [ConditionCheck]
     @Query(sort: \WeightSample.measuredAt, order: .reverse) private var weights: [WeightSample]
+    @Query(sort: \ProteinEntry.date) private var proteins: [ProteinEntry]
+    @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
+    @Query private var settingsList: [UserSettings]
     @State private var segment: Segment = .dose
+    /// 습관 캘린더에 보이는 달. nil이면 이번 달
+    @State private var habitMonth: Date?
     @State private var sheet: Sheet?
     @State private var showsToast = false
 
@@ -53,6 +58,7 @@ struct HistoryView: View {
                 case .dose: doseSections(now: timeline.date)
                 case .condition: conditionSections(now: timeline.date)
                 case .weight: weightSections(now: timeline.date)
+                case .habits: habitSections(now: timeline.date)
                 }
             }
             .scrollContentBackground(.hidden)
@@ -266,6 +272,112 @@ struct HistoryView: View {
                 }
             }
         }
+    }
+
+    // MARK: 습관 (M2)
+
+    @ViewBuilder
+    private func habitSections(now: Date) -> some View {
+        let anchor = habitMonth ?? now
+        let target = settingsList.first?.proteinTargetGrams
+        let cells = HistoryModel.habitMonth(
+            containing: anchor,
+            proteins: proteins.map(\.snapshot),
+            sessions: sessions.map(\.snapshot),
+            proteinTarget: target,
+            calendar: calendar
+        )
+        let isCurrentMonth = calendar.isDate(anchor, equalTo: now, toGranularity: .month)
+        Section {
+            HStack {
+                Button { shiftMonth(-1, from: anchor) } label: { Image(systemName: "chevron.left") }
+                    .accessibilityLabel("history.habits.prevMonth")
+                Spacer()
+                Text(anchor.formatted(.dateTime.year().month(.wide)))
+                    .font(Typography.label)
+                Spacer()
+                Button { shiftMonth(1, from: anchor) } label: { Image(systemName: "chevron.right") }
+                    .accessibilityLabel("history.habits.nextMonth")
+                    .disabled(isCurrentMonth)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.ink)
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.s1), count: 7), spacing: Spacing.s2) {
+                ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
+                    Text(verbatim: symbol)
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.inkSecondary)
+                }
+                ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
+                    if let cell {
+                        habitDayCell(cell)
+                    } else {
+                        Color.clear.frame(height: 40)
+                    }
+                }
+            }
+
+            HStack(spacing: Spacing.s4) {
+                Label {
+                    Text("history.habits.legend.protein")
+                } icon: {
+                    Circle().fill(Color.accent).frame(width: 7, height: 7)
+                }
+                Label {
+                    Text("history.habits.legend.strength")
+                } icon: {
+                    Rectangle().stroke(Color.ink, lineWidth: 1).frame(width: 7, height: 7)
+                }
+            }
+            .font(Typography.caption)
+            .foregroundStyle(Color.inkSecondary)
+            if target == nil {
+                Text("history.habits.noTargetNote")
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+            }
+        }
+        .listRowBackground(Color.frost)
+    }
+
+    private var weekdaySymbols: [String] {
+        let symbols = calendar.veryShortWeekdaySymbols
+        let start = calendar.firstWeekday - 1
+        return Array(symbols[start...] + symbols[..<start])
+    }
+
+    private func shiftMonth(_ months: Int, from anchor: Date) {
+        habitMonth = calendar.date(byAdding: .month, value: months, to: anchor)
+    }
+
+    /// 모양으로 구분: 단백질은 채운 원, 근력운동은 빈 사각형 (색만으로 구분하지 않는다)
+    private func habitDayCell(_ day: HistoryModel.HabitDay) -> some View {
+        VStack(spacing: 3) {
+            Text(verbatim: String(calendar.component(.day, from: day.date)))
+                .font(Typography.caption)
+                .monospacedDigit()
+                .foregroundStyle(Color.ink)
+            HStack(spacing: 3) {
+                if day.proteinMarked {
+                    Circle().fill(Color.accent).frame(width: 6, height: 6)
+                }
+                if day.strengthDone {
+                    Rectangle().stroke(Color.ink, lineWidth: 1).frame(width: 6, height: 6)
+                }
+            }
+            .frame(height: 8)
+        }
+        .frame(maxWidth: .infinity, minHeight: 40)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(habitDayLabel(day))
+    }
+
+    private func habitDayLabel(_ day: HistoryModel.HabitDay) -> Text {
+        var parts = [day.date.formatted(.dateTime.month(.wide).day())]
+        if day.proteinMarked { parts.append(L10n.string("history.habits.legend.protein")) }
+        if day.strengthDone { parts.append(L10n.string("history.habits.legend.strength")) }
+        return Text(verbatim: parts.joined(separator: ", "))
     }
 
     // MARK: 공용

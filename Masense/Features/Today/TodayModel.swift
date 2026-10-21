@@ -22,6 +22,16 @@ struct TodayModel: Equatable {
         let window: ConditionWindow
     }
 
+    /// 1-4 오늘의 마디 (M2). 사실만, 점수·연속일 없음
+    struct DailyCycle: Equatable {
+        let filledMeals: Set<MealSlot>
+        let protein: ProteinDayStatus
+        let week: StrengthWeek
+        /// R10·R11 저컨디션 날
+        let isLowCondition: Bool
+        let habit: HabitCheckSnapshot?
+    }
+
     /// 1-3 체중 카드 스파크라인 주 수
     static let weightWeeks = 8
     /// 1-5 진료 카드는 진료일 7일 이내에만
@@ -36,18 +46,35 @@ struct TodayModel: Equatable {
     /// 스파크라인 투약일 눈금
     let doseDatesInSeries: [Date]
     let clinicDate: Date?
+    let daily: DailyCycle
+    /// R8. 표시는 출처가 정해졌을 때만 (AppConfig.paceGuideSource)
+    let paceNotice: PaceNotice?
 
     init(
         prescription: PrescriptionSnapshot?,
         doses: [DoseSnapshot],
         checks: [ConditionCheckSnapshot],
         weights: [WeightSampleSnapshot],
+        proteins: [ProteinEntrySnapshot] = [],
+        sessions: [StrengthSessionSnapshot] = [],
+        habits: [HabitCheckSnapshot] = [],
+        proteinTarget: Int? = nil,
         now: Date,
         calendar: Calendar
     ) {
+        let todayProteins = ProteinRules.entries(on: now, from: proteins, calendar: calendar)
+        daily = DailyCycle(
+            filledMeals: Set(todayProteins.map(\.meal)),
+            protein: ProteinRules.proteinDayStatus(entries: todayProteins, target: proteinTarget),
+            week: StrengthRules.strengthWeekSummary(sessions: sessions, weekOf: now, calendar: calendar),
+            isLowCondition: ConditionRules.isLowConditionDay(checks: checks, now: now),
+            habit: habits.first { calendar.isDate($0.date, inSameDayAs: now) }
+        )
+
         latestWeight = WeightRules.latestSample(weights)
         let series = WeightRules.weeklyWeightSeries(samples: weights, weeks: Self.weightWeeks, now: now, calendar: calendar)
         weightSeries = series
+        paceNotice = PaceRules.paceNotice(series: series)
         if let start = series.first?.weekStart {
             doseDatesInSeries = doses
                 .filter { !$0.isCancelled && $0.administeredAt >= start && $0.administeredAt <= now }

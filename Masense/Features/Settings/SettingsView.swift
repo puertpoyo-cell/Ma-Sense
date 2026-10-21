@@ -42,6 +42,8 @@ private struct SettingsForm: View {
     @Environment(\.restartOnboarding) private var restartOnboarding
     @Query(filter: #Predicate<Prescription> { $0.isActive })
     private var activePrescriptions: [Prescription]
+    @Query(sort: \WeightSample.measuredAt, order: .reverse)
+    private var weights: [WeightSample]
 
     @State private var sheet: Sheet?
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
@@ -68,6 +70,7 @@ private struct SettingsForm: View {
         Form {
             prescriptionSection
             notificationSection
+            proteinSection
             if services.healthKit.isAvailable {
                 healthSection
             }
@@ -197,6 +200,56 @@ private struct SettingsForm: View {
     private func hourText(_ hour: Int) -> String {
         let date = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: calendar.startOfDay(for: .now)) ?? .now
         return date.formatted(date: .omitted, time: .shortened)
+    }
+
+    // MARK: 단백질 (M2, R9)
+
+    private var proteinSection: some View {
+        Section {
+            // 목표는 사용자·의료진이 정해 입력한다. 앱이 기본값을 제안하지 않는다
+            LabeledContent("settings.protein.target") {
+                HStack(spacing: Spacing.s1) {
+                    TextField("settings.protein.target.placeholder", value: $settings.proteinTargetGrams, format: .number)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .monospacedDigit()
+                    Text(verbatim: "g").foregroundStyle(Color.inkSecondary)
+                }
+            }
+            // 권고 범위는 출처가 정해진 뒤에만 보인다 (COMPLIANCE.md 2.2)
+            if let source = AppConfig.proteinGuideSource, let weight = guideWeight {
+                let range = ProteinRules.proteinGuideRange(weightKg: weight)
+                LabeledContent("settings.protein.guideRange") {
+                    Text("protein.range \(range.lowerBound) \(range.upperBound)").monospacedDigit()
+                }
+                Text("settings.protein.guideWeight \(ReportBuilder.kilograms(weight))")
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+                NoticeLine("protein.guide")
+                Text(verbatim: source)
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkTertiary)
+            }
+        } header: {
+            Text("settings.section.protein")
+        } footer: {
+            VStack(alignment: .leading, spacing: Spacing.s1) {
+                Text("protein.noTarget.hint")
+                Text("protein.estimateNote")
+            }
+        }
+        .listRowBackground(Color.frost)
+        .onChange(of: settings.proteinTargetGrams) {
+            if let value = settings.proteinTargetGrams, value <= 0 {
+                settings.proteinTargetGrams = nil
+            }
+            try? context.save()
+        }
+    }
+
+    /// 안내 계산용 체중: 직접 정한 값, 없으면 최근 체중
+    private var guideWeight: Double? {
+        settings.bodyWeightForGuideKg ?? weights.first?.kilograms
     }
 
     // MARK: 연동 (Info.plist 키가 있을 때만)

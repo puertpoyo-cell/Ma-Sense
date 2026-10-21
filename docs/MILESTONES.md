@@ -77,12 +77,14 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] `isLowConditionDay` 공용 함수 (`ConditionRules`)
 
 ### M2-b 화면
-- [ ] S1 1-4 오늘의 마디 카드
-- [ ] S7 ProteinSheet (식욕 저하일 모드 포함)
-- [ ] S8 StrengthSheet (저컨디션 순서, 예시 루틴 접힘)
-- [ ] S4 습관 세그먼트 캘린더
-- [ ] S6 단백질 설정 섹션
-- [ ] 1-3 체중 카드에 `paceNotice`
+- [x] S1 1-4 오늘의 마디 카드 (끼니 4칸 `MealSlotRow`, 단백질 상태, 이번 주 운동 사실, 수분·식이섬유·수면 체크)
+- [x] S7 ProteinSheet (식욕 저하일 모드 포함, `ProteinLogModel` + 테스트)
+- [x] S8 StrengthSheet (저컨디션 순서, 예시 루틴 접힘, `StrengthLogModel` + 테스트)
+- [ ] 예시 루틴 문구(`exercise.routine.*`) 검토 — 일반 건강관리 정보 범위인지 사람 확인 (COMPLIANCE.md 2.2)
+- [x] S4 습관 세그먼트 캘린더 (`HistoryModel.habitMonth` + 테스트, 모양으로 구분)
+- [x] S6 단백질 설정 섹션 (목표는 직접 입력, 앱이 기본값 제안 안 함)
+- [x] 1-3 체중 카드에 `paceNotice`
+- [ ] 출처 확정 후 `AppConfig.proteinGuideSource`·`paceGuideSource` 입력 — 입력 전에는 권고 범위 안내와 감량 속도 안내가 숨겨진다 (COMPLIANCE.md 2.2 출처 명시 조건) — 사람
 
 ### M2-c 리포트·연동
 - [ ] `ReportBuilder` F 섹션

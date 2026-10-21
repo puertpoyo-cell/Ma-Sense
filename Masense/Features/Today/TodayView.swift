@@ -1,8 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-2 컨디션, 1-3 체중, 1-5 진료.
-/// 1-4 오늘의 마디 카드는 M2.
+/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-2 컨디션, 1-3 체중, 1-4 오늘의 마디, 1-5 진료.
 struct TodayView: View {
     var openReport: () -> Void = {}
 
@@ -11,6 +10,8 @@ struct TodayView: View {
         case dose
         case condition(doseID: UUID, window: ConditionWindow)
         case weight
+        case protein(preselected: ProteinFood?)
+        case strength
 
         var id: String {
             switch self {
@@ -18,6 +19,8 @@ struct TodayView: View {
             case .dose: return "dose"
             case let .condition(doseID, window): return "condition.\(doseID.uuidString).\(window.rawValue)"
             case .weight: return "weight"
+            case let .protein(food): return "protein.\(food?.rawValue ?? "")"
+            case .strength: return "strength"
             }
         }
     }
@@ -32,6 +35,9 @@ struct TodayView: View {
     @Query(sort: \WeightSample.measuredAt)
     private var weights: [WeightSample]
     @Query private var settingsList: [UserSettings]
+    @Query(sort: \ProteinEntry.date) private var proteins: [ProteinEntry]
+    @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
+    @Query(sort: \HabitCheck.date) private var habits: [HabitCheck]
     @State private var sheet: Sheet?
     @State private var showsToast = false
     @ScaledMetric(relativeTo: .largeTitle) private var displaySize: CGFloat = 56
@@ -51,6 +57,7 @@ struct TodayView: View {
                             conditionCard(prompt)
                         }
                         weightCard(model)
+                        dailyCycleCard(model.daily, now: timeline.date)
                         if let clinic = model.clinicDate {
                             clinicCard(clinic)
                         }
@@ -85,6 +92,10 @@ struct TodayView: View {
             doses: prescription?.doseSnapshots ?? [],
             checks: checks.compactMap(\.snapshot),
             weights: weights.map(\.snapshot),
+            proteins: proteins.map(\.snapshot),
+            sessions: sessions.map(\.snapshot),
+            habits: habits.map(\.snapshot),
+            proteinTarget: settingsList.first?.proteinTargetGrams,
             now: now,
             calendar: calendar
         )
@@ -225,6 +236,13 @@ struct TodayView: View {
                     }
                     WeekSparkline(points: model.weightSeries, tickDates: model.doseDatesInSeries)
                         .frame(height: 48)
+                    // R8: 빠른 경우에만, 색 강조 없이 한 줄. 출처가 정해진 뒤에만 보인다 (COMPLIANCE.md 2.2)
+                    if model.paceNotice != nil, let source = AppConfig.paceGuideSource {
+                        NoticeLine("pace.notice")
+                        Text(verbatim: source)
+                            .font(Typography.caption)
+                            .foregroundStyle(Color.inkTertiary)
+                    }
                 } else {
                     Text("weight.empty")
                         .font(Typography.body)
@@ -270,7 +288,123 @@ struct TodayView: View {
             }
         case .weight:
             WeightEntrySheet { showsToast = true }
+        case let .protein(food):
+            let model = makeModel(now: .now)
+            ProteinSheet(
+                model: ProteinLogModel(
+                    target: settingsList.first?.proteinTargetGrams,
+                    recordedToday: recordedProteinToday,
+                    isLowCondition: model.daily.isLowCondition,
+                    preselected: food
+                )
+            ) { showsToast = true }
+        case .strength:
+            StrengthSheet(isLowCondition: makeModel(now: .now).daily.isLowCondition) { showsToast = true }
         }
+    }
+
+    private var recordedProteinToday: Int {
+        ProteinRules.entries(on: .now, from: proteins.map(\.snapshot), calendar: calendar).reduce(0) { $0 + $1.estimatedGrams }
+    }
+
+    // MARK: 1-4 오늘의 마디 (M2)
+
+    private func dailyCycleCard(_ daily: TodayModel.DailyCycle, now: Date) -> some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: Spacing.s4) {
+                Text("daily.title")
+                    .font(Typography.label)
+                    .foregroundStyle(Color.inkSecondary)
+
+                if daily.isLowCondition {
+                    // R10 식욕 저하일: "작게 자주" 칩
+                    VStack(alignment: .leading, spacing: Spacing.s2) {
+                        Text("daily.smallFrequent")
+                            .font(Typography.caption)
+                            .foregroundStyle(Color.inkSecondary)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: Spacing.s2) {
+                                ForEach(ProteinRules.smallFrequentFoods) { food in
+                                    Button(LocalizedStringKey(food.titleKey)) { sheet = .protein(preselected: food) }
+                                        .font(Typography.label)
+                                        .foregroundStyle(Color.ink)
+                                        .padding(.horizontal, Spacing.s3)
+                                        .padding(.vertical, Spacing.s2)
+                                        .background(Color.accentSoft, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                MealSlotRow(filled: daily.filledMeals)
+                proteinStatus(daily.protein)
+                GhostButton("daily.logProtein") { sheet = .protein(preselected: nil) }
+
+                CardDivider()
+
+                Text("daily.week \(daily.week.strengthCount) \(daily.week.lightCount)")
+                    .font(Typography.body)
+                    .monospacedDigit()
+                    .foregroundStyle(Color.ink)
+                GhostButton("daily.logExercise") { sheet = .strength }
+
+                CardDivider()
+
+                HStack(spacing: Spacing.s2) {
+                    habitToggle("habit.water", isOn: daily.habit?.water ?? false, now: now) { $0.water.toggle() }
+                    habitToggle("habit.fiber", isOn: daily.habit?.fiber ?? false, now: now) { $0.fiber.toggle() }
+                    habitToggle("habit.sleep", isOn: daily.habit?.sleep ?? false, now: now) { $0.sleep.toggle() }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func proteinStatus(_ status: ProteinDayStatus) -> some View {
+        Group {
+            switch status {
+            case let .noTarget(estimated):
+                Text("daily.protein.approx \(estimated)")
+            case let .below(estimated, target):
+                Text("daily.protein.progress \(estimated) \(target)")
+            case .met:
+                // R9: 달성은 "채웠습니다" 한 줄
+                Text("daily.protein.met")
+            }
+        }
+        .font(Typography.body)
+        .monospacedDigit()
+        .foregroundStyle(Color.ink)
+    }
+
+    /// 수분·식이섬유·수면 가벼운 체크. 점수화 없음 (F14)
+    private func habitToggle(_ key: LocalizedStringKey, isOn: Bool, now: Date, change: @escaping (HabitCheck) -> Void) -> some View {
+        Button {
+            let day = calendar.startOfDay(for: now)
+            let check = habits.first { calendar.isDate($0.date, inSameDayAs: day) } ?? {
+                let created = HabitCheck(date: day)
+                context.insert(created)
+                return created
+            }()
+            change(check)
+            try? context.save()
+        } label: {
+            HStack(spacing: Spacing.s1) {
+                Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
+                    .accessibilityHidden(true)
+                Text(key)
+            }
+            .font(Typography.label)
+            .foregroundStyle(isOn ? Color.ink : Color.inkSecondary)
+            .padding(.horizontal, Spacing.s3)
+            .padding(.vertical, Spacing.s2)
+            .frame(maxWidth: .infinity)
+            .background(isOn ? Color.accentSoft : Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(.isToggle)
+        .accessibilityValue(Text(LocalizedStringKey(isOn ? "a11y.on" : "a11y.off")))
     }
 
     // MARK: HealthKit
