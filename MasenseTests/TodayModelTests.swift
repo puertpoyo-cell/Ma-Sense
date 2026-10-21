@@ -40,26 +40,40 @@ struct TodayModelTests {
         #expect(today.clinicDate == nil)
     }
 
-    @Test func upcomingCountsCalendarDaysAndAllowsEarlyLogInsideCycle() {
+    @Test func daysLeftWhenAtLeast24HoursRemain() {
         let first = TestCalendar.date(2026, 10, 22, 20)
-        #expect(model(prescription(), now: TestCalendar.date(2026, 10, 16, 9)).countdown
-            == .upcoming(scheduled: first, daysLeft: 6, canLogEarly: false))
-        // 10-20 20:00부터 첫 마디 구간
+        let early = model(prescription(), now: TestCalendar.date(2026, 10, 16, 9))
+        #expect(early.countdown == .daysLeft(scheduled: first, days: 6, canLogEarly: false))
+        #expect(early.scheduleDate == first)
+        #expect(early.usedDoses == 0)
+        // 10-20 20:00부터 첫 마디 구간. 35시간 남음 → D-1, 미리 기록 가능
         #expect(model(prescription(), now: TestCalendar.date(2026, 10, 21, 9)).countdown
-            == .upcoming(scheduled: first, daysLeft: 1, canLogEarly: true))
+            == .daysLeft(scheduled: first, days: 1, canLogEarly: true))
     }
 
-    @Test func todayThenOverdue() {
+    @Test func dDayWithHoursAndMinutesUnder24Hours() {
         let scheduled = TestCalendar.date(2026, 10, 22, 20)
-        #expect(model(prescription(), now: TestCalendar.date(2026, 10, 22, 9)).countdown == .today(scheduled: scheduled))
-        #expect(model(prescription(), now: TestCalendar.date(2026, 10, 22, 21)).countdown == .overdue(scheduled: scheduled))
+        // 달력으로는 전날이지만 22시간 30분 남음 → D-Day
+        #expect(model(prescription(), now: TestCalendar.date(2026, 10, 21, 21, 30)).countdown
+            == .hoursLeft(scheduled: scheduled, hours: 22, minutes: 30))
+        #expect(model(prescription(), now: TestCalendar.date(2026, 10, 22, 9)).countdown
+            == .hoursLeft(scheduled: scheduled, hours: 11, minutes: 0))
     }
 
-    @Test func doneShowsSiteNextDateAndOpensConditionWindow() {
+    @Test func overdueCountsDaysPastScheduledDate() {
+        let scheduled = TestCalendar.date(2026, 10, 22, 20)
+        #expect(model(prescription(), now: TestCalendar.date(2026, 10, 22, 21)).countdown == .overdue(scheduled: scheduled, daysPast: 0))
+        #expect(model(prescription(), now: TestCalendar.date(2026, 10, 24, 9)).countdown == .overdue(scheduled: scheduled, daysPast: 2))
+    }
+
+    @Test func doneShowsNextCycleAndOpensConditionWindow() {
         let logged = dose(10, 22, 20, 30, site: .abdomenLowerLeft)
         let today = model(prescription(), doses: [logged], now: TestCalendar.date(2026, 10, 23, 9))
-        #expect(today.countdown == .done(site: .abdomenLowerLeft, next: TestCalendar.date(2026, 10, 29, 20)))
+        let next = TestCalendar.date(2026, 10, 29, 20)
+        #expect(today.countdown == .done(next: next, nextDays: 6))
+        #expect(today.scheduleDate == next)
         #expect(today.remainingDoses == 11)
+        #expect(today.usedDoses == 1)
         #expect(today.totalDoses == 12)
         #expect(today.conditionPrompt == TodayModel.ConditionPrompt(doseID: logged.id, window: .h24))
     }

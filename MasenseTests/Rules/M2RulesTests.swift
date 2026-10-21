@@ -37,20 +37,28 @@ struct M2RulesTests {
 
     // MARK: R10·R11 저컨디션
 
-    @Test func lowConditionDayWithin48Hours() {
+    @Test func lowAppetiteAndLowConditionAreSeparateWithin48Hours() {
         let now = TestCalendar.date(2026, 10, 24, 12)
         let doseID = UUID()
-        let nausea = ConditionCheckSnapshot(doseID: doseID, window: .h24, checkedAt: TestCalendar.date(2026, 10, 23, 9),
-                                            symptoms: [SymptomEntry(symptom: .nausea, severity: 2)])
-        let appetite = ConditionCheckSnapshot(doseID: doseID, window: .h48, checkedAt: TestCalendar.date(2026, 10, 23, 9),
-                                              appetite: .reduced)
-        let mild = ConditionCheckSnapshot(doseID: doseID, window: .h24, checkedAt: TestCalendar.date(2026, 10, 23, 9),
-                                          symptoms: [SymptomEntry(symptom: .fatigue, severity: 1)])
+        let at = TestCalendar.date(2026, 10, 23, 9)
+        let nausea = ConditionCheckSnapshot(doseID: doseID, window: .h24, checkedAt: at, symptoms: [SymptomEntry(symptom: .nausea, severity: 2)])
+        let appetite = ConditionCheckSnapshot(doseID: doseID, window: .h48, checkedAt: at, appetite: .reduced)
+        let constipation = ConditionCheckSnapshot(doseID: doseID, window: .h24, checkedAt: at, symptoms: [SymptomEntry(symptom: .constipation, severity: 2)])
+        let mild = ConditionCheckSnapshot(doseID: doseID, window: .h24, checkedAt: at, symptoms: [SymptomEntry(symptom: .fatigue, severity: 1)])
         let old = ConditionCheckSnapshot(doseID: doseID, window: .h24, checkedAt: TestCalendar.date(2026, 10, 22, 11),
-                                         symptoms: [SymptomEntry(symptom: .nausea, severity: 3)])
+                                         symptoms: [SymptomEntry(symptom: .nausea, severity: 3)], appetite: .veryReduced)
 
+        // R10 식욕 저하일: 구역 ≥ 2 또는 식욕 ≠ 평소
+        #expect(ConditionRules.isLowAppetiteDay(checks: [nausea], now: now))
+        #expect(ConditionRules.isLowAppetiteDay(checks: [appetite], now: now))
+        #expect(!ConditionRules.isLowAppetiteDay(checks: [constipation], now: now))
+        #expect(!ConditionRules.isLowAppetiteDay(checks: [mild], now: now))
+        #expect(!ConditionRules.isLowAppetiteDay(checks: [old], now: now))
+
+        // R11 저컨디션 날: 강도 2 이상 증상 (식욕은 보지 않음)
         #expect(ConditionRules.isLowConditionDay(checks: [nausea], now: now))
-        #expect(ConditionRules.isLowConditionDay(checks: [appetite], now: now))
+        #expect(ConditionRules.isLowConditionDay(checks: [constipation], now: now))
+        #expect(!ConditionRules.isLowConditionDay(checks: [appetite], now: now))
         #expect(!ConditionRules.isLowConditionDay(checks: [mild], now: now))
         #expect(!ConditionRules.isLowConditionDay(checks: [old], now: now))
         #expect(!ConditionRules.isLowConditionDay(checks: [], now: now))

@@ -27,7 +27,7 @@ struct HabitsTests {
 
     @Test func proteinQuantitiesAndOtherGrams() throws {
         let now = TestCalendar.date(2026, 10, 22, 12, 30)
-        let model = ProteinLogModel(target: 90, recordedToday: 20, isLowCondition: false, preselected: .egg, now: now, calendar: calendar)
+        let model = ProteinLogModel(target: 90, recordedToday: 20, isLowAppetite: false, preselected: .egg, now: now, calendar: calendar)
         #expect(model.quantity(of: .egg) == 1)
         model.setQuantity(2, for: .egg)
         model.toggle(.greekYogurt)
@@ -48,7 +48,7 @@ struct HabitsTests {
     }
 
     @Test func emptyProteinEntryIsNotSaved() throws {
-        let model = ProteinLogModel(target: nil, recordedToday: 0, isLowCondition: true, now: TestCalendar.date(2026, 10, 22, 8), calendar: calendar)
+        let model = ProteinLogModel(target: nil, recordedToday: 0, isLowAppetite: true, now: TestCalendar.date(2026, 10, 22, 8), calendar: calendar)
         #expect(!model.canSave)
         #expect(try model.save(in: context)?.id == nil)
     }
@@ -94,7 +94,9 @@ struct HabitsTests {
         #expect(today.daily.filledMeals == [.breakfast, .lunch])
         #expect(today.daily.protein == .met(estimated: 28, target: 28))
         #expect(today.daily.week == StrengthWeek(strengthCount: 1, lightCount: 0, restCount: 0))
-        #expect(today.daily.isLowCondition)
+        // 식욕 저하만 있고 강도 2 이상 증상은 없다: R10은 해당, R11은 아님
+        #expect(today.daily.isLowAppetite)
+        #expect(!today.daily.isLowCondition)
         #expect(today.daily.habit?.water == true)
         #expect(today.paceNotice == nil)
     }

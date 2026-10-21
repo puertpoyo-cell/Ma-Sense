@@ -40,7 +40,6 @@ struct TodayView: View {
     @Query(sort: \HabitCheck.date) private var habits: [HabitCheck]
     @State private var sheet: Sheet?
     @State private var showsToast = false
-    @ScaledMetric(relativeTo: .largeTitle) private var displaySize: CGFloat = 56
 
     private var prescription: Prescription? { activePrescriptions.first }
 
@@ -101,95 +100,17 @@ struct TodayView: View {
         )
     }
 
-    // MARK: 1-1 카운트다운
+    // MARK: 1-1 카운트다운 (CountdownHero, DESIGN_SYSTEM.md 5.2)
 
     private func countdownCard(_ model: TodayModel) -> some View {
-        FrostCard {
-            VStack(alignment: .leading, spacing: Spacing.s4) {
-                if let remaining = model.remainingDoses, let total = model.totalDoses {
-                    HStack(alignment: .firstTextBaseline) {
-                        Image(systemName: "calendar.badge.clock")
-                            .foregroundStyle(Color.inkSecondary)
-                            .accessibilityHidden(true)
-                        Spacer()
-                        Text("today.remaining \(remaining) \(total)")
-                            .font(Typography.caption)
-                            .monospacedDigit()
-                            .foregroundStyle(Color.inkSecondary)
-                            .accessibilityLabel(Text("today.remaining.a11y \(remaining) \(total)"))
-                    }
-                }
-                countdownBody(model.countdown)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func countdownBody(_ countdown: TodayModel.Countdown) -> some View {
-        switch countdown {
-        case .noPrescription:
-            Text("today.empty.noPrescription")
-                .font(Typography.body)
-                .lineSpacing(Typography.bodyLineSpacing)
-                .foregroundStyle(Color.ink)
-            PrimaryButton("today.enterPrescription") { sheet = .prescription }
-
-        case .exhausted:
-            Text("today.countdown.exhausted")
-                .font(Typography.title)
-                .foregroundStyle(Color.ink)
-            PrimaryButton("today.enterPrescription") { sheet = .prescription }
-
-        case let .upcoming(scheduled, daysLeft, canLogEarly):
-            Text("today.countdown.dDay \(daysLeft)")
-                .font(.system(size: displaySize, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .contentTransition(.numericText())
-                .foregroundStyle(Color.ink)
-                .accessibilityLabel(Text("today.countdown.dDay.a11y \(daysLeft)"))
-            Text("today.countdown.scheduled \(scheduleText(scheduled))")
-                .font(Typography.caption)
-                .foregroundStyle(Color.inkSecondary)
-            if canLogEarly {
-                // 예정일 이틀 전부터는 그 마디로 본다 (R1). 미리 맞은 경우를 기록할 수 있게 한다
-                GhostButton("action.logDose") { sheet = .dose }
-            }
-
-        case let .today(scheduled):
-            Text("today.countdown.today \(scheduled.formatted(date: .omitted, time: .shortened))")
-                .font(.largeTitle.weight(.bold))
-                .monospacedDigit()
-                .foregroundStyle(Color.ink)
-            PrimaryButton("action.logDose") { sheet = .dose }
-
-        case let .overdue(scheduled):
-            Text("today.countdown.overdue")
-                .font(Typography.title)
-                .foregroundStyle(Color.ink)
-            Text("today.countdown.scheduled \(scheduleText(scheduled))")
-                .font(Typography.caption)
-                .foregroundStyle(Color.inkSecondary)
-            PrimaryButton("action.logDose") { sheet = .dose }
-
-        case let .done(site, next):
-            Text("today.countdown.done")
-                .font(Typography.title)
-                .foregroundStyle(Color.ink)
-            if let next {
-                Text("today.countdown.next \(next.formatted(.dateTime.month(.defaultDigits).day().weekday(.wide)))")
-                    .font(Typography.caption)
-                    .foregroundStyle(Color.inkSecondary)
-            }
-            if let site {
-                Text(site.localizedName)
-                    .font(Typography.caption)
-                    .foregroundStyle(Color.inkSecondary)
-            }
-        }
-    }
-
-    private func scheduleText(_ date: Date) -> String {
-        date.formatted(.dateTime.weekday(.wide).hour().minute())
+        CountdownHero(
+            countdown: model.countdown,
+            scheduleDate: model.scheduleDate,
+            usedDoses: model.usedDoses,
+            totalDoses: model.totalDoses,
+            onLogDose: { sheet = .dose },
+            onEnterPrescription: { sheet = .prescription }
+        )
     }
 
     // MARK: 1-2 컨디션 체크
@@ -207,43 +128,51 @@ struct TodayView: View {
         }
     }
 
-    // MARK: 1-3 체중
+    // MARK: 1-3 체중 (도면 셀: 체중 | 측정일 / 스파크라인 / 직접 입력)
 
+    @ViewBuilder
     private func weightCard(_ model: TodayModel) -> some View {
-        FrostCard {
-            VStack(alignment: .leading, spacing: Spacing.s3) {
-                HStack {
-                    Text("weight.title")
+        if let latest = model.latestWeight {
+            FrostCard(padding: 0) {
+                VStack(spacing: 0) {
+                    BlueprintSplit {
+                        BlueprintCell("weight.title") {
+                            DimensionValue(latest.kilograms.formatted(.number.precision(.fractionLength(1))), unit: "unit.kg")
+                        }
+                    } trailing: {
+                        BlueprintCell("weight.measured") {
+                            Text(latest.measuredAt.formatted(.dateTime.month(.defaultDigits).day()))
+                                .font(Typography.label)
+                                .foregroundStyle(Color.ink)
+                        }
+                    }
+                    BlueprintDivider()
+                    VStack(alignment: .leading, spacing: Spacing.s3) {
+                        WeekSparkline(points: model.weightSeries, tickDates: model.doseDatesInSeries)
+                            .frame(height: 48)
+                        // R8: 빠른 경우에만, 색 강조 없이 한 줄. 출처가 정해진 뒤에만 보인다 (COMPLIANCE.md 2.2)
+                        if model.paceNotice != nil, let source = AppConfig.paceGuideSource {
+                            NoticeLine("pace.notice")
+                            Text(verbatim: source)
+                                .font(Typography.caption)
+                                .foregroundStyle(Color.inkTertiary)
+                        }
+                    }
+                    .padding(Spacing.cellPadding)
+                    BlueprintDivider()
+                    Button("weight.manualEntry") { sheet = .weight }
                         .font(Typography.label)
-                        .foregroundStyle(Color.inkSecondary)
-                    Spacer()
-                    if model.latestWeight != nil {
-                        Button("weight.manualEntry") { sheet = .weight }
-                            .font(Typography.caption)
-                            .foregroundStyle(Color.accent)
-                    }
+                        .foregroundStyle(Color.accent)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .padding(Spacing.cellPadding)
                 }
-                if let latest = model.latestWeight {
-                    AdaptiveStack(verticalAlignment: .lastTextBaseline) {
-                        Text("weight.kg \(latest.kilograms.formatted(.number.precision(.fractionLength(1))))")
-                            .font(.title.weight(.semibold))
-                            .monospacedDigit()
-                            .foregroundStyle(Color.ink)
-                        Spacer()
-                        Text("weight.measuredOn \(latest.measuredAt.formatted(.dateTime.month(.defaultDigits).day()))")
-                            .font(Typography.caption)
-                            .foregroundStyle(Color.inkSecondary)
-                    }
-                    WeekSparkline(points: model.weightSeries, tickDates: model.doseDatesInSeries)
-                        .frame(height: 48)
-                    // R8: 빠른 경우에만, 색 강조 없이 한 줄. 출처가 정해진 뒤에만 보인다 (COMPLIANCE.md 2.2)
-                    if model.paceNotice != nil, let source = AppConfig.paceGuideSource {
-                        NoticeLine("pace.notice")
-                        Text(verbatim: source)
-                            .font(Typography.caption)
-                            .foregroundStyle(Color.inkTertiary)
-                    }
-                } else {
+            }
+        } else {
+            FrostCard {
+                VStack(alignment: .leading, spacing: Spacing.s3) {
+                    Text("weight.title")
+                        .font(Typography.sectionHeader)
+                        .foregroundStyle(Color.ink)
                     Text("weight.empty")
                         .font(Typography.body)
                         .foregroundStyle(Color.inkSecondary)
@@ -294,7 +223,7 @@ struct TodayView: View {
                 model: ProteinLogModel(
                     target: settingsList.first?.proteinTargetGrams,
                     recordedToday: recordedProteinToday,
-                    isLowCondition: model.daily.isLowCondition,
+                    isLowAppetite: model.daily.isLowAppetite,
                     preselected: food
                 )
             ) { showsToast = true }
@@ -307,16 +236,18 @@ struct TodayView: View {
         ProteinRules.entries(on: .now, from: proteins.map(\.snapshot), calendar: calendar).reduce(0) { $0 + $1.estimatedGrams }
     }
 
-    // MARK: 1-4 오늘의 마디 (M2)
+    // MARK: 1-4 오늘의 마디 (M2, 도면 셀: 끼니 / 단백질 | 근력운동 / 기록 버튼 / 습관)
 
     private func dailyCycleCard(_ daily: TodayModel.DailyCycle, now: Date) -> some View {
-        FrostCard {
-            VStack(alignment: .leading, spacing: Spacing.s4) {
+        FrostCard(padding: 0) {
+            VStack(alignment: .leading, spacing: 0) {
                 Text("daily.title")
-                    .font(Typography.label)
-                    .foregroundStyle(Color.inkSecondary)
+                    .font(Typography.sectionHeader)
+                    .foregroundStyle(Color.ink)
+                    .padding(Spacing.cellPadding)
+                BlueprintDivider()
 
-                if daily.isLowCondition {
+                if daily.isLowAppetite {
                     // R10 식욕 저하일: "작게 자주" 칩
                     VStack(alignment: .leading, spacing: Spacing.s2) {
                         Text("daily.smallFrequent")
@@ -335,20 +266,35 @@ struct TodayView: View {
                             }
                         }
                     }
+                    .padding(Spacing.cellPadding)
+                    BlueprintDivider()
                 }
 
                 MealSlotRow(filled: daily.filledMeals)
-                proteinStatus(daily.protein)
-                GhostButton("daily.logProtein") { sheet = .protein(preselected: nil) }
-
+                    .padding(Spacing.cellPadding)
                 BlueprintDivider()
 
-                Text("daily.week \(daily.week.strengthCount) \(daily.week.lightCount)")
-                    .font(Typography.body)
-                    .monospacedDigit()
-                    .foregroundStyle(Color.ink)
-                GhostButton("daily.logExercise") { sheet = .strength }
+                BlueprintSplit {
+                    BlueprintCell(proteinLabel(daily.protein)) {
+                        proteinValue(daily.protein)
+                    }
+                } trailing: {
+                    BlueprintCell("daily.cell.strength") {
+                        VStack(alignment: .trailing, spacing: Spacing.s1) {
+                            DimensionValue(String(daily.week.strengthCount), unit: "unit.times")
+                            Text("daily.lightActivity \(daily.week.lightCount)")
+                                .font(Typography.caption)
+                                .foregroundStyle(Color.inkSecondary)
+                        }
+                    }
+                }
+                BlueprintDivider()
 
+                AdaptiveStack(spacing: Spacing.s2) {
+                    GhostButton("daily.logProtein") { sheet = .protein(preselected: nil) }
+                    GhostButton("daily.logExercise") { sheet = .strength }
+                }
+                .padding(Spacing.cellPadding)
                 BlueprintDivider()
 
                 HStack(spacing: Spacing.s2) {
@@ -356,26 +302,29 @@ struct TodayView: View {
                     habitToggle("habit.fiber", isOn: daily.habit?.fiber ?? false, now: now) { $0.fiber.toggle() }
                     habitToggle("habit.sleep", isOn: daily.habit?.sleep ?? false, now: now) { $0.sleep.toggle() }
                 }
+                .padding(Spacing.cellPadding)
             }
         }
     }
 
+    private func proteinLabel(_ status: ProteinDayStatus) -> LocalizedStringKey {
+        if case .noTarget = status { return "daily.cell.proteinApprox" }
+        return "daily.cell.protein"
+    }
+
+    /// 게이지 바 없이 도면 수치로만. 목표를 채운 날은 "채웠습니다" 한 줄 (R9)
     @ViewBuilder
-    private func proteinStatus(_ status: ProteinDayStatus) -> some View {
-        Group {
-            switch status {
-            case let .noTarget(estimated):
-                Text("daily.protein.approx \(estimated)")
-            case let .below(estimated, target):
-                Text("daily.protein.progress \(estimated) \(target)")
-            case .met:
-                // R9: 달성은 "채웠습니다" 한 줄
-                Text("daily.protein.met")
-            }
+    private func proteinValue(_ status: ProteinDayStatus) -> some View {
+        switch status {
+        case let .noTarget(estimated):
+            DimensionValue(String(estimated), unit: "unit.g")
+        case let .below(estimated, target):
+            DimensionValue(String(estimated), unit: "unit.ofTotalGrams \(target)")
+        case .met:
+            Text("daily.protein.met")
+                .font(Typography.label)
+                .foregroundStyle(Color.ink)
         }
-        .font(Typography.body)
-        .monospacedDigit()
-        .foregroundStyle(Color.ink)
     }
 
     /// 수분·식이섬유·수면 가벼운 체크. 점수화 없음 (F14)

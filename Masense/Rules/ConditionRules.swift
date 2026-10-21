@@ -30,15 +30,27 @@ enum ConditionRules {
         return open
     }
 
-    /// R10·R11 공용: 최근 48시간 안의 컨디션 체크에 강도 2 이상 증상이 있거나 식욕이 평소와 다르면 저컨디션 날.
-    /// R10의 "구역 ≥ 2"를 R11의 "심각도 2 이상 증상"으로 넓혀 한 함수로 쓴다 (RULES.md R11).
+    /// R10·R11이 보는 기간: 최근 48시간 안의 컨디션 체크
     static let lowConditionLookback: TimeInterval = 48 * hour
 
+    /// R10 식욕 저하일: 구역 강도 2 이상 또는 식욕이 평소와 다름 → "작게 자주" (DESIGN_SYSTEM.md 5.6)
+    static func isLowAppetiteDay(checks: [ConditionCheckSnapshot], now: Date) -> Bool {
+        recentChecks(checks, now: now).contains { check in
+            check.symptoms.contains { $0.symptom == .nausea && $0.severity >= 2 } || check.appetite != .normal
+        }
+    }
+
+    /// R11 저컨디션 날: 강도 2 이상 증상이 하나라도 있음 → 걷기·스트레칭·쉬기를 위로. 식욕은 보지 않는다
     static func isLowConditionDay(checks: [ConditionCheckSnapshot], now: Date) -> Bool {
-        checks.contains { check in
+        recentChecks(checks, now: now).contains { check in
+            check.symptoms.contains { $0.severity >= 2 }
+        }
+    }
+
+    private static func recentChecks(_ checks: [ConditionCheckSnapshot], now: Date) -> [ConditionCheckSnapshot] {
+        checks.filter { check in
             let age = now.timeIntervalSince(check.checkedAt)
-            guard age >= 0, age < lowConditionLookback else { return false }
-            return check.symptoms.contains { $0.severity >= 2 } || check.appetite != .normal
+            return age >= 0 && age < lowConditionLookback
         }
     }
 

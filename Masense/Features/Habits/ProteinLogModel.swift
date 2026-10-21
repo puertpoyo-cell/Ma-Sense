@@ -15,7 +15,7 @@ final class ProteinLogModel {
     /// 이 기록 전까지 오늘 쌓인 g
     let recordedToday: Int
     /// R10 식욕 저하일이면 "작게 자주" 행을 위에 보인다
-    let isLowCondition: Bool
+    let isLowAppetite: Bool
 
     static let quantityRange = 0...10
     static let otherGramsRange = 0...200
@@ -26,14 +26,14 @@ final class ProteinLogModel {
     init(
         target: Int?,
         recordedToday: Int,
-        isLowCondition: Bool,
+        isLowAppetite: Bool,
         preselected: ProteinFood? = nil,
         now: Date = Date(),
         calendar: Calendar = .current
     ) {
         self.target = target
         self.recordedToday = recordedToday
-        self.isLowCondition = isLowCondition
+        self.isLowAppetite = isLowAppetite
         self.now = now
         self.calendar = calendar
         meal = Self.defaultMeal(at: now, calendar: calendar)

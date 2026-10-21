@@ -30,11 +30,12 @@ struct SampleDataTests {
             now: now,
             calendar: calendar
         )
-        guard case let .upcoming(_, daysLeft, _) = today.countdown else {
-            Issue.record("expected upcoming countdown, got \(today.countdown)")
+        guard case let .daysLeft(_, days, canLogEarly) = today.countdown else {
+            Issue.record("expected D-n countdown, got \(today.countdown)")
             return
         }
-        #expect(daysLeft == 1)
+        #expect(days == 1)
+        #expect(canLogEarly)
         #expect(today.clinicDate != nil)
         #expect(today.paceNotice == nil)
 

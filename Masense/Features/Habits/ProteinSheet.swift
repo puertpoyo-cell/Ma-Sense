@@ -27,7 +27,7 @@ struct ProteinSheet: View {
                     }
                     .pickerStyle(.segmented)
 
-                    if model.isLowCondition {
+                    if model.isLowAppetite {
                         // R10 식욕 저하일: 작게 자주. 식품 종류만, 양·칼로리 없음
                         VStack(alignment: .leading, spacing: Spacing.s3) {
                             sectionTitle("daily.smallFrequent")

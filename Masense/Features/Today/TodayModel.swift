@@ -2,20 +2,24 @@ import Foundation
 
 /// S1 오늘 화면에 그릴 내용. 규칙(R2·R5·R7·R13)을 조합할 뿐 새로 판단하지 않는다.
 struct TodayModel: Equatable {
+    /// 하이브리드 카운트다운 (DESIGN_SYSTEM.md 5.2). 남은 시간 24시간을 기준으로 D-n과 D-Day + 시간·분을 나눈다
     enum Countdown: Equatable {
         /// 처방 없음 (빈 상태)
         case noPrescription
         /// 처방 소진. "새 처방을 입력하세요"
         case exhausted
-        /// 예정일 전. `canLogEarly`는 이미 그 마디 구간 안이라 미리 맞은 기록을 받을 수 있는지 (R1)
-        case upcoming(scheduled: Date, daysLeft: Int, canLogEarly: Bool)
-        /// 예정일 당일, 예정 시각 전
-        case today(scheduled: Date)
-        /// 예정 시각이 지났고 기록 없음. 질책 없이 "예정일이 지났습니다"
-        case overdue(scheduled: Date)
-        /// 이번 마디 기록 완료
-        case done(site: BodySite?, next: Date?)
+        /// 24시간 이상 남음. `days`는 달력 날짜 차이 (D-n).
+        /// `canLogEarly`는 이미 그 마디 구간 안이라 미리 맞은 기록을 받을 수 있는지 (R1)
+        case daysLeft(scheduled: Date, days: Int, canLogEarly: Bool)
+        /// 24시간 미만 남음. D-Day + n시간 n분
+        case hoursLeft(scheduled: Date, hours: Int, minutes: Int)
+        /// 예정 시각이 지났고 기록 없음 (D+n). 예정일 당일이면 `daysPast` 0 (D-Day). 질책 없이 "예정일이 지났습니다"
+        case overdue(scheduled: Date, daysPast: Int)
+        /// 이번 마디 기록 완료. 다음 마디 예정과 D-n
+        case done(next: Date?, nextDays: Int?)
     }
+
+    static let hoursLeftThreshold: TimeInterval = 24 * 3_600
 
     struct ConditionPrompt: Equatable {
         let doseID: UUID
@@ -27,7 +31,9 @@ struct TodayModel: Equatable {
         let filledMeals: Set<MealSlot>
         let protein: ProteinDayStatus
         let week: StrengthWeek
-        /// R10·R11 저컨디션 날
+        /// R10 식욕 저하일: "작게 자주"
+        let isLowAppetite: Bool
+        /// R11 저컨디션 날: 운동 기록에서 걷기·스트레칭·쉬기를 위로
         let isLowCondition: Bool
         let habit: HabitCheckSnapshot?
     }
@@ -40,6 +46,10 @@ struct TodayModel: Equatable {
     let countdown: Countdown
     let remainingDoses: Int?
     let totalDoses: Int?
+    /// 우측 셀 "회차": 취소 제외 기록 수
+    let usedDoses: Int?
+    /// 우측 셀 "예정 시간": 지금 마디의 예정 (완료면 다음 마디)
+    let scheduleDate: Date?
     let conditionPrompt: ConditionPrompt?
     let latestWeight: WeightSampleSnapshot?
     let weightSeries: [WeekPoint]
@@ -67,6 +77,7 @@ struct TodayModel: Equatable {
             filledMeals: Set(todayProteins.map(\.meal)),
             protein: ProteinRules.proteinDayStatus(entries: todayProteins, target: proteinTarget),
             week: StrengthRules.strengthWeekSummary(sessions: sessions, weekOf: now, calendar: calendar),
+            isLowAppetite: ConditionRules.isLowAppetiteDay(checks: checks, now: now),
             isLowCondition: ConditionRules.isLowConditionDay(checks: checks, now: now),
             habit: habits.first { calendar.isDate($0.date, inSameDayAs: now) }
         )
@@ -88,6 +99,8 @@ struct TodayModel: Equatable {
             countdown = .noPrescription
             remainingDoses = nil
             totalDoses = nil
+            usedDoses = nil
+            scheduleDate = nil
             conditionPrompt = nil
             clinicDate = nil
             return
@@ -95,6 +108,7 @@ struct TodayModel: Equatable {
 
         remainingDoses = PrescriptionRules.remainingDoses(p: p, doses: doses)
         totalDoses = p.totalDoses
+        usedDoses = PrescriptionRules.usedDoses(doses)
         conditionPrompt = ConditionRules.openConditionWindows(doses: doses, checks: checks, now: now)
             .first
             .map { ConditionPrompt(doseID: $0.dose.id, window: $0.window) }
@@ -104,18 +118,25 @@ struct TodayModel: Equatable {
         switch CycleRules.nextDose(cycles: cycles, doses: doses, now: now) {
         case nil:
             countdown = .exhausted
-        case let .due(cycle, _)?:
-            let days = Self.daysBetween(now, cycle.scheduledDate, calendar: calendar)
-            if days <= 0 {
-                countdown = .today(scheduled: cycle.scheduledDate)
+            scheduleDate = nil
+        case let .due(cycle, remaining)?:
+            scheduleDate = cycle.scheduledDate
+            if remaining >= Self.hoursLeftThreshold {
+                let days = max(1, Self.daysBetween(now, cycle.scheduledDate, calendar: calendar))
+                countdown = .daysLeft(scheduled: cycle.scheduledDate, days: days, canLogEarly: cycle.contains(now))
             } else {
-                countdown = .upcoming(scheduled: cycle.scheduledDate, daysLeft: days, canLogEarly: cycle.contains(now))
+                let totalMinutes = Int(remaining / 60)
+                countdown = .hoursLeft(scheduled: cycle.scheduledDate, hours: totalMinutes / 60, minutes: totalMinutes % 60)
             }
         case let .overdue(cycle, _)?:
-            countdown = .overdue(scheduled: cycle.scheduledDate)
-        case let .done(cycle, next)?:
-            let site = CycleRules.doses(in: cycle, from: doses).last?.site
-            countdown = .done(site: site, next: next?.scheduledDate)
+            scheduleDate = cycle.scheduledDate
+            countdown = .overdue(scheduled: cycle.scheduledDate, daysPast: max(0, Self.daysBetween(cycle.scheduledDate, now, calendar: calendar)))
+        case let .done(_, next)?:
+            scheduleDate = next?.scheduledDate
+            countdown = .done(
+                next: next?.scheduledDate,
+                nextDays: next.map { Self.daysBetween(now, $0.scheduledDate, calendar: calendar) }
+            )
         }
     }
 
