@@ -5,10 +5,13 @@ import Testing
 
 // M0 더미 테스트. 스키마가 열리는지와 디자인 토큰이 문서 값과 같은지만 확인한다.
 struct MasenseSmokeTests {
-    @Test func schemaV1OpensInMemory() throws {
+    @Test func currentSchemaOpensInMemory() throws {
         let container = try ModelContainer.masense(inMemory: true)
         let modelNames = Set(container.schema.entities.map(\.name))
-        #expect(modelNames == ["Prescription", "Dose", "ConditionCheck", "WeightSample", "UserSettings"])
+        #expect(modelNames == [
+            "Prescription", "Dose", "ConditionCheck", "WeightSample", "UserSettings",
+            "ProteinEntry", "StrengthSession", "HabitCheck",
+        ])
     }
 
     @Test func spacingTokensFollowFourPointGrid() {

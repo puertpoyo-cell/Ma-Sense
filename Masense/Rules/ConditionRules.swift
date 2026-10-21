@@ -30,6 +30,18 @@ enum ConditionRules {
         return open
     }
 
+    /// R10·R11 공용: 최근 48시간 안의 컨디션 체크에 강도 2 이상 증상이 있거나 식욕이 평소와 다르면 저컨디션 날.
+    /// R10의 "구역 ≥ 2"를 R11의 "심각도 2 이상 증상"으로 넓혀 한 함수로 쓴다 (RULES.md R11).
+    static let lowConditionLookback: TimeInterval = 48 * hour
+
+    static func isLowConditionDay(checks: [ConditionCheckSnapshot], now: Date) -> Bool {
+        checks.contains { check in
+            let age = now.timeIntervalSince(check.checkedAt)
+            guard age >= 0, age < lowConditionLookback else { return false }
+            return check.symptoms.contains { $0.severity >= 2 } || check.appetite != .normal
+        }
+    }
+
     /// 홈 1-2 카드용. 여러 기록 중 열린 창을 (기록, 창) 쌍으로. h24가 h48보다 앞, 같은 창이면 투약 시각 순.
     static func openConditionWindows(
         doses: [DoseSnapshot],

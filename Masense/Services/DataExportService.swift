@@ -9,6 +9,35 @@ enum DataExportService {
         let appVersion: String
         let prescriptions: [PrescriptionRecord]
         let weights: [WeightRecord]
+        let proteinEntries: [ProteinRecord]
+        let strengthSessions: [SessionRecord]
+        let habitChecks: [HabitRecord]
+    }
+
+    struct ProteinRecord: Codable, Equatable {
+        let id: UUID
+        let date: Date
+        let meal: MealSlot
+        let foods: [ProteinFood]
+        let estimatedGrams: Int
+    }
+
+    struct SessionRecord: Codable, Equatable {
+        let id: UUID
+        let startedAt: Date
+        let durationMinutes: Int
+        let kind: SessionKind
+        let intensity: Intensity
+        let source: SessionSource
+        let note: String?
+    }
+
+    struct HabitRecord: Codable, Equatable {
+        let id: UUID
+        let date: Date
+        let water: Bool
+        let fiber: Bool
+        let sleep: Bool
     }
 
     struct PrescriptionRecord: Codable, Equatable {
@@ -61,6 +90,9 @@ enum DataExportService {
     static func makeExport(context: ModelContext, now: Date) throws -> Export {
         let prescriptions = try context.fetch(FetchDescriptor<Prescription>(sortBy: [SortDescriptor(\.startDate)]))
         let weights = try WeightSample.all(in: context)
+        let proteins = try context.fetch(FetchDescriptor<ProteinEntry>(sortBy: [SortDescriptor(\.date)]))
+        let sessions = try context.fetch(FetchDescriptor<StrengthSession>(sortBy: [SortDescriptor(\.startedAt)]))
+        let habits = try context.fetch(FetchDescriptor<HabitCheck>(sortBy: [SortDescriptor(\.date)]))
         return Export(
             exportedAt: now,
             appVersion: appVersion,
@@ -102,6 +134,18 @@ enum DataExportService {
             },
             weights: weights.map { w in
                 WeightRecord(id: w.id, measuredAt: w.measuredAt, kilograms: w.kilograms, source: w.source, leanBodyMassKg: w.leanBodyMassKg)
+            },
+            proteinEntries: proteins.map { e in
+                ProteinRecord(id: e.id, date: e.date, meal: e.meal, foods: e.foods, estimatedGrams: e.estimatedGrams)
+            },
+            strengthSessions: sessions.map { s in
+                SessionRecord(
+                    id: s.id, startedAt: s.startedAt, durationMinutes: s.durationMinutes,
+                    kind: s.kind, intensity: s.intensity, source: s.source, note: s.note
+                )
+            },
+            habitChecks: habits.map { h in
+                HabitRecord(id: h.id, date: h.date, water: h.water, fiber: h.fiber, sleep: h.sleep)
             }
         )
     }
@@ -135,6 +179,9 @@ enum DataExportService {
         try context.fetch(FetchDescriptor<Dose>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<Prescription>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<WeightSample>()).forEach { context.delete($0) }
+        try context.fetch(FetchDescriptor<ProteinEntry>()).forEach { context.delete($0) }
+        try context.fetch(FetchDescriptor<StrengthSession>()).forEach { context.delete($0) }
+        try context.fetch(FetchDescriptor<HabitCheck>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<UserSettings>()).forEach { context.delete($0) }
         try context.save()
     }

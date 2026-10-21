@@ -100,6 +100,7 @@ enum PaceNotice { case fasterThanGeneralGuide }
 ```
 
 - 최근 2주 연속으로 주당 변화율이 **-1.0%** 를 넘으면(즉, 더 빠르게 감소) `.fasterThanGeneralGuide`
+  - 구현: 주 평균 시리즈의 마지막 3주로 주간 변화율 2개를 만들고 둘 다 -1.0% 미만이면 해당. 3주 중 빈 주가 있으면 계산하지 않음
 - 문구: "최근 체중 변화가 일반 권고 범위(주 0.5~1%)보다 빠릅니다. 진료 때 상의해 보세요."
 - 느린 경우, 증가하는 경우에는 **아무 안내도 하지 않는다**
 - 샘플이 주 1회 미만이면 계산하지 않음
@@ -131,7 +132,8 @@ enum ProteinDayStatus { case noTarget(estimated: Int), below(estimated: Int, tar
 
 ## R10. 식욕 저하일 모드 (M2)
 
-- 최근 48h 내 ConditionCheck에서 `nausea ≥ 2` 또는 `appetite != .normal`이면 그 날 단백질 화면 상단에 "작게 자주" 섹션: 셰이크, 요거트, 두유, 계란
+- 최근 48h 내 ConditionCheck에서 강도 2 이상 증상(구역 포함) 또는 `appetite != .normal`이면 (R11과 같은 `isLowConditionDay`. 2026-10-21 구현에서 "nausea ≥ 2"를 R11 조건으로 넓혀 하나로 맞춤)
+  - 그 날 단백질 화면 상단에 "작게 자주" 섹션: 셰이크, 요거트, 두유, 계란
 - 끼니를 비워도 "건너뜀"이라는 단어·아이콘을 쓰지 않는다. 비어 있을 뿐
 
 ## R11. 근력운동 마디 (M2)
@@ -142,6 +144,8 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 ```
 
 - 주간 목표 수치를 화면에 띄우지 않는다. "이번 주 근력 2회" 같은 사실만
+- `kindOrder(isLowCondition:)`: 평소 근력 / 걷기 / 스트레칭 / 쉬기, 저컨디션 날 걷기 / 스트레칭 / 쉬기 / 근력
+- 가벼운 활동 = 걷기 + 스트레칭. 주는 `calendar.firstWeekday` 기준
 - 최근 48h 컨디션에 심각도 2 이상 증상이 있으면 운동 기록 화면에서 걷기·스트레칭·쉬기를 상단에 배치 (R10과 같은 조건 함수 공유: `isLowConditionDay`)
 
 ## R12. 리포트 기간
@@ -173,5 +177,5 @@ func penPosition(sequence: Int, dosesPerPen: Int) -> (pen: Int, position: Int)
 - [x] R4 4주 제한, 재등록 시 중복 없음
 - [x] R5 창 경계값 (12h, 36h, 96h)
 - [x] R7 샘플 없는 주 nil 처리
-- [ ] R8 정확히 -1.0%일 때 안내 없음 (초과만)
-- [ ] R9 소수점 반올림
+- [x] R8 정확히 -1.0%일 때 안내 없음 (초과만)
+- [x] R9 소수점 반올림

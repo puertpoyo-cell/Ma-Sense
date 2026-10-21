@@ -126,3 +126,33 @@ struct WeightSampleSnapshot: Equatable {
         self.source = source
     }
 }
+
+// MARK: M2
+
+struct ProteinEntrySnapshot: Equatable {
+    let date: Date
+    let meal: MealSlot
+    let foods: [ProteinFood]
+    let estimatedGrams: Int
+}
+
+struct StrengthSessionSnapshot: Equatable {
+    let startedAt: Date
+    let durationMinutes: Int
+    let kind: SessionKind
+    let intensity: Intensity
+
+    init(startedAt: Date, durationMinutes: Int, kind: SessionKind, intensity: Intensity = .moderate) {
+        self.startedAt = startedAt
+        self.durationMinutes = durationMinutes
+        self.kind = kind
+        self.intensity = intensity
+    }
+}
+
+struct HabitCheckSnapshot: Equatable {
+    let date: Date
+    let water: Bool
+    let fiber: Bool
+    let sleep: Bool
+}

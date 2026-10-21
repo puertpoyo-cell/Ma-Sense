@@ -217,6 +217,9 @@ enum SchemaV2: VersionedSchema {   // M2
     static var versionIdentifier = Schema.Version(2, 0, 0)
     // + ProteinEntry, StrengthSession, HabitCheck
 }
+enum MasenseMigrationPlan: SchemaMigrationPlan {
+    // [SchemaV1, SchemaV2], 단계: .lightweight(V1 → V2)
+}
 ```
 
 M1 출시 전에는 마이그레이션 없이 스키마 자유 변경. 베타 배포 후부터 `SchemaMigrationPlan` 필수.

@@ -68,3 +68,21 @@ extension WeightSample {
         WeightSampleSnapshot(measuredAt: measuredAt, kilograms: kilograms, source: source)
     }
 }
+
+extension ProteinEntry {
+    var snapshot: ProteinEntrySnapshot {
+        ProteinEntrySnapshot(date: date, meal: meal, foods: foods, estimatedGrams: estimatedGrams)
+    }
+}
+
+extension StrengthSession {
+    var snapshot: StrengthSessionSnapshot {
+        StrengthSessionSnapshot(startedAt: startedAt, durationMinutes: durationMinutes, kind: kind, intensity: intensity)
+    }
+}
+
+extension HabitCheck {
+    var snapshot: HabitCheckSnapshot {
+        HabitCheckSnapshot(date: date, water: water, fiber: fiber, sleep: sleep)
+    }
+}

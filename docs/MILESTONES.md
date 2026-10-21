@@ -69,12 +69,12 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 완료 기준: 단백질·운동 기록이 홈과 리포트에 반영된다. TestFlight 2차.
 
 ### M2-a 모델·규칙
-- [ ] SchemaV2 + `SchemaMigrationPlan` (V1 → V2 경량)
-- [ ] `ProteinEntry`, `StrengthSession`, `HabitCheck`
-- [ ] `Rules/ProteinRules.swift` R9·R10 + 테스트
-- [ ] `Rules/StrengthRules.swift` R11 + 테스트
-- [ ] `Rules/PaceRules.swift` R8 + 테스트
-- [ ] `isLowConditionDay` 공용 함수
+- [x] SchemaV2 + `SchemaMigrationPlan` (V1 → V2 경량) — 디스크 저장소 마이그레이션 테스트 포함
+- [x] `ProteinEntry`, `StrengthSession`, `HabitCheck` (내보내기·전체 삭제에도 포함)
+- [x] `Rules/ProteinRules.swift` R9·R10 + 테스트
+- [x] `Rules/StrengthRules.swift` R11 + 테스트
+- [x] `Rules/PaceRules.swift` R8 + 테스트
+- [x] `isLowConditionDay` 공용 함수 (`ConditionRules`)
 
 ### M2-b 화면
 - [ ] S1 1-4 오늘의 마디 카드
