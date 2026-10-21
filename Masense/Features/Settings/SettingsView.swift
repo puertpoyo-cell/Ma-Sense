@@ -311,6 +311,9 @@ private struct SettingsForm: View {
             LabeledContent("settings.info.version") {
                 Text(verbatim: DataExportService.appVersion)
             }
+            if let url = AppConfig.privacyPolicyURL {
+                Link("settings.info.privacy", destination: url)
+            }
             Button("settings.info.roleNotice") { sheet = .roleNotice }
             LabeledContent("settings.info.openSource") {
                 Text("settings.info.none")

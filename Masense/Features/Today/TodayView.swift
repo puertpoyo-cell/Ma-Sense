@@ -135,6 +135,7 @@ struct TodayView: View {
                 .monospacedDigit()
                 .contentTransition(.numericText())
                 .foregroundStyle(Color.ink)
+                .accessibilityLabel(Text("today.countdown.dDay.a11y \(daysLeft)"))
             Text("today.countdown.scheduled \(scheduleText(scheduled))")
                 .font(Typography.caption)
                 .foregroundStyle(Color.inkSecondary)
@@ -212,7 +213,7 @@ struct TodayView: View {
                     }
                 }
                 if let latest = model.latestWeight {
-                    HStack(alignment: .lastTextBaseline) {
+                    AdaptiveStack(verticalAlignment: .lastTextBaseline) {
                         Text("weight.kg \(latest.kilograms.formatted(.number.precision(.fractionLength(1))))")
                             .font(.title.weight(.semibold))
                             .monospacedDigit()

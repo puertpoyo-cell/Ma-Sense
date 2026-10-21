@@ -56,10 +56,13 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [ ] 실기기에서 12주·증상 10개·메모 5줄 리포트가 A4 한 장에 들어가는지 육안 확인 (넘침 안내는 미구현)
 
 ### M1-e 마감
-- [ ] 접근성 점검 (VoiceOver, Dynamic Type XXL)
-- [ ] `COMPLIANCE.md` 2.1 금지선 전수 확인 (문구 grep: 약물명, "용량", "목표 체중", 느낌표)
-- [ ] 개인정보 처리방침 페이지
-- [ ] TestFlight 빌드, 베타 안내문 (역할·연령 고지 포함)
+- [x] 접근성 점검 — 코드 수준 (VoiceOver 레이블·토글 특성, AX 크기에서 가로→세로 `AdaptiveStack`, 온보딩 스크롤+버튼 고정)
+- [ ] 접근성 실기기 확인 (VoiceOver 한 바퀴, 설정 > 손쉬운 사용 > 더 큰 텍스트 최대) — 사람
+- [x] `COMPLIANCE.md` 2.1 금지선 전수 확인 — `scripts/compliance_check.py` + CI job, 기록은 COMPLIANCE.md 8
+- [x] 개인정보 처리방침 초안 (`docs/PRIVACY.md`, 게시용 `docs/privacy/index.html`)
+- [ ] 처리방침 게시·URL 입력 (`AppConfig.privacyPolicyURL`), 시행일·문의 이메일 채우기 — 사람
+- [x] 베타 안내문·빌드 절차 (`docs/TESTFLIGHT.md`, 역할·연령 고지 포함)
+- [ ] TestFlight 빌드 업로드 (번들 ID·서명·IAP 상품·HealthKit 결정 후) — 사람
 
 ## M2 — 근육 지키는 감량 (2주)
 

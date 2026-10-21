@@ -10,6 +10,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  compliance:
+    name: 금지선 점검 (COMPLIANCE.md)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/compliance_check.py
+
   test:
     name: xcodebuild test (iOS Simulator)
     runs-on: macos-15

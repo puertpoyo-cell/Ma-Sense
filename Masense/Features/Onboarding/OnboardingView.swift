@@ -49,7 +49,7 @@ struct OnboardingView: View {
     // MARK: 0-1 역할 고지
 
     private var rolePage: some View {
-        VStack(alignment: .leading, spacing: Spacing.s5) {
+        pageScaffold {
             Text("onboarding.role.title")
                 .font(.largeTitle.weight(.bold))
                 .foregroundStyle(Color.ink)
@@ -58,19 +58,18 @@ struct OnboardingView: View {
                 bullet("onboarding.role.noAdvice")
                 bullet("data.local")
             }
-            Spacer()
+        } footer: {
             PrimaryButton("onboarding.role.accept") {
                 updateSettings { $0.hasAcceptedRoleNotice = true }
                 page = .age
             }
         }
-        .padding(.horizontal, Spacing.screenHorizontal)
     }
 
     // MARK: 0-2 연령 확인
 
     private var agePage: some View {
-        VStack(alignment: .leading, spacing: Spacing.s5) {
+        pageScaffold {
             FrostCard {
                 Text("age.notice")
                     .font(Typography.body)
@@ -79,7 +78,7 @@ struct OnboardingView: View {
             }
             Toggle("onboarding.age.check", isOn: $adultChecked)
                 .toggleStyle(CheckboxToggleStyle())
-            Spacer()
+        } footer: {
             PrimaryButton("onboarding.age.confirm") {
                 updateSettings { $0.hasConfirmedAdult = true }
                 page = .prescription
@@ -87,7 +86,6 @@ struct OnboardingView: View {
             .disabled(!adultChecked)
             .opacity(adultChecked ? 1 : 0.4)
         }
-        .padding(.horizontal, Spacing.screenHorizontal)
     }
 
     // MARK: 0-3 처방 설정
@@ -111,7 +109,7 @@ struct OnboardingView: View {
     // MARK: 0-4 연동·알림 (권한을 거부해도 통과)
 
     private var permissionsPage: some View {
-        VStack(alignment: .leading, spacing: Spacing.s5) {
+        pageScaffold {
             Text("onboarding.permissions.title")
                 .font(Typography.title)
                 .foregroundStyle(Color.ink)
@@ -132,8 +130,7 @@ struct OnboardingView: View {
                     updateSettings { $0.healthKitAuthorized = granted }
                 }
             }
-
-            Spacer()
+        } footer: {
             PrimaryButton("onboarding.start") {
                 Task {
                     await services.refreshNotifications(context: context)
@@ -141,7 +138,29 @@ struct OnboardingView: View {
                 }
             }
         }
-        .padding(.horizontal, Spacing.screenHorizontal)
+    }
+
+    /// 내용은 스크롤, 버튼은 아래 고정. 큰 글자에서도 버튼이 밀려나지 않는다
+    private func pageScaffold<Content: View, Footer: View>(
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.s5) {
+                content()
+            }
+            .padding(.horizontal, Spacing.screenHorizontal)
+            .padding(.bottom, Spacing.s4)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: Spacing.s3) {
+                footer()
+            }
+            .padding(.horizontal, Spacing.screenHorizontal)
+            .padding(.vertical, Spacing.s3)
+            .background(Color.midnight)
+        }
     }
 
     // MARK: 공용
@@ -204,7 +223,8 @@ private struct CheckboxToggleStyle: ToggleStyle {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityAddTraits(configuration.isOn ? [.isSelected] : [])
+        .accessibilityAddTraits(.isToggle)
+        .accessibilityValue(Text(LocalizedStringKey(configuration.isOn ? "a11y.on" : "a11y.off")))
     }
 }
 

@@ -98,7 +98,7 @@ struct HistoryView: View {
     private func doseRow(_ row: HistoryModel.DoseRow) -> some View {
         switch row.kind {
         case let .dose(id, site, sequence, hasNote, isCancelled):
-            HStack(spacing: Spacing.s3) {
+            AdaptiveStack(spacing: Spacing.s3) {
                 VStack(alignment: .leading, spacing: Spacing.s1) {
                     Text(row.date.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated).hour().minute()))
                         .font(Typography.body)
@@ -191,7 +191,7 @@ struct HistoryView: View {
 
     @ViewBuilder
     private func conditionRow(_ slot: HistoryModel.ConditionSlot, doseID: UUID) -> some View {
-        HStack(alignment: .firstTextBaseline) {
+        AdaptiveStack(verticalAlignment: .firstTextBaseline) {
             Text(LocalizedStringKey(slot.window.titleKey))
                 .font(Typography.body)
                 .foregroundStyle(Color.ink)
@@ -239,7 +239,7 @@ struct HistoryView: View {
 
             Section {
                 ForEach(weights) { sample in
-                    HStack {
+                    AdaptiveStack {
                         VStack(alignment: .leading, spacing: Spacing.s1) {
                             Text(sample.measuredAt.formatted(.dateTime.month(.defaultDigits).day().hour().minute()))
                                 .font(Typography.body)

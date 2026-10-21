@@ -1,6 +1,40 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "a11y.off": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "꺼짐"
+          }
+        }
+      }
+    },
+    "a11y.on": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "켜짐"
+          }
+        }
+      }
+    },
     "action.cancel": {
       "extractionState": "manual",
       "localizations": {
@@ -2398,6 +2432,23 @@
         }
       }
     },
+    "settings.info.privacy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy policy"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "개인정보 처리방침"
+          }
+        }
+      }
+    },
     "settings.info.roleNotice": {
       "extractionState": "manual",
       "localizations": {
@@ -3431,6 +3482,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "D-%lld"
+          }
+        }
+      }
+    },
+    "today.countdown.dDay.a11y %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days until the next dose"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 투약까지 %lld일"
           }
         }
       }
