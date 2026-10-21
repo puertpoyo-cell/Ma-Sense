@@ -79,6 +79,7 @@ func recencyRank(of site: BodySite, in history: [SiteUse]) -> Int?   // 0이 가
 ```
 
 - 최근 4회 사용 부위와 날짜를 돌려줌. UI는 최근 순으로 진하게 표시 (`Color.siteRecent(rank:)`)
+- 표시 (DESIGN_SYSTEM.md 5.3): 직전 1회는 `accent` 채움 + "① 마지막: 부위 (M/d)" 칩, 2~4회는 옅은 채움·얇은 테두리 + "② 이전: 부위 (M/d)" 텍스트
 - **추천하지 않는다.** "다음은 왼쪽 허벅지" 같은 제안 없음. 사용자가 보고 고름
 
 ## R7. 체중 추이
@@ -132,8 +133,8 @@ enum ProteinDayStatus { case noTarget(estimated: Int), below(estimated: Int, tar
 
 ## R10. 식욕 저하일 모드 (M2)
 
-- 최근 48h 내 ConditionCheck에서 강도 2 이상 증상(구역 포함) 또는 `appetite != .normal`이면 (R11과 같은 `isLowConditionDay`. 2026-10-21 구현에서 "nausea ≥ 2"를 R11 조건으로 넓혀 하나로 맞춤)
-  - 그 날 단백질 화면 상단에 "작게 자주" 섹션: 셰이크, 요거트, 두유, 계란
+- 최근 48h 내 ConditionCheck에서 `nausea ≥ 2` 또는 `appetite != .normal`이면 그 날 단백질 화면 상단에 "작게 자주" 섹션: 셰이크, 요거트, 두유, 계란
+  - `ConditionRules.isLowAppetiteDay(checks:now:)`. R11의 `isLowConditionDay`와 조건이 다르다 (DESIGN_SYSTEM.md 5.6, 2026-10-21 분리)
 - 끼니를 비워도 "건너뜀"이라는 단어·아이콘을 쓰지 않는다. 비어 있을 뿐
 
 ## R11. 근력운동 마디 (M2)
@@ -144,6 +145,7 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 ```
 
 - 주간 목표 수치를 화면에 띄우지 않는다. "이번 주 근력 2회" 같은 사실만
+- `isLowConditionDay(checks:now:)`: 최근 48h 체크에 강도 2 이상 증상이 있으면 (식욕은 보지 않음)
 - `kindOrder(isLowCondition:)`: 평소 근력 / 걷기 / 스트레칭 / 쉬기, 저컨디션 날 걷기 / 스트레칭 / 쉬기 / 근력
 - 가벼운 활동 = 걷기 + 스트레칭. 주는 `calendar.firstWeekday` 기준
 - 최근 48h 컨디션에 심각도 2 이상 증상이 있으면 운동 기록 화면에서 걷기·스트레칭·쉬기를 상단에 배치 (R10과 같은 조건 함수 공유: `isLowConditionDay`)

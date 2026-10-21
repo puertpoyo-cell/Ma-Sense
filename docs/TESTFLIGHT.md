@@ -10,7 +10,7 @@
    - Info.plist 키 `NSHealthShareUsageDescription` = "체중과 운동 기록을 읽어 투약 리포트에 함께 정리합니다." (COMPLIANCE.md 4.2)
    - 이 키가 들어가면 앱의 Health 연동 버튼이 자동으로 보인다 (`HealthKitService.isAvailable`)
 5. **개인정보 처리방침 게시** — `docs/privacy/index.html`의 [게시일]·[문의 이메일]을 채우고 게시(GitHub Pages 등). URL을 `Masense/App/AppConfig.swift`의 `privacyPolicyURL`과 App Store Connect에 입력
-6. **앱 아이콘** — `Masense/Resources/Assets.xcassets/AppIcon.appiconset`에 1024×1024 (DESIGN_SYSTEM.md 8: Midnight 배경, 가는 선의 마디 하나. 주사기·알약·체중계 금지)
+6. **앱 아이콘** — `Masense/Resources/Assets.xcassets/AppIcon.appiconset`에 1024×1024 (DESIGN_SYSTEM.md 6: midnight 배경에 자의 눈금과 마디를 결합한 도면 선. 주사기·알약·체중계 금지)
 
 ## 2. 빌드 올리기
 
