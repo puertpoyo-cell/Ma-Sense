@@ -10,8 +10,8 @@ struct DoseLogSheet: View {
     @Environment(\.services) private var services
     @State private var model: DoseLogModel
 
-    init(prescription: Prescription, onSaved: @escaping () -> Void = {}) {
-        _model = State(initialValue: DoseLogModel(prescription: prescription))
+    init(prescription: Prescription, initialDate: Date? = nil, onSaved: @escaping () -> Void = {}) {
+        _model = State(initialValue: DoseLogModel(prescription: prescription, initialDate: initialDate))
         self.onSaved = onSaved
     }
 

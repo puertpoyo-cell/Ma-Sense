@@ -21,6 +21,7 @@ struct RootView: View {
                 OnboardingView { phase = .main }
             case .main:
                 MainTabView()
+                    .environment(\.restartOnboarding) { phase = .onboarding }
             }
         }
         .preferredColorScheme(.dark)

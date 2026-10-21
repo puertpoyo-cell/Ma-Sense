@@ -43,8 +43,8 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] S1 TodayView: 1-1 카운트다운, 1-2 컨디션, 1-3 체중, 1-5 진료 (`TodayModel` + 테스트, `WeekSparkline`)
 - [x] S2 DoseLogSheet + `BodyMapView` (`DoseLogModel` + 테스트)
 - [x] S3 ConditionCheckSheet (`ConditionCheckModel` + 테스트, `SymptomChip`)
-- [ ] S4 HistoryView 투약·컨디션·체중
-- [ ] S6 SettingsView 처방·알림·연동·구매·데이터·정보
+- [x] S4 HistoryView 투약·컨디션·체중 (`HistoryModel` + 테스트, 누락 행에서 과거 기록, 지난 컨디션 체크, `WeekChart`)
+- [x] S6 SettingsView 처방·알림·연동·구매·데이터·정보 (`DataExportService` + 테스트). 리포트 섹션(테마·기본 기간)은 M1-d에서
 - [x] WeightEntrySheet (`WeightEntryModel` + 테스트)
 
 ### M1-d 리포트

@@ -30,7 +30,8 @@ extension Dose {
             scheduledFor: scheduledFor,
             site: site,
             sequence: sequence,
-            isCancelled: isCancelled
+            isCancelled: isCancelled,
+            note: note
         )
     }
 }
@@ -39,7 +40,14 @@ extension ConditionCheck {
     /// `dose`가 없는 체크는 스냅샷을 만들 수 없다
     var snapshot: ConditionCheckSnapshot? {
         guard let dose else { return nil }
-        return ConditionCheckSnapshot(doseID: dose.id, window: window, checkedAt: checkedAt)
+        return ConditionCheckSnapshot(
+            doseID: dose.id,
+            window: window,
+            checkedAt: checkedAt,
+            symptoms: symptoms,
+            appetite: appetite,
+            note: note
+        )
     }
 }
 

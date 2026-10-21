@@ -45,6 +45,8 @@ struct DoseSnapshot: Equatable, Identifiable {
     let site: BodySite
     let sequence: Int
     let isCancelled: Bool
+    /// 자유 메모. 기록 탭 메모 표시, 리포트 G 섹션
+    let note: String?
 
     init(
         id: UUID = UUID(),
@@ -52,7 +54,8 @@ struct DoseSnapshot: Equatable, Identifiable {
         scheduledFor: Date,
         site: BodySite,
         sequence: Int,
-        isCancelled: Bool = false
+        isCancelled: Bool = false,
+        note: String? = nil
     ) {
         self.id = id
         self.administeredAt = administeredAt
@@ -60,6 +63,7 @@ struct DoseSnapshot: Equatable, Identifiable {
         self.site = site
         self.sequence = sequence
         self.isCancelled = isCancelled
+        self.note = note
     }
 }
 
@@ -67,6 +71,25 @@ struct ConditionCheckSnapshot: Equatable {
     let doseID: UUID
     let window: ConditionWindow
     let checkedAt: Date
+    let symptoms: [SymptomEntry]
+    let appetite: AppetiteLevel
+    let note: String?
+
+    init(
+        doseID: UUID,
+        window: ConditionWindow,
+        checkedAt: Date,
+        symptoms: [SymptomEntry] = [],
+        appetite: AppetiteLevel = .normal,
+        note: String? = nil
+    ) {
+        self.doseID = doseID
+        self.window = window
+        self.checkedAt = checkedAt
+        self.symptoms = symptoms
+        self.appetite = appetite
+        self.note = note
+    }
 }
 
 struct SettingsSnapshot: Equatable {

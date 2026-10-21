@@ -39,9 +39,19 @@ private struct AppServicesKey: EnvironmentKey {
     static let defaultValue = AppServices.fake()
 }
 
+private struct RestartOnboardingKey: EnvironmentKey {
+    static let defaultValue: () -> Void = {}
+}
+
 extension EnvironmentValues {
     var services: AppServices {
         get { self[AppServicesKey.self] }
         set { self[AppServicesKey.self] = newValue }
+    }
+
+    /// 전체 삭제 후 온보딩으로 돌아간다. RootView가 채운다
+    var restartOnboarding: () -> Void {
+        get { self[RestartOnboardingKey.self] }
+        set { self[RestartOnboardingKey.self] = newValue }
     }
 }

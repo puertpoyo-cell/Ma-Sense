@@ -21,12 +21,13 @@ final class DoseLogModel {
     private let prescription: Prescription
     private let calendar: Calendar
 
-    init(prescription: Prescription, now: Date = Date(), calendar: Calendar = .current) {
+    /// `initialDate`: 기록 탭의 누락 마디에서 열면 그 예정일로 시작한다 (R3 누락 해제)
+    init(prescription: Prescription, initialDate: Date? = nil, now: Date = Date(), calendar: Calendar = .current) {
         let doses = prescription.doseSnapshots
         self.prescription = prescription
         self.calendar = calendar
         openedAt = now
-        administeredAt = now
+        administeredAt = min(initialDate ?? now, now)
         sequence = PrescriptionRules.nextSequence(doses: doses)
         history = SiteRules.siteHistory(doses: doses)
         dosesPerPen = prescription.dosesPerPen
