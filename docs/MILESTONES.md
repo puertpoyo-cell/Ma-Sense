@@ -37,8 +37,9 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [ ] 번들 ID 확정 (현재 `com.masense.Masense`) — Xcode Signing에서 팀 선택 시 함께
 
 ### M1-c 화면
-- [ ] S0 온보딩 4페이지
-- [ ] S9 PrescriptionSheet
+- [x] S0 온보딩 4페이지 (HealthKit 버튼은 Info.plist 키 추가 전까지 숨김)
+- [x] S9 PrescriptionSheet (`PrescriptionFormModel` + 테스트, 홈 빈 상태에서 열기)
+- [x] `AppServices` DI (live/fake), 포그라운드 진입 시 알림 재등록
 - [ ] S1 TodayView: 1-1 카운트다운, 1-2 컨디션, 1-3 체중, 1-5 진료
 - [ ] S2 DoseLogSheet + `BodyMapView`
 - [ ] S3 ConditionCheckSheet

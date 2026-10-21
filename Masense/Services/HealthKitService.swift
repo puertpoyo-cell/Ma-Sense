@@ -20,7 +20,12 @@ final class HealthKitService: HealthKitReading {
     private let store = HKHealthStore()
     private let bodyMass = HKQuantityType(.bodyMass)
 
-    var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
+    /// Info.plist에 `NSHealthShareUsageDescription`이 없으면 권한 요청 순간 앱이 종료된다.
+    /// 키를 추가하기 전(사람 확인 대기)에는 HealthKit을 쓰지 않는다.
+    var isAvailable: Bool {
+        HKHealthStore.isHealthDataAvailable()
+            && Bundle.main.object(forInfoDictionaryKey: "NSHealthShareUsageDescription") != nil
+    }
 
     func requestReadAuthorization() async throws -> Bool {
         guard isAvailable else { return false }

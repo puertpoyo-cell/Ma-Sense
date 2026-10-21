@@ -1,307 +1,1213 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "action.cancel" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "취소" } }
+  "sourceLanguage": "en",
+  "strings": {
+    "action.cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "취소"
+          }
+        }
       }
     },
-    "action.logDose" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log dose" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "투약 기록" } }
+    "action.logDose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log dose"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 기록"
+          }
+        }
       }
     },
-    "age.notice" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app is a record-keeping tool for adults aged 19 or older who have a doctor's prescription." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 앱은 의사의 처방을 받은 만 19세 이상 성인을 위한 기록 도구입니다." } }
+    "action.save": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장"
+          }
+        }
       }
     },
-    "data.local" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "All records are stored only on this device and are never sent anywhere." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "모든 기록은 이 기기에만 저장되며 외부로 전송되지 않습니다." } }
+    "age.notice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This app is a record-keeping tool for adults aged 19 or older who have a doctor's prescription."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 앱은 의사의 처방을 받은 만 19세 이상 성인을 위한 기록 도구입니다."
+          }
+        }
       }
     },
-    "exercise.general" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The examples below are general health information, not a personalized exercise prescription. Adjust them to how you feel." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "아래 예시는 일반 건강관리 정보이며 개인 맞춤 운동 처방이 아닙니다. 몸 상태에 맞게 조절하세요." } }
+    "data.local": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All records are stored only on this device and are never sent anywhere."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 기록은 이 기기에만 저장되며 외부로 전송되지 않습니다."
+          }
+        }
       }
     },
-    "history.empty" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "No records yet." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "아직 기록이 없습니다." } }
+    "exercise.general": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The examples below are general health information, not a personalized exercise prescription. Adjust them to how you feel."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아래 예시는 일반 건강관리 정보이며 개인 맞춤 운동 처방이 아닙니다. 몸 상태에 맞게 조절하세요."
+          }
+        }
       }
     },
-    "notif.clinic.soon" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your appointment is tomorrow. Have the report ready." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "내일 진료입니다. 리포트를 준비해 두세요." } }
+    "history.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No records yet."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 기록이 없습니다."
+          }
+        }
       }
     },
-    "notif.condition.h24" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "One day after dosing. Please record how you feel." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "투약 후 하루, 컨디션을 기록해 주세요." } }
+    "notif.clinic.soon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your appointment is tomorrow. Have the report ready."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내일 진료입니다. 리포트를 준비해 두세요."
+          }
+        }
       }
     },
-    "notif.condition.h48" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Two days after dosing. Please record how you feel." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "투약 후 이틀, 컨디션을 기록해 주세요." } }
+    "notif.condition.h24": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One day after dosing. Please record how you feel."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 후 하루, 컨디션을 기록해 주세요."
+          }
+        }
       }
     },
-    "notif.dose.due" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today is a dosing day." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "오늘은 투약일입니다." } }
+    "notif.condition.h48": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two days after dosing. Please record how you feel."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 후 이틀, 컨디션을 기록해 주세요."
+          }
+        }
       }
     },
-    "notif.dose.evening" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "There is no record yet today." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "아직 기록이 없습니다." } }
+    "notif.dose.due": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today is a dosing day."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘은 투약일입니다."
+          }
+        }
       }
     },
-    "notif.prescription.low" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld doses remain. Check your next appointment." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "남은 회차가 %lld회입니다. 진료 예약을 확인하세요." } }
+    "notif.dose.evening": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no record yet today."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 기록이 없습니다."
+          }
+        }
       }
     },
-    "pace.notice" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your recent weight change is faster than the general guide (0.5–1% per week). Consider discussing it at your next appointment." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "최근 체중 변화가 일반 권고 범위(주 0.5~1%)보다 빠릅니다. 진료 때 상의해 보세요." } }
+    "notif.prescription.low": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld doses remain. Check your next appointment."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 회차가 %lld회입니다. 진료 예약을 확인하세요."
+          }
+        }
       }
     },
-    "protein.guide" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The general guide is 1.2–1.6 g per kg of body weight. For kidney disease or other individual conditions, consult your doctor." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "일반적인 권고 범위는 체중 1 kg당 1.2~1.6 g입니다. 신장 질환 등 개인 상황은 의사와 상의하세요." } }
+    "onboarding.age.check": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have read the above"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위 내용을 확인했습니다"
+          }
+        }
       }
     },
-    "report.disclaimer" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This report organizes what you recorded yourself and contains no medical judgment or recommendation. Prescription and treatment decisions rest with your doctor." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 리포트는 사용자가 직접 기록한 내용을 정리한 것이며 의학적 판단이나 권고를 포함하지 않습니다. 처방과 치료 결정은 담당 의사에게 있습니다." } }
+    "onboarding.age.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인"
+          }
+        }
       }
     },
-    "report.empty" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "A report becomes available once there are records." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "기록이 쌓이면 리포트를 만들 수 있습니다." } }
+    "onboarding.permissions.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masense sends notifications on dosing days and at condition check times. You can change this later in Settings."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약일과 컨디션 체크 시점에 알림을 보냅니다. 나중에 설정에서 바꿀 수 있습니다."
+          }
+        }
       }
     },
-    "role.notice" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The doctor prescribes; Masense records. Masense only records and organizes your doses and daily life. It gives no medical advice or judgment." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "처방은 의사가, 기록은 마선생이. 마선생은 투약과 생활을 기록하고 정리할 뿐, 의학적 조언이나 판단을 하지 않습니다." } }
+    "onboarding.permissions.denied": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not allowed. You can change this in Settings."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "허용하지 않았습니다. 설정에서 바꿀 수 있습니다."
+          }
+        }
       }
     },
-    "settings.empty" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings will appear here." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정 항목이 준비 중입니다." } }
+    "onboarding.permissions.granted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "허용했습니다."
+          }
+        }
       }
     },
-    "settings.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정" } }
+    "onboarding.permissions.health": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect Apple Health"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Health 연동"
+          }
+        }
       }
     },
-    "site.abdomenLowerLeft" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Abdomen, lower left" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "복부 왼쪽 아래" } }
+    "onboarding.permissions.notifications": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow notifications"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 허용"
+          }
+        }
       }
     },
-    "site.abdomenLowerRight" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Abdomen, lower right" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "복부 오른쪽 아래" } }
+    "onboarding.permissions.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications and Apple Health"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림과 연동"
+          }
+        }
       }
     },
-    "site.abdomenUpperLeft" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Abdomen, upper left" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "복부 왼쪽 위" } }
+    "onboarding.prescription.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter your prescription"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방을 입력해 주세요"
+          }
+        }
       }
     },
-    "site.abdomenUpperRight" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Abdomen, upper right" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "복부 오른쪽 위" } }
+    "onboarding.role.accept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I understand"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알겠습니다"
+          }
+        }
       }
     },
-    "site.thighLeft" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Left thigh" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "허벅지 왼쪽" } }
+    "onboarding.role.noAdvice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masense gives no medical advice. Prescription and treatment decisions rest with your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "의학적 조언을 하지 않습니다. 처방과 치료 결정은 담당 의사에게 있습니다."
+          }
+        }
       }
     },
-    "site.thighRight" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Right thigh" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "허벅지 오른쪽" } }
+    "onboarding.role.noJudgment": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masense does not evaluate or judge your records."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마선생은 기록을 평가하거나 판단하지 않습니다."
+          }
+        }
       }
     },
-    "site.upperArmLeft" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Left upper arm" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "상완 왼쪽" } }
+    "onboarding.role.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The doctor prescribes.\nMasense records."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방은 의사가,\n기록은 마선생이."
+          }
+        }
       }
     },
-    "site.upperArmRight" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Right upper arm" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "상완 오른쪽" } }
+    "onboarding.start": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작"
+          }
+        }
       }
     },
-    "symptom.bloating" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bloating" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "더부룩함" } }
+    "pace.notice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your recent weight change is faster than the general guide (0.5–1% per week). Consider discussing it at your next appointment."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 체중 변화가 일반 권고 범위(주 0.5~1%)보다 빠릅니다. 진료 때 상의해 보세요."
+          }
+        }
       }
     },
-    "symptom.constipation" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Constipation" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "변비" } }
+    "prescription.dosesPerPen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doses per pen"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펜당 회차"
+          }
+        }
       }
     },
-    "symptom.diarrhea" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Diarrhea" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설사" } }
+    "prescription.hasNextClinic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add next appointment"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 진료일 입력"
+          }
+        }
       }
     },
-    "symptom.dizziness" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dizziness" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "어지러움" } }
+    "prescription.memo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memo"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메모"
+          }
+        }
       }
     },
-    "symptom.fatigue" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Fatigue" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "피로" } }
+    "prescription.memo.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A free-form memo. Masense does not interpret it."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자유롭게 적는 메모입니다. 마선생은 이 내용을 해석하지 않습니다."
+          }
+        }
       }
     },
-    "symptom.headache" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Headache" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "두통" } }
+    "prescription.nextClinic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next appointment"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 진료일"
+          }
+        }
       }
     },
-    "symptom.heartburn" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Heartburn" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "속쓰림" } }
+    "prescription.penCount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펜 수"
+          }
+        }
       }
     },
-    "symptom.injectionSiteReaction" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Injection site reaction" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "주사 부위 반응" } }
+    "prescription.startDate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start date"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작일"
+          }
+        }
       }
     },
-    "symptom.nausea" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Nausea" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "구역" } }
+    "prescription.time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시각"
+          }
+        }
       }
     },
-    "symptom.severe" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "If symptoms are severe, consult your doctor." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "증상이 심하면 의사와 상담하세요." } }
+    "prescription.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prescription"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방"
+          }
+        }
       }
     },
-    "symptom.vomiting" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Vomiting" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "구토" } }
+    "prescription.total": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "총 회차"
+          }
+        }
       }
     },
-    "tab.history" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "History" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "기록" } }
+    "prescription.totalValue %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld회"
+          }
+        }
       }
     },
-    "tab.report" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Report" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "리포트" } }
+    "prescription.weekday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day of week"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 요일"
+          }
+        }
       }
     },
-    "tab.today" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "오늘" } }
+    "protein.guide": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The general guide is 1.2–1.6 g per kg of body weight. For kidney disease or other individual conditions, consult your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일반적인 권고 범위는 체중 1 kg당 1.2~1.6 g입니다. 신장 질환 등 개인 상황은 의사와 상의하세요."
+          }
+        }
       }
     },
-    "toast.recorded" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recorded." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "기록했습니다." } }
+    "report.disclaimer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This report organizes what you recorded yourself and contains no medical judgment or recommendation. Prescription and treatment decisions rest with your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 리포트는 사용자가 직접 기록한 내용을 정리한 것이며 의학적 판단이나 권고를 포함하지 않습니다. 처방과 치료 결정은 담당 의사에게 있습니다."
+          }
+        }
       }
     },
-    "today.empty.noPrescription" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter a prescription to start the first cycle." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "처방을 입력하면 마디가 시작됩니다." } }
+    "report.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A report becomes available once there are records."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록이 쌓이면 리포트를 만들 수 있습니다."
+          }
+        }
+      }
+    },
+    "role.notice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The doctor prescribes; Masense records. Masense only records and organizes your doses and daily life. It gives no medical advice or judgment."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방은 의사가, 기록은 마선생이. 마선생은 투약과 생활을 기록하고 정리할 뿐, 의학적 조언이나 판단을 하지 않습니다."
+          }
+        }
+      }
+    },
+    "settings.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings will appear here."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정 항목이 준비 중입니다."
+          }
+        }
+      }
+    },
+    "settings.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정"
+          }
+        }
+      }
+    },
+    "site.abdomenLowerLeft": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abdomen, lower left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "복부 왼쪽 아래"
+          }
+        }
+      }
+    },
+    "site.abdomenLowerRight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abdomen, lower right"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "복부 오른쪽 아래"
+          }
+        }
+      }
+    },
+    "site.abdomenUpperLeft": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abdomen, upper left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "복부 왼쪽 위"
+          }
+        }
+      }
+    },
+    "site.abdomenUpperRight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abdomen, upper right"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "복부 오른쪽 위"
+          }
+        }
+      }
+    },
+    "site.thighLeft": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left thigh"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "허벅지 왼쪽"
+          }
+        }
+      }
+    },
+    "site.thighRight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right thigh"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "허벅지 오른쪽"
+          }
+        }
+      }
+    },
+    "site.upperArmLeft": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left upper arm"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "상완 왼쪽"
+          }
+        }
+      }
+    },
+    "site.upperArmRight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right upper arm"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "상완 오른쪽"
+          }
+        }
+      }
+    },
+    "symptom.bloating": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloating"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "더부룩함"
+          }
+        }
+      }
+    },
+    "symptom.constipation": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Constipation"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "변비"
+          }
+        }
+      }
+    },
+    "symptom.diarrhea": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diarrhea"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설사"
+          }
+        }
+      }
+    },
+    "symptom.dizziness": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dizziness"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "어지러움"
+          }
+        }
+      }
+    },
+    "symptom.fatigue": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fatigue"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "피로"
+          }
+        }
+      }
+    },
+    "symptom.headache": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Headache"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "두통"
+          }
+        }
+      }
+    },
+    "symptom.heartburn": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heartburn"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "속쓰림"
+          }
+        }
+      }
+    },
+    "symptom.injectionSiteReaction": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Injection site reaction"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "주사 부위 반응"
+          }
+        }
+      }
+    },
+    "symptom.nausea": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nausea"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "구역"
+          }
+        }
+      }
+    },
+    "symptom.severe": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If symptoms are severe, consult your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "증상이 심하면 의사와 상담하세요."
+          }
+        }
+      }
+    },
+    "symptom.vomiting": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vomiting"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "구토"
+          }
+        }
+      }
+    },
+    "tab.history": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록"
+          }
+        }
+      }
+    },
+    "tab.report": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리포트"
+          }
+        }
+      }
+    },
+    "tab.today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘"
+          }
+        }
+      }
+    },
+    "toast.recorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorded."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록했습니다."
+          }
+        }
+      }
+    },
+    "today.empty.noPrescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a prescription to start the first cycle."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방을 입력하면 마디가 시작됩니다."
+          }
+        }
+      }
+    },
+    "today.enterPrescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter prescription"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 입력"
+          }
+        }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

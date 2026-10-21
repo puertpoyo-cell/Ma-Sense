@@ -4,6 +4,7 @@ import SwiftUI
 @main
 struct MasenseApp: App {
     private let container: ModelContainer
+    private let services = AppServices.live()
 
     init() {
         do {
@@ -17,6 +18,7 @@ struct MasenseApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(\.services, services)
         }
         .modelContainer(container)
     }

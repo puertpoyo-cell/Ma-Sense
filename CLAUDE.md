@@ -42,6 +42,7 @@ Masense/
   App/              MasenseApp.swift, 루트 내비게이션, DI
   Models/           SwiftData @Model 들 (DATA_MODEL.md와 1:1)
   Features/
+    Onboarding/     첫 실행 4페이지 (역할·연령 고지, 처방, 권한)
     Today/          홈 화면 (카운트다운, 오늘 할 일)
     History/        기록 탭 (투약·컨디션·체중·습관 목록)
     Dose/           투약 기록, 바디맵
