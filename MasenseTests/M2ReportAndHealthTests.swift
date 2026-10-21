@@ -104,7 +104,8 @@ struct M2ReportAndHealthTests {
 
     @Test func reportThemeFallsBackToMidnight() {
         #expect(ReportTheme(rawValue: "sand")?.accent == .accentSand)
-        #expect(ReportPage.accent(forTheme: "unknown") == .accent)
+        #expect(ReportPage.accent(forTheme: "unknown") == .paperAccent)
+        #expect(ReportTheme.midnight.accent == .accent)
         #expect(ReportTheme.allCases.count == 3)
     }
 }

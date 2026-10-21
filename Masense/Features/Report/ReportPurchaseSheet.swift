@@ -52,6 +52,7 @@ struct ReportPurchaseSheet: View {
             .task { product = await services.store.loadProduct() }
         }
         .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
         .presentationBackground(Color.midnightElevated)
     }
 

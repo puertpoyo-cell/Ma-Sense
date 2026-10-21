@@ -1,7 +1,7 @@
 import Charts
 import SwiftUI
 
-/// 주 평균 라인 차트, 축 포함 (기록 탭·리포트용, DESIGN_SYSTEM.md 5).
+/// 주 평균 라인 차트 (기록 탭·리포트용, DESIGN_SYSTEM.md 5.5). y축은 최소·최대 2개, x축은 주 시작일.
 /// 샘플 없는 주는 선을 끊는다 (R7 보간 금지).
 struct WeekChart: View {
     let points: [WeekPoint]
@@ -11,8 +11,8 @@ struct WeekChart: View {
     var gridColor: Color = .inkTertiary
     var labelColor: Color = .inkSecondary
     var labelFont: Font = .caption2
-    /// y축에 최소·최대 2개 라벨만 (리포트 D)
-    var minMaxYAxisOnly = false
+    /// y축에 최소·최대 2개 라벨만 (DESIGN_SYSTEM.md 5.5 기본)
+    var minMaxYAxisOnly = true
 
     private struct Plotted: Identifiable {
         let weekStart: Date

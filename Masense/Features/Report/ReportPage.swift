@@ -5,7 +5,7 @@ import SwiftUI
 /// 인쇄 전제: 흰 배경, 검정·회색 중심. 테마는 강조색 하나만 바꾼다. 크기는 고정 (Dynamic Type 미적용).
 struct ReportPage: View {
     let report: ClinicReport
-    var accent: Color = .accent
+    var accent: Color = .paperAccent
     var calendar: Calendar = .current
 
     /// A4 210×297mm @72dpi
@@ -14,9 +14,13 @@ struct ReportPage: View {
     private let margin = 16 * ReportPage.mm
     private let gutter = 4 * ReportPage.mm
 
-    private let ink = Color.inkOnPaper
-    private let gray = Color(hex: 0x6B7280)
-    private let rule = Color(hex: 0xD1D5DB)
+    // 리포트 라이트 토큰 (DESIGN_SYSTEM.md 2 오른쪽 열)
+    private let ink = Color.paperInk
+    private let gray = Color.paperInkSecondary
+    /// 칸 테두리
+    private let rule = Color.paperBorder
+    /// 섹션 분할선·차트 격자
+    private let hairline = Color.paperHairline
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3 * Self.mm) {
@@ -39,7 +43,7 @@ struct ReportPage: View {
         }
         .padding(margin)
         .frame(width: Self.size.width, height: Self.size.height, alignment: .topLeading)
-        .background(Color.white)
+        .background(Color.paperBackground)
         .foregroundStyle(ink)
         .environment(\.colorScheme, .light)
     }
@@ -132,7 +136,7 @@ struct ReportPage: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 2 * Self.mm)
-        .overlay(alignment: .top) { Rectangle().fill(rule).frame(height: 0.5) }
+        .overlay(alignment: .top) { Rectangle().fill(hairline).frame(height: 0.5) }
     }
 
     // MARK: C. 투약 타임라인
@@ -202,7 +206,7 @@ struct ReportPage: View {
                     points: report.weight,
                     tickDates: report.weightDoseTicks,
                     lineColor: ink,
-                    gridColor: rule,
+                    gridColor: hairline,
                     labelColor: gray,
                     labelFont: .system(size: 6.5),
                     minMaxYAxisOnly: true
@@ -342,7 +346,7 @@ struct ReportPage: View {
                 .fixedSize()
         }
         .padding(.top, 2 * Self.mm)
-        .overlay(alignment: .top) { Rectangle().fill(rule).frame(height: 0.5) }
+        .overlay(alignment: .top) { Rectangle().fill(hairline).frame(height: 0.5) }
         .frame(height: 12 * Self.mm, alignment: .bottom)
     }
 
@@ -369,9 +373,9 @@ struct ReportPage: View {
 }
 
 extension ReportPage {
-    /// 리포트 테마는 강조색 하나만 바꾼다 (DESIGN_SYSTEM.md 1)
+    /// 리포트 테마는 강조색 하나만 바꾼다 (DESIGN_SYSTEM.md 2). 흰 종이용 값
     static func accent(forTheme theme: String) -> Color {
-        (ReportTheme(rawValue: theme) ?? .midnight).accent
+        (ReportTheme(rawValue: theme) ?? .midnight).paperAccent
     }
 }
 
@@ -389,12 +393,21 @@ enum ReportTheme: String, CaseIterable, Identifiable {
         case .sage: return .accentSage
         }
     }
+
+    /// 리포트(흰 종이)에서 쓰는 값. 기본 테마는 인쇄용으로 더 진한 파랑, sand·sage는 헤더 선에만 쓰므로 같은 값
+    var paperAccent: Color {
+        switch self {
+        case .midnight: return .paperAccent
+        case .sand: return .accentSand
+        case .sage: return .accentSage
+        }
+    }
 }
 
 /// 화면 폭에 맞춰 A4 페이지를 축소해 보여 준다
 struct ReportPreviewView: View {
     let report: ClinicReport
-    var accent: Color = .accent
+    var accent: Color = .paperAccent
 
     var body: some View {
         GeometryReader { geometry in

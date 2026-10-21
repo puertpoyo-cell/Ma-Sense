@@ -341,7 +341,7 @@ struct TodayView: View {
                 proteinStatus(daily.protein)
                 GhostButton("daily.logProtein") { sheet = .protein(preselected: nil) }
 
-                CardDivider()
+                BlueprintDivider()
 
                 Text("daily.week \(daily.week.strengthCount) \(daily.week.lightCount)")
                     .font(Typography.body)
@@ -349,7 +349,7 @@ struct TodayView: View {
                     .foregroundStyle(Color.ink)
                 GhostButton("daily.logExercise") { sheet = .strength }
 
-                CardDivider()
+                BlueprintDivider()
 
                 HStack(spacing: Spacing.s2) {
                     habitToggle("habit.water", isOn: daily.habit?.water ?? false, now: now) { $0.water.toggle() }

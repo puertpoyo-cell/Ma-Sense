@@ -51,6 +51,9 @@ CODE_PATTERNS = {
     r"Color\.red\b|Color\.green\b|\.foregroundStyle\(\.red\)|\.foregroundStyle\(\.green\)|\.tint\(\.red\)|\.tint\(\.green\)|systemRed|systemGreen": "빨강·초록 금지",
     r"role:\s*\.destructive": "destructive 역할은 빨강으로 그려진다",
     r"\"syringe": "주사기 아이콘 금지",
+    r"\"pills": "알약 아이콘 금지",
+    r"\"scalemass": "체중계 아이콘 금지",
+    r"exclamationmark\.triangle": "경고 삼각형 금지 (NoticeLine은 info.circle)",
 }
 
 EMOJI = re.compile("[\U0001F300-\U0001FAFF☀-➿⭐✅]")

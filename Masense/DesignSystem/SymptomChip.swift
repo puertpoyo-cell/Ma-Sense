@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 증상 칩. 라벨 + 현재 강도. 선택 시 `accentSoft` 배경 (DESIGN_SYSTEM.md 5).
+/// 증상 칩. 라벨 + 현재 강도. 선택 시 `accentSoft` 배경 (DESIGN_SYSTEM.md 5.7).
 /// 심각도 3은 색이 아니라 굵기와 텍스트로만 구분한다.
 struct SymptomChip: View {
     let title: String

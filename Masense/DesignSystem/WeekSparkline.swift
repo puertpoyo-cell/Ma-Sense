@@ -1,12 +1,12 @@
 import SwiftUI
 
-/// 주 평균 라인. 샘플 없는 주는 선을 끊고(보간 금지), 투약일은 아래 작은 눈금. 축 라벨 없음 (홈용, DESIGN_SYSTEM.md 5).
+/// 주 평균 라인. 샘플 없는 주는 선을 끊고(보간 금지), 투약일은 아래 4pt 눈금. 축 라벨 없음 (홈용, DESIGN_SYSTEM.md 5.5).
 struct WeekSparkline: View {
     let points: [WeekPoint]
     var tickDates: [Date] = []
 
     private let verticalInset: CGFloat = 4
-    private let tickHeight: CGFloat = 6
+    private let tickHeight: CGFloat = 4
 
     var body: some View {
         GeometryReader { geometry in

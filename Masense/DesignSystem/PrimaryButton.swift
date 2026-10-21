@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// `accent` 채움, `midnight` 텍스트, 높이 52 (DESIGN_SYSTEM.md 5).
+/// `accent` 채움, `midnight` 텍스트, 높이 52 (DESIGN_SYSTEM.md 5.7).
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

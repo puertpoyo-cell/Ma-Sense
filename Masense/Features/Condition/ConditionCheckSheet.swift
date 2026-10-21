@@ -48,6 +48,8 @@ struct ConditionCheckSheet: View {
                 }
             }
         }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
         .presentationBackground(Color.midnightElevated)
     }
 

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "기록했습니다." 토스트. 1.2초, 하단. 축하 애니메이션 없음 (DESIGN_SYSTEM.md 5, 6).
+/// "기록했습니다." 토스트. 1.2초, 하단. 축하 애니메이션 없음, 가벼운 햅틱 1회 (DESIGN_SYSTEM.md 5.7).
 struct RecordedToast: View {
     var body: some View {
         Text("toast.recorded")
@@ -27,6 +27,7 @@ private struct RecordedToastModifier: ViewModifier {
                         .padding(.bottom, Spacing.s6)
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
                         .task {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             try? await Task.sleep(for: Self.visibleDuration)
                             withAnimation(Self.fade) { isPresented = false }
                         }

@@ -83,6 +83,8 @@ struct PrescriptionSheet: View {
                     }
                 }
         }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
         .presentationBackground(Color.midnightElevated)
     }
 

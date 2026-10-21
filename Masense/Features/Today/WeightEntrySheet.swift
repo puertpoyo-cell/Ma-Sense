@@ -82,6 +82,7 @@ struct WeightEntrySheet: View {
             .onAppear { fieldFocused = true }
         }
         .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
         .presentationBackground(Color.midnightElevated)
     }
 

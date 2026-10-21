@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// `notice` 색 텍스트 한 줄 + `info.circle`. 경고 아이콘 금지 (DESIGN_SYSTEM.md 5).
+/// `notice` 색 텍스트 한 줄 + `info.circle`. 경고 아이콘 금지 (DESIGN_SYSTEM.md 5.7).
 struct NoticeLine: View {
     private let textKey: LocalizedStringKey
 

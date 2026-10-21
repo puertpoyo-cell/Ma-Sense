@@ -64,6 +64,8 @@ struct DoseLogSheet: View {
                 }
             }
         }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
         .presentationBackground(Color.midnightElevated)
     }
 
