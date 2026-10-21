@@ -119,11 +119,14 @@ struct WeightSampleSnapshot: Equatable {
     let kilograms: Double
     /// 리포트 D 섹션 출처 표기
     let source: WeightSource
+    /// 제지방량 (M2, 리포트 F)
+    let leanBodyMassKg: Double?
 
-    init(measuredAt: Date, kilograms: Double, source: WeightSource = .manual) {
+    init(measuredAt: Date, kilograms: Double, source: WeightSource = .manual, leanBodyMassKg: Double? = nil) {
         self.measuredAt = measuredAt
         self.kilograms = kilograms
         self.source = source
+        self.leanBodyMassKg = leanBodyMassKg
     }
 }
 

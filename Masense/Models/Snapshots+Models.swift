@@ -65,7 +65,7 @@ extension UserSettings {
 
 extension WeightSample {
     var snapshot: WeightSampleSnapshot {
-        WeightSampleSnapshot(measuredAt: measuredAt, kilograms: kilograms, source: source)
+        WeightSampleSnapshot(measuredAt: measuredAt, kilograms: kilograms, source: source, leanBodyMassKg: leanBodyMassKg)
     }
 }
 

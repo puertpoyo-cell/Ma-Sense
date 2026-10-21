@@ -28,6 +28,9 @@ struct ReportPage: View {
                 symptoms
             }
             .frame(height: 60 * Self.mm, alignment: .top)
+            if let quality = report.quality {
+                qualityRow(quality)
+            }
             if !report.notes.isEmpty {
                 notes
             }
@@ -266,6 +269,43 @@ struct ReportPage: View {
         }
     }
 
+    // MARK: F. 감량의 질 (M2, 데이터 있을 때만)
+
+    private func qualityRow(_ quality: ClinicReport.QualitySection) -> some View {
+        VStack(alignment: .leading, spacing: 2 * Self.mm) {
+            sectionTitle("report.section.quality")
+            HStack(alignment: .top, spacing: gutter) {
+                summaryCell("report.quality.protein") {
+                    switch quality.protein {
+                    case let .target(daysMet, totalDays)?:
+                        Text("report.quality.protein.target \(daysMet) \(totalDays)")
+                    case let .noTarget(recordedDays, averageGrams)?:
+                        Text("report.quality.protein.noTarget \(recordedDays) \(averageGrams)")
+                    case nil:
+                        Text("report.summary.weight.none")
+                    }
+                } detail: {
+                    EmptyView()
+                }
+                summaryCell("report.quality.strength") {
+                    Text("report.quality.strength.count \(quality.strengthCount)")
+                } detail: {
+                    EmptyView()
+                }
+                summaryCell("report.quality.leanMass") {
+                    if let start = quality.leanMassStartText, let end = quality.leanMassEndText {
+                        Text("report.summary.weight.range \(start) \(end)")
+                    } else {
+                        Text("report.summary.weight.none")
+                    }
+                } detail: {
+                    EmptyView()
+                }
+            }
+        }
+        .frame(height: 36 * Self.mm, alignment: .top)
+    }
+
     // MARK: G. 메모 발췌
 
     private var notes: some View {
@@ -329,12 +369,24 @@ struct ReportPage: View {
 }
 
 extension ReportPage {
-    /// 리포트 테마는 강조색 하나만 바꾼다 (DESIGN_SYSTEM.md 1). 구매 후 선택은 M2
+    /// 리포트 테마는 강조색 하나만 바꾼다 (DESIGN_SYSTEM.md 1)
     static func accent(forTheme theme: String) -> Color {
-        switch theme {
-        case "sand": return .accentSand
-        case "sage": return .accentSage
-        default: return .accent
+        (ReportTheme(rawValue: theme) ?? .midnight).accent
+    }
+}
+
+/// 리포트 테마 3종. 구매 후 설정에서 고른다 (PRD F18)
+enum ReportTheme: String, CaseIterable, Identifiable {
+    case midnight, sand, sage
+
+    var id: String { rawValue }
+    var titleKey: String { "theme." + rawValue }
+
+    var accent: Color {
+        switch self {
+        case .midnight: return .accent
+        case .sand: return .accentSand
+        case .sage: return .accentSage
         }
     }
 }

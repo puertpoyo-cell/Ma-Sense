@@ -87,10 +87,10 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [ ] 출처 확정 후 `AppConfig.proteinGuideSource`·`paceGuideSource` 입력 — 입력 전에는 권고 범위 안내와 감량 속도 안내가 숨겨진다 (COMPLIANCE.md 2.2 출처 명시 조건) — 사람
 
 ### M2-c 리포트·연동
-- [ ] `ReportBuilder` F 섹션
-- [ ] `HealthKitService` `leanBodyMass` 읽기
-- [ ] (P2) HealthKit workout → StrengthSession 자동 인식
-- [ ] 리포트 테마 3종 (`accent` 교체)
+- [x] `ReportBuilder` F 섹션 (단백질 채운 날/기록·평균, 근력운동 횟수, 제지방량 시작→현재, 데이터 없으면 생략) + 테스트
+- [x] `HealthKitService` `leanBodyMass` 읽기 (같은 날 HealthKit 체중 샘플에 붙임) + 테스트
+- [x] (P2) HealthKit workout → StrengthSession 자동 인식 (`WorkoutSyncService`, upsert·삭제 반영) + 테스트
+- [x] 리포트 테마 3종 (`accent` 교체, 설정에서 구매 후 선택)
 
 ### M2-d 마감
 - [ ] 금지선 재확인 (판단어 grep: 좋음, 부족, 충분, 성공, 달성)

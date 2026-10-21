@@ -64,8 +64,22 @@ struct ClinicReport: Equatable {
         let text: String
     }
 
-    /// F. 감량의 질 (M2). M1에서는 항상 nil이라 섹션을 그리지 않는다
-    struct QualitySection: Equatable {}
+    /// F. 감량의 질 (M2). 기간 안에 단백질·운동·제지방량 기록이 하나도 없으면 nil이라 섹션을 그리지 않는다.
+    /// "충분", "부족" 같은 평가어 없이 사실만
+    struct QualitySection: Equatable {
+        enum Protein: Equatable {
+            /// 목표 입력 시: 채운 날 / 기간 일수
+            case target(daysMet: Int, totalDays: Int)
+            /// 목표 미입력: 기록한 날 수와 기록한 날의 평균 g
+            case noTarget(recordedDays: Int, averageGrams: Int)
+        }
+
+        let protein: Protein?
+        /// `.strength`만 센다 (걷기·스트레칭·쉬기 제외)
+        let strengthCount: Int
+        let leanMassStartText: String?
+        let leanMassEndText: String?
+    }
 
     let period: DateInterval
     let weeks: Int
@@ -147,6 +161,9 @@ enum ReportBuilder {
         prescriptions: [PrescriptionData],
         checks: [ConditionCheckSnapshot],
         weights: [WeightSampleSnapshot],
+        proteins: [ProteinEntrySnapshot] = [],
+        sessions: [StrengthSessionSnapshot] = [],
+        proteinTarget: Int? = nil,
         now: Date,
         calendar: Calendar,
         appVersion: String
@@ -243,7 +260,14 @@ enum ReportBuilder {
                 reduced: periodChecks.filter { $0.appetite == .reduced }.count,
                 veryReduced: periodChecks.filter { $0.appetite == .veryReduced }.count
             ),
-            quality: nil,
+            quality: qualitySection(
+                period: period,
+                proteins: proteins,
+                sessions: sessions,
+                weights: weights,
+                proteinTarget: proteinTarget,
+                calendar: calendar
+            ),
             notes: noteLines(doses: periodDoses, checks: periodChecks.filter { inPeriod($0.checkedAt) }),
             generatedAt: now,
             appVersion: appVersion
@@ -251,6 +275,43 @@ enum ReportBuilder {
     }
 
     // MARK: 세부
+
+    static func qualitySection(
+        period: DateInterval,
+        proteins: [ProteinEntrySnapshot],
+        sessions: [StrengthSessionSnapshot],
+        weights: [WeightSampleSnapshot],
+        proteinTarget: Int?,
+        calendar: Calendar
+    ) -> ClinicReport.QualitySection? {
+        let inPeriod = { (date: Date) in date >= calendar.startOfDay(for: period.start) && date <= period.end }
+        let periodProteins = proteins.filter { inPeriod($0.date) }
+        let periodSessions = sessions.filter { inPeriod($0.startedAt) }
+        let leanSamples = weights
+            .filter { inPeriod($0.measuredAt) && $0.leanBodyMassKg != nil }
+            .sorted { $0.measuredAt < $1.measuredAt }
+        guard !periodProteins.isEmpty || !periodSessions.isEmpty || !leanSamples.isEmpty else { return nil }
+
+        var protein: ClinicReport.QualitySection.Protein?
+        if !periodProteins.isEmpty {
+            let dayTotals = Dictionary(grouping: periodProteins) { calendar.startOfDay(for: $0.date) }
+                .mapValues { $0.reduce(0) { $0 + $1.estimatedGrams } }
+            if let target = proteinTarget, target > 0 {
+                let days = (calendar.dateComponents([.day], from: calendar.startOfDay(for: period.start), to: calendar.startOfDay(for: period.end)).day ?? 0) + 1
+                protein = .target(daysMet: dayTotals.values.filter { $0 >= target }.count, totalDays: days)
+            } else {
+                let total = dayTotals.values.reduce(0, +)
+                protein = .noTarget(recordedDays: dayTotals.count, averageGrams: Int((Double(total) / Double(dayTotals.count)).rounded()))
+            }
+        }
+
+        return ClinicReport.QualitySection(
+            protein: protein,
+            strengthCount: periodSessions.filter { $0.kind == .strength }.count,
+            leanMassStartText: leanSamples.first?.leanBodyMassKg.map(kilograms),
+            leanMassEndText: leanSamples.last?.leanBodyMassKg.map(kilograms)
+        )
+    }
 
     static func symptomRows(_ checks: [ConditionCheckSnapshot]) -> [ClinicReport.SymptomRow] {
         let order = Dictionary(uniqueKeysWithValues: Symptom.allCases.enumerated().map { ($1, $0) })

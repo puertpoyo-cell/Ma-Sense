@@ -411,7 +411,7 @@ struct TodayView: View {
 
     private func syncHealthIfAuthorized() async {
         guard settingsList.first?.healthKitAuthorized == true, services.healthKit.isAvailable else { return }
-        try? await WeightSyncService.sync(reader: services.healthKit, context: context)
+        try? await HealthSyncService.syncAll(reader: services.healthKit, context: context)
         try? context.save()
     }
 
@@ -421,7 +421,7 @@ struct TodayView: View {
             settings.healthKitAuthorized = granted
         }
         if granted {
-            try? await WeightSyncService.sync(reader: services.healthKit, context: context)
+            try? await HealthSyncService.syncAll(reader: services.healthKit, context: context)
         }
         try? context.save()
     }

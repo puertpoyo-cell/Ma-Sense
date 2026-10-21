@@ -9,6 +9,8 @@ struct ReportView: View {
     @Query(sort: \ConditionCheck.checkedAt) private var checks: [ConditionCheck]
     @Query(sort: \WeightSample.measuredAt) private var weights: [WeightSample]
     @Query private var settingsList: [UserSettings]
+    @Query(sort: \ProteinEntry.date) private var proteins: [ProteinEntry]
+    @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
 
     @State private var period: ReportPeriod?
     @State private var pdfURL: URL?
@@ -116,6 +118,9 @@ struct ReportView: View {
             },
             checks: checks.compactMap(\.snapshot),
             weights: weights.map(\.snapshot),
+            proteins: proteins.map(\.snapshot),
+            sessions: sessions.map(\.snapshot),
+            proteinTarget: settings?.proteinTargetGrams,
             now: now,
             calendar: calendar,
             appVersion: DataExportService.appVersion

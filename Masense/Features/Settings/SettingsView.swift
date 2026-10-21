@@ -74,6 +74,7 @@ private struct SettingsForm: View {
             if services.healthKit.isAvailable {
                 healthSection
             }
+            reportSection
             purchaseSection
             dataSection
             infoSection
@@ -270,9 +271,36 @@ private struct SettingsForm: View {
         let granted = (try? await services.healthKit.requestReadAuthorization()) ?? false
         settings.healthKitAuthorized = granted
         if granted {
-            try? await WeightSyncService.sync(reader: services.healthKit, context: context)
+            try? await HealthSyncService.syncAll(reader: services.healthKit, context: context)
         }
         try? context.save()
+    }
+
+    // MARK: 리포트 (테마는 구매 후)
+
+    private var reportSection: some View {
+        Section {
+            Picker("settings.report.theme", selection: $settings.reportTheme) {
+                ForEach(ReportTheme.allCases) { theme in
+                    Text(LocalizedStringKey(theme.titleKey)).tag(theme.rawValue)
+                }
+            }
+            .disabled(!settings.hasPurchasedPro)
+            LabeledContent("settings.report.accent") {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(ReportPage.accent(forTheme: settings.reportTheme))
+                    .frame(width: 44, height: 8)
+                    .accessibilityHidden(true)
+            }
+        } header: {
+            Text("settings.section.report")
+        } footer: {
+            if !settings.hasPurchasedPro {
+                Text("settings.report.themeLocked")
+            }
+        }
+        .listRowBackground(Color.frost)
+        .onChange(of: settings.reportTheme) { try? context.save() }
     }
 
     // MARK: 구매

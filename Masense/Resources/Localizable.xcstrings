@@ -2568,6 +2568,108 @@
         }
       }
     },
+    "report.quality.leanMass": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lean body mass"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제지방량"
+          }
+        }
+      }
+    },
+    "report.quality.protein": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protein"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단백질"
+          }
+        }
+      }
+    },
+    "report.quality.protein.noTarget %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorded %1$lld days, avg %2$lld g"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록 %1$lld일, 평균 %2$lld g"
+          }
+        }
+      }
+    },
+    "report.quality.protein.target %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal filled on %1$lld / %2$lld days"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "채운 날 %1$lld / %2$lld일"
+          }
+        }
+      }
+    },
+    "report.quality.strength": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strength training"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근력운동"
+          }
+        }
+      }
+    },
+    "report.quality.strength.count %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld times"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld회"
+          }
+        }
+      }
+    },
     "report.section.notes": {
       "extractionState": "manual",
       "localizations": {
@@ -2581,6 +2683,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "메모 발췌"
+          }
+        }
+      }
+    },
+    "report.section.quality": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits during weight loss"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "감량의 질"
           }
         }
       }
@@ -3809,6 +3928,57 @@
         }
       }
     },
+    "settings.report.accent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accent"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "강조색"
+          }
+        }
+      }
+    },
+    "settings.report.theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report theme"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리포트 테마"
+          }
+        }
+      }
+    },
+    "settings.report.themeLocked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Available after purchase."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "구매 후 고를 수 있습니다."
+          }
+        }
+      }
+    },
     "settings.sameDay": {
       "extractionState": "manual",
       "localizations": {
@@ -3941,6 +4111,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "구매"
+          }
+        }
+      }
+    },
+    "settings.section.report": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리포트"
           }
         }
       }
@@ -4655,6 +4842,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "오늘"
+          }
+        }
+      }
+    },
+    "theme.midnight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Midnight"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "미드나이트"
+          }
+        }
+      }
+    },
+    "theme.sage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sage"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "세이지"
+          }
+        }
+      }
+    },
+    "theme.sand": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sand"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "샌드"
           }
         }
       }
