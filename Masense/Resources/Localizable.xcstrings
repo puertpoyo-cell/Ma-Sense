@@ -2251,13 +2251,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The general guide is 1.2–1.6 g per kg of body weight. For kidney disease or other individual conditions, consult your doctor."
+            "value": "During weight loss, the general guide is 1.2–1.6 g per kg of body weight per day. For kidney disease or other individual conditions, consult your doctor."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "일반적인 권고 범위는 체중 1 kg당 1.2~1.6 g입니다. 신장 질환 등 개인 상황은 의사와 상의하세요."
+            "value": "감량 중 일반적인 권고 범위는 체중 1 kg당 하루 1.2~1.6 g입니다. 신장 질환 등 개인 상황은 의사와 상의하세요."
           }
         }
       }
@@ -2326,6 +2326,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld~%2$lld g"
+          }
+        }
+      }
+    },
+    "protein.source": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source: Joint advisory of the American College of Lifestyle Medicine, American Society for Nutrition, Obesity Medicine Association, and The Obesity Society (Obesity, 2025)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출처: 미국 생활습관의학회·영양학회·비만의학회·비만학회 공동 권고문 (Obesity, 2025)"
           }
         }
       }

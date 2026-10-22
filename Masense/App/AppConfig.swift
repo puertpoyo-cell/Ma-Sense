@@ -8,8 +8,8 @@ enum AppConfig {
 
     /// 단백질 권고 범위(1.2~1.6 g/kg) 출처 문구의 `Localizable` 키 (COMPLIANCE.md 2.2: 출처 명시가 허용 조건).
     /// nil이면 설정의 권고 범위 안내를 보이지 않는다. 목표 입력과 기록은 출처와 무관하게 동작한다.
-    /// 2026-10-22 결정: 표시한다. 출처 후보(2025 공동 권고문)의 원문 수치 확인 뒤 키를 넣는다 (MILESTONES D3-c)
-    static let proteinGuideSource: String? = nil
+    /// 2026-10-22 결정: 표시. 출처는 2025 미국 4개 학회 공동 권고문 (감량 중 1.2~1.6 g/kg/일, 지속 2 g/kg/일 초과는 피함)
+    static let proteinGuideSource: String? = "protein.source"
 
     /// 감량 속도 일반 권장 범위(주 0.5~1 kg) 출처 문구의 `Localizable` 키 (COMPLIANCE.md 2.2).
     /// nil이면 체중 카드의 감량 속도 안내(R8)를 보이지 않는다. 2026-10-22 결정: CDC 기준으로 표시
