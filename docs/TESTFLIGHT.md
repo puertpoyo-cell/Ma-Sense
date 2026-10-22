@@ -4,7 +4,7 @@
 
 1. **번들 ID 확정** — 현재 `com.masense.Masense` (테스트 `com.masense.MasenseTests`). Xcode > Masense 타깃 > Signing & Capabilities에서 팀 선택, 필요하면 번들 ID 변경
 2. **App Store Connect 앱 생성** — 이름, 기본 언어 한국어, 번들 ID 연결
-3. **인앱 구매 상품 생성** — 비소모성 1종. 상품 ID를 정하고 `Masense/Services/StoreService.swift`의 `productID`(현재 `com.masense.pro`)와 맞춘다
+3. **인앱 구매 상품 생성** — 비소모성 1종, 상품 ID `com.masense.pro` (2026-10-22 확정, `StoreService.productID`). 만든 뒤 Xcode에서 동기화 `.storekit` 구성 파일을 만들어 스킴에 지정하면 시뮬레이터에서 구매·복원을 시험할 수 있다
 4. **HealthKit** — 사용하기로 결정(2026-10-22), 코드에 반영됨:
    - entitlement `Config/Masense.entitlements` (`CODE_SIGN_ENTITLEMENTS`), 사용 설명 `INFOPLIST_KEY_NSHealthShareUsageDescription` + 번역 `Masense/Resources/InfoPlist.xcstrings` (COMPLIANCE.md 4.2)
    - 1번에서 팀을 고르면 자동 서명이 App ID에 HealthKit을 등록한다. Signing & Capabilities에 HealthKit이 보이는지만 확인

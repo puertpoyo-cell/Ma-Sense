@@ -33,7 +33,8 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] `HealthKitService` — 권한, `bodyMass` 읽기, 캐시 upsert (`WeightSyncService`, 프로토콜 + Fake)
 - [x] `StoreService` — StoreKit 2 비소모성 1종, 복원 (프로토콜 + Fake)
 - [x] HealthKit capability(entitlement) + `NSHealthShareUsageDescription` 추가 — 2026-10-22 사용 결정, D3-a
-- [ ] StoreKit 상품 ID 확정 (현재 코드 기본값 `com.masense.pro`) + 로컬 테스트용 `.storekit` 구성 파일 — 사람 확인 필요
+- [x] StoreKit 상품 ID 확정 — `com.masense.pro` 유지 (2026-10-22 사람 결정)
+- [ ] 로컬 구매 테스트용 `.storekit` 구성 파일 — App Store Connect에 상품을 만든 뒤 Xcode에서 "Sync this file with an app in App Store Connect"로 생성 (가격·이름이 ASC 값을 따른다). 스킴 Run > Options > StoreKit Configuration에 지정 — 사람
 - [ ] 번들 ID 확정 (현재 `com.masense.Masense`) — Xcode Signing에서 팀 선택 시 함께
 
 ### M1-c 화면
@@ -145,7 +146,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | # | 항목 | 바꿀 곳 | 정하기 전 동작 |
 |---|---|---|---|
 | 1 | 번들 ID·서명 팀 | Xcode Signing (현재 `com.masense.Masense`) | 시뮬레이터·CI는 서명 없이 동작 |
-| 2 | 인앱 구매 상품 ID | `StoreService.productID` (현재 `com.masense.pro`) | 상품을 못 불러오면 구매 버튼이 안 보임, 복원 버튼만 |
+| 2 | ~~인앱 구매 상품 ID~~ — **결정: `com.masense.pro` 유지 (2026-10-22)**. App Store Connect에 같은 ID로 비소모성 상품 생성 필요 | `StoreService.productID` | 상품을 못 불러오면 구매 버튼이 안 보임, 복원 버튼만 |
 | 3 | ~~HealthKit 사용~~ — **결정: 사용 (2026-10-22), D3-a 반영** | `Config/Masense.entitlements`, `INFOPLIST_KEY_NSHealthShareUsageDescription`, `InfoPlist.xcstrings` | — |
 | 4 | 개인정보 처리방침 게시 URL·시행일·문의 이메일 | `AppConfig.privacyPolicyURL`, `docs/privacy/index.html` | 설정에 처리방침 링크 숨김 |
 | 5 | 단백질 권고 범위 출처 — **결정: 표시. 출처 후보 2025 공동 권고문(ACLM·ASN·OMA·TOS, Obesity 2025, doi:10.1002/oby.24336) 원문의 단백질 수치 확인 대기** | `AppConfig.proteinGuideSource`에 출처 문구 키 | 설정의 권고 범위 안내 숨김 (목표 입력은 동작) |
@@ -172,6 +173,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2026-10-20 | 투약 간격을 `intervalDays`로 모델링, UI는 주 1회만 | v2 확장 대비, 스키마 변경 회피 |
 | 2026-10-20 | `doseLabel`은 자유 메모, 앱이 해석 안 함 | 용량 판단 금지선 |
 | 2026-10-20 | 빨강·초록 색 금지 | 판단하지 않는 원칙의 시각화 |
+| 2026-10-22 | 인앱 구매 상품 ID `com.masense.pro` 유지 | 사람 결정. 비소모성 1종 구성 그대로 |
 | 2026-10-22 | HealthKit 읽기 연동 사용 (체중·제지방량·운동) | 사람 결정. 쓰기는 하지 않음 |
 | 2026-10-22 | 리포트 기본 기간을 설정에 저장 (SchemaV3, 경량 마이그레이션) | 사람 결정. 바뀐 모델은 이전 버전에 고정 사본 |
 | 2026-10-22 | 감량 속도 안내 기준을 주 1%에서 주 1 kg(CDC 주 0.5~1 kg 상한)으로 | 사람 결정. % 기준은 확인 가능한 공식 출처가 없음 |

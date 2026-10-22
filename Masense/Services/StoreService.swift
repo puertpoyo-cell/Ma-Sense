@@ -23,7 +23,7 @@ enum StoreError: Error {
 }
 
 final class StoreService: StorePurchasing {
-    /// App Store Connect의 상품 ID. 결제 상품 구성 변경은 사람 확인 후 (CLAUDE.md)
+    /// App Store Connect의 상품 ID (2026-10-22 확정). 결제 상품 구성 변경은 사람 확인 후 (CLAUDE.md)
     static let productID = "com.masense.pro"
 
     private var product: Product?
