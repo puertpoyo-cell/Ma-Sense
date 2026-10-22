@@ -84,7 +84,8 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] S4 습관 세그먼트 캘린더 (`HistoryModel.habitMonth` + 테스트, 모양으로 구분)
 - [x] S6 단백질 설정 섹션 (목표는 직접 입력, 앱이 기본값 제안 안 함)
 - [x] 1-3 체중 카드에 `paceNotice`
-- [ ] 출처 확정 후 `AppConfig.proteinGuideSource`·`paceGuideSource` 입력 — 입력 전에는 권고 범위 안내와 감량 속도 안내가 숨겨진다 (COMPLIANCE.md 2.2 출처 명시 조건) — 사람
+- [x] 감량 속도 안내 출처 `AppConfig.paceGuideSource = "pace.source"` (CDC, 2026-10-22, D3-c)
+- [ ] 단백질 권고 범위 출처 `AppConfig.proteinGuideSource` — 표시하기로 결정. 출처 후보 원문 확인 대기 — 사람
 
 ### M2-c 리포트·연동
 - [x] `ReportBuilder` F 섹션 (단백질 채운 날/기록·평균, 근력운동 횟수, 제지방량 시작→현재, 데이터 없으면 생략) + 테스트
@@ -125,7 +126,8 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 
 - [x] D3-a HealthKit 읽기 연동: entitlement, `NSHealthShareUsageDescription`(ko/en), 금지선 점검이 권한 문구도 본다
 - [x] D3-b 리포트 기본 기간 저장: SchemaV3(`UserSettings.reportDefaultPeriod`), V1·V2 `UserSettings` 고정 사본, R12 `defaultPeriod(saved:…)`, 설정 > 리포트 "기본 기간", 마이그레이션 테스트 V2 → V3
-- [ ] D3-c 단백질 권고 범위·감량 속도 안내 출처 확정 후 `AppConfig` 입력 — 표시하기로 결정(5·6번). 감량 속도 문구는 "일반 권장일 뿐, 의사와 상의"로 끝낸다. 출처 원문 확인 대기
+- [x] D3-c 감량 속도 안내: CDC 주 0.5~1 kg 기준으로 R8을 kg 단위로 바꾸고 표시(`pace.source`). 문구는 "일반적인 권장일 뿐 사람마다 다를 수 있으니 의사와 상의하세요"로 끝낸다
+- [ ] D3-d 단백질 권고 범위: 공동 권고문 원문의 단백질 수치 확인 후 출처 문구 키를 `AppConfig.proteinGuideSource`에 넣는다 — 사람 확인 대기
 
 ## M3 — 출시 준비 (1주)
 
@@ -146,8 +148,8 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2 | 인앱 구매 상품 ID | `StoreService.productID` (현재 `com.masense.pro`) | 상품을 못 불러오면 구매 버튼이 안 보임, 복원 버튼만 |
 | 3 | ~~HealthKit 사용~~ — **결정: 사용 (2026-10-22), D3-a 반영** | `Config/Masense.entitlements`, `INFOPLIST_KEY_NSHealthShareUsageDescription`, `InfoPlist.xcstrings` | — |
 | 4 | 개인정보 처리방침 게시 URL·시행일·문의 이메일 | `AppConfig.privacyPolicyURL`, `docs/privacy/index.html` | 설정에 처리방침 링크 숨김 |
-| 5 | 단백질 권고 범위 출처 | `AppConfig.proteinGuideSource` | 설정의 권고 범위 안내 숨김 (목표 입력은 동작) |
-| 6 | 감량 속도 일반 권고 출처 | `AppConfig.paceGuideSource` | 체중 카드의 감량 속도 안내(R8) 숨김 |
+| 5 | 단백질 권고 범위 출처 — **결정: 표시. 출처 후보 2025 공동 권고문(ACLM·ASN·OMA·TOS, Obesity 2025, doi:10.1002/oby.24336) 원문의 단백질 수치 확인 대기** | `AppConfig.proteinGuideSource`에 출처 문구 키 | 설정의 권고 범위 안내 숨김 (목표 입력은 동작) |
+| 6 | ~~감량 속도 출처~~ — **결정: CDC 주 0.5~1 kg 기준으로 표시 (2026-10-22), D3-c 반영** | `pace.notice`, `pace.source`, `PaceRules.weeklyChangeThresholdKg` | — |
 | 7 | 맨몸 예시 루틴 문구 검토 | `Localizable.xcstrings`의 `exercise.routine.*` | 초안 그대로 표시 (일반 건강관리 정보 고지와 함께) |
 | 8 | ~~리포트 기본 기간 저장~~ — **결정: 저장 (2026-10-22), D3-b 반영** | `UserSettings.reportDefaultPeriod`, SchemaV3 | — |
 | 9 | 앱 이름·부제·아이콘 (브랜딩 논의) | 스토어 문구, `INFOPLIST_KEY_CFBundleDisplayName`, AppIcon | 작업명 "마선생" |
@@ -172,6 +174,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2026-10-20 | 빨강·초록 색 금지 | 판단하지 않는 원칙의 시각화 |
 | 2026-10-22 | HealthKit 읽기 연동 사용 (체중·제지방량·운동) | 사람 결정. 쓰기는 하지 않음 |
 | 2026-10-22 | 리포트 기본 기간을 설정에 저장 (SchemaV3, 경량 마이그레이션) | 사람 결정. 바뀐 모델은 이전 버전에 고정 사본 |
+| 2026-10-22 | 감량 속도 안내 기준을 주 1%에서 주 1 kg(CDC 주 0.5~1 kg 상한)으로 | 사람 결정. % 기준은 확인 가능한 공식 출처가 없음 |
 | 2026-10-21 | `Prescription.scheduledTime`은 `scheduledHour`·`scheduledMinute` Int 2개로 저장, `DateComponents`는 계산 속성 | SwiftData Codable 저장 안정성 |
 | 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
 | 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |

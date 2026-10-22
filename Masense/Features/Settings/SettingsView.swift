@@ -231,7 +231,7 @@ private struct SettingsForm: View {
                     .font(Typography.caption)
                     .foregroundStyle(Color.inkSecondary)
                 NoticeLine("protein.guide")
-                Text(verbatim: source)
+                Text(LocalizedStringKey(source))
                     .font(Typography.caption)
                     .foregroundStyle(Color.inkTertiary)
             }

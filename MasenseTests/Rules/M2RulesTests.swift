@@ -95,16 +95,20 @@ struct M2RulesTests {
         }
     }
 
-    @Test func paceNoticeWhenTwoWeeksFasterThanOnePercent() {
+    @Test func paceNoticeWhenTwoWeeksFasterThanOneKilogram() {
         #expect(PaceRules.paceNotice(series: series([100, 98, 96])) == .fasterThanGeneralGuide)
-        #expect(PaceRules.paceNotice(series: series([110, 105, 100, 98, 96])) == .fasterThanGeneralGuide)
+        #expect(PaceRules.paceNotice(series: series([110, 105, 100, 98.5, 97])) == .fasterThanGeneralGuide)
+        // 기준은 kg: 체중이 커서 1% 미만이어도 주 1 kg를 넘으면 안내
+        #expect(PaceRules.paceNotice(series: series([150, 148.8, 147.6])) == .fasterThanGeneralGuide)
     }
 
-    @Test func noPaceNoticeAtExactlyOnePercentOrOnlyOneWeek() {
-        // 첫 주 정확히 -1.0% → 초과가 아니므로 안내 없음
+    @Test func noPaceNoticeAtExactlyOneKilogramOrOnlyOneWeek() {
+        // 첫 주 정확히 -1.0 kg → 초과가 아니므로 안내 없음
         #expect(PaceRules.paceNotice(series: series([100, 99, 97])) == nil)
         // 한 주만 빠름
         #expect(PaceRules.paceNotice(series: series([100, 99.5, 97])) == nil)
+        // 체중이 작아 1%를 넘어도 주 1 kg 이하면 안내 없음
+        #expect(PaceRules.paceNotice(series: series([60, 59.2, 58.4])) == nil)
     }
 
     @Test func noPaceNoticeWhenSlowerGainingOrMissingWeeks() {

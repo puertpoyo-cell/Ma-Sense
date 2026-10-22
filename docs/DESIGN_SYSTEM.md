@@ -122,7 +122,7 @@ Deep Midnight Navy 배경 위에 상단 하이라이트 보더가 적용된 Fros
 - R7 주 평균. 샘플 없는 주는 보간하지 않고 선을 끊는다.
 - 투약일마다 4pt 세로 눈금.
 - `WeekSparkline`(홈)은 축 라벨 없음. `WeekChart`(기록 탭·리포트)는 y축 최소·최대 2개, x축 주 시작일.
-- 최근 2주 연속 주당 변화율이 -1.0%를 넘을 때만 카드 하단 `NoticeLine`(`pace.notice`). 출처(`AppConfig.paceGuideSource`)가 정해지기 전에는 숨긴다 (COMPLIANCE.md 2.2).
+- 최근 2주 연속 주당 감소가 1.0 kg를 넘을 때만 카드 하단 `NoticeLine`(`pace.notice`) + 출처 한 줄(`pace.source`, `inkTertiary`). `AppConfig.paceGuideSource`가 nil이면 숨긴다 (COMPLIANCE.md 2.2).
 
 ### 5.6 `MealSlotRow`와 습관·운동 UI (M2)
 - 홈 "오늘의 마디": 끼니 4칸(아침·점심·저녁·간식)은 8×8pt 원형 도트. 기록한 끼니만 `accent`로 채운다. 빈 끼니에 "건너뜀" 단어·아이콘 없음.

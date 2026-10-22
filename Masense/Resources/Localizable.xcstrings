@@ -1979,13 +1979,30 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your recent weight change is faster than the general guide (0.5–1% per week). Consider discussing it at your next appointment."
+            "value": "Over the last 2 weeks your weight went down faster than the general guide (0.5–1 kg per week). This is only a general guide and differs by person, so talk with your doctor."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "최근 체중 변화가 일반 권고 범위(주 0.5~1%)보다 빠릅니다. 진료 때 상의해 보세요."
+            "value": "최근 2주 체중이 일반 권장 속도(주 0.5~1 kg)보다 빠르게 줄었습니다. 일반적인 권장일 뿐 사람마다 다를 수 있으니 의사와 상의하세요."
+          }
+        }
+      }
+    },
+    "pace.source": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source: U.S. Centers for Disease Control and Prevention (CDC) weight loss guidance, 1–2 pounds (about 0.5–1 kg) per week"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출처: 미국 질병통제예방센터(CDC) 체중 감량 안내, 주 1~2파운드(약 0.5~1 kg)"
           }
         }
       }

@@ -153,7 +153,7 @@ struct TodayView: View {
                         // R8: 빠른 경우에만, 색 강조 없이 한 줄. 출처가 정해진 뒤에만 보인다 (COMPLIANCE.md 2.2)
                         if model.paceNotice != nil, let source = AppConfig.paceGuideSource {
                             NoticeLine("pace.notice")
-                            Text(verbatim: source)
+                            Text(LocalizedStringKey(source))
                                 .font(Typography.caption)
                                 .foregroundStyle(Color.inkTertiary)
                         }
