@@ -91,6 +91,7 @@ jobs:
             name=$(basename "$f" .png)
             sips -s format jpeg -s formatOptions 50 -Z 1400 "$f" --out "shots/$name.jpg" > /dev/null
             echo "=====SHOT $name"
-            base64 -b 76 -i "shots/$name.jpg"
+            # 한 줄을 길게 해 로그 끝 몇천 줄 안에 모든 장이 들어가게 한다
+            base64 -b 3000 -i "shots/$name.jpg"
             echo "=====END $name"
           done

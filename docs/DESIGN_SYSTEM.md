@@ -149,8 +149,9 @@ Deep Midnight Navy 배경 위에 상단 하이라이트 보더가 적용된 Fros
 - **모션**: 카드 등장 `opacity 0→1` + `offset(y: 8→0)`, `.easeOut(duration: 0.25)` (손쉬운 사용 "동작 줄이기"면 생략). 숫자 변경 `.contentTransition(.numericText())`. 축하 애니메이션 없음.
 - **아이콘 금지**: `syringe`(주사기), `pills`(알약), 체중계(`scalemass`) 심볼. 투약·마디 아이콘은 `circle.grid.cross` 또는 `calendar.badge.clock`만.
 - **앱 아이콘**: `midnight` 배경 위에 건축 스케일(자의 눈금)과 마디를 결합한 수직·수평 도면 선.
-  - 1차안 "유리 위 Ma" (2026-10-22, `scripts/make_app_icon.py`로 생성): 미니멀 + 글래스모피즘. `midnight` 배경 뒤 accent·인디고 빛 두 덩이, 그 위 반투명 유리판(뒤를 흐리게 비침, 테두리 위 밝게 → 아래 옅게 = `FrostCard`와 같은 재질), 유리판 위 기하 모노그램 "Ma" — M은 `ink`, a는 `accent`(이번 마디)
-  - 대안 `hangul`: "마" (ㅁ = 도면 칸, ㅏ의 가로획 = 자의 눈금, 끝의 accent 점 = 이번 마디). `python3 scripts/make_app_icon.py hangul`
+  - 1차안 "유리 막대 M" (2026-10-22, `scripts/make_app_icon.py`로 생성): 미니멀 + 글래스모피즘. 바탕은 `midnight` 단색, 마크 자체가 유리다. 양 끝이 둥근 캡슐형 유리 막대 4개가 겹쳐 M을 이루고, 뒤의 accent → 인디고 구(이번 마디)가 유리에 흐릿하게 비친다. 막대마다 유리를 따로 얹어 겹친 곳이 더 밝다. 유리 재질은 `FrostCard`와 같다(흐림 + 흰빛, 위가 밝은 테두리, 위쪽 광택)
+  - 막대는 단색이다. 두 색 나눔·가운데 이음선 같은 알약 표현과 주사기 형상은 쓰지 않는다 (위 아이콘 금지)
+  - 대안: `ma`(기하 "Ma" 한 장 유리), `hangul`("마"). `python3 scripts/make_app_icon.py ma|hangul`
   - 모노그램은 앱 이름(마선생 / Masense)에서만 가져온다. 의약품 상표·로고를 연상시키는 형태·색·서체는 쓰지 않고, 홍보에서도 약과 연결하지 않는다 (COMPLIANCE.md 2.1-2)
   - 1024×1024 RGB(알파 없음) 한 장, 글꼴 파일 없이 선·원으로 그린다. 이름·부제와 함께 브랜딩 논의에서 확정
 

@@ -128,7 +128,8 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] D3-a HealthKit 읽기 연동: entitlement, `NSHealthShareUsageDescription`(ko/en), 금지선 점검이 권한 문구도 본다
 - [x] D3-b 리포트 기본 기간 저장: SchemaV3(`UserSettings.reportDefaultPeriod`), V1·V2 `UserSettings` 고정 사본, R12 `defaultPeriod(saved:…)`, 설정 > 리포트 "기본 기간", 마이그레이션 테스트 V2 → V3
 - [x] D3-c 감량 속도 안내: CDC 주 0.5~1 kg 기준으로 R8을 kg 단위로 바꾸고 표시(`pace.source`). 문구는 "일반적인 권장일 뿐 사람마다 다를 수 있으니 의사와 상의하세요"로 끝낸다
-- [x] D3-e 앱 아이콘 1차안 "유리 위 Ma" — 미니멀·글래스모피즘, 이름에서 온 모노그램 (`scripts/make_app_icon.py` → `AppIcon.png`, 대안 `hangul`, DESIGN_SYSTEM.md 6)
+- [x] D3-e 앱 아이콘 1차안 "유리 막대 M" — 단색 바탕, 캡슐형 유리 막대 4개 M + 뒤의 accent 구 (`scripts/make_app_icon.py` → `AppIcon.png`, 대안 `ma`·`hangul`, DESIGN_SYSTEM.md 6)
+- [x] 시뮬레이터 스크린샷으로 찾은 버그: 바디맵 실루엣·구역이 캔버스 밖으로 밀림(정렬 기준 누락), 예정 시간 "(금요일)" 괄호
 - [x] D3-f 시뮬레이터 스크린샷 워크플로 (`screenshots.yml`, `[shots]` 커밋 또는 수동 실행, DEBUG `-route`)
 - [x] D3-d 단백질 권고 범위 표시: 출처 2025 공동 권고문(감량 중 1.2~1.6 g/kg/일 제안, 일반 성인 기준 0.8 g/kg, 하루 2 g/kg 초과 지속은 피함). `protein.guide`에 "감량 중"을 밝히고 "의사와 상의하세요"로 끝낸다
 
@@ -155,7 +156,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 6 | ~~감량 속도 출처~~ — **결정: CDC 주 0.5~1 kg 기준으로 표시 (2026-10-22), D3-c 반영** | `pace.notice`, `pace.source`, `PaceRules.weeklyChangeThresholdKg` | — |
 | 7 | 맨몸 예시 루틴 문구 검토 | `Localizable.xcstrings`의 `exercise.routine.*` | 초안 그대로 표시 (일반 건강관리 정보 고지와 함께) |
 | 8 | ~~리포트 기본 기간 저장~~ — **결정: 저장 (2026-10-22), D3-b 반영** | `UserSettings.reportDefaultPeriod`, SchemaV3 | — |
-| 9 | 앱 이름·부제·아이콘 (브랜딩 논의) — 아이콘 1차안 "유리 위 Ma" 적용 (2026-10-22), 대안 "마" | 스토어 문구, `INFOPLIST_KEY_CFBundleDisplayName`, `scripts/make_app_icon.py` | 작업명 "마선생", 아이콘 1차안 |
+| 9 | 앱 이름·부제·아이콘 (브랜딩 논의) — 아이콘 1차안 "유리 막대 M" 적용 (2026-10-22), 대안 "Ma"·"마" | 스토어 문구, `INFOPLIST_KEY_CFBundleDisplayName`, `scripts/make_app_icon.py` | 작업명 "마선생", 아이콘 1차안 |
 | 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장 | — | — |
 | 11 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
 

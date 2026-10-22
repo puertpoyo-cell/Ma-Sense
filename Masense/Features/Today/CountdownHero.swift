@@ -120,7 +120,8 @@ struct CountdownHero: View {
     private var scheduleCell: some View {
         BlueprintCell("today.cell.schedule") {
             if let scheduleDate {
-                Text(scheduleDate.formatted(.dateTime.weekday(.wide).hour().minute()))
+                // "금요일 오후 8:00". 요일과 시각을 한 포맷으로 묶으면 한국어에서 "(금요일)"처럼 괄호가 붙는다
+                Text(verbatim: scheduleDate.formatted(.dateTime.weekday(.wide)) + " " + scheduleDate.formatted(date: .omitted, time: .shortened))
                     .font(Typography.label)
                     .foregroundStyle(Color.ink)
                     .multilineTextAlignment(.trailing)

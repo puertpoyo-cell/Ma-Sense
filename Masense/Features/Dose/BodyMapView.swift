@@ -19,7 +19,8 @@ struct BodyMapView: View {
                     region(site)
                 }
             }
-            .frame(width: Self.canvas.width, height: Self.canvas.height)
+            // 좌표계 원점을 캔버스 좌상단에 고정한다. 정렬을 빼면 묶음이 가운데로 밀려 실루엣과 구역이 어긋난다
+            .frame(width: Self.canvas.width, height: Self.canvas.height, alignment: .topLeading)
 
             HStack {
                 Text("bodymap.right")
@@ -73,6 +74,7 @@ struct BodyMapView: View {
             outline(RoundedRectangle(cornerRadius: 14), CGRect(x: 80, y: 196, width: 38, height: 140))
             outline(RoundedRectangle(cornerRadius: 14), CGRect(x: 122, y: 196, width: 38, height: 140))
         }
+        .frame(width: Self.canvas.width, height: Self.canvas.height, alignment: .topLeading)
         .accessibilityHidden(true)
     }
 

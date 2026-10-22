@@ -1,15 +1,17 @@
-"""앱 아이콘: 유리판 위 이름 모노그램 (DESIGN_SYSTEM.md 6). Pillow 필요.
+"""앱 아이콘: 단색 바탕 위 유리 모노그램 (DESIGN_SYSTEM.md 6). Pillow 필요.
 
-미니멀 + 글래스모피즘. 앱의 FrostCard와 같은 재질 언어를 쓴다.
-- midnight 배경 뒤에 accent 계열 빛 두 덩이가 번지고, 그 위에 반투명 유리판(뒤를 흐리게 비침)
-- 유리판 테두리는 위가 밝고 아래로 옅어지는 그라데이션 (frostHighlightTop → Bottom)
-- 모노그램은 앱 이름(마선생 / Masense)에서만 가져온다. 의약품 상표·로고를 연상시키는 형태·색은 쓰지 않는다 (COMPLIANCE.md 2.1-2)
-  - `ma` (기본): 기하 도형으로 그린 "Ma". M은 ink, a는 accent = 이번 마디
-  - `hangul`: "마". ㅁ은 도면 칸, ㅏ의 가로획은 자의 눈금이고 끝의 accent 점이 이번 마디
-- 글꼴 파일을 쓰지 않고 선·원으로 그린다 (라이선스 걱정 없음)
+- 바탕은 midnight 단색. 마크 자체가 유리(글래스모피즘)다
+- 마크 뒤에 accent → 인디고 구(球) 하나가 있고, 유리 마크가 그 위에 겹쳐 흐릿하게 비친다 = 이번 마디
+- 유리 마크: 뒤를 흐리게 비치는 반투명 채움 + 위가 밝고 아래로 옅어지는 테두리 + 위쪽 광택 + 옅은 그림자 (FrostCard와 같은 재질)
+- 모노그램은 앱 이름(마선생 / Masense)에서만 가져온다. 의약품 상표·로고를 연상시키는 형태·색·서체는 쓰지 않는다 (COMPLIANCE.md 2.1-2)
+  - `m4` (기본): 캡슐형 유리 막대 4개를 겹쳐 세운 "M". 막대마다 유리를 따로 얹어 겹친 곳이 더 밝다
+    주사기·알약 형상 금지(DESIGN_SYSTEM.md 6): 막대는 단색, 두 색 나눔·가운데 이음선 같은 알약 표현 없음
+  - `ma`: 기하 도형 "Ma" 한 장 유리
+  - `hangul`: "마" (ㅁ = 도면 칸, ㅏ의 가로획 = 자의 눈금)
+- 글꼴 파일 없이 선·원으로 그린다
 
 출력: Masense/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png (1024×1024, RGB, 알파 없음)
-실행: python3 scripts/make_app_icon.py [ma|hangul] [출력 경로]
+실행: python3 scripts/make_app_icon.py [m4|ma|hangul] [출력 경로]
 """
 
 import pathlib
@@ -28,152 +30,151 @@ S = SIZE * SCALE
 MIDNIGHT = (0x0B, 0x12, 0x20)
 INK = (0xF2, 0xF5, 0xFA)
 ACCENT = (0x7F, 0xB3, 0xFF)
-INDIGO = (0x4F, 0x6B, 0xE8)  # 배경 빛 두 번째 덩이. accent와 같은 파랑 계열
-
-# 유리판
-PANEL = 640
-PANEL_RADIUS = 168
-CENTER = (512, 512)
+INDIGO = (0x4F, 0x6B, 0xE8)
 
 
 def px(value: float) -> int:
     return round(value * SCALE)
 
 
-def blob(image: Image.Image, color: tuple, center: tuple, radius: float, alpha: int, blur: float) -> None:
-    mask = Image.new("L", (S, S), 0)
+def new_mask() -> Image.Image:
+    return Image.new("L", (S, S), 0)
+
+
+def round_stroke(draw: ImageDraw.ImageDraw, points: list, width: float) -> None:
+    """둥근 끝·둥근 꺾임 선 (마스크에 255로)"""
+    draw.line([(px(x), px(y)) for x, y in points], fill=255, width=px(width), joint="curve")
+    r = width / 2
+    for x, y in points:
+        draw.ellipse([px(x - r), px(y - r), px(x + r), px(y + r)], fill=255)
+
+
+def ring(draw: ImageDraw.ImageDraw, center: tuple, radius: float, width: float) -> None:
     cx, cy = center
-    ImageDraw.Draw(mask).ellipse([px(cx - radius), px(cy - radius), px(cx + radius), px(cy + radius)], fill=alpha)
-    mask = mask.filter(ImageFilter.GaussianBlur(px(blur)))
-    image.paste(Image.new("RGB", (S, S), color), (0, 0), mask)
+    outer, inner = radius + width / 2, radius - width / 2
+    draw.ellipse([px(cx - outer), px(cy - outer), px(cx + outer), px(cy + outer)], fill=255)
+    draw.ellipse([px(cx - inner), px(cy - inner), px(cx + inner), px(cy + inner)], fill=0)
 
 
-def background() -> Image.Image:
-    image = Image.new("RGB", (S, S), MIDNIGHT)
-    blob(image, ACCENT, (290, 280), 270, 165, 140)
-    blob(image, INDIGO, (770, 780), 260, 150, 140)
-    return image
+# MARK: 모노그램 유리 조각 마스크(뒤에서 앞 순서)와 뒤에 둘 구 (중심, 반지름)
 
-
-def panel_box() -> list:
-    cx, cy = CENTER
-    half = PANEL / 2
-    return [px(cx - half), px(cy - half), px(cx + half), px(cy + half)]
-
-
-def rounded_mask(box: list, radius: float, inset: float = 0) -> Image.Image:
-    mask = Image.new("L", (S, S), 0)
-    x0, y0, x1, y1 = box
-    ImageDraw.Draw(mask).rounded_rectangle(
-        [x0 + px(inset), y0 + px(inset), x1 - px(inset), y1 - px(inset)], radius=px(radius - inset), fill=255
-    )
+def capsule(start: tuple, end: tuple, width: float) -> Image.Image:
+    mask = new_mask()
+    round_stroke(ImageDraw.Draw(mask), [start, end], width)
     return mask
 
 
+def glyph_m4() -> tuple:
+    width = 104
+    left, right, top, bottom = 300, 724, 330, 700
+    valley = (512, 590)
+    pieces = [
+        capsule((left, top), (left, bottom), width),
+        capsule((right, top), (right, bottom), width),
+        capsule((left, top), valley, width),
+        capsule((right, top), valley, width),
+    ]
+    return pieces, (606, 404), 196
+
+
+def glyph_ma() -> tuple:
+    weight = 88
+    mask = new_mask()
+    draw = ImageDraw.Draw(mask)
+    top, bottom = 372, 640
+    m_left, m_right = 262, 498
+    m_mid = ((m_left + m_right) / 2, 548)
+    round_stroke(draw, [(m_left, bottom), (m_left, top), m_mid, (m_right, top), (m_right, bottom)], weight)
+    # a: 고리 + 오른쪽 기둥. M과 사이는 띄운다
+    a_center, a_r = (672, 562), 78
+    ring(draw, a_center, a_r, weight)
+    stem_x = a_center[0] + a_r
+    round_stroke(draw, [(stem_x, a_center[1] - a_r), (stem_x, bottom)], weight)
+    return [mask], (700, 470), 190
+
+
+def glyph_hangul() -> tuple:
+    weight = 88
+    mask = new_mask()
+    draw = ImageDraw.Draw(mask)
+    # ㅁ: 모서리를 거의 각지게 둬야 ㅇ(아)으로 읽히지 않는다
+    left, right, top, bottom = 262, 520, 382, 640
+    draw.rounded_rectangle([px(left), px(top), px(right), px(bottom)], radius=px(26), fill=255)
+    draw.rounded_rectangle(
+        [px(left + weight), px(top + weight), px(right - weight), px(bottom - weight)], radius=px(4), fill=0
+    )
+    # ㅏ
+    stem_x = 650
+    round_stroke(draw, [(stem_x, 330), (stem_x, 694)], weight)
+    round_stroke(draw, [(stem_x, 512), (770, 512)], weight * 0.8)
+    return [mask], (770, 440), 170
+
+
+VARIANTS = {"m4": glyph_m4, "ma": glyph_ma, "hangul": glyph_hangul}
+
+
+# MARK: 재질
+
+def orb(center: tuple, radius: float) -> tuple:
+    """accent(좌상) → 인디고(우하) 그라데이션 구. (레이어, 마스크)"""
+    cx, cy = center
+    side = px(radius * 2)
+    gradient = Image.linear_gradient("L").rotate(-45).resize((side, side))
+    colored = Image.composite(Image.new("RGB", (side, side), INDIGO), Image.new("RGB", (side, side), ACCENT), gradient)
+    layer = Image.new("RGB", (S, S), MIDNIGHT)
+    box = [px(cx - radius), px(cy - radius)]
+    layer.paste(colored, (box[0], box[1]))
+    mask = new_mask()
+    ImageDraw.Draw(mask).ellipse([box[0], box[1], box[0] + side, box[1] + side], fill=255)
+    return layer, mask
+
+
 def vertical_fade(y0: int, y1: int, start: int, end: int) -> Image.Image:
-    """y0에서 start, y1에서 end로 선형으로 바뀌는 세로 그라데이션 (그 밖은 0)"""
+    """y0에서 start, y1에서 end로 바뀌는 세로 그라데이션 (그 밖은 0)"""
     column = Image.new("L", (1, S), 0)
     for y in range(max(y0, 0), min(y1, S)):
         column.putpixel((0, y), round(start + (end - start) * (y - y0) / max(y1 - y0, 1)))
     return column.resize((S, S))
 
 
-def glass(image: Image.Image) -> Image.Image:
-    box = panel_box()
-    x0, y0, x1, y1 = box
-    shape = rounded_mask(box, PANEL_RADIUS)
+def glass_piece(image: Image.Image, piece: Image.Image) -> None:
+    """유리 조각 하나를 지금 그림 위에 얹는다. 뒤에 그려진 것(구, 앞선 조각)을 흐리게 비친다"""
+    # 그림자
+    shadow = ImageChops.offset(piece, 0, px(16)).filter(ImageFilter.GaussianBlur(px(20)))
+    image.paste(Image.new("RGB", (S, S), (0, 0, 0)), (0, 0), shadow.point(lambda v: int(v * 0.40)))
 
-    # 그림자: 유리판 아래로 살짝
-    shadow = Image.new("L", (S, S), 0)
-    ImageDraw.Draw(shadow).rounded_rectangle([x0, y0 + px(26), x1, y1 + px(26)], radius=px(PANEL_RADIUS), fill=110)
-    shadow = shadow.filter(ImageFilter.GaussianBlur(px(40)))
-    image.paste(Image.new("RGB", (S, S), (0, 0, 0)), (0, 0), shadow)
+    # 채움: 뒤를 크게 흐린 뒤 흰빛을 얹는다
+    frosted = image.filter(ImageFilter.GaussianBlur(px(30)))
+    frosted = Image.blend(frosted, Image.new("RGB", (S, S), INK), 0.20)
+    image.paste(frosted, (0, 0), piece)
 
-    # 유리: 뒤를 크게 흐린 뒤 흰빛을 얹는다 (frost white + ultraThinMaterial)
-    frosted = image.filter(ImageFilter.GaussianBlur(px(60)))
-    frosted = Image.blend(frosted, Image.new("RGB", (S, S), INK), 0.10)
-    image.paste(frosted, (0, 0), shape)
-
-    # 위쪽 광택: 유리판 위 45%에 옅은 흰빛
-    sheen = ImageChops.multiply(shape, vertical_fade(y0, y0 + int((y1 - y0) * 0.45), 24, 0))
+    # 위쪽 광택
+    _, y0, _, y1 = piece.getbbox()
+    sheen = ImageChops.multiply(piece, vertical_fade(y0, y0 + (y1 - y0) // 2, 46, 0))
     image.paste(Image.new("RGB", (S, S), INK), (0, 0), sheen)
 
-    # 테두리: 위 밝게 → 아래 옅게 (frostHighlightTop → Bottom)
-    edge = ImageChops.subtract(shape, rounded_mask(box, PANEL_RADIUS, inset=3))
-    image.paste(Image.new("RGB", (S, S), INK), (0, 0), ImageChops.multiply(edge, vertical_fade(y0, y1, 150, 36)))
-    return image
+    # 테두리: 위 밝게 → 아래 옅게
+    edge = ImageChops.subtract(piece, piece.filter(ImageFilter.MinFilter(px(3) * 2 + 1)))
+    image.paste(Image.new("RGB", (S, S), INK), (0, 0), ImageChops.multiply(edge, vertical_fade(y0, y1, 230, 80)))
 
 
-def stroke(draw: ImageDraw.ImageDraw, points: list, width: float, color: tuple) -> None:
-    """둥근 끝·둥근 꺾임 선"""
-    scaled = [(px(x), px(y)) for x, y in points]
-    draw.line(scaled, fill=color, width=px(width), joint="curve")
-    r = width / 2
-    for x, y in points:
-        draw.ellipse([px(x - r), px(y - r), px(x + r), px(y + r)], fill=color)
+def render(variant: str) -> Image.Image:
+    pieces, orb_center, orb_radius = VARIANTS[variant]()
+    image = Image.new("RGB", (S, S), MIDNIGHT)
 
+    # 뒤의 구 (이번 마디)
+    orb_layer, orb_mask = orb(orb_center, orb_radius)
+    image.paste(orb_layer, (0, 0), orb_mask)
 
-def accent_glow(image: Image.Image, center: tuple, radius: float) -> None:
-    blob(image, ACCENT, center, radius, 90, radius * 0.6)
-
-
-def monogram_ma(image: Image.Image) -> None:
-    """기하 "Ma": M은 ink 선, a(원 + 기둥)는 accent"""
-    weight = 48
-    top, bottom = 392, 632
-    m_left, m_right = 315, 505
-    m_mid = ((m_left + m_right) / 2, 548)
-    a_cx, a_cy, a_r = 645, 568, 64  # a_r: 고리 선 가운데 반지름. M과 a 사이는 획 굵기의 절반쯤 띄운다
-
-    accent_glow(image, (a_cx, a_cy), 120)
-    draw = ImageDraw.Draw(image)
-    stroke(draw, [(m_left, bottom), (m_left, top), m_mid, (m_right, top), (m_right, bottom)], weight, INK)
-
-    # a: 고리 + 오른쪽 기둥
-    outer = a_r + weight / 2
-    inner = a_r - weight / 2
-    ring = Image.new("L", (S, S), 0)
-    ring_draw = ImageDraw.Draw(ring)
-    ring_draw.ellipse([px(a_cx - outer), px(a_cy - outer), px(a_cx + outer), px(a_cy + outer)], fill=255)
-    ring_draw.ellipse([px(a_cx - inner), px(a_cy - inner), px(a_cx + inner), px(a_cy + inner)], fill=0)
-    image.paste(Image.new("RGB", (S, S), ACCENT), (0, 0), ring)
-    stem_x = a_cx + a_r
-    stroke(draw, [(stem_x, a_cy - a_r), (stem_x, bottom)], weight, ACCENT)
-
-
-def monogram_hangul(image: Image.Image) -> None:
-    """"마": ㅁ은 도면 칸(ink), ㅏ는 세로선 + 눈금 가로획, 끝의 accent 점 = 이번 마디"""
-    weight = 50
-    draw = ImageDraw.Draw(image)
-    left, right, top, bottom = 296, 500, 410, 614
-    # ㅁ: 둥근 모서리 사각 고리
-    ring = Image.new("L", (S, S), 0)
-    ring_draw = ImageDraw.Draw(ring)
-    # 모서리를 거의 각지게 둬야 ㅇ(아)으로 읽히지 않는다
-    ring_draw.rounded_rectangle([px(left), px(top), px(right), px(bottom)], radius=px(16), fill=255)
-    ring_draw.rounded_rectangle(
-        [px(left + weight), px(top + weight), px(right - weight), px(bottom - weight)], radius=px(3), fill=0
-    )
-    image.paste(Image.new("RGB", (S, S), INK), (0, 0), ring)
-    # ㅏ
-    stem_x = 600
-    stroke(draw, [(stem_x, 370), (stem_x, 654)], weight, INK)
-    tick_y = 512
-    stroke(draw, [(stem_x, tick_y), (676, tick_y)], weight * 0.8, INK)
-    accent_glow(image, (712, tick_y), 90)
-    draw = ImageDraw.Draw(image)
-    draw.ellipse([px(712 - 34), px(tick_y - 34), px(712 + 34), px(tick_y + 34)], fill=ACCENT)
-
-
-VARIANTS = {"ma": monogram_ma, "hangul": monogram_hangul}
+    for piece in pieces:
+        glass_piece(image, piece)
+    return image.resize((SIZE, SIZE), Image.LANCZOS)
 
 
 def main() -> None:
-    variant = sys.argv[1] if len(sys.argv) > 1 else "ma"
+    variant = sys.argv[1] if len(sys.argv) > 1 else "m4"
     out = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else OUT
-    image = glass(background())
-    VARIANTS[variant](image)
-    image = image.resize((SIZE, SIZE), Image.LANCZOS)
+    image = render(variant)
     out.parent.mkdir(parents=True, exist_ok=True)
     image.save(out, "PNG", optimize=True)
     print(f"wrote {out} {image.size} {image.mode} ({variant})")
