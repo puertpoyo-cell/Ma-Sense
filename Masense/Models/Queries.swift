@@ -28,13 +28,19 @@ extension Prescription {
         return try context.fetch(descriptor).first
     }
 
-    /// 새 처방을 활성으로 만들고 이전 처방은 보관한다 (SCREENS.md S9).
-    static func activate(_ prescription: Prescription, in context: ModelContext) throws {
+    /// 새 처방을 활성으로 만들고 이전 처방은 보관한다 (SCREENS.md S9, DATA_MODEL.md 처방 이력·RULES.md R13).
+    /// 이전 활성 처방은 `endDate` = 새 처방 시작일 전날(이전 처방 시작일보다 앞서지는 않게), `isActive = false`
+    static func activate(_ prescription: Prescription, in context: ModelContext, calendar: Calendar = .current) throws {
         let others = try context.fetch(FetchDescriptor<Prescription>(predicate: #Predicate { $0.isActive }))
+        let dayBefore = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: prescription.startDate))
         for other in others where other.persistentModelID != prescription.persistentModelID {
             other.isActive = false
+            if let dayBefore {
+                other.endDate = max(dayBefore, calendar.startOfDay(for: other.startDate))
+            }
         }
         prescription.isActive = true
+        prescription.endDate = nil
         if prescription.modelContext == nil {
             context.insert(prescription)
         }

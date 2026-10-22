@@ -139,11 +139,12 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 
 ## D4 — main 사양 A~E 코드 반영 (2026-10-22 통합)
 
-main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서에 합쳤다. 문서가 진실 원천이므로 아래 코드 작업이 남는다. 스키마 변경(B·C)은 한 번에 SchemaV4로 묶는다.
+main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서에 합쳤다. 문서가 진실 원천이므로 아래 코드 작업이 남는다. 스키마 변경(B·C)은 출시 전 재정리로 한 번에 처리했다.
 
 - [ ] A. App Groups capability `group.com.puertpoyo.masense` + 스토어를 App Group 컨테이너 경로에 (`ModelContainer+Masense`), 테스트·미리보기는 in-memory 그대로. 기존 기본 경로 스토어가 있으면 첫 실행에 옮김 — 새 Capability라 서명 팀 선택 후 실기기 확인 필요
-- [ ] B. CloudKit 호환 스키마 (SchemaV4): `@Attribute(.unique)` 제거, 모든 속성에 기본값 또는 옵셔널, 관계 옵셔널, 열거형 rawValue 저장 (DATA_MODEL.md 표의 기본값 열). 고정 사본 + 마이그레이션 테스트
-- [ ] C. `Prescription.endDate`(SchemaV4) + 새 처방 시작 서비스(이전 처방 endDate·isActive 갱신) + R13 `prescriptionTimeline` + 리포트 처방 전환 세로선·요약 칸 + 기록 탭 "처방 변경" 구분 행
+- [x] B. CloudKit 호환 스키마: `@Attribute(.unique)` 제거, 모든 저장 속성에 기본값 또는 옵셔널, 열거형 `xxxRaw` 저장 + 계산 프로퍼티. 출시 전이라 V1~V3 이력을 접고 새 `SchemaV1` 하나로 재정리 (2026-10-22 사람 결정, D4-a). `SchemaTests`
+- [x] C-1. `Prescription.endDate` + 새 처방 시작 시 이전 처방 `endDate`(= 새 시작일 전날)·`isActive` 갱신 (`Prescription.activate`, D4-a)
+- [ ] C-2. R13 `prescriptionTimeline` + 리포트 처방 전환 세로선·요약 칸 + 기록 탭 "처방 변경" 구분 행
 - [ ] D. `CycleRules`가 `intervalDays` 대신 7일 고정 (동작 동일, 사양 문구에 맞춤)
 - [ ] E. `Rules/ExportCodec.swift` + 가져오기(교체/추가, 2단계 확인) + `UTExportedTypeDeclarations`(`.masense.json`) — 지금의 JSON 내보내기를 `EXPORT_FORMAT.md` 형식으로
 
@@ -198,6 +199,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 | 2026-10-22 | 앱 아이콘 1차안 "겹친 유리 M"(막대 굵기 136) | 사람 선택. 의약품 상표 연상·주사기·알약 표현 제외 |
 | 2026-10-22 | 앱 이름 "마선생" 확정 | 사람 결정. 상표 등록 검색은 COMPLIANCE.md 6 출시 전 확인에 남김 |
 | 2026-10-22 | 번들 ID `com.masense.app` (테스트 `com.masense.app.tests`) | 사람 결정. 앱스토어에 올린 뒤에는 바꿀 수 없다 |
+| 2026-10-22 | 출시 전 스키마 재정리: V1~V3 이력을 접고 CloudKit 호환 규칙 + 처방 endDate를 담은 새 SchemaV1 | 사람 결정. 사용자 데이터 없음, 영구히 남을 옛 필드를 만들지 않으려고 |
 | 2026-10-21 | `Prescription.scheduledTime`은 `scheduledHour`·`scheduledMinute` Int 2개로 저장, `DateComponents`는 계산 속성 | SwiftData Codable 저장 안정성 |
 | 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
 | 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |

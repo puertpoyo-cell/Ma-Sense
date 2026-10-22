@@ -233,7 +233,7 @@ enum ProteinFood: String, Codable, CaseIterable {
 | healthKitAuthorized | Bool | `false` |  |
 | hasPurchasedPro | Bool | `false` | StoreKit 검증 결과 캐시. 진실 원천은 StoreKit |
 | reportTheme | String | `"midnight"` |  |
-| reportDefaultPeriod | String? |  | V3. 리포트 기본 기간 `ReportPeriod.storageValue` (`sinceClinic`, `weeks4`·`weeks8`·`weeks12`). nil이면 자동(R12) |
+| reportDefaultPeriod | String? |  | 리포트 기본 기간 `ReportPeriod.storageValue` (`sinceClinic`, `weeks4`·`weeks8`·`weeks12`). nil이면 자동(R12) |
 | createdAt | Date | `.now` |  |
 
 단일 레코드는 CloudKit에서 기기마다 하나씩 생겨 충돌할 수 있다. 동기화를 켤 때는 `createdAt`이 가장 이른 레코드를 정본으로 삼고 나머지를 병합·삭제하는 규칙을 `Rules/SettingsMerge.swift`에 둔다 (v1은 해당 없음).
@@ -254,31 +254,22 @@ Info.plist: `NSHealthShareUsageDescription` 필수 (빌드 설정 `INFOPLIST_KEY
 ## 스키마 버전
 
 ```swift
-enum SchemaV1: VersionedSchema {
-    static var versionIdentifier = Schema.Version(1, 0, 0)
-    static var models: [any PersistentModel.Type] = [
-        Prescription.self, Dose.self, ConditionCheck.self,
-        WeightSample.self, UserSettings.self
-    ]
-}
-enum SchemaV2: VersionedSchema {   // M2
-    static var versionIdentifier = Schema.Version(2, 0, 0)
-    // + ProteinEntry, StrengthSession, HabitCheck
-}
-enum SchemaV3: VersionedSchema {   // 2026-10-22, 리포트 기본 기간 저장
-    static var versionIdentifier = Schema.Version(3, 0, 0)
-    // UserSettings + reportDefaultPeriod: String?
+enum SchemaV1: VersionedSchema {   // 출시 스키마 (2026-10-22 재정리)
+    static let versionIdentifier = Schema.Version(1, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        [Prescription.self, Dose.self, ConditionCheck.self, WeightSample.self,
+         UserSettings.self, ProteinEntry.self, StrengthSession.self, HabitCheck.self]
+    }
 }
 enum MasenseMigrationPlan: SchemaMigrationPlan {
-    // [SchemaV1, SchemaV2, SchemaV3], 단계: .lightweight(V1 → V2), .lightweight(V2 → V3)
+    // [SchemaV1], 단계 없음
 }
 ```
 
-- 바뀐 모델은 이전 버전 쪽에 **고정 사본**을 둔다. V1·V2의 `UserSettings`는 `SchemaV1.UserSettings`(V3 이전 저장 속성 그대로)이고, 바뀌지 않은 모델은 현재 타입을 같이 쓴다. 고정 사본의 저장 속성을 고치면 기존 저장소의 버전을 알아보지 못한다
-- `MigrationTests`: V1 → V3, V2 → V3 디스크 저장소 마이그레이션
-
-```swift
-```
+- **2026-10-22 출시 전 재정리 (사람 결정)**: 개발 중 쌓인 V1(M1)·V2(M2 습관)·V3(리포트 기본 기간) 이력을 접고, CloudKit 호환 규칙(B)과 처방 `endDate`(C)를 담은 새 `SchemaV1` 하나로 시작한다. 출시 전이라 사용자 데이터가 없다
+- 개발 빌드(`DEBUG`)는 이전 구조의 저장소를 열지 못하면 지우고 새로 만든다 (`ModelContainer.masense`). 릴리스 빌드는 그러지 않는다
+- 출시 뒤 스키마를 바꿀 때: 바뀌는 모델의 **고정 사본**을 이전 버전(`SchemaV1.Xxx`)에 두고 `SchemaV2`와 마이그레이션 단계를 더한다. 고정 사본의 저장 속성은 고치지 않는다(기존 저장소의 버전을 알아보는 기준). CloudKit 규칙 5에 따라 변경은 추가만
+- `SchemaTests`: unique 없음, 열거형 rawValue 디스크 왕복, 모르는 rawValue 기본값, 설정 기본값
 
 M1 출시 전에는 마이그레이션 없이 스키마 자유 변경. 베타 배포 후부터 `SchemaMigrationPlan` 필수.
 

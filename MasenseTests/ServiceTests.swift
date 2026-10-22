@@ -57,11 +57,14 @@ struct ServiceTests {
         let context = makeContext()
         let first = Prescription(startDate: TestCalendar.date(2026, 9, 1), penCount: 1, scheduledWeekday: 5, scheduledHour: 20)
         let second = Prescription(startDate: TestCalendar.date(2026, 10, 16), penCount: 2, scheduledWeekday: 5, scheduledHour: 20)
-        try Prescription.activate(first, in: context)
-        try Prescription.activate(second, in: context)
+        try Prescription.activate(first, in: context, calendar: TestCalendar.seoul)
+        try Prescription.activate(second, in: context, calendar: TestCalendar.seoul)
         #expect(first.isActive == false)
         #expect(second.isActive == true)
         #expect(try Prescription.active(in: context)?.penCount == 2)
+        // 처방 이력 체인 (DATA_MODEL.md, R13): 이전 처방은 새 처방 시작 전날로 끝난다
+        #expect(first.endDate == TestCalendar.date(2026, 10, 15))
+        #expect(second.endDate == nil)
     }
 
     @Test func userSettingsIsSingleRecord() throws {

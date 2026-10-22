@@ -2,11 +2,10 @@ import Foundation
 import SwiftData
 
 extension ModelContainer {
-    /// 온디바이스 전용 컨테이너. 서버·CloudKit 동기화 없음 (CLAUDE.md 스택, DATA_MODEL.md 원칙).
-    /// 현재 스키마는 V3이고, V1·V2 저장소는 `MasenseMigrationPlan`으로 경량 마이그레이션된다.
+    /// 온디바이스 전용 컨테이너. 동기화는 꺼 둔다(`cloudKitDatabase: .none`). 스키마는 CloudKit 호환 규칙을 지킨다 (DATA_MODEL.md 원칙).
     /// - Parameter url: 테스트에서 디스크 저장소 위치를 지정할 때만 쓴다
     static func masense(inMemory: Bool = false, url: URL? = nil) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: SchemaV3.self)
+        let schema = Schema(versionedSchema: SchemaV1.self)
         let configuration: ModelConfiguration
         if let url {
             configuration = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
@@ -20,7 +19,25 @@ extension ModelContainer {
                 cloudKitDatabase: .none
             )
         }
-        return try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [configuration])
+        do {
+            return try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [configuration])
+        } catch {
+            #if DEBUG
+            // 출시 전 스키마 재정리(2026-10-22) 이전의 개발용 저장소는 버전을 알아보지 못한다. 개발 빌드에서만 지우고 새로 만든다
+            guard !inMemory, url == nil else { throw error }
+            removeStoreFiles(at: configuration.url)
+            return try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [configuration])
+            #else
+            throw error
+            #endif
+        }
+    }
+
+    /// SQLite 저장소 파일과 저널 파일
+    static func removeStoreFiles(at url: URL) {
+        for suffix in ["", "-shm", "-wal"] {
+            try? FileManager.default.removeItem(at: URL(fileURLWithPath: url.path + suffix))
+        }
     }
 
     /// `#Preview` 전용 in-memory 컨테이너 (CLAUDE.md 테스트·빌드).
