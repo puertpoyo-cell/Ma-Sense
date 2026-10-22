@@ -10,7 +10,7 @@
    - 1번에서 팀을 고르면 자동 서명이 App ID에 HealthKit을 등록한다. Signing & Capabilities에 HealthKit이 보이는지만 확인
    - 실기기에서 온보딩 4페이지 또는 설정 > 연동의 버튼으로 권한 화면이 뜨는지 확인
 5. **개인정보 처리방침 게시** — `docs/privacy/index.html`의 [게시일]·[문의 이메일]을 채우고 게시(GitHub Pages 등). URL을 `Masense/App/AppConfig.swift`의 `privacyPolicyURL`과 App Store Connect에 입력
-6. **앱 아이콘** — `Masense/Resources/Assets.xcassets/AppIcon.appiconset`에 1024×1024 (DESIGN_SYSTEM.md 6: midnight 배경에 자의 눈금과 마디를 결합한 도면 선. 주사기·알약·체중계 금지)
+6. **앱 아이콘** — 1차안 "유리 위 Ma"가 `AppIcon.appiconset/AppIcon.png`에 들어가 있다 (`python3 scripts/make_app_icon.py`로 다시 생성, DESIGN_SYSTEM.md 6). 브랜딩 논의에서 확정
 
 ## 2. 빌드 올리기
 
