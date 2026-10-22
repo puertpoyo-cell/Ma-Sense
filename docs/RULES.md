@@ -195,4 +195,4 @@ struct PrescriptionMarker { let startDate: Date; let label: String?; let isFirst
 - [x] R7 샘플 없는 주 nil 처리
 - [x] R8 정확히 -1.0 kg일 때 안내 없음 (초과만), 기준은 % 아닌 kg
 - [x] R9 소수점 반올림
-- [ ] R13 처방 전환 시 이전 처방 endDate·isActive 갱신, 기간 경계에 걸친 처방의 isFirstInPeriod (main C, 코드 미반영)
+- [x] R13 처방 전환 시 이전 처방 endDate·isActive 갱신, 기간 경계에 걸친 처방의 isFirstInPeriod (D4-a·b, `ServiceTests`·`PrescriptionRulesTests`), 가져오기 규칙 7 `resolvingActive` (D4-E1)

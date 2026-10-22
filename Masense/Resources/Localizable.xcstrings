@@ -4591,6 +4591,74 @@
         }
       }
     },
+    "settings.prescription.history": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous prescriptions"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이전 처방"
+          }
+        }
+      }
+    },
+    "settings.prescription.history.doses %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld doses recorded · %2$lld prescribed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 기록 %1$lld회 · 처방 %2$lld회"
+          }
+        }
+      }
+    },
+    "settings.prescription.history.range %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ – %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ~ %2$@"
+          }
+        }
+      }
+    },
+    "settings.prescription.history.since %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ~"
+          }
+        }
+      }
+    },
     "settings.prescription.new": {
       "extractionState": "manual",
       "localizations": {

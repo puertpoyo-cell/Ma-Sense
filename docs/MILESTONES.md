@@ -147,6 +147,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - [x] C-2. R13 `prescriptionTimeline`·`transitionCount` + 리포트 처방 전환 세로선·라벨·요약 칸(전환 1회 이상일 때만) + 기록 탭 "처방 변경 · {메모}" 구분 행 (D4-b)
 - [x] D. `CycleRules`가 `intervalDays` 대신 7일 고정, `PrescriptionSnapshot`에서 간격 필드 제거 (동작 동일, D4-c)
 - [x] E. `Rules/ExportCodec.swift` + 가져오기(교체/추가, 2단계 확인) + `UTExportedTypeDeclarations`(`.masense.json`) — 지금의 JSON 내보내기를 `EXPORT_FORMAT.md` 형식으로. E-1 형식·규칙·서비스·fixture 테스트, E-2 설정 > 데이터 가져오기 시트(S6-1)·내보내기 전 안내. 실기기에서 AirDrop·파일 앱 왕복은 사람 확인
+- [x] (사양 대조 중 발견) S6 설정 > 처방 "이전 처방" 접힌 목록 — 시작일~종료일, 메모, 투약 기록·처방 회차 수 (`PrescriptionHistory` + 테스트)
 
 ## M3 — 출시 준비 (1주)
 

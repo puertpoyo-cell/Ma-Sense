@@ -53,6 +53,8 @@ private struct SettingsForm: View {
     @Environment(\.restartOnboarding) private var restartOnboarding
     @Query(filter: #Predicate<Prescription> { $0.isActive })
     private var activePrescriptions: [Prescription]
+    @Query(filter: #Predicate<Prescription> { !$0.isActive })
+    private var pastPrescriptions: [Prescription]
     @Query(sort: \WeightSample.measuredAt, order: .reverse)
     private var weights: [WeightSample]
 
@@ -168,6 +170,14 @@ private struct SettingsForm: View {
                     .foregroundStyle(Color.inkSecondary)
             }
             Button("settings.prescription.new") { sheet = .newPrescription }
+            let history = PrescriptionHistory.rows(pastPrescriptions)
+            if !history.isEmpty {
+                DisclosureGroup("settings.prescription.history") {
+                    ForEach(history) { row in
+                        PrescriptionHistoryRowView(row: row)
+                    }
+                }
+            }
         } header: {
             SectionHeaderText("settings.section.prescription")
         }
