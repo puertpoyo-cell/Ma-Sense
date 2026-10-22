@@ -325,6 +325,8 @@ struct HistoryView: View {
                         Text(verbatim: symbol)
                             .font(Typography.caption)
                             .foregroundStyle(Color.inkSecondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
                             .padding(.bottom, Spacing.s2)
                     }
                 }
@@ -343,6 +345,8 @@ struct HistoryView: View {
                     BlueprintGridLines(rows: (cells.count + 6) / 7, columns: 7)
                 }
             }
+            // 7칸 격자는 접근성 최대 글자에서 숫자가 두 줄로 쪼개진다. 이 격자만 상한을 두고, 날짜는 VoiceOver 레이블로 읽는다
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
 
             HStack(spacing: Spacing.s4) {
                 Label {
@@ -388,6 +392,8 @@ struct HistoryView: View {
                 .font(Typography.caption)
                 .monospacedDigit()
                 .foregroundStyle(Color.ink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
             HStack(spacing: 3) {
                 if day.proteinMarked {
                     Circle().fill(Color.accent).frame(width: 6, height: 6)

@@ -43,11 +43,6 @@ struct WeekChart: View {
 
     var body: some View {
         Chart {
-            ForEach(tickDates, id: \.self) { date in
-                RuleMark(x: .value("dose", date))
-                    .foregroundStyle(gridColor.opacity(0.6))
-                    .lineStyle(StrokeStyle(lineWidth: 0.5, dash: [2, 2]))
-            }
             ForEach(plotted) { item in
                 LineMark(
                     x: .value("week", item.weekStart),
@@ -86,6 +81,24 @@ struct WeekChart: View {
                     AxisValueLabel().font(labelFont).foregroundStyle(labelColor)
                 }
             }
+        }
+        .chartOverlay { proxy in
+            // 투약일마다 4pt 세로 눈금 (DESIGN_SYSTEM.md 5.5). 플롯 영역 아래 끝에 붙인다
+            GeometryReader { geometry in
+                if let anchor = proxy.plotFrame {
+                    let frame = geometry[anchor]
+                    ForEach(tickDates, id: \.self) { date in
+                        if let x = proxy.position(forX: date) {
+                            Rectangle()
+                                .fill(labelColor)
+                                .frame(width: 1, height: 4)
+                                .position(x: frame.minX + x, y: frame.maxY - 2)
+                        }
+                    }
+                }
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
         }
         .accessibilityLabel(Text("weight.trend12.a11y"))
     }
