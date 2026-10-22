@@ -172,13 +172,15 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 func exhaustionEstimate(p: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, calendar: Calendar) -> Date?
 func nextSequence(doses: [DoseSnapshot]) -> Int                        // 취소 제외 기록 수 + 1
 func penPosition(sequence: Int, dosesPerPen: Int) -> (pen: Int, position: Int)
-func prescriptionTimeline(all: [PrescriptionSnapshot], in period: DateInterval) -> [PrescriptionMarker]
+func prescriptionTimeline(all: [PrescriptionSnapshot], in period: DateInterval, calendar: Calendar) -> [PrescriptionMarker]
+func transitionCount(_ markers: [PrescriptionMarker]) -> Int          // 마커 수 - 1
 struct PrescriptionMarker { let startDate: Date; let label: String?; let isFirstInPeriod: Bool }
 ```
 
 - 새 처방 시작(`startNewPrescription`)은 Rules가 아니라 서비스 계층에서: 이전 활성 처방의 `endDate = 새 startDate - 1일`, `isActive = false`, 새 처방 `isActive = true`. 트랜잭션 하나로
 - `prescriptionTimeline`은 기간과 겹치는 처방을 `startDate` 오름차순으로 돌려주고, 기간 시작 전에 이미 시작된 처방은 `isFirstInPeriod = true`로 표시 (리포트에서 "기간 시작 시점의 처방"으로 쓰임)
-- `label`은 사용자 메모 그대로. 비어 있으면 "처방 변경"으로만 표시
+- `label`은 사용자 메모 그대로(앞뒤 공백 제거). 비어 있으면 nil이고 UI는 "처방 변경"으로만 표시
+- `endDate`는 그날 하루 끝까지 유효로 본다. 기간 전에 끝난 처방, 기간 뒤에 시작하는 처방은 빠진다
 - 소진 추정:
   - `remainingDoses == 0` → nil
   - 그 외 남은 회차를 모두 쓰는 마지막 마디의 `scheduledDate` (= R1 `cycles(until: .distantFuture)`의 마지막 마디). 누락이 있으면 그만큼 뒤로 밀린다

@@ -13,7 +13,9 @@ extension Prescription {
             scheduledMinute: scheduledMinute,
             dosesPerPen: dosesPerPen,
             totalDoses: totalDoses,
-            nextClinicDate: nextClinicDate
+            nextClinicDate: nextClinicDate,
+            endDate: endDate,
+            doseLabel: doseLabel
         )
     }
 

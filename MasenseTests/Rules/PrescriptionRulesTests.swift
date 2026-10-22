@@ -46,4 +46,44 @@ struct PrescriptionRulesTests {
         let now = TestCalendar.date(2026, 10, 23, 9)
         #expect(PrescriptionRules.exhaustionEstimate(p: prescription(totalDoses: 1), doses: [dose(10, 22)], now: now, calendar: calendar) == nil)
     }
+
+    // MARK: 처방 전환 타임라인 (R13, main C)
+
+    private func chain(_ startMonth: Int, _ startDay: Int, end: (Int, Int)? = nil, label: String? = nil) -> PrescriptionSnapshot {
+        PrescriptionSnapshot(
+            startDate: TestCalendar.date(2026, startMonth, startDay),
+            scheduledWeekday: 5,
+            scheduledHour: 20,
+            totalDoses: 4,
+            endDate: end.map { TestCalendar.date(2026, $0.0, $0.1) },
+            doseLabel: label
+        )
+    }
+
+    @Test func timelineMarksPrescriptionsOverlappingPeriod() {
+        let all = [
+            chain(10, 16, label: "세 번째"),
+            chain(8, 1, end: (8, 31), label: "첫 번째"),
+            chain(9, 1, end: (10, 15), label: "  "),
+        ]
+        let period = DateInterval(start: TestCalendar.date(2026, 9, 10), end: TestCalendar.date(2026, 11, 5))
+        let markers = PrescriptionRules.prescriptionTimeline(all: all, in: period, calendar: calendar)
+        // 8월 처방은 기간 전에 끝나 빠진다. 9월 처방은 기간 시작 전에 시작해 isFirstInPeriod
+        #expect(markers == [
+            PrescriptionMarker(startDate: TestCalendar.date(2026, 9, 1), label: nil, isFirstInPeriod: true),
+            PrescriptionMarker(startDate: TestCalendar.date(2026, 10, 16), label: "세 번째", isFirstInPeriod: false),
+        ])
+        #expect(PrescriptionRules.transitionCount(markers) == 1)
+    }
+
+    @Test func timelineWithSinglePrescriptionStartingInsidePeriod() {
+        let period = DateInterval(start: TestCalendar.date(2026, 10, 1), end: TestCalendar.date(2026, 11, 5))
+        let markers = PrescriptionRules.prescriptionTimeline(all: [chain(10, 16)], in: period, calendar: calendar)
+        #expect(markers == [PrescriptionMarker(startDate: TestCalendar.date(2026, 10, 16), label: nil, isFirstInPeriod: false)])
+        // 처음 시작한 처방은 전환이 아니다
+        #expect(PrescriptionRules.transitionCount(markers) == 0)
+        #expect(PrescriptionRules.prescriptionTimeline(all: [], in: period, calendar: calendar).isEmpty)
+        // 기간 뒤에 시작하는 처방은 빠진다
+        #expect(PrescriptionRules.prescriptionTimeline(all: [chain(11, 20)], in: period, calendar: calendar).isEmpty)
+    }
 }

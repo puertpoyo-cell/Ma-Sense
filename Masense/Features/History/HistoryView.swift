@@ -172,6 +172,27 @@ struct HistoryView: View {
                     .strokeBorder(Color.inkTertiary, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
             )
             .accessibilityHint(canAddDose ? Text("history.missed.hint") : Text(verbatim: ""))
+
+        case let .prescriptionChange(label):
+            // 처방 전환 구분 행 (R13). 라벨은 사용자 메모 그대로 표시만 한다
+            HStack(spacing: Spacing.s2) {
+                Rectangle().fill(Color.gridHairline).frame(height: 1)
+                Group {
+                    if let label {
+                        Text("history.prescriptionChange \(label)")
+                    } else {
+                        Text("history.prescriptionChange.noLabel")
+                    }
+                }
+                .font(Typography.caption)
+                .foregroundStyle(Color.inkSecondary)
+                .lineLimit(1)
+                .layoutPriority(1)
+                Rectangle().fill(Color.gridHairline).frame(height: 1)
+            }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .accessibilityElement(children: .combine)
         }
     }
 

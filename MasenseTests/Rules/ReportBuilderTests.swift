@@ -206,4 +206,29 @@ struct ReportBuilderTests {
         #expect(report.summary.dosesTaken == 3)
         #expect(report.cycles.count == 3)
     }
+
+    /// REPORT_SPEC C·R13: 전환이 있을 때만 첫 칸에 "기간 시작 시 처방", 새 처방 첫 칸에 전환 표시
+    @Test func prescriptionTransitionMarkers() {
+        let old = ReportBuilder.PrescriptionData(
+            prescription: PrescriptionSnapshot(startDate: start, scheduledWeekday: 5, scheduledHour: 20, totalDoses: 12,
+                                               endDate: TestCalendar.date(2026, 10, 26), doseLabel: "첫 처방"),
+            doses: [dose(10, 22)],
+            isActive: false
+        )
+        let newStart = TestCalendar.date(2026, 10, 27, 9)
+        let new = ReportBuilder.PrescriptionData(
+            prescription: PrescriptionSnapshot(startDate: newStart, scheduledWeekday: 5, scheduledHour: 20, totalDoses: 12),
+            doses: [dose(10, 29), dose(11, 5)],
+            isActive: true
+        )
+        let now = TestCalendar.date(2026, 11, 6, 9)
+        let report = build([old, new], now: now, period: DateInterval(start: start, end: now))
+        #expect(report.summary.prescriptionTransitions == 1)
+        #expect(report.cycles.map(\.marker) == [.periodStart(label: "첫 처방"), .change(label: nil, date: newStart), nil])
+
+        // 처방이 하나뿐이면 아무 표시도 없다
+        let single = build([new], now: now, period: DateInterval(start: start, end: now))
+        #expect(single.summary.prescriptionTransitions == 0)
+        #expect(single.cycles.allSatisfy { $0.marker == nil })
+    }
 }

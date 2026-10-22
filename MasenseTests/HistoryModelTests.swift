@@ -57,6 +57,28 @@ struct HistoryModelTests {
         #expect(missed.allSatisfy { $0.kind == .missed(scheduled: $0.date, canAddDose: true) })
     }
 
+    /// R13: 두 번째 처방부터 시작일에 "처방 변경" 구분 행. 라벨은 메모 그대로
+    @Test func prescriptionChangeRowAtEachLaterStart() {
+        let old = HistoryModel.PrescriptionHistory(
+            prescription: PrescriptionSnapshot(startDate: TestCalendar.date(2026, 10, 16, 9), scheduledWeekday: 5, scheduledHour: 20,
+                                               totalDoses: 12, endDate: TestCalendar.date(2026, 10, 26), doseLabel: "첫 처방"),
+            doses: [dose(10, 22)],
+            isActive: false
+        )
+        let new = HistoryModel.PrescriptionHistory(
+            prescription: PrescriptionSnapshot(startDate: TestCalendar.date(2026, 10, 27, 9), scheduledWeekday: 5, scheduledHour: 20,
+                                               totalDoses: 12, doseLabel: " 두 번째 "),
+            doses: [dose(10, 29)],
+            isActive: true
+        )
+        let rows = HistoryModel.doseMonths([new, old], now: TestCalendar.date(2026, 10, 30, 9), calendar: calendar).flatMap(\.rows)
+        let changes = rows.filter { if case .prescriptionChange = $0.kind { return true } else { return false } }
+        #expect(changes.map(\.date) == [TestCalendar.date(2026, 10, 27, 9)])
+        #expect(changes.first?.kind == .prescriptionChange(label: "두 번째"))
+        // 최근 순: 새 처방의 투약 → 처방 변경 → 이전 처방의 투약
+        #expect(rows.map(\.date) == [TestCalendar.date(2026, 10, 29, 20), TestCalendar.date(2026, 10, 27, 9), TestCalendar.date(2026, 10, 22, 20)])
+    }
+
     @Test func cancelledDoseStaysVisibleAndLeavesCycleMissed() {
         let history = HistoryModel.PrescriptionHistory(
             prescription: prescription(start: TestCalendar.date(2026, 10, 16, 9)),

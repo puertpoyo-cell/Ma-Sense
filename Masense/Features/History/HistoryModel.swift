@@ -9,6 +9,8 @@ enum HistoryModel {
             case dose(id: UUID, site: BodySite, sequence: Int, hasNote: Bool, isCancelled: Bool)
             /// 구간이 끝났는데 기록이 없는 마디 (R3). `canAddDose`는 현재 처방의 마디라 과거 기록을 더할 수 있는지
             case missed(scheduled: Date, canAddDose: Bool)
+            /// 두 번째 처방부터 시작일에 놓는 구분 행 "처방 변경 · {doseLabel}" (R13). 라벨은 해석하지 않는다
+            case prescriptionChange(label: String?)
         }
 
         let id: String
@@ -33,6 +35,16 @@ enum HistoryModel {
     static func doseMonths(_ histories: [PrescriptionHistory], now: Date, calendar: Calendar) -> [Month] {
         let ordered = histories.sorted { $0.prescription.startDate < $1.prescription.startDate }
         var rows: [DoseRow] = []
+
+        let markers = PrescriptionRules.prescriptionTimeline(
+            all: ordered.map(\.prescription),
+            in: DateInterval(start: .distantPast, end: .distantFuture),
+            calendar: calendar
+        )
+        // 첫 처방은 전환이 아니다
+        rows += markers.dropFirst().enumerated().map { index, marker in
+            DoseRow(id: "change.\(index)", date: marker.startDate, kind: .prescriptionChange(label: marker.label))
+        }
 
         for (offset, history) in ordered.enumerated() {
             let nextStart = offset + 1 < ordered.count ? ordered[offset + 1].prescription.startDate : nil

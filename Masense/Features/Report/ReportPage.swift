@@ -99,10 +99,15 @@ struct ReportPage: View {
             summaryCell("report.summary.doses") {
                 Text("report.summary.doses.value \(s.dosesTaken) \(s.dosesScheduled)")
             } detail: {
-                if s.missedCount == 0 {
-                    Text("report.summary.noMissed")
-                } else {
-                    Text("report.summary.missed \(s.missedCount)")
+                VStack(alignment: .leading, spacing: 1) {
+                    if s.missedCount == 0 {
+                        Text("report.summary.noMissed")
+                    } else {
+                        Text("report.summary.missed \(s.missedCount)")
+                    }
+                    if s.prescriptionTransitions > 0 {
+                        Text("report.summary.transitions \(s.prescriptionTransitions)")
+                    }
                 }
             }
             summaryCell("report.summary.weight") {
@@ -159,18 +164,56 @@ struct ReportPage: View {
     private var timeline: some View {
         VStack(alignment: .leading, spacing: 2 * Self.mm) {
             sectionTitle("report.section.timeline")
-            HStack(alignment: .top, spacing: 1.5 * Self.mm) {
-                ForEach(report.cycles) { cell in
-                    cycleCell(cell)
+            VStack(alignment: .leading, spacing: 1) {
+                if report.cycles.contains(where: { $0.marker != nil }) {
+                    // 처방 전환 라벨 줄 (R13): 표시된 칸 위에 메모 그대로. 길면 오른쪽 칸 위로 이어진다
+                    cellRow { cell in markerLabel(cell.marker) }
                 }
-                // 칸 수가 적어도 폭은 12칸 기준으로 고정
-                ForEach(0..<max(0, ReportBuilder.maxCells - report.cycles.count), id: \.self) { _ in
-                    Color.clear.frame(maxWidth: .infinity)
-                }
+                cellRow { cell in cycleCell(cell) }
             }
             .frame(maxHeight: .infinity, alignment: .top)
         }
         .frame(height: 34 * Self.mm, alignment: .top)
+    }
+
+    /// 마디 칸 폭에 맞춘 한 줄. 칸 수가 적어도 폭은 12칸 기준으로 고정
+    private func cellRow<Content: View>(@ViewBuilder _ content: @escaping (ClinicReport.CycleCell) -> Content) -> some View {
+        HStack(alignment: .top, spacing: 1.5 * Self.mm) {
+            ForEach(report.cycles) { cell in
+                content(cell).frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+            ForEach(0..<max(0, ReportBuilder.maxCells - report.cycles.count), id: \.self) { _ in
+                Color.clear.frame(maxWidth: .infinity, maxHeight: 0)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func markerLabel(_ marker: ClinicReport.CycleCell.Marker?) -> some View {
+        Group {
+            switch marker {
+            case let .periodStart(label)?:
+                if let label {
+                    Text("report.marker.periodStart \(label)")
+                } else {
+                    Text("report.marker.periodStart.noLabel")
+                }
+            case let .change(label, date)?:
+                HStack(spacing: 2) {
+                    if let label {
+                        Text(verbatim: label)
+                    } else {
+                        Text("report.marker.change")
+                    }
+                    Text(verbatim: shortDate(date)).monospacedDigit()
+                }
+            case nil:
+                Color.clear.frame(height: 0)
+            }
+        }
+        .font(.system(size: 6.5, weight: .semibold))
+        .lineLimit(1)
+        .fixedSize()
     }
 
     private func cycleCell(_ cell: ClinicReport.CycleCell) -> some View {
@@ -202,6 +245,12 @@ struct ReportPage: View {
             // 누락 마디는 점선 테두리 + "기록 없음" (색이 아니라 모양과 텍스트로)
             RoundedRectangle(cornerRadius: 3)
                 .strokeBorder(cell.state == .missed ? gray : rule, style: StrokeStyle(lineWidth: 0.75, dash: cell.state == .missed ? [2, 2] : []))
+        }
+        .overlay(alignment: .leading) {
+            if cell.marker != nil {
+                // 처방 전환 세로 실선 1px, 칸 사이 간격 가운데 (REPORT_SPEC C)
+                Rectangle().fill(ink).frame(width: 1).offset(x: -0.75 * Self.mm)
+            }
         }
     }
 

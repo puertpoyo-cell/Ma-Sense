@@ -1293,6 +1293,40 @@
         }
       }
     },
+    "history.prescriptionChange %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prescription changed · %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 변경 · %@"
+          }
+        }
+      }
+    },
+    "history.prescriptionChange.noLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prescription changed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 변경"
+          }
+        }
+      }
+    },
     "history.restoreDose": {
       "extractionState": "manual",
       "localizations": {
@@ -2568,6 +2602,57 @@
         }
       }
     },
+    "report.marker.change": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prescription changed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 변경"
+          }
+        }
+      }
+    },
+    "report.marker.periodStart %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prescription at start: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기간 시작 시 처방: %@"
+          }
+        }
+      }
+    },
+    "report.marker.periodStart.noLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prescription at start"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기간 시작 시 처방"
+          }
+        }
+      }
+    },
     "report.overflow": {
       "extractionState": "manual",
       "localizations": {
@@ -3023,6 +3108,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld회"
+          }
+        }
+      }
+    },
+    "report.summary.transitions %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prescription changes: %lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 전환 %lld회"
           }
         }
       }

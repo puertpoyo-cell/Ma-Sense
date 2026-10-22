@@ -48,11 +48,18 @@ struct ReportRendererTests {
         let week: TimeInterval = 7 * 86_400
         let cycles = (0..<ReportBuilder.maxCells).map { index in
             let scheduled = start.addingTimeInterval(Double(index) * week)
+            // 처방 전환 표시까지 있는 리포트 (R13): 첫 칸 기간 시작 처방, 7번째 칸 전환
+            let marker: ClinicReport.CycleCell.Marker? = switch index {
+            case 0: .periodStart(label: "첫 번째 처방 메모")
+            case 6: .change(label: "두 번째 처방 메모", date: scheduled)
+            default: nil
+            }
             return ClinicReport.CycleCell(
                 id: "cycle.\(index)",
                 scheduledDate: scheduled,
                 state: .recorded(date: scheduled.addingTimeInterval(2 * 86_400), site: BodySite.allCases[index % BodySite.allCases.count],
-                                 sequence: index + 1, offsetText: "+2d")
+                                 sequence: index + 1, offsetText: "+2d"),
+                marker: marker
             )
         }
         let longNote = String(repeating: "메모", count: ReportBuilder.noteLength / 2) + "…"
@@ -62,7 +69,8 @@ struct ReportRendererTests {
             summary: ClinicReport.Summary(
                 dosesTaken: 12, dosesScheduled: 12, missedCount: 0,
                 weightChangeText: "-6.6", weightStartText: "92.4", weightEndText: "85.8",
-                checksAnswered: 24, checksExpected: 24, remainingDoses: 0, exhaustionDate: nil
+                checksAnswered: 24, checksExpected: 24, remainingDoses: 0, exhaustionDate: nil,
+                prescriptionTransitions: 1
             ),
             cycles: cycles,
             weight: (0..<12).map { WeekPoint(weekStart: start.addingTimeInterval(Double($0) * week), averageKg: 92.4 - Double($0) * 0.6, sampleCount: 7) },

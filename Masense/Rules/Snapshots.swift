@@ -16,6 +16,10 @@ struct PrescriptionSnapshot: Equatable {
     /// `penCount * dosesPerPen`
     let totalDoses: Int
     let nextClinicDate: Date?
+    /// 처방 종료일 (그날까지 유효). 활성 처방은 nil
+    let endDate: Date?
+    /// 사용자 메모. 처방 전환 표시에만 쓰고 해석하지 않는다
+    let doseLabel: String?
 
     init(
         startDate: Date,
@@ -25,7 +29,9 @@ struct PrescriptionSnapshot: Equatable {
         scheduledMinute: Int = 0,
         dosesPerPen: Int = 4,
         totalDoses: Int,
-        nextClinicDate: Date? = nil
+        nextClinicDate: Date? = nil,
+        endDate: Date? = nil,
+        doseLabel: String? = nil
     ) {
         self.startDate = startDate
         self.intervalDays = intervalDays
@@ -35,6 +41,8 @@ struct PrescriptionSnapshot: Equatable {
         self.dosesPerPen = dosesPerPen
         self.totalDoses = totalDoses
         self.nextClinicDate = nextClinicDate
+        self.endDate = endDate
+        self.doseLabel = doseLabel
     }
 }
 

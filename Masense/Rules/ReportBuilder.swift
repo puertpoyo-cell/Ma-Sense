@@ -16,6 +16,8 @@ struct ClinicReport: Equatable {
         let checksExpected: Int
         let remainingDoses: Int
         let exhaustionDate: Date?
+        /// 기간 안 처방 전환 횟수 (R13). 0이면 표시하지 않는다
+        var prescriptionTransitions: Int = 0
     }
 
     /// C. 투약 타임라인 한 칸 (마디)
@@ -28,9 +30,18 @@ struct ClinicReport: Equatable {
             case pending
         }
 
+        /// 처방 전환 표시 (R13, REPORT_SPEC C). 기간 안에 전환이 있을 때만 붙는다
+        enum Marker: Equatable {
+            /// 첫 칸: 기간 시작 시점의 처방
+            case periodStart(label: String?)
+            /// 이 칸부터 새 처방
+            case change(label: String?, date: Date)
+        }
+
         let id: String
         let scheduledDate: Date
         let state: State
+        var marker: Marker?
     }
 
     enum WeightSourceNote: Equatable {
@@ -233,7 +244,21 @@ enum ReportBuilder {
         }
         cells.sort { $0.scheduledDate < $1.scheduledDate }
         let missedCount = cells.filter { $0.state == .missed }.count
-        let shownCells = Array(cells.suffix(maxCells))
+        var shownCells = Array(cells.suffix(maxCells))
+
+        // C. 처방 전환 (R13): 기간 안에 전환이 있을 때만 칸에 표시한다. 처방이 하나뿐이면 아무것도 붙이지 않는다
+        let markers = PrescriptionRules.prescriptionTimeline(all: ordered.map(\.prescription), in: period, calendar: calendar)
+        let transitions = PrescriptionRules.transitionCount(markers)
+        if transitions > 0, let firstDate = shownCells.first?.scheduledDate {
+            // 첫 칸에는 그 시점에 쓰던 처방. 보이는 칸(최근 12칸) 앞에서 바뀐 처방은 첫 칸의 표시가 대신한다
+            let current = markers.last { $0.startDate <= firstDate } ?? markers[0]
+            shownCells[0].marker = .periodStart(label: current.label)
+            for marker in markers where marker.startDate > firstDate {
+                // 새 처방이 시작된 뒤 첫 칸
+                guard let index = shownCells.firstIndex(where: { $0.scheduledDate >= marker.startDate }) else { continue }
+                shownCells[index].marker = .change(label: marker.label, date: marker.startDate)
+            }
+        }
 
         // B. 컨디션 체크 응답: 기간 안 투약 중 창이 열린 것만 분모
         let periodDoseIDs = Set(periodDoses.map(\.id))
@@ -284,7 +309,8 @@ enum ReportBuilder {
                 checksAnswered: answered,
                 checksExpected: expected,
                 remainingDoses: remaining,
-                exhaustionDate: exhaustion
+                exhaustionDate: exhaustion,
+                prescriptionTransitions: transitions
             ),
             cycles: shownCells,
             weight: series,
