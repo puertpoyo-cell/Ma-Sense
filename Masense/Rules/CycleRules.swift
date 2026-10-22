@@ -6,7 +6,7 @@ struct Cycle: Equatable, Identifiable {
     let index: Int
     /// 예정 일시
     let scheduledDate: Date
-    /// `[scheduledDate - 2일, scheduledDate + intervalDays - 2일)`. 예정일 이틀 전부터 그 마디로 본다
+    /// `[scheduledDate - 2일, scheduledDate + 5일)`. 예정일 이틀 전부터 그 마디로 본다
     let interval: DateInterval
 
     var id: Int { index }
@@ -30,6 +30,8 @@ enum NextDose: Equatable {
 enum CycleRules {
     /// 예정일 며칠 전부터 그 마디로 보는지
     static let leadDays = 2
+    /// v1은 주 1회 전용 (RULES.md 전제). `Prescription.intervalDays`는 읽지 않는다
+    static let intervalDays = 7
     /// 무한 루프 방지. 주 1회 기준 약 20년
     private static let hardCap = 1_000
 
@@ -51,7 +53,7 @@ enum CycleRules {
 
     /// R1. 마디 목록.
     ///
-    /// - 이후 마디는 첫 마디 + `intervalDays * index` (누적 오차 없음)
+    /// - 이후 마디는 첫 마디 + 7일 × index (누적 오차 없음)
     /// - 처방이 소진되면 그 이후 마디는 만들지 않는다. 소진 판정은 투약 수가 아니라 "쓰인 회차"로 한다:
     ///   기록이 있는 마디와 현재·미래 마디는 회차를 1개씩 쓰고, 지나간 누락 마디는 쓰지 않는다.
     ///   그래서 누락이 있으면 마디가 그만큼 뒤로 늘어난다
@@ -63,7 +65,7 @@ enum CycleRules {
         until end: Date,
         calendar: Calendar
     ) -> [Cycle] {
-        guard p.intervalDays >= leadDays + 1, p.totalDoses > 0,
+        guard p.totalDoses > 0,
               let first = firstScheduledDate(for: p, calendar: calendar),
               let firstStart = calendar.date(byAdding: .day, value: -leadDays, to: first)
         else { return [] }
@@ -75,10 +77,10 @@ enum CycleRules {
         var index = 0
 
         while budget > 0, index < hardCap {
-            guard let scheduled = calendar.date(byAdding: .day, value: p.intervalDays * index, to: first),
+            guard let scheduled = calendar.date(byAdding: .day, value: intervalDays * index, to: first),
                   scheduled <= end,
                   let start = calendar.date(byAdding: .day, value: -leadDays, to: scheduled),
-                  let finish = calendar.date(byAdding: .day, value: p.intervalDays - leadDays, to: scheduled),
+                  let finish = calendar.date(byAdding: .day, value: intervalDays - leadDays, to: scheduled),
                   finish > start
             else { break }
 

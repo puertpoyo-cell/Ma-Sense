@@ -5,8 +5,6 @@ import Foundation
 
 struct PrescriptionSnapshot: Equatable {
     let startDate: Date
-    /// 투약 간격(일). 3 미만이면 마디 구간을 만들 수 없어 규칙이 빈 결과를 돌려준다
-    let intervalDays: Int
     /// 1(일)~7(토), `Calendar` weekday
     let scheduledWeekday: Int
     let scheduledHour: Int
@@ -23,7 +21,6 @@ struct PrescriptionSnapshot: Equatable {
 
     init(
         startDate: Date,
-        intervalDays: Int = 7,
         scheduledWeekday: Int,
         scheduledHour: Int,
         scheduledMinute: Int = 0,
@@ -34,7 +31,6 @@ struct PrescriptionSnapshot: Equatable {
         doseLabel: String? = nil
     ) {
         self.startDate = startDate
-        self.intervalDays = intervalDays
         self.scheduledWeekday = scheduledWeekday
         self.scheduledHour = scheduledHour
         self.scheduledMinute = scheduledMinute

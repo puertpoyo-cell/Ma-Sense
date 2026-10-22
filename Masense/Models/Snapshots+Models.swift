@@ -7,7 +7,6 @@ extension Prescription {
     var snapshot: PrescriptionSnapshot {
         PrescriptionSnapshot(
             startDate: startDate,
-            intervalDays: intervalDays,
             scheduledWeekday: scheduledWeekday,
             scheduledHour: scheduledHour,
             scheduledMinute: scheduledMinute,

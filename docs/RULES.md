@@ -14,7 +14,7 @@ func cycles(for p: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, until
 ```
 
 - 첫 마디 `scheduledDate` = `startDate` 당일 또는 그 이후 첫 `scheduledWeekday` + `scheduledHour`:`scheduledMinute`. 시작일이 예정 요일과 같은 날이면 그날이 첫 마디
-- 이후 마디 = 첫 마디 + 7일 × index (누적 오차 없음). 주 1회 전용이라 `intervalDays`를 읽지 않는다
+- 이후 마디 = 첫 마디 + 7일 × index (누적 오차 없음). 주 1회 전용이라 `intervalDays`를 읽지 않는다 (`CycleRules.intervalDays = 7`, `PrescriptionSnapshot`에도 간격 필드가 없다)
 - 마디 구간 `interval` = `[scheduledDate - 2일, scheduledDate + 5일)` — 예정일 이틀 전부터 그 마디로 본다 (미리 맞는 경우 수용)
 - 처방이 소진되면 그 이후 마디는 만들지 않음. 소진은 "쓰인 회차"로 센다: 기록이 있는 마디와 현재·미래 마디는 회차를 쓰고, 지나간 누락 마디는 쓰지 않는다. 그래서 누락이 있으면 마디가 그만큼 뒤로 늘어나 `remainingDoses`와 맞는다
 - `until`은 `scheduledDate` 상한. 전체를 원하면 `.distantFuture` (회차 수로 끝난다)

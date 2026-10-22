@@ -12,7 +12,6 @@ struct CycleRulesTests {
     private func prescription(start: Date = TestCalendar.date(2026, 10, 16, 9), totalDoses: Int = 12) -> PrescriptionSnapshot {
         PrescriptionSnapshot(
             startDate: start,
-            intervalDays: 7,
             scheduledWeekday: thursday,
             scheduledHour: 20,
             scheduledMinute: 0,
@@ -95,10 +94,13 @@ struct CycleRulesTests {
         #expect(CycleRules.doses(in: cycles[0], from: [cancelled]).isEmpty)
     }
 
-    @Test func invalidIntervalProducesNoCycles() {
-        let p = PrescriptionSnapshot(startDate: TestCalendar.date(2026, 10, 16), intervalDays: 2, scheduledWeekday: thursday, scheduledHour: 20, totalDoses: 4)
-        let cycles = CycleRules.cycles(for: p, doses: [], now: TestCalendar.date(2026, 10, 16), until: .distantFuture, calendar: calendar)
-        #expect(cycles.isEmpty)
+    /// v1은 주 1회 전용: 마디는 항상 7일 간격, 구간은 예정일 2일 전부터 5일 뒤까지 (RULES.md 전제·R1)
+    @Test func cyclesAreAlwaysSevenDaysApart() {
+        let cycles = CycleRules.cycles(for: prescription(totalDoses: 3), doses: [], now: TestCalendar.date(2026, 10, 16), until: .distantFuture, calendar: calendar)
+        #expect(cycles.map(\.scheduledDate) == [
+            TestCalendar.date(2026, 10, 22, 20), TestCalendar.date(2026, 10, 29, 20), TestCalendar.date(2026, 11, 5, 20),
+        ])
+        #expect(cycles[0].interval == DateInterval(start: TestCalendar.date(2026, 10, 20, 20), end: TestCalendar.date(2026, 10, 27, 20)))
     }
 
     // MARK: R2
