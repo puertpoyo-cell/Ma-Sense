@@ -157,11 +157,11 @@ def render_liquid() -> Image.Image:
     return image
 
 
-def render_petals() -> Image.Image:
-    """밝은 바탕 + 색이 다른 반투명 막대 4개가 겹쳐 M. 겹친 곳은 곱하기로 섞인다"""
+def render_petals(width: float = 118) -> Image.Image:
+    """밝은 바탕 + 색이 다른 반투명 막대 4개가 겹쳐 M. 겹친 곳은 곱하기로 섞인다. width: 막대 굵기(1024 기준)"""
     image = gradient_background(LIGHT_TOP, LIGHT_BOTTOM)
     colors = [SKY, VIOLET, BLUE, INDIGO]
-    for piece, color in zip(m_bars(width=118), colors):
+    for piece, color in zip(m_bars(width=width), colors):
         soft_shadow(image, piece, color, 14, 20, 0.30)
         # 아래 그림과 곱해 섞고, 제 색 쪽으로 당긴다 (흰 바탕 위에서는 제 색, 다른 막대 위에서는 섞인 색)
         mixed = Image.blend(ImageChops.multiply(image, solid(color)), solid(color), 0.35)
