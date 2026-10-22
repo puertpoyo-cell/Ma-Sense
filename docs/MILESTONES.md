@@ -62,7 +62,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [ ] 접근성 실기기 확인 (VoiceOver 한 바퀴, 설정 > 손쉬운 사용 > 더 큰 텍스트 최대) — 사람
 - [x] `COMPLIANCE.md` 2.1 금지선 전수 확인 — `scripts/compliance_check.py` + CI job, 기록은 COMPLIANCE.md 8
 - [x] 개인정보 처리방침 초안 (`docs/PRIVACY.md`, 게시용 `docs/privacy/index.html`)
-- [ ] 처리방침 게시·URL 입력 (`AppConfig.privacyPolicyURL`), 시행일·문의 이메일 채우기 — 사람
+- [x] 처리방침 게시·URL 입력 (`AppConfig.privacyPolicyURL` = https://masense-privacy.vercel.app/), 시행일 2026-10-30·문의 이메일 (2026-10-22)
 - [x] 베타 안내문·빌드 절차 (`docs/TESTFLIGHT.md`, 역할·연령 고지 포함)
 - [ ] TestFlight 빌드 업로드 (번들 ID·서명·IAP 상품·HealthKit 결정 후) — 사람
 
@@ -153,7 +153,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 1 | ~~번들 ID~~ — **결정: `com.masense.app` (2026-10-22)**. 남은 것: 서명 팀 선택 | Xcode Signing & Capabilities | 시뮬레이터·CI는 서명 없이 동작 |
 | 2 | ~~인앱 구매 상품 ID~~ — **결정: `com.masense.pro` 유지 (2026-10-22)**. App Store Connect에 같은 ID로 비소모성 상품 생성 필요 | `StoreService.productID` | 상품을 못 불러오면 구매 버튼이 안 보임, 복원 버튼만 |
 | 3 | ~~HealthKit 사용~~ — **결정: 사용 (2026-10-22), D3-a 반영** | `Config/Masense.entitlements`, `INFOPLIST_KEY_NSHealthShareUsageDescription`, `InfoPlist.xcstrings` | — |
-| 4 | 개인정보 처리방침 게시 URL·시행일·문의 이메일 — **게시는 Vercel로 결정 (2026-10-22)**, 절차 `docs/TESTFLIGHT.md` 5 | `AppConfig.privacyPolicyURL`, `docs/privacy/index.html`, `docs/privacy/vercel.json` | 설정에 처리방침 링크 숨김 |
+| 4 | ~~처리방침 게시~~ — **결정: https://masense-privacy.vercel.app/ (Vercel), 시행 2026-10-30, 문의 이메일 기재 (2026-10-22)** | `AppConfig.privacyPolicyURL`, `docs/privacy/index.html` | — |
 | 5 | ~~단백질 권고 범위 출처~~ — **결정: 표시 (2026-10-22), D3-d 반영.** 2025 공동 권고문(ACLM·ASN·OMA·TOS, Obesity 2025, doi:10.1002/oby.24336; AJCN 판 PMC12264624) "감량 중 1.2~1.6 g/kg/일" | `protein.source`, `protein.guide` | — |
 | 6 | ~~감량 속도 출처~~ — **결정: CDC 주 0.5~1 kg 기준으로 표시 (2026-10-22), D3-c 반영** | `pace.notice`, `pace.source`, `PaceRules.weeklyChangeThresholdKg` | — |
 | 7 | 맨몸 예시 루틴 문구 검토 | `Localizable.xcstrings`의 `exercise.routine.*` | 초안 그대로 표시 (일반 건강관리 정보 고지와 함께) |

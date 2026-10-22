@@ -1,8 +1,8 @@
 # 개인정보 처리방침 — 마선생 Masense (초안)
 
-> 초안입니다. 게시 전 사람이 확인할 것: 시행일, 문의 연락처, 게시 URL(`Masense/App/AppConfig.swift`의 `privacyPolicyURL`). 게시용 HTML은 `docs/privacy/index.html`.
+> 게시 주소: https://masense-privacy.vercel.app/ (Vercel, `docs/privacy/index.html`). 앱 설정 > 정보의 링크는 `Masense/App/AppConfig.swift`의 `privacyPolicyURL`.
 
-시행일: [게시일 입력]
+시행일: 2026년 10월 30일
 
 마선생(이하 "앱")은 사용자의 기록을 기기 안에서만 다룹니다. 이 문서는 앱이 어떤 정보를 어디에 두고 어떻게 지우는지 설명합니다.
 
@@ -57,7 +57,7 @@
 
 ## 10. 문의
 
-[문의 이메일 입력]
+puertpoyo@gmail.com
 
 ## 11. 변경
 
