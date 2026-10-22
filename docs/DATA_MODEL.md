@@ -191,6 +191,7 @@ enum ProteinFood: String, Codable, CaseIterable {
 | healthKitAuthorized | Bool | |
 | hasPurchasedPro | Bool | StoreKit 검증 결과 캐시. 진실 원천은 StoreKit |
 | reportTheme | String | 기본 `"midnight"` |
+| reportDefaultPeriod | String? | V3. 리포트 기본 기간 `ReportPeriod.storageValue` (`sinceClinic`, `weeks4`·`weeks8`·`weeks12`). nil이면 자동(R12) |
 | createdAt | Date | |
 
 ## HealthKit 매핑
@@ -220,9 +221,19 @@ enum SchemaV2: VersionedSchema {   // M2
     static var versionIdentifier = Schema.Version(2, 0, 0)
     // + ProteinEntry, StrengthSession, HabitCheck
 }
-enum MasenseMigrationPlan: SchemaMigrationPlan {
-    // [SchemaV1, SchemaV2], 단계: .lightweight(V1 → V2)
+enum SchemaV3: VersionedSchema {   // 2026-10-22, 리포트 기본 기간 저장
+    static var versionIdentifier = Schema.Version(3, 0, 0)
+    // UserSettings + reportDefaultPeriod: String?
 }
+enum MasenseMigrationPlan: SchemaMigrationPlan {
+    // [SchemaV1, SchemaV2, SchemaV3], 단계: .lightweight(V1 → V2), .lightweight(V2 → V3)
+}
+```
+
+- 바뀐 모델은 이전 버전 쪽에 **고정 사본**을 둔다. V1·V2의 `UserSettings`는 `SchemaV1.UserSettings`(V3 이전 저장 속성 그대로)이고, 바뀌지 않은 모델은 현재 타입을 같이 쓴다. 고정 사본의 저장 속성을 고치면 기존 저장소의 버전을 알아보지 못한다
+- `MigrationTests`: V1 → V3, V2 → V3 디스크 저장소 마이그레이션
+
+```swift
 ```
 
 M1 출시 전에는 마이그레이션 없이 스키마 자유 변경. 베타 배포 후부터 `SchemaMigrationPlan` 필수.

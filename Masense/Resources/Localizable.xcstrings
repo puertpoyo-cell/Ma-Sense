@@ -4030,6 +4030,57 @@
         }
       }
     },
+    "settings.report.defaultPeriod": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default period"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기본 기간"
+          }
+        }
+      }
+    },
+    "settings.report.defaultPeriod.auto": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자동"
+          }
+        }
+      }
+    },
+    "settings.report.defaultPeriod.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The period selected when you open the Report tab. Automatic uses the time since your last visit if a next visit date is set, otherwise the last 8 weeks."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리포트 탭을 열 때 처음 선택되는 기간입니다. 자동은 다음 진료일이 있으면 직전 진료 이후, 없으면 최근 8주입니다."
+          }
+        }
+      }
+    },
     "settings.report.theme": {
       "extractionState": "manual",
       "localizations": {

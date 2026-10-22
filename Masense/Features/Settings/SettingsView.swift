@@ -298,15 +298,37 @@ private struct SettingsForm: View {
                     .frame(width: 44, height: 8)
                     .accessibilityHidden(true)
             }
+            // 리포트 탭을 열 때 처음 선택되는 기간 (R12). 구매와 무관
+            Picker("settings.report.defaultPeriod", selection: reportPeriodSelection) {
+                Text("settings.report.defaultPeriod.auto").tag(Self.automaticPeriod)
+                Text("report.period.sinceClinic").tag(ReportPeriod.sinceClinic.storageValue)
+                ForEach(ReportPeriod.weekChoices, id: \.self) { weeks in
+                    Text("report.period.weeks \(weeks)").tag(ReportPeriod.weeks(weeks).storageValue)
+                }
+            }
         } header: {
             SectionHeaderText("settings.section.report")
         } footer: {
-            if !settings.hasPurchasedPro {
-                Text("settings.report.themeLocked")
+            VStack(alignment: .leading, spacing: Spacing.s1) {
+                Text("settings.report.defaultPeriod.footer")
+                if !settings.hasPurchasedPro {
+                    Text("settings.report.themeLocked")
+                }
             }
         }
         .frostRow()
         .onChange(of: settings.reportTheme) { try? context.save() }
+        .onChange(of: settings.reportDefaultPeriod) { try? context.save() }
+    }
+
+    private static let automaticPeriod = "auto"
+
+    /// nil(자동)을 Picker 태그로 다루기 위한 연결
+    private var reportPeriodSelection: Binding<String> {
+        Binding(
+            get: { settings.reportDefaultPeriod ?? Self.automaticPeriod },
+            set: { settings.reportDefaultPeriod = $0 == Self.automaticPeriod ? nil : $0 }
+        )
     }
 
     // MARK: 구매

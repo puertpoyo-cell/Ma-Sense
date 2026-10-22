@@ -106,6 +106,28 @@ enum ReportPeriod: Hashable {
     static let fallbackWeeks = 8
 }
 
+extension ReportPeriod {
+    /// `UserSettings.reportDefaultPeriod`에 저장하는 값: "sinceClinic", "weeks4", "weeks8", "weeks12"
+    var storageValue: String {
+        switch self {
+        case .sinceClinic: return "sinceClinic"
+        case let .weeks(weeks): return "weeks\(weeks)"
+        }
+    }
+
+    /// 저장 값 해석. 선택지(`weekChoices`)에 없는 주 수나 모르는 값은 nil
+    init?(storageValue: String) {
+        if storageValue == "sinceClinic" {
+            self = .sinceClinic
+        } else if storageValue.hasPrefix("weeks"), let weeks = Int(storageValue.dropFirst("weeks".count)),
+                  ReportPeriod.weekChoices.contains(weeks) {
+            self = .weeks(weeks)
+        } else {
+            return nil
+        }
+    }
+}
+
 enum ReportBuilder {
     /// C 타임라인 최대 칸 수
     static let maxCells = 12
@@ -126,6 +148,19 @@ enum ReportBuilder {
     /// 다음 진료일이 있으면 "직전 진료 이후", 없으면 최근 8주
     static func defaultPeriod(hasNextClinicDate: Bool) -> ReportPeriod {
         hasNextClinicDate ? .sinceClinic : .weeks(ReportPeriod.fallbackWeeks)
+    }
+
+    /// 설정에 저장한 기본 기간이 있으면 그것, 없으면 위 기본값.
+    /// "직전 진료 이후"는 활성 처방이 있을 때만 고를 수 있으므로, 없으면 위 기본값으로 돌아간다
+    static func defaultPeriod(saved: ReportPeriod?, hasActivePrescription: Bool, hasNextClinicDate: Bool) -> ReportPeriod {
+        switch saved {
+        case .sinceClinic? where hasActivePrescription:
+            return .sinceClinic
+        case let .weeks(weeks)? where ReportPeriod.weekChoices.contains(weeks):
+            return .weeks(weeks)
+        default:
+            return defaultPeriod(hasNextClinicDate: hasNextClinicDate)
+        }
     }
 
     static func interval(

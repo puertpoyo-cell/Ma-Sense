@@ -4,10 +4,10 @@ import Testing
 
 @testable import Masense
 
-// V1 디스크 저장소가 V2로 경량 마이그레이션되고 기존 기록이 남는지 (DATA_MODEL.md 스키마 버전)
+// 이전 버전 디스크 저장소가 현재(V3)로 경량 마이그레이션되고 기존 기록이 남는지 (DATA_MODEL.md 스키마 버전)
 @MainActor
 struct MigrationTests {
-    @Test func v1StoreMigratesToV2KeepingRecords() throws {
+    @Test func v1StoreMigratesToCurrentKeepingRecords() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("migration-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -31,7 +31,7 @@ struct MigrationTests {
             try context.save()
         }
 
-        // 2. 현재(V2) 컨테이너로 같은 파일을 연다
+        // 2. 현재(V3) 컨테이너로 같은 파일을 연다 (V1 → V2 → V3)
         let container = try ModelContainer.masense(url: url)
         let context = container.mainContext
         let prescriptions = try context.fetch(FetchDescriptor<Prescription>())
@@ -47,5 +47,38 @@ struct MigrationTests {
         #expect(try context.fetch(FetchDescriptor<ProteinEntry>()).first?.foods == [.egg, .egg])
         #expect(try context.fetch(FetchDescriptor<StrengthSession>()).count == 1)
         #expect(try context.fetch(FetchDescriptor<HabitCheck>()).first?.water == true)
+    }
+
+    /// V3: `UserSettings.reportDefaultPeriod` 추가. 기존 설정 값은 남고 새 속성은 nil(자동)
+    @Test func v2StoreMigratesToV3KeepingSettings() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("Masense.store")
+
+        do {
+            let v2 = Schema(versionedSchema: SchemaV2.self)
+            let container = try ModelContainer(
+                for: v2,
+                configurations: [ModelConfiguration(schema: v2, url: url, cloudKitDatabase: .none)]
+            )
+            let context = container.mainContext
+            context.insert(SchemaV1.UserSettings(hasAcceptedRoleNotice: true, hasConfirmedAdult: true, proteinTargetGrams: 90, reportTheme: "sand"))
+            context.insert(ProteinEntry(date: TestCalendar.date(2026, 10, 23), meal: .lunch, foods: [.tofu], estimatedGrams: 10))
+            try context.save()
+        }
+
+        let container = try ModelContainer.masense(url: url)
+        let context = container.mainContext
+        let settings = try #require(try context.fetch(FetchDescriptor<UserSettings>()).first)
+        #expect(settings.hasCompletedOnboarding)
+        #expect(settings.proteinTargetGrams == 90)
+        #expect(settings.reportTheme == "sand")
+        #expect(settings.reportDefaultPeriod == nil)
+        #expect(try context.fetch(FetchDescriptor<ProteinEntry>()).count == 1)
+
+        settings.reportDefaultPeriod = ReportPeriod.weeks(12).storageValue
+        try context.save()
+        #expect(try context.fetch(FetchDescriptor<UserSettings>()).first?.reportDefaultPeriod == "weeks12")
     }
 }

@@ -26,6 +26,8 @@ final class UserSettings {
     var hasPurchasedPro: Bool
     /// 기본 "midnight"
     var reportTheme: String
+    /// 리포트 기본 기간 (`ReportPeriod.storageValue`). nil이면 자동(R12 기본값). V3
+    var reportDefaultPeriod: String?
     var createdAt: Date
 
     init(
@@ -42,6 +44,7 @@ final class UserSettings {
         healthKitAuthorized: Bool = false,
         hasPurchasedPro: Bool = false,
         reportTheme: String = "midnight",
+        reportDefaultPeriod: String? = nil,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -57,6 +60,7 @@ final class UserSettings {
         self.healthKitAuthorized = healthKitAuthorized
         self.hasPurchasedPro = hasPurchasedPro
         self.reportTheme = reportTheme
+        self.reportDefaultPeriod = reportDefaultPeriod
         self.createdAt = createdAt
     }
 

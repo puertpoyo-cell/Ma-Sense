@@ -159,6 +159,7 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 - 마디 칸은 기간 안 예정일 기준, 최대 12칸(최근 12개). 보관된 처방은 다음 처방 시작 전까지의 마디만 (`CycleRules.pastCycles`)
 - 컨디션 응답률 분모 = 기간 안 투약 중 창이 열린(투약 후 12h·36h 경과) 개수
 - 사용자가 4·8·12주 중 선택 가능
+- 설정에 기본 기간을 저장할 수 있다 (2026-10-22 결정, `UserSettings.reportDefaultPeriod`). 리포트 탭을 열 때 `defaultPeriod(saved:hasActivePrescription:hasNextClinicDate:)`: 저장 값이 고를 수 있는 값이면 그것, 아니면(저장 안 함 = 자동, 활성 처방 없이 "직전 진료 이후", 선택지에 없는 주 수) 위 기본값
 - 리포트 생성 시각과 기간을 PDF 하단에 명시
 
 ## R13. 처방 소진 추정

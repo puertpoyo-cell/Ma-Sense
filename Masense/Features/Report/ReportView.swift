@@ -22,8 +22,13 @@ struct ReportView: View {
     private var isPurchased: Bool { settings?.hasPurchasedPro ?? false }
     private var accent: Color { ReportPage.accent(forTheme: settings?.reportTheme ?? "midnight") }
 
+    /// 이번에 고른 기간, 없으면 설정에 저장한 기본 기간, 없으면 R12 기본값
     private var selectedPeriod: ReportPeriod {
-        period ?? ReportBuilder.defaultPeriod(hasNextClinicDate: activePrescription?.nextClinicDate != nil)
+        period ?? ReportBuilder.defaultPeriod(
+            saved: settings?.reportDefaultPeriod.flatMap(ReportPeriod.init(storageValue:)),
+            hasActivePrescription: activePrescription != nil,
+            hasNextClinicDate: activePrescription?.nextClinicDate != nil
+        )
     }
 
     var body: some View {

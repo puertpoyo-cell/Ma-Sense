@@ -36,6 +36,30 @@ struct ReportBuilderTests {
         #expect(ReportBuilder.defaultPeriod(hasNextClinicDate: false) == .weeks(8))
     }
 
+    /// 설정에 저장한 기본 기간 (2026-10-22 결정). 고를 수 없는 값이면 R12 기본값
+    @Test func savedDefaultPeriodWinsWhenSelectable() {
+        #expect(ReportBuilder.defaultPeriod(saved: .weeks(12), hasActivePrescription: true, hasNextClinicDate: true) == .weeks(12))
+        #expect(ReportBuilder.defaultPeriod(saved: .sinceClinic, hasActivePrescription: true, hasNextClinicDate: false) == .sinceClinic)
+        // 활성 처방이 없으면 "직전 진료 이후"를 고를 수 없다
+        #expect(ReportBuilder.defaultPeriod(saved: .sinceClinic, hasActivePrescription: false, hasNextClinicDate: false) == .weeks(8))
+        // 선택지에 없는 주 수
+        #expect(ReportBuilder.defaultPeriod(saved: .weeks(5), hasActivePrescription: true, hasNextClinicDate: true) == .sinceClinic)
+        // 저장 안 함 = 자동
+        #expect(ReportBuilder.defaultPeriod(saved: nil, hasActivePrescription: true, hasNextClinicDate: true) == .sinceClinic)
+        #expect(ReportBuilder.defaultPeriod(saved: nil, hasActivePrescription: true, hasNextClinicDate: false) == .weeks(8))
+    }
+
+    @Test func periodStorageValueRoundTrips() {
+        let choices: [ReportPeriod] = [.sinceClinic] + ReportPeriod.weekChoices.map { .weeks($0) }
+        for choice in choices {
+            #expect(ReportPeriod(storageValue: choice.storageValue) == choice)
+        }
+        #expect(ReportPeriod.weeks(8).storageValue == "weeks8")
+        #expect(ReportPeriod(storageValue: "weeks5") == nil)
+        #expect(ReportPeriod(storageValue: "weeks") == nil)
+        #expect(ReportPeriod(storageValue: "auto") == nil)
+    }
+
     @Test func periodIntervals() {
         let now = TestCalendar.date(2026, 11, 12, 14)
         let since = ReportBuilder.interval(for: .sinceClinic, activePrescriptionStart: start, now: now, calendar: calendar)

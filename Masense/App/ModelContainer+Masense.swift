@@ -3,10 +3,10 @@ import SwiftData
 
 extension ModelContainer {
     /// 온디바이스 전용 컨테이너. 서버·CloudKit 동기화 없음 (CLAUDE.md 스택, DATA_MODEL.md 원칙).
-    /// 현재 스키마는 V2이고, V1 저장소는 `MasenseMigrationPlan`으로 경량 마이그레이션된다.
+    /// 현재 스키마는 V3이고, V1·V2 저장소는 `MasenseMigrationPlan`으로 경량 마이그레이션된다.
     /// - Parameter url: 테스트에서 디스크 저장소 위치를 지정할 때만 쓴다
     static func masense(inMemory: Bool = false, url: URL? = nil) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: SchemaV2.self)
+        let schema = Schema(versionedSchema: SchemaV3.self)
         let configuration: ModelConfiguration
         if let url {
             configuration = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)

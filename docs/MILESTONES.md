@@ -52,7 +52,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] `ReportView` 미리보기 (SwiftUI, 라이트 강제) — `ReportPage`(A4 고정 크기) + `ReportPreviewView`(폭 맞춤 축소)
 - [x] `ReportRenderer` — `ImageRenderer` → PDF, `ShareLink` (PDFKit으로 A4 1장 검증)
 - [x] 구매 게이트 (`ReportPurchaseSheet`)
-- [ ] 리포트 기본 기간을 설정에 저장 — `UserSettings` 필드 추가(스키마 변경)라 사람 확인 필요. 지금은 R12 기본값을 매번 계산
+- [x] 리포트 기본 기간을 설정에 저장 — 2026-10-22 결정, D3-b (SchemaV3)
 - [ ] 실기기에서 12주·증상 10개·메모 5줄 리포트가 A4 한 장에 들어가는지 육안 확인 (높이 계산은 D2-a 테스트로 확인, 넘침 안내는 D2-a)
 
 ### M1-e 마감
@@ -121,6 +121,12 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] D2-b 기록 탭: `.frostRow()`(행 구분선 `gridHairline`), 섹션 헤더 `label`, 체중 차트 투약일 눈금(`WeightRules.doseTicks`, 홈과 공용) + 샘플 수치 `DimensionValue`, 습관 캘린더 `BlueprintGridLines`
 - [x] D2-c 설정·시트: `FormStyle.swift`(`.frostRow()`, `SectionHeaderText`)를 설정, 처방·투약·체중·운동 시트에 적용. 기본 회색 행 배경이 남던 투약·체중·처방 폼도 `frost`로
 
+## D3 — 사람 결정 반영 (2026-10-22)
+
+- [x] D3-a HealthKit 읽기 연동: entitlement, `NSHealthShareUsageDescription`(ko/en), 금지선 점검이 권한 문구도 본다
+- [x] D3-b 리포트 기본 기간 저장: SchemaV3(`UserSettings.reportDefaultPeriod`), V1·V2 `UserSettings` 고정 사본, R12 `defaultPeriod(saved:…)`, 설정 > 리포트 "기본 기간", 마이그레이션 테스트 V2 → V3
+- [ ] D3-c 단백질 권고 범위·감량 속도 안내 출처 확정 후 `AppConfig` 입력 — 표시하기로 결정(5·6번). 감량 속도 문구는 "일반 권장일 뿐, 의사와 상의"로 끝낸다. 출처 원문 확인 대기
+
 ## M3 — 출시 준비 (1주)
 
 - [ ] `COMPLIANCE.md` 6 출시 전 확인 전부 — 사람
@@ -143,7 +149,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 5 | 단백질 권고 범위 출처 | `AppConfig.proteinGuideSource` | 설정의 권고 범위 안내 숨김 (목표 입력은 동작) |
 | 6 | 감량 속도 일반 권고 출처 | `AppConfig.paceGuideSource` | 체중 카드의 감량 속도 안내(R8) 숨김 |
 | 7 | 맨몸 예시 루틴 문구 검토 | `Localizable.xcstrings`의 `exercise.routine.*` | 초안 그대로 표시 (일반 건강관리 정보 고지와 함께) |
-| 8 | 리포트 기본 기간을 설정에 저장할지 | `UserSettings` 필드 추가 (스키마 변경 → V3 + 마이그레이션) | R12 기본값을 매번 계산 |
+| 8 | ~~리포트 기본 기간 저장~~ — **결정: 저장 (2026-10-22), D3-b 반영** | `UserSettings.reportDefaultPeriod`, SchemaV3 | — |
 | 9 | 앱 이름·부제·아이콘 (브랜딩 논의) | 스토어 문구, `INFOPLIST_KEY_CFBundleDisplayName`, AppIcon | 작업명 "마선생" |
 | 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장 | — | — |
 | 11 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
@@ -165,6 +171,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2026-10-20 | `doseLabel`은 자유 메모, 앱이 해석 안 함 | 용량 판단 금지선 |
 | 2026-10-20 | 빨강·초록 색 금지 | 판단하지 않는 원칙의 시각화 |
 | 2026-10-22 | HealthKit 읽기 연동 사용 (체중·제지방량·운동) | 사람 결정. 쓰기는 하지 않음 |
+| 2026-10-22 | 리포트 기본 기간을 설정에 저장 (SchemaV3, 경량 마이그레이션) | 사람 결정. 바뀐 모델은 이전 버전에 고정 사본 |
 | 2026-10-21 | `Prescription.scheduledTime`은 `scheduledHour`·`scheduledMinute` Int 2개로 저장, `DateComponents`는 계산 속성 | SwiftData Codable 저장 안정성 |
 | 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
 | 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |
