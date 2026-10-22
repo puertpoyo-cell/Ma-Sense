@@ -32,7 +32,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] `NotificationService` — 권한, 4주 재등록, Dose 기록 시 취소 (`NotificationCoordinator`가 저장 데이터 → R4 → 등록)
 - [x] `HealthKitService` — 권한, `bodyMass` 읽기, 캐시 upsert (`WeightSyncService`, 프로토콜 + Fake)
 - [x] `StoreService` — StoreKit 2 비소모성 1종, 복원 (프로토콜 + Fake)
-- [ ] HealthKit capability(entitlement) + `NSHealthShareUsageDescription` 추가 — 사람 확인 필요 (CLAUDE.md "새 권한")
+- [x] HealthKit capability(entitlement) + `NSHealthShareUsageDescription` 추가 — 2026-10-22 사용 결정, D3-a
 - [ ] StoreKit 상품 ID 확정 (현재 코드 기본값 `com.masense.pro`) + 로컬 테스트용 `.storekit` 구성 파일 — 사람 확인 필요
 - [ ] 번들 ID 확정 (현재 `com.masense.Masense`) — Xcode Signing에서 팀 선택 시 함께
 
@@ -138,7 +138,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 |---|---|---|---|
 | 1 | 번들 ID·서명 팀 | Xcode Signing (현재 `com.masense.Masense`) | 시뮬레이터·CI는 서명 없이 동작 |
 | 2 | 인앱 구매 상품 ID | `StoreService.productID` (현재 `com.masense.pro`) | 상품을 못 불러오면 구매 버튼이 안 보임, 복원 버튼만 |
-| 3 | HealthKit 사용 (capability + `NSHealthShareUsageDescription`) | Xcode 타깃 Info·Capabilities | Health 연동 UI 전부 숨김 |
+| 3 | ~~HealthKit 사용~~ — **결정: 사용 (2026-10-22), D3-a 반영** | `Config/Masense.entitlements`, `INFOPLIST_KEY_NSHealthShareUsageDescription`, `InfoPlist.xcstrings` | — |
 | 4 | 개인정보 처리방침 게시 URL·시행일·문의 이메일 | `AppConfig.privacyPolicyURL`, `docs/privacy/index.html` | 설정에 처리방침 링크 숨김 |
 | 5 | 단백질 권고 범위 출처 | `AppConfig.proteinGuideSource` | 설정의 권고 범위 안내 숨김 (목표 입력은 동작) |
 | 6 | 감량 속도 일반 권고 출처 | `AppConfig.paceGuideSource` | 체중 카드의 감량 속도 안내(R8) 숨김 |
@@ -164,6 +164,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2026-10-20 | 투약 간격을 `intervalDays`로 모델링, UI는 주 1회만 | v2 확장 대비, 스키마 변경 회피 |
 | 2026-10-20 | `doseLabel`은 자유 메모, 앱이 해석 안 함 | 용량 판단 금지선 |
 | 2026-10-20 | 빨강·초록 색 금지 | 판단하지 않는 원칙의 시각화 |
+| 2026-10-22 | HealthKit 읽기 연동 사용 (체중·제지방량·운동) | 사람 결정. 쓰기는 하지 않음 |
 | 2026-10-21 | `Prescription.scheduledTime`은 `scheduledHour`·`scheduledMinute` Int 2개로 저장, `DateComponents`는 계산 속성 | SwiftData Codable 저장 안정성 |
 | 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
 | 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |

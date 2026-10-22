@@ -13,7 +13,8 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-CATALOG = ROOT / "Masense" / "Resources" / "Localizable.xcstrings"
+# 화면 문구(Localizable)와 권한 요청 문구(InfoPlist) 카탈로그
+CATALOGS = sorted((ROOT / "Masense" / "Resources").glob("*.xcstrings"))
 CODE_DIRS = [ROOT / "Masense", ROOT / "MasenseTests"]
 DOC_DIRS = [ROOT / "docs"]
 
@@ -60,12 +61,13 @@ EMOJI = re.compile("[\U0001F300-\U0001FAFF☀-➿⭐✅]")
 
 
 def catalog_values():
-    data = json.loads(CATALOG.read_text(encoding="utf-8"))
-    for key, entry in data["strings"].items():
-        for lang, loc in entry.get("localizations", {}).items():
-            unit = loc.get("stringUnit")
-            if unit:
-                yield key, lang, unit["value"]
+    for catalog in CATALOGS:
+        data = json.loads(catalog.read_text(encoding="utf-8"))
+        for key, entry in data["strings"].items():
+            for lang, loc in entry.get("localizations", {}).items():
+                unit = loc.get("stringUnit")
+                if unit:
+                    yield key, lang, unit["value"]
 
 
 def main() -> int:
@@ -88,6 +90,8 @@ def main() -> int:
     files = [p for d in CODE_DIRS for p in d.rglob("*") if p.suffix in {".swift", ".xcstrings"}]
     files += [p for d in DOC_DIRS for p in d.rglob("*") if p.suffix in {".md", ".html"}]
     files.append(ROOT / "CLAUDE.md")
+    # 앱 이름·권한 요청 문구가 빌드 설정(INFOPLIST_KEY_*)에 있다
+    files.append(ROOT / "Masense.xcodeproj" / "project.pbxproj")
     for path in files:
         text = path.read_text(encoding="utf-8")
         lower = text.lower()

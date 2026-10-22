@@ -201,7 +201,7 @@ enum ProteinFood: String, Codable, CaseIterable {
 | WeightSample.leanBodyMassKg | `leanBodyMass` | 읽기 |
 | StrengthSession (M2, P2) | `HKWorkoutType` activityType `.traditionalStrengthTraining`, `.functionalStrengthTraining`, `.walking`, `.flexibility` | 읽기 |
 
-Info.plist: `NSHealthShareUsageDescription` 필수. 쓰기 전까지 `NSHealthUpdateUsageDescription`은 넣지 않음.
+Info.plist: `NSHealthShareUsageDescription` 필수 (빌드 설정 `INFOPLIST_KEY_NSHealthShareUsageDescription`, 번역 `InfoPlist.xcstrings`, entitlement `Config/Masense.entitlements`). 쓰기 전까지 `NSHealthUpdateUsageDescription`은 넣지 않음.
 
 - 제지방량은 별도 샘플로 오므로, 같은 날 HealthKit 체중 샘플의 `leanBodyMassKg`에 붙인다 (그날 가장 늦은 값). 같은 날 체중이 없으면 버린다
 - 운동은 `StrengthSession(source: .healthKit)`으로 `healthKitUUID` 기준 upsert. 근력(traditional·functional) → `.strength`, 걷기 → `.walk`, 유연성 → `.stretch`, 그 밖은 무시. 강도는 알 수 없어 `.moderate`

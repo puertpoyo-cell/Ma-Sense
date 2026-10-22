@@ -5,10 +5,10 @@
 1. **번들 ID 확정** — 현재 `com.masense.Masense` (테스트 `com.masense.MasenseTests`). Xcode > Masense 타깃 > Signing & Capabilities에서 팀 선택, 필요하면 번들 ID 변경
 2. **App Store Connect 앱 생성** — 이름, 기본 언어 한국어, 번들 ID 연결
 3. **인앱 구매 상품 생성** — 비소모성 1종. 상품 ID를 정하고 `Masense/Services/StoreService.swift`의 `productID`(현재 `com.masense.pro`)와 맞춘다
-4. **HealthKit 사용 여부 결정** — 쓴다면:
-   - Signing & Capabilities에 HealthKit 추가 (entitlement)
-   - Info.plist 키 `NSHealthShareUsageDescription` = "체중과 운동 기록을 읽어 투약 리포트에 함께 정리합니다." (COMPLIANCE.md 4.2)
-   - 이 키가 들어가면 앱의 Health 연동 버튼이 자동으로 보인다 (`HealthKitService.isAvailable`)
+4. **HealthKit** — 사용하기로 결정(2026-10-22), 코드에 반영됨:
+   - entitlement `Config/Masense.entitlements` (`CODE_SIGN_ENTITLEMENTS`), 사용 설명 `INFOPLIST_KEY_NSHealthShareUsageDescription` + 번역 `Masense/Resources/InfoPlist.xcstrings` (COMPLIANCE.md 4.2)
+   - 1번에서 팀을 고르면 자동 서명이 App ID에 HealthKit을 등록한다. Signing & Capabilities에 HealthKit이 보이는지만 확인
+   - 실기기에서 온보딩 4페이지 또는 설정 > 연동의 버튼으로 권한 화면이 뜨는지 확인
 5. **개인정보 처리방침 게시** — `docs/privacy/index.html`의 [게시일]·[문의 이메일]을 채우고 게시(GitHub Pages 등). URL을 `Masense/App/AppConfig.swift`의 `privacyPolicyURL`과 App Store Connect에 입력
 6. **앱 아이콘** — `Masense/Resources/Assets.xcassets/AppIcon.appiconset`에 1024×1024 (DESIGN_SYSTEM.md 6: midnight 배경에 자의 눈금과 마디를 결합한 도면 선. 주사기·알약·체중계 금지)
 

@@ -33,7 +33,7 @@ final class HealthKitService: HealthKitReading {
     private let leanBodyMass = HKQuantityType(.leanBodyMass)
 
     /// Info.plist에 `NSHealthShareUsageDescription`이 없으면 권한 요청 순간 앱이 종료된다.
-    /// 키를 추가하기 전(사람 확인 대기)에는 HealthKit을 쓰지 않는다.
+    /// 키는 빌드 설정 `INFOPLIST_KEY_NSHealthShareUsageDescription`(번역은 `InfoPlist.xcstrings`)에 있다. 키가 빠진 빌드에서는 HealthKit을 쓰지 않는다.
     var isAvailable: Bool {
         HKHealthStore.isHealthDataAvailable()
             && Bundle.main.object(forInfoDictionaryKey: "NSHealthShareUsageDescription") != nil

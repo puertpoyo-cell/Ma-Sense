@@ -68,7 +68,7 @@
 - HealthKit 데이터를 광고·마케팅에 사용하지 않음 (해당 없음, 분석 SDK 없음)
 - HealthKit 데이터를 iCloud 외 제3자 저장 안 함 (서버 없음)
 - 개인정보 처리방침 URL 필수 — "데이터는 기기에만, 수집 없음" 명시
-- `NSHealthShareUsageDescription`: "체중과 운동 기록을 읽어 투약 리포트에 함께 정리합니다."
+- `NSHealthShareUsageDescription` (`Masense/Resources/InfoPlist.xcstrings`): "Apple 건강 앱의 체중, 제지방량, 운동 기록을 읽어 앱의 기록과 진료 전 리포트에 함께 보여 줍니다. 건강 앱에는 아무것도 쓰지 않으며, 데이터는 이 기기에만 저장합니다." — 읽는 항목, 쓰는 곳, 쓰기 없음, 기기 저장을 밝힌다
 
 ### 4.3 의료 앱 관련
 - 앱이 진단·치료를 하지 않음을 설명에 명시
