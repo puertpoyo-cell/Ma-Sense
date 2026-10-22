@@ -318,6 +318,7 @@ struct HistoryView: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(Color.ink)
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
 
             VStack(spacing: 0) {
                 LazyVGrid(columns: Self.weekColumns, spacing: 0) {
@@ -362,6 +363,9 @@ struct HistoryView: View {
             }
             .font(Typography.caption)
             .foregroundStyle(Color.inkSecondary)
+            .lineLimit(1)
+            // 격자와 같은 상한. 그 이상에서는 "단백질"이 두 줄로 쪼개진다
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
             if target == nil {
                 Text("history.habits.noTargetNote")
                     .font(Typography.caption)

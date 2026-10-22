@@ -147,4 +147,4 @@ Settings는 오늘 탭 우상단 gear → NavigationStack push
 - 바디맵 구역마다 `accessibilityLabel` ("복부 왼쪽 위, 10월 9일 사용")
 - 색만으로 상태 구분 금지 — 텍스트 또는 아이콘 병행
 - Dynamic Type XXL까지 레이아웃 깨짐 없음
-  - 예외: 기록 탭 습관 캘린더의 7칸 격자는 글자 크기 상한 `accessibility1` (그 이상에서는 날짜 숫자가 두 줄로 쪼개진다). 날짜·기록은 칸마다 VoiceOver 레이블로 읽는다
+  - 예외: 기록 탭 습관 캘린더(달 이동 줄, 7칸 격자, 범례)는 글자 크기 상한 `accessibility1` (그 이상에서는 날짜 숫자가 두 줄로 쪼개진다). 날짜·기록은 칸마다 VoiceOver 레이블로 읽는다
