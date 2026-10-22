@@ -46,13 +46,13 @@ struct StrengthSheet: View {
                             }
                         }
                     }
-                    .listRowBackground(Color.frost)
+                    .frostRow()
                 } else {
                     Section {
                         Text("strength.restNote")
                             .foregroundStyle(Color.inkSecondary)
                     }
-                    .listRowBackground(Color.frost)
+                    .frostRow()
                 }
 
                 if model.kind == .strength {
@@ -72,13 +72,13 @@ struct StrengthSheet: View {
                             .padding(.vertical, Spacing.s2)
                         }
                     }
-                    .listRowBackground(Color.frost)
+                    .frostRow()
                 }
 
                 Section {
                     TextField("field.memo", text: $model.note, axis: .vertical)
                 }
-                .listRowBackground(Color.frost)
+                .frostRow()
             }
             .scrollContentBackground(.hidden)
             .background(Color.midnightElevated)

@@ -113,7 +113,7 @@ private struct SettingsForm: View {
     // MARK: 처방
 
     private var prescriptionSection: some View {
-        Section("settings.section.prescription") {
+        Section {
             if let prescription {
                 LabeledContent("prescription.weekday") {
                     Text(scheduleText(prescription))
@@ -139,8 +139,10 @@ private struct SettingsForm: View {
                     .foregroundStyle(Color.inkSecondary)
             }
             Button("settings.prescription.new") { sheet = .newPrescription }
+        } header: {
+            SectionHeaderText("settings.section.prescription")
         }
-        .listRowBackground(Color.frost)
+        .frostRow()
     }
 
     private func scheduleText(_ p: Prescription) -> String {
@@ -152,7 +154,7 @@ private struct SettingsForm: View {
     // MARK: 알림
 
     private var notificationSection: some View {
-        Section("settings.section.notifications") {
+        Section {
             switch notificationStatus {
             case .denied:
                 NoticeLine("settings.notifications.denied")
@@ -194,8 +196,10 @@ private struct SettingsForm: View {
                 }
             }
             .disabled(!settings.reminderEnabled)
+        } header: {
+            SectionHeaderText("settings.section.notifications")
         }
-        .listRowBackground(Color.frost)
+        .frostRow()
     }
 
     private func hourText(_ hour: Int) -> String {
@@ -232,14 +236,14 @@ private struct SettingsForm: View {
                     .foregroundStyle(Color.inkTertiary)
             }
         } header: {
-            Text("settings.section.protein")
+            SectionHeaderText("settings.section.protein")
         } footer: {
             VStack(alignment: .leading, spacing: Spacing.s1) {
                 Text("protein.noTarget.hint")
                 Text("protein.estimateNote")
             }
         }
-        .listRowBackground(Color.frost)
+        .frostRow()
         .onChange(of: settings.proteinTargetGrams) {
             if let value = settings.proteinTargetGrams, value <= 0 {
                 settings.proteinTargetGrams = nil
@@ -256,15 +260,17 @@ private struct SettingsForm: View {
     // MARK: 연동 (Info.plist 키가 있을 때만)
 
     private var healthSection: some View {
-        Section("settings.section.health") {
+        Section {
             LabeledContent("settings.health.status") {
                 Text(LocalizedStringKey(settings.healthKitAuthorized ? "settings.health.connected" : "settings.health.notConnected"))
             }
             Button(LocalizedStringKey(settings.healthKitAuthorized ? "settings.health.sync" : "onboarding.permissions.health")) {
                 Task { await connectHealth() }
             }
+        } header: {
+            SectionHeaderText("settings.section.health")
         }
-        .listRowBackground(Color.frost)
+        .frostRow()
     }
 
     private func connectHealth() async {
@@ -293,13 +299,13 @@ private struct SettingsForm: View {
                     .accessibilityHidden(true)
             }
         } header: {
-            Text("settings.section.report")
+            SectionHeaderText("settings.section.report")
         } footer: {
             if !settings.hasPurchasedPro {
                 Text("settings.report.themeLocked")
             }
         }
-        .listRowBackground(Color.frost)
+        .frostRow()
         .onChange(of: settings.reportTheme) { try? context.save() }
     }
 
@@ -327,11 +333,11 @@ private struct SettingsForm: View {
                 NoticeLine(storeNotice)
             }
         } header: {
-            Text("settings.section.purchase")
+            SectionHeaderText("settings.section.purchase")
         } footer: {
             Text("settings.purchase.footer")
         }
-        .listRowBackground(Color.frost)
+        .frostRow()
     }
 
     private func purchase() async {
@@ -370,11 +376,11 @@ private struct SettingsForm: View {
             // 빨강 금지: destructive 역할 대신 일반 버튼 + 2단계 확인
             Button("settings.data.deleteAll") { confirmsDelete = true }
         } header: {
-            Text("settings.section.data")
+            SectionHeaderText("settings.section.data")
         } footer: {
             Text("data.local")
         }
-        .listRowBackground(Color.frost)
+        .frostRow()
     }
 
     private func deleteAll() {
@@ -388,7 +394,7 @@ private struct SettingsForm: View {
     // MARK: 정보
 
     private var infoSection: some View {
-        Section("settings.section.info") {
+        Section {
             LabeledContent("settings.info.version") {
                 Text(verbatim: DataExportService.appVersion)
             }
@@ -399,8 +405,10 @@ private struct SettingsForm: View {
             LabeledContent("settings.info.openSource") {
                 Text("settings.info.none")
             }
+        } header: {
+            SectionHeaderText("settings.section.info")
         }
-        .listRowBackground(Color.frost)
+        .frostRow()
     }
 }
 

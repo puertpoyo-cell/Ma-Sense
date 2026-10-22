@@ -119,7 +119,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 
 - [x] D2-a 리포트 넘침 안내 (REPORT_SPEC 형식): `ReportPage.Layout.measure`로 자연 높이를 재서 A4를 넘으면 미리보기 아래 `NoticeLine` "기간을 줄이면 한 장에 들어갑니다". D·E 줄은 60mm 이상, 부작용 표가 길면 표 높이를 따라 늘고 아래 칸과 겹치지 않는다. 12주 상한 리포트가 한 장에 들어가는지 테스트
 - [x] D2-b 기록 탭: `.frostRow()`(행 구분선 `gridHairline`), 섹션 헤더 `label`, 체중 차트 투약일 눈금(`WeightRules.doseTicks`, 홈과 공용) + 샘플 수치 `DimensionValue`, 습관 캘린더 `BlueprintGridLines`
-- [ ] D2-c 설정·시트: Form 행 배경 `frost`, 구분선 `gridHairline`, 섹션 헤더 `caption`
+- [x] D2-c 설정·시트: `FormStyle.swift`(`.frostRow()`, `SectionHeaderText`)를 설정, 처방·투약·체중·운동 시트에 적용. 기본 회색 행 배경이 남던 투약·체중·처방 폼도 `frost`로
 
 ## M3 — 출시 준비 (1주)
 

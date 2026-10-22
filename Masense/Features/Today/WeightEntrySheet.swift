@@ -65,6 +65,7 @@ struct WeightEntrySheet: View {
                             .foregroundStyle(Color.inkSecondary)
                     }
                 }
+                .frostRow()
             }
             .scrollContentBackground(.hidden)
             .background(Color.midnightElevated)

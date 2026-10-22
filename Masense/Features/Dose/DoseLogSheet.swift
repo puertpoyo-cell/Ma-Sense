@@ -26,15 +26,17 @@ struct DoseLogSheet: View {
                         displayedComponents: [.date, .hourAndMinute]
                     )
                 }
+                .frostRow()
 
                 Section {
                     BodyMapView(selection: $model.site, history: model.history)
                         .padding(.vertical, Spacing.s3)
                 } header: {
-                    Text("dose.site")
+                    SectionHeaderText("dose.site")
                 } footer: {
                     Text("bodymap.hint")
                 }
+                .frostRow()
 
                 Section {
                     Stepper(value: $model.sequence, in: 1...max(model.totalDoses, model.sequence)) {
@@ -45,10 +47,12 @@ struct DoseLogSheet: View {
                         }
                     }
                 }
+                .frostRow()
 
                 Section {
                     TextField("field.memo", text: $model.note, axis: .vertical)
                 }
+                .frostRow()
             }
             .scrollContentBackground(.hidden)
             .background(Color.midnightElevated)

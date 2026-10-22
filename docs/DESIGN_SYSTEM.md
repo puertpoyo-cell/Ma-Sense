@@ -84,7 +84,7 @@ Deep Midnight Navy 배경 위에 상단 하이라이트 보더가 적용된 Fros
 - `BlueprintCell(label:)`: 라벨 좌측 상단(`caption`, `inkSecondary`), 값 우측 하단.
 - `BlueprintSplit`: 두 셀을 세로 분할선으로 나눈다. 접근성 글자 크기에서는 위아래로 쌓고 가로 분할선으로 나눈다.
 - `BlueprintGridLines(rows:columns:)`: 같은 크기 칸이 반복되는 격자(기록 탭 습관 캘린더)에 `.overlay`로 얹는다. 칸 사이 `gridHairline` 1px, 안쪽 교차점마다 팔 3pt `+`(`gridCrosshair`). 바깥 테두리는 그리지 않는다.
-- 리스트·폼 화면(기록 탭, 설정, 입력 시트)은 카드 대신 `.frostRow()` 행을 쓴다: 배경 `frost`, 행 구분선 `gridHairline`. 섹션 헤더는 `label` + `inkSecondary`.
+- 리스트·폼 화면(기록 탭, 설정, 입력 시트)은 카드 대신 `.frostRow()` 행을 쓴다: 배경 `frost`, 행 구분선 `gridHairline`. 섹션 헤더는 `SectionHeaderText`(`label` + `inkSecondary`, 대문자 변환 없음).
 
 ### 5.2 `CountdownHero` (하이브리드 카운트다운)
 `RULES.md` R2 상태와 남은 시간에 따라 좌측 메인 셀과 우측 보조 셀(위·아래 2분할)을 그린다.
@@ -162,7 +162,8 @@ Deep Midnight Navy 배경 위에 상단 하이라이트 보더가 적용된 Fros
 | `Typography.swift` | 3절 폰트 토큰 |
 | `Spacing.swift` | 4절 간격·모서리 |
 | `FrostCard.swift` | `FrostCard(padding:)` (하이라이트 보더, 등장 모션) |
-| `Blueprint.swift` | `BlueprintDivider`, `BlueprintCell`, `BlueprintSplit`, `BlueprintGridLines`, `.frostRow()` |
+| `Blueprint.swift` | `BlueprintDivider`, `BlueprintCell`, `BlueprintSplit`, `BlueprintGridLines` |
+| `FormStyle.swift` | 리스트·폼 행 `.frostRow()`, 섹션 헤더 `SectionHeaderText` |
 | `DimensionValue.swift` | 수치 + 단위 |
 | `PrimaryButton.swift` | `PrimaryButton`, `GhostButton`, 버튼 스타일 |
 | `NoticeLine.swift`, `RecordedToast.swift`, `SymptomChip.swift`, `MealSlotRow.swift`, `WeekSparkline.swift`, `WeekChart.swift`, `AdaptiveStack.swift`, `MidnightBackground.swift` | 5절 컴포넌트 |

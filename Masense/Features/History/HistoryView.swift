@@ -94,7 +94,7 @@ struct HistoryView: View {
                     doseRow(row)
                 }
             } header: {
-                sectionHeader(Text(month.start.formatted(.dateTime.year().month(.wide))))
+                SectionHeaderText(Text(month.start.formatted(.dateTime.year().month(.wide))))
             }
         }
     }
@@ -188,7 +188,7 @@ struct HistoryView: View {
                     conditionRow(slot, doseID: group.doseID)
                 }
             } header: {
-                sectionHeader(Text("history.condition.doseHeader \(group.administeredAt.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated)))"))
+                SectionHeaderText(Text("history.condition.doseHeader \(group.administeredAt.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated)))"))
             }
         }
     }
@@ -239,7 +239,7 @@ struct HistoryView: View {
                     .frame(height: 180)
                     .padding(.vertical, Spacing.s3)
             } header: {
-                sectionHeader(Text("history.weight.chartTitle \(Self.weightWeeks)"))
+                SectionHeaderText(Text("history.weight.chartTitle \(Self.weightWeeks)"))
             }
             .frostRow()
 
@@ -399,12 +399,6 @@ struct HistoryView: View {
     }
 
     // MARK: 공용
-
-    private func sectionHeader(_ text: Text) -> some View {
-        text
-            .font(Typography.label)
-            .foregroundStyle(Color.inkSecondary)
-    }
 
     private func emptyRow(_ key: LocalizedStringKey) -> some View {
         Text(key)

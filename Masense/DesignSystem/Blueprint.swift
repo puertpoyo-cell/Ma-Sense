@@ -145,11 +145,3 @@ struct BlueprintGridLines: View {
         .accessibilityHidden(true)
     }
 }
-
-extension View {
-    /// List·Form 행을 도면 카드처럼: 배경 `frost`, 행 구분선 `gridHairline` (DESIGN_SYSTEM.md 5.1을 리스트에 옮긴 것)
-    func frostRow() -> some View {
-        listRowBackground(Color.frost)
-            .listRowSeparatorTint(Color.gridHairline)
-    }
-}

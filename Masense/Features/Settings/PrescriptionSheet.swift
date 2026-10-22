@@ -16,6 +16,7 @@ struct PrescriptionForm: View {
                 }
                 DatePicker("prescription.time", selection: $model.scheduledTime, displayedComponents: .hourAndMinute)
             }
+            .frostRow()
 
             Section {
                 Stepper(value: $model.penCount, in: PrescriptionFormModel.penCountRange) {
@@ -32,6 +33,7 @@ struct PrescriptionForm: View {
                     Text("prescription.totalValue \(model.totalDoses)").monospacedDigit()
                 }
             }
+            .frostRow()
 
             Section {
                 Toggle("prescription.hasNextClinic", isOn: $model.hasNextClinicDate)
@@ -44,12 +46,14 @@ struct PrescriptionForm: View {
                     )
                 }
             }
+            .frostRow()
 
             Section {
                 TextField("prescription.memo", text: $model.doseLabel)
             } footer: {
                 Text("prescription.memo.footer")
             }
+            .frostRow()
         }
         .scrollContentBackground(.hidden)
         .foregroundStyle(Color.ink)
