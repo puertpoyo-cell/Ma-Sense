@@ -157,7 +157,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 6 | ~~감량 속도 출처~~ — **결정: CDC 주 0.5~1 kg 기준으로 표시 (2026-10-22), D3-c 반영** | `pace.notice`, `pace.source`, `PaceRules.weeklyChangeThresholdKg` | — |
 | 7 | 맨몸 예시 루틴 문구 검토 | `Localizable.xcstrings`의 `exercise.routine.*` | 초안 그대로 표시 (일반 건강관리 정보 고지와 함께) |
 | 8 | ~~리포트 기본 기간 저장~~ — **결정: 저장 (2026-10-22), D3-b 반영** | `UserSettings.reportDefaultPeriod`, SchemaV3 | — |
-| 9 | 앱 이름·부제·아이콘 (브랜딩 논의) — 아이콘 1차안 "겹친 유리 M"(굵기 136) 사람 선택 (2026-10-22), 대안 liquid·rings | 스토어 문구, `INFOPLIST_KEY_CFBundleDisplayName`, `scripts/make_app_icon.py` | 작업명 "마선생", 아이콘 1차안 |
+| 9 | ~~앱 이름~~ — **결정: 마선생 (2026-10-22)**. 아이콘 1차안 "겹친 유리 M"(굵기 136) 사람 선택. 남은 것: 부제 | 스토어 문구(부제), `INFOPLIST_KEY_CFBundleDisplayName`(이미 "마선생"), `scripts/make_app_icon.py` | 부제 없이 이름만 |
 | 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장 | — | — |
 | 11 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
 
@@ -183,6 +183,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2026-10-22 | 감량 속도 안내 기준을 주 1%에서 주 1 kg(CDC 주 0.5~1 kg 상한)으로 | 사람 결정. % 기준은 확인 가능한 공식 출처가 없음 |
 | 2026-10-22 | 단백질 권고 범위 1.2~1.6 g/kg 표시, 출처 2025 공동 권고문 | 사람 결정. 원문 문장 확인(검색 발췌, AJCN 판) |
 | 2026-10-22 | 앱 아이콘 1차안 "겹친 유리 M"(막대 굵기 136) | 사람 선택. 의약품 상표 연상·주사기·알약 표현 제외 |
+| 2026-10-22 | 앱 이름 "마선생" 확정 | 사람 결정. 상표 등록 검색은 COMPLIANCE.md 6 출시 전 확인에 남김 |
 | 2026-10-21 | `Prescription.scheduledTime`은 `scheduledHour`·`scheduledMinute` Int 2개로 저장, `DateComponents`는 계산 속성 | SwiftData Codable 저장 안정성 |
 | 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
 | 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |
