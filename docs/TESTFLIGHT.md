@@ -2,14 +2,19 @@
 
 ## 1. 사람이 Mac에서 할 일 (최초 1회)
 
-1. **번들 ID 확정** — 현재 `com.masense.Masense` (테스트 `com.masense.MasenseTests`). Xcode > Masense 타깃 > Signing & Capabilities에서 팀 선택, 필요하면 번들 ID 변경
+1. **번들 ID** — `com.masense.app`로 확정(2026-10-22, 테스트 `com.masense.app.tests`). Xcode > Masense 타깃 > Signing & Capabilities에서 팀만 선택한다
 2. **App Store Connect 앱 생성** — 이름, 기본 언어 한국어, 번들 ID 연결
 3. **인앱 구매 상품 생성** — 비소모성 1종, 상품 ID `com.masense.pro` (2026-10-22 확정, `StoreService.productID`). 만든 뒤 Xcode에서 동기화 `.storekit` 구성 파일을 만들어 스킴에 지정하면 시뮬레이터에서 구매·복원을 시험할 수 있다
 4. **HealthKit** — 사용하기로 결정(2026-10-22), 코드에 반영됨:
    - entitlement `Config/Masense.entitlements` (`CODE_SIGN_ENTITLEMENTS`), 사용 설명 `INFOPLIST_KEY_NSHealthShareUsageDescription` + 번역 `Masense/Resources/InfoPlist.xcstrings` (COMPLIANCE.md 4.2)
    - 1번에서 팀을 고르면 자동 서명이 App ID에 HealthKit을 등록한다. Signing & Capabilities에 HealthKit이 보이는지만 확인
    - 실기기에서 온보딩 4페이지 또는 설정 > 연동의 버튼으로 권한 화면이 뜨는지 확인
-5. **개인정보 처리방침 게시** — `docs/privacy/index.html`의 [게시일]·[문의 이메일]을 채우고 게시(GitHub Pages 등). URL을 `Masense/App/AppConfig.swift`의 `privacyPolicyURL`과 App Store Connect에 입력
+5. **개인정보 처리방침 게시 (Vercel, 2026-10-22 결정)** — `docs/privacy/index.html`의 [게시일]·[문의 이메일]을 채운 뒤:
+   1. vercel.com > Add New > Project > GitHub 저장소 `puertpoyo-cell/Ma-Sense` 가져오기
+   2. Framework Preset **Other**, Root Directory **`docs/privacy`**, Build·Output 설정은 비워 둔다 (빌드 없는 HTML 한 장)
+   3. 프로덕션 배포는 기본 브랜치(main)에서 나간다. 작업 브랜치를 main에 머지하거나, Settings > Git > Production Branch를 작업 브랜치로 바꾼다
+   4. `docs/privacy/vercel.json`: 확장자 없는 주소(`cleanUrls`), 처리방침 폴더가 바뀐 커밋만 배포(`ignoreCommand`)
+   5. 배포 주소(`https://<프로젝트 이름>.vercel.app`)를 `Masense/App/AppConfig.swift`의 `privacyPolicyURL`과 App Store Connect에 입력. 넣으면 설정 > 정보에 처리방침 링크가 보인다
 6. **앱 아이콘** — 1차안 "겹친 유리 M"(굵기 136)이 `AppIcon.appiconset/AppIcon.png`에 들어가 있다 (`python3 scripts/make_app_icon.py`로 다시 생성, DESIGN_SYSTEM.md 6). 앱 이름은 "마선생"으로 확정 (2026-10-22)
 
 ## 2. 빌드 올리기

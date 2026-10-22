@@ -55,7 +55,7 @@ jobs:
         run: |
           set -euo pipefail
           UDID=${{ steps.sim.outputs.udid }}
-          BUNDLE=com.masense.Masense
+          BUNDLE=com.masense.app
           mkdir -p shots
           shoot() {
             xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
