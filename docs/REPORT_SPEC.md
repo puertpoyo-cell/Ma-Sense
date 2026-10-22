@@ -5,6 +5,9 @@
 ## 형식
 
 - A4 세로 1장 (210×297mm). 넘치면 폰트를 줄이지 않고 **기간을 줄이라고 안내**
+  - 구현: `ReportRenderer.fitsOnePage`가 페이지 높이를 푼 `ReportPage(layout: .measure)`의 자연 높이를 A4 높이와 비교한다. 넘치면 리포트 탭 미리보기 아래에 `NoticeLine` (`report.overflow`). 내보내기는 막지 않는다
+  - 높이가 바뀌는 칸은 E(증상 최대 10줄)와 G(메모 최대 5줄)뿐이다. D·E 줄은 60mm 이상이고 표가 길면 표 높이를 따라 늘며, 차트는 그 줄 높이에 맞춘다
+  - 칸마다 상한이 있어 기간과 무관하게 가장 긴 리포트가 정해진다. 그 리포트가 한 장에 들어가는지 `ReportRendererTests.fullTwelveWeekReportFitsOnePage`로 확인
 - 여백 16mm, 12컬럼 그리드, 거터 4mm
 - 인쇄 전제: 흰 배경, 검정·회색 중심. 테마는 강조색 1가지만 바꿈 (구매 기능)
 - 폰트: Pretendard 또는 시스템(Apple SD Gothic Neo). 숫자는 tabular figures

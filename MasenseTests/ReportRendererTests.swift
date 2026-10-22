@@ -42,6 +42,42 @@ struct ReportRendererTests {
         )
     }
 
+    /// 칸마다 상한(타임라인 12칸, 증상 10개, 메모 5줄 60자)까지 채운 12주 리포트. 기간과 무관하게 이보다 길어지지 않는다
+    private func fullReport(noteCount: Int = ReportBuilder.maxNotes) -> ClinicReport {
+        let start = TestCalendar.date(2026, 8, 6, 20)
+        let week: TimeInterval = 7 * 86_400
+        let cycles = (0..<ReportBuilder.maxCells).map { index in
+            let scheduled = start.addingTimeInterval(Double(index) * week)
+            return ClinicReport.CycleCell(
+                id: "cycle.\(index)",
+                scheduledDate: scheduled,
+                state: .recorded(date: scheduled.addingTimeInterval(2 * 86_400), site: BodySite.allCases[index % BodySite.allCases.count],
+                                 sequence: index + 1, offsetText: "+2d")
+            )
+        }
+        let longNote = String(repeating: "메모", count: ReportBuilder.noteLength / 2) + "…"
+        return ClinicReport(
+            period: DateInterval(start: start, duration: 12 * week),
+            weeks: 12,
+            summary: ClinicReport.Summary(
+                dosesTaken: 12, dosesScheduled: 12, missedCount: 0,
+                weightChangeText: "-6.6", weightStartText: "92.4", weightEndText: "85.8",
+                checksAnswered: 24, checksExpected: 24, remainingDoses: 0, exhaustionDate: nil
+            ),
+            cycles: cycles,
+            weight: (0..<12).map { WeekPoint(weekStart: start.addingTimeInterval(Double($0) * week), averageKg: 92.4 - Double($0) * 0.6, sampleCount: 7) },
+            weightDoseTicks: cycles.map(\.scheduledDate),
+            weightSource: .mixed,
+            symptoms: Symptom.allCases.map { ClinicReport.SymptomRow(symptom: $0, count: 12, maxSeverity: 3, timing: .both) },
+            appetite: ClinicReport.AppetiteSummary(reduced: 6, veryReduced: 3),
+            quality: ClinicReport.QualitySection(protein: .target(daysMet: 61, totalDays: 84), strengthCount: 24,
+                                                 leanMassStartText: "58.2", leanMassEndText: "57.9"),
+            notes: (0..<noteCount).map { ClinicReport.NoteLine(id: "note.\($0)", date: start.addingTimeInterval(Double($0) * week), text: longNote) },
+            generatedAt: start.addingTimeInterval(12 * week),
+            appVersion: "1.0"
+        )
+    }
+
     @Test func fileNameUsesGenerationDate() {
         #expect(ReportRenderer.fileName(for: TestCalendar.date(2026, 10, 27, 14), calendar: calendar) == "Masense_Report_2026-10-27.pdf")
     }
@@ -55,5 +91,23 @@ struct ReportRendererTests {
         let bounds = try #require(document.page(at: 0)).bounds(for: .mediaBox)
         #expect(abs(bounds.width - ReportPage.size.width) < 1)
         #expect(abs(bounds.height - ReportPage.size.height) < 1)
+    }
+
+    // REPORT_SPEC.md 형식: 넘치면 폰트를 줄이지 않고 기간을 줄이라고 안내
+
+    @Test func sampleReportFitsOnePage() {
+        #expect(ReportRenderer.fitsOnePage(sampleReport(), calendar: calendar))
+    }
+
+    /// REPORT_SPEC.md 수용 기준 "12주 데이터로 A4 1장 안에 들어감"
+    @Test func fullTwelveWeekReportFitsOnePage() {
+        let full = ReportRenderer.naturalHeight(of: fullReport(), calendar: calendar)
+        #expect(full > ReportRenderer.naturalHeight(of: sampleReport(), calendar: calendar))
+        #expect(full <= ReportPage.size.height, "자연 높이 \(full)pt, A4 \(ReportPage.size.height)pt")
+    }
+
+    /// 상한을 넘는 내용(빌더는 만들지 않음)으로 넘침 판단이 실제 높이를 재는지 확인
+    @Test func overflowIsDetected() {
+        #expect(!ReportRenderer.fitsOnePage(fullReport(noteCount: 40), calendar: calendar))
     }
 }

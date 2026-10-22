@@ -15,6 +15,7 @@ struct ReportView: View {
     @State private var period: ReportPeriod?
     @State private var pdfURL: URL?
     @State private var showsPurchase = false
+    @State private var overflows = false
 
     private var activePrescription: Prescription? { prescriptions.first { $0.isActive } }
     private var settings: UserSettings? { settingsList.first }
@@ -37,6 +38,12 @@ struct ReportView: View {
                         let report = makeReport(now: timeline.date)
                         periodPicker
                         ReportPreviewView(report: report, accent: accent)
+                            .task(id: report) {
+                                overflows = !ReportRenderer.fitsOnePage(report, calendar: calendar)
+                            }
+                        if overflows {
+                            NoticeLine("report.overflow")
+                        }
                         exportControls
                             .task(id: ExportKey(report: report, isPurchased: isPurchased)) {
                                 await renderIfPurchased(report)

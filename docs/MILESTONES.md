@@ -53,7 +53,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] `ReportRenderer` — `ImageRenderer` → PDF, `ShareLink` (PDFKit으로 A4 1장 검증)
 - [x] 구매 게이트 (`ReportPurchaseSheet`)
 - [ ] 리포트 기본 기간을 설정에 저장 — `UserSettings` 필드 추가(스키마 변경)라 사람 확인 필요. 지금은 R12 기본값을 매번 계산
-- [ ] 실기기에서 12주·증상 10개·메모 5줄 리포트가 A4 한 장에 들어가는지 육안 확인 (넘침 안내는 미구현)
+- [ ] 실기기에서 12주·증상 10개·메모 5줄 리포트가 A4 한 장에 들어가는지 육안 확인 (높이 계산은 D2-a 테스트로 확인, 넘침 안내는 D2-a)
 
 ### M1-e 마감
 - [x] 접근성 점검 — 코드 수준 (VoiceOver 레이블·토글 특성, AX 크기에서 가로→세로 `AdaptiveStack`, 온보딩 스크롤+버튼 고정)
@@ -112,6 +112,14 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] R10 `isLowAppetiteDay` / R11 `isLowConditionDay` 분리
 - [x] 시트 detent·그래버, `RecordedToast` 햅틱, 스파크라인 눈금 4pt, `MealSlotRow` 8pt, `WeekChart` y축 최소·최대
 - [x] 리포트 라이트 토큰(`paper*`), 금지 아이콘 점검(`pills`, `scalemass`, `exclamationmark.triangle`) 추가
+
+## D2 — 남은 사양 공백과 Blueprint 확장 (2026-10-22)
+
+완료 기준: 사양에 있으나 비어 있던 동작을 채우고, 홈 밖 화면(기록 탭·설정·시트)도 DESIGN_SYSTEM.md 1·5.1을 따른다. 기존 테스트는 그대로 통과한다.
+
+- [x] D2-a 리포트 넘침 안내 (REPORT_SPEC 형식): `ReportPage.Layout.measure`로 자연 높이를 재서 A4를 넘으면 미리보기 아래 `NoticeLine` "기간을 줄이면 한 장에 들어갑니다". D·E 줄은 60mm 이상, 부작용 표가 길면 표 높이를 따라 늘고 아래 칸과 겹치지 않는다. 12주 상한 리포트가 한 장에 들어가는지 테스트
+- [ ] D2-b 기록 탭: 행 구분선 `gridHairline`, 체중 요약 도면 셀, 습관 캘린더 격자
+- [ ] D2-c 설정·시트: Form 행 배경 `frost`, 구분선 `gridHairline`, 섹션 헤더 `caption`
 
 ## M3 — 출시 준비 (1주)
 

@@ -2517,6 +2517,23 @@
         }
       }
     },
+    "report.overflow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The content runs past one A4 page. A shorter period fits on one page."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내용이 A4 한 장을 넘습니다. 기간을 줄이면 한 장에 들어갑니다."
+          }
+        }
+      }
+    },
     "report.period %@ %@ %lld": {
       "extractionState": "manual",
       "localizations": {

@@ -4,9 +4,16 @@ import SwiftUI
 /// 진료 전 리포트 A4 한 장 (REPORT_SPEC.md 레이아웃). 미리보기와 PDF가 같은 뷰를 쓴다.
 /// 인쇄 전제: 흰 배경, 검정·회색 중심. 테마는 강조색 하나만 바꾼다. 크기는 고정 (Dynamic Type 미적용).
 struct ReportPage: View {
+    /// `.print`는 A4 한 장 고정. `.measure`는 페이지 높이를 풀어 내용의 자연 높이를 잰다 (넘침 판단, `ReportRenderer.fitsOnePage`).
+    /// 두 레이아웃은 페이지 높이만 다르므로 자연 높이가 A4 안이면 인쇄본에서 칸이 겹치지 않는다
+    enum Layout {
+        case print, measure
+    }
+
     let report: ClinicReport
     var accent: Color = .paperAccent
     var calendar: Calendar = .current
+    var layout: Layout = .print
 
     /// A4 210×297mm @72dpi
     static let size = CGSize(width: 595.28, height: 841.89)
@@ -27,11 +34,19 @@ struct ReportPage: View {
             header
             summary
             timeline
+            // D·E 한 줄: 60mm 이상, 부작용 표가 길면 표 높이를 따른다. 차트는 정해진 줄 높이에 맞춰 왼쪽 반에 그린다
             HStack(alignment: .top, spacing: gutter) {
-                weight
+                Color.clear.frame(maxWidth: .infinity, maxHeight: 0)
                 symptoms
             }
-            .frame(height: 60 * Self.mm, alignment: .top)
+            .frame(minHeight: 60 * Self.mm, alignment: .top)
+            .fixedSize(horizontal: false, vertical: true)
+            .overlay {
+                HStack(alignment: .top, spacing: gutter) {
+                    weight
+                    Color.clear
+                }
+            }
             if let quality = report.quality {
                 qualityRow(quality)
             }
@@ -42,7 +57,7 @@ struct ReportPage: View {
             footer
         }
         .padding(margin)
-        .frame(width: Self.size.width, height: Self.size.height, alignment: .topLeading)
+        .frame(width: Self.size.width, height: layout == .print ? Self.size.height : nil, alignment: .topLeading)
         .background(Color.paperBackground)
         .foregroundStyle(ink)
         .environment(\.colorScheme, .light)
