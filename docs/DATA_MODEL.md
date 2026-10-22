@@ -87,6 +87,7 @@ UserSettings        (단일 레코드)
 파생값: `prescriptionTimeline(in:)` — 기간 안의 처방 목록을 `(startDate, doseLabel?)` 배열로 돌려줌 (`Rules/PrescriptionRules.swift`).
 
 파생값 (저장하지 않음, `Rules/`에서 계산):
+- `scheduledTime: DateComponents` = `(hour: scheduledHour, minute: scheduledMinute)`. `DateComponents`를 그대로 저장하지 않는 이유는 SwiftData의 Codable 저장이 `calendar`·`timeZone` 같은 중첩 값에서 불안정하기 때문
 - `totalDoses = penCount * dosesPerPen`
 - `usedDoses = doses.filter { !$0.isCancelled }.count`
 - `remainingDoses = totalDoses - usedDoses`
@@ -232,6 +233,7 @@ enum ProteinFood: String, Codable, CaseIterable {
 | healthKitAuthorized | Bool | `false` |  |
 | hasPurchasedPro | Bool | `false` | StoreKit 검증 결과 캐시. 진실 원천은 StoreKit |
 | reportTheme | String | `"midnight"` |  |
+| reportDefaultPeriod | String? |  | V3. 리포트 기본 기간 `ReportPeriod.storageValue` (`sinceClinic`, `weeks4`·`weeks8`·`weeks12`). nil이면 자동(R12) |
 | createdAt | Date | `.now` |  |
 
 단일 레코드는 CloudKit에서 기기마다 하나씩 생겨 충돌할 수 있다. 동기화를 켤 때는 `createdAt`이 가장 이른 레코드를 정본으로 삼고 나머지를 병합·삭제하는 규칙을 `Rules/SettingsMerge.swift`에 둔다 (v1은 해당 없음).
@@ -244,7 +246,10 @@ enum ProteinFood: String, Codable, CaseIterable {
 | WeightSample.leanBodyMassKg | `leanBodyMass` | 읽기 |
 | StrengthSession (M2, P2) | `HKWorkoutType` activityType `.traditionalStrengthTraining`, `.functionalStrengthTraining`, `.walking`, `.flexibility` | 읽기 |
 
-Info.plist: `NSHealthShareUsageDescription` 필수. 쓰기 전까지 `NSHealthUpdateUsageDescription`은 넣지 않음.
+Info.plist: `NSHealthShareUsageDescription` 필수 (빌드 설정 `INFOPLIST_KEY_NSHealthShareUsageDescription`, 번역 `InfoPlist.xcstrings`, entitlement `Config/Masense.entitlements`). 쓰기 전까지 `NSHealthUpdateUsageDescription`은 넣지 않음.
+
+- 제지방량은 별도 샘플로 오므로, 같은 날 HealthKit 체중 샘플의 `leanBodyMassKg`에 붙인다 (그날 가장 늦은 값). 같은 날 체중이 없으면 버린다
+- 운동은 `StrengthSession(source: .healthKit)`으로 `healthKitUUID` 기준 upsert. 근력(traditional·functional) → `.strength`, 걷기 → `.walk`, 유연성 → `.stretch`, 그 밖은 무시. 강도는 알 수 없어 `.moderate`
 
 ## 스키마 버전
 
@@ -260,6 +265,19 @@ enum SchemaV2: VersionedSchema {   // M2
     static var versionIdentifier = Schema.Version(2, 0, 0)
     // + ProteinEntry, StrengthSession, HabitCheck
 }
+enum SchemaV3: VersionedSchema {   // 2026-10-22, 리포트 기본 기간 저장
+    static var versionIdentifier = Schema.Version(3, 0, 0)
+    // UserSettings + reportDefaultPeriod: String?
+}
+enum MasenseMigrationPlan: SchemaMigrationPlan {
+    // [SchemaV1, SchemaV2, SchemaV3], 단계: .lightweight(V1 → V2), .lightweight(V2 → V3)
+}
+```
+
+- 바뀐 모델은 이전 버전 쪽에 **고정 사본**을 둔다. V1·V2의 `UserSettings`는 `SchemaV1.UserSettings`(V3 이전 저장 속성 그대로)이고, 바뀌지 않은 모델은 현재 타입을 같이 쓴다. 고정 사본의 저장 속성을 고치면 기존 저장소의 버전을 알아보지 못한다
+- `MigrationTests`: V1 → V3, V2 → V3 디스크 저장소 마이그레이션
+
+```swift
 ```
 
 M1 출시 전에는 마이그레이션 없이 스키마 자유 변경. 베타 배포 후부터 `SchemaMigrationPlan` 필수.

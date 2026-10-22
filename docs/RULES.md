@@ -10,13 +10,14 @@ v1의 모든 규칙은 **7일 간격 주 1회 투약**을 전제로 한다. `Pre
 
 ```swift
 struct Cycle { let index: Int; let scheduledDate: Date; let interval: DateInterval }
-func cycles(for p: PrescriptionSnapshot, until end: Date, calendar: Calendar) -> [Cycle]
+func cycles(for p: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, until end: Date, calendar: Calendar) -> [Cycle]
 ```
 
-- 첫 마디 `scheduledDate` = `startDate` 이후 첫 `scheduledWeekday` + `scheduledHour`:`scheduledMinute`
-- 이후 마디 = 이전 + 7일
+- 첫 마디 `scheduledDate` = `startDate` 당일 또는 그 이후 첫 `scheduledWeekday` + `scheduledHour`:`scheduledMinute`. 시작일이 예정 요일과 같은 날이면 그날이 첫 마디
+- 이후 마디 = 첫 마디 + 7일 × index (누적 오차 없음). 주 1회 전용이라 `intervalDays`를 읽지 않는다
 - 마디 구간 `interval` = `[scheduledDate - 2일, scheduledDate + 5일)` — 예정일 이틀 전부터 그 마디로 본다 (미리 맞는 경우 수용)
-- `totalDoses` 개수만큼 생성. 처방이 소진되면 그 이후 마디는 만들지 않음
+- 처방이 소진되면 그 이후 마디는 만들지 않음. 소진은 "쓰인 회차"로 센다: 기록이 있는 마디와 현재·미래 마디는 회차를 쓰고, 지나간 누락 마디는 쓰지 않는다. 그래서 누락이 있으면 마디가 그만큼 뒤로 늘어나 `remainingDoses`와 맞는다
+- `until`은 `scheduledDate` 상한. 전체를 원하면 `.distantFuture` (회차 수로 끝난다)
 
 테스트: 목요일 20:00, 7일 간격, 시작일이 금요일인 경우 첫 마디는 다음 목요일.
 
@@ -41,8 +42,13 @@ enum NextDose { case due(Cycle, remaining: TimeInterval), overdue(Cycle, elapsed
 ## R4. 알림 스케줄
 
 ```swift
-func notificationPlan(p: PrescriptionSnapshot, settings: SettingsSnapshot, doses: [DoseSnapshot], now: Date, calendar: Calendar) -> [PlannedNotification]
+func notificationPlan(p: PrescriptionSnapshot, settings: SettingsSnapshot, doses: [DoseSnapshot], checks: [ConditionCheckSnapshot], now: Date, calendar: Calendar) -> [PlannedNotification]
+struct PlannedNotification { let id: String; let kind: NotificationKind; let fireDate: Date; let argument: Int? }
 ```
+
+- `id`는 결정적(`dose.due.<마디>`, `condition.h24.<기록 id>`, `clinic.soon` …)이라 재등록해도 중복이 없다
+- `reminderEnabled`가 꺼지면 투약·저녁·소진 알림을 만들지 않고, `conditionCheckEnabled`가 꺼지면 컨디션 알림을 만들지 않는다. 진료 알림은 `nextClinicDate`만 있으면 만든다
+- 이미 지난 시각(`fireDate <= now`)은 만들지 않는다
 
 | 종류 | 시점 | 조건 | 문구 키 |
 |---|---|---|---|
@@ -70,10 +76,13 @@ func openConditionWindows(dose: DoseSnapshot, checks: [ConditionCheckSnapshot], 
 ## R6. 바디맵 표시
 
 ```swift
-func siteHistory(doses: [DoseSnapshot], limit: Int = 4) -> [(BodySite, Date)]
+struct SiteUse { let site: BodySite; let date: Date }
+func siteHistory(doses: [DoseSnapshot], limit: Int = 4) -> [SiteUse]
+func recencyRank(of site: BodySite, in history: [SiteUse]) -> Int?   // 0이 가장 최근, 없으면 nil
 ```
 
-- 최근 4회 사용 부위와 날짜를 돌려줌. UI는 최근 순으로 진하게 표시
+- 최근 4회 사용 부위와 날짜를 돌려줌. UI는 최근 순으로 진하게 표시 (`Color.siteRecent(rank:)`)
+- 표시 (DESIGN_SYSTEM.md 5.3): 직전 1회는 `accent` 채움 + "① 마지막: 부위 (M/d)" 칩, 2~4회는 옅은 채움·얇은 테두리 + "② 이전: 부위 (M/d)" 텍스트
 - **추천하지 않는다.** "다음은 왼쪽 허벅지" 같은 제안 없음. 사용자가 보고 고름
 
 ## R7. 체중 추이
@@ -84,7 +93,9 @@ struct WeekPoint { let weekStart: Date; let averageKg: Double?; let sampleCount:
 ```
 
 - 주 단위 평균. 샘플 없는 주는 `nil`로 두고 선을 끊음 (보간 금지)
-- 같은 날 여러 샘플이면 평균
+- 같은 날 여러 샘플이면 먼저 하루 평균으로 묶고, 그 하루 평균들의 평균을 주 평균으로 한다
+- 결과는 오래된 주부터 `weeks`개, 마지막이 `now`가 속한 주. 주 시작은 `calendar.firstWeekday`
+- 차트의 투약일 눈금은 `doseTicks(doses:series:now:)`: 시리즈 첫 주 시작부터 `now`까지, 취소한 기록 제외 (홈 스파크라인, 기록 탭 차트)
 
 ## R8. 감량 속도 안내 (M2)
 
@@ -93,8 +104,10 @@ func paceNotice(series: [WeekPoint]) -> PaceNotice?
 enum PaceNotice { case fasterThanGeneralGuide }
 ```
 
-- 최근 2주 연속으로 주당 변화율이 **-1.0%** 를 넘으면(즉, 더 빠르게 감소) `.fasterThanGeneralGuide`
-- 문구: "최근 체중 변화가 일반 권고 범위(주 0.5~1%)보다 빠릅니다. 진료 때 상의해 보세요."
+- 최근 2주 연속으로 주당 감소가 **1.0 kg** 를 넘으면 `.fasterThanGeneralGuide`
+  - 구현: 주 평균 시리즈의 마지막 3주로 주간 변화(kg) 2개를 만들고 둘 다 -1.0 kg 미만이면 해당. 3주 중 빈 주가 있으면 계산하지 않음
+  - 기준: 일반 권장 속도 주 0.5~1 kg의 상한. 출처 CDC(주 1~2파운드). 2026-10-22 사람 결정으로 주 1% 기준에서 바꿈
+- 문구: "최근 2주 체중이 일반 권장 속도(주 0.5~1 kg)보다 빠르게 줄었습니다. 일반적인 권장일 뿐 사람마다 다를 수 있으니 의사와 상의하세요." + 출처 한 줄(`pace.source`)
 - 느린 경우, 증가하는 경우에는 **아무 안내도 하지 않는다**
 - 샘플이 주 1회 미만이면 계산하지 않음
 
@@ -126,6 +139,7 @@ enum ProteinDayStatus { case noTarget(estimated: Int), below(estimated: Int, tar
 ## R10. 식욕 저하일 모드 (M2)
 
 - 최근 48h 내 ConditionCheck에서 `nausea ≥ 2` 또는 `appetite != .normal`이면 그 날 단백질 화면 상단에 "작게 자주" 섹션: 셰이크, 요거트, 두유, 계란
+  - `ConditionRules.isLowAppetiteDay(checks:now:)`. R11의 `isLowConditionDay`와 조건이 다르다 (DESIGN_SYSTEM.md 5.6, 2026-10-21 분리)
 - 끼니를 비워도 "건너뜀"이라는 단어·아이콘을 쓰지 않는다. 비어 있을 뿐
 
 ## R11. 근력운동 마디 (M2)
@@ -136,18 +150,28 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 ```
 
 - 주간 목표 수치를 화면에 띄우지 않는다. "이번 주 근력 2회" 같은 사실만
+- `isLowConditionDay(checks:now:)`: 최근 48h 체크에 강도 2 이상 증상이 있으면 (식욕은 보지 않음)
+- `kindOrder(isLowCondition:)`: 평소 근력 / 걷기 / 스트레칭 / 쉬기, 저컨디션 날 걷기 / 스트레칭 / 쉬기 / 근력
+- 가벼운 활동 = 걷기 + 스트레칭. 주는 `calendar.firstWeekday` 기준
 - 최근 48h 컨디션에 심각도 2 이상 증상이 있으면 운동 기록 화면에서 걷기·스트레칭·쉬기를 상단에 배치 (R10과 같은 조건 함수 공유: `isLowConditionDay`)
 
 ## R12. 리포트 기간
 
 - 기본: `nextClinicDate`가 있으면 직전 진료일(이전 처방 startDate) ~ 오늘, 없으면 최근 8주
+  - 구현 해석: "직전 진료일" = 현재(활성) 처방의 `startDate` (진료 후 새 처방을 입력하므로). 활성 처방이 없거나 시작일이 미래면 최근 8주
+  - "최근 n주" = 오늘을 포함한 7×n일. 주 수 표기는 기간 일수를 7로 나눠 올림
+- 마디 칸은 기간 안 예정일 기준, 최대 12칸(최근 12개). 보관된 처방은 다음 처방 시작 전까지의 마디만 (`CycleRules.pastCycles`)
+- 컨디션 응답률 분모 = 기간 안 투약 중 창이 열린(투약 후 12h·36h 경과) 개수
 - 사용자가 4·8·12주 중 선택 가능
+- 설정에 기본 기간을 저장할 수 있다 (2026-10-22 결정, `UserSettings.reportDefaultPeriod`). 리포트 탭을 열 때 `defaultPeriod(saved:hasActivePrescription:hasNextClinicDate:)`: 저장 값이 고를 수 있는 값이면 그것, 아니면(저장 안 함 = 자동, 활성 처방 없이 "직전 진료 이후", 선택지에 없는 주 수) 위 기본값
 - 리포트 생성 시각과 기간을 PDF 하단에 명시
 
 ## R13. 처방 소진 추정과 처방 전환
 
 ```swift
-func exhaustionEstimate(p: PrescriptionSnapshot, doses: [DoseSnapshot], calendar: Calendar) -> Date?
+func exhaustionEstimate(p: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, calendar: Calendar) -> Date?
+func nextSequence(doses: [DoseSnapshot]) -> Int                        // 취소 제외 기록 수 + 1
+func penPosition(sequence: Int, dosesPerPen: Int) -> (pen: Int, position: Int)
 func prescriptionTimeline(all: [PrescriptionSnapshot], in period: DateInterval) -> [PrescriptionMarker]
 struct PrescriptionMarker { let startDate: Date; let label: String?; let isFirstInPeriod: Bool }
 ```
@@ -157,16 +181,16 @@ struct PrescriptionMarker { let startDate: Date; let label: String?; let isFirst
 - `label`은 사용자 메모 그대로. 비어 있으면 "처방 변경"으로만 표시
 - 소진 추정:
   - `remainingDoses == 0` → nil
-  - 그 외 다음 마디부터 `remainingDoses`개째 마디의 `scheduledDate`
+  - 그 외 남은 회차를 모두 쓰는 마지막 마디의 `scheduledDate` (= R1 `cycles(until: .distantFuture)`의 마지막 마디). 누락이 있으면 그만큼 뒤로 밀린다
 
 ## 테스트 체크리스트
 
-- [ ] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
-- [ ] R2 자정 직전·직후 `.due`/`.overdue` 전환
-- [ ] R3 과거 Dose 추가로 누락 해제
-- [ ] R4 4주 제한, 재등록 시 중복 없음
-- [ ] R5 창 경계값 (12h, 36h, 96h)
-- [ ] R7 샘플 없는 주 nil 처리
-- [ ] R8 정확히 -1.0%일 때 안내 없음 (초과만)
-- [ ] R9 소수점 반올림
-- [ ] R13 처방 전환 시 이전 처방 endDate·isActive 갱신, 기간 경계에 걸친 처방의 isFirstInPeriod
+- [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
+- [x] R2 예정 시각 직전·직후 `.due`/`.overdue` 전환
+- [x] R3 과거 Dose 추가로 누락 해제
+- [x] R4 4주 제한, 재등록 시 중복 없음
+- [x] R5 창 경계값 (12h, 36h, 96h)
+- [x] R7 샘플 없는 주 nil 처리
+- [x] R8 정확히 -1.0 kg일 때 안내 없음 (초과만), 기준은 % 아닌 kg
+- [x] R9 소수점 반올림
+- [ ] R13 처방 전환 시 이전 처방 endDate·isActive 갱신, 기간 경계에 걸친 처방의 isFirstInPeriod (main C, 코드 미반영)

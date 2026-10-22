@@ -1,0 +1,216 @@
+"""앱 아이콘 (DESIGN_SYSTEM.md 6). Pillow 필요.
+
+Apple 기본 앱 아이콘의 유리 문법을 참고한다(사람이 준 참고: 사진·팟캐스트·홈·나의 찾기):
+밝거나 한 색조인 바탕, 채도 있는 반투명 유리 조각을 겹겹이, 겹친 곳은 색이 섞이고, 위쪽 가장자리에 빛 반사.
+
+공통 마크: 양 끝이 둥근 캡슐형 막대 4개로 세운 "M" (앱 이름 마선생 / Masense에서 온 모노그램)
+- 막대는 단색 유리. 두 색 나눔·가운데 이음선 같은 알약 표현, 주사기 형상은 쓰지 않는다 (DESIGN_SYSTEM.md 6 아이콘 금지)
+- 의약품 상표·로고를 연상시키는 형태·색·서체는 쓰지 않는다 (COMPLIANCE.md 2.1-2)
+- 빨강·초록은 쓰지 않는다 (판단하지 않는 색 원칙)
+
+안:
+- `petals` (기본, 2026-10-22 사람 선택, 막대 굵기 136): 밝은 바탕 + 하늘·보라·파랑·남색 반투명 막대 4개가 겹쳐 M.
+  겹친 곳은 색이 섞인다. 사진 앱 계열
+- `liquid`: 밝은 바탕 + 파랑 동심원 원판 3겹(한 주씩 반복되는 마디의 리듬) + 흰 유리 M. 나의 찾기·팟캐스트 계열
+- `rings`: 파랑 한 색조 바탕 + 반투명 동심원 + 흰 반유리 M
+- `rings-midnight`: 같은 구성의 midnight 바탕
+
+출력: Masense/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png (1024×1024, RGB, 알파 없음)
+실행: python3 scripts/make_app_icon.py [petals|liquid|rings|rings-midnight] [출력 경로]
+"""
+
+import pathlib
+import sys
+
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+OUT = ROOT / "Masense" / "Resources" / "Assets.xcassets" / "AppIcon.appiconset" / "AppIcon.png"
+
+SIZE = 1024
+SCALE = 4  # 4배로 그린 뒤 줄여 가장자리를 부드럽게
+S = SIZE * SCALE
+
+WHITE = (0xFF, 0xFF, 0xFF)
+INK = (0xF2, 0xF5, 0xFA)
+MIDNIGHT = (0x0B, 0x12, 0x20)
+
+# 밝은 바탕 (기본 앱처럼 흰빛 → 옅은 회청)
+LIGHT_TOP = (0xFF, 0xFF, 0xFF)
+LIGHT_BOTTOM = (0xE6, 0xEB, 0xF3)
+
+# 파랑 계열 유리 (accent #7FB3FF와 같은 계열)
+BLUE_DEEP = (0x2F, 0x63, 0xF2)
+BLUE = (0x4F, 0x86, 0xFF)
+BLUE_LIGHT = (0x8C, 0xB6, 0xFF)
+SKY = (0x4F, 0xC3, 0xF7)
+INDIGO = (0x5B, 0x5F, 0xF0)
+VIOLET = (0x9B, 0x6B, 0xF5)
+SHADOW_BLUE = (0x1A, 0x2A, 0x6E)
+
+# rings 안의 바탕
+RINGS_TOP = (0x5A, 0x7B, 0xF0)
+RINGS_BOTTOM = (0x33, 0x45, 0xC2)
+RINGS_SHADOW = (0x14, 0x1E, 0x66)
+
+
+def px(value: float) -> int:
+    return round(value * SCALE)
+
+
+def new_mask() -> Image.Image:
+    return Image.new("L", (S, S), 0)
+
+
+def solid(color: tuple) -> Image.Image:
+    return Image.new("RGB", (S, S), color)
+
+
+def vertical_fade(y0: int, y1: int, start: int, end: int) -> Image.Image:
+    """y0에서 start, y1에서 end로 바뀌는 세로 그라데이션 (그 밖은 0)"""
+    column = Image.new("L", (1, S), 0)
+    for y in range(max(y0, 0), min(y1, S)):
+        column.putpixel((0, y), round(start + (end - start) * (y - y0) / max(y1 - y0, 1)))
+    return column.resize((S, S))
+
+
+def gradient_background(top: tuple, bottom: tuple) -> Image.Image:
+    return Image.composite(solid(bottom), solid(top), vertical_fade(0, S, 0, 255))
+
+
+def scaled(mask: Image.Image, factor: float) -> Image.Image:
+    return mask.point(lambda v: int(v * factor))
+
+
+def soft_shadow(image: Image.Image, mask: Image.Image, color: tuple, offset: float, blur: float, strength: float) -> None:
+    shadow = ImageChops.offset(mask, 0, px(offset)).filter(ImageFilter.GaussianBlur(px(blur)))
+    image.paste(solid(color), (0, 0), scaled(shadow, strength))
+
+
+def edge(mask: Image.Image, width: float) -> Image.Image:
+    return ImageChops.subtract(mask, mask.filter(ImageFilter.MinFilter(px(width) * 2 + 1)))
+
+
+def specular(image: Image.Image, mask: Image.Image, rim: int = 210, sheen: int = 70) -> None:
+    """유리 빛 반사: 위가 밝은 테두리 + 위쪽 절반 광택"""
+    _, y0, _, y1 = mask.getbbox()
+    image.paste(solid(WHITE), (0, 0), ImageChops.multiply(edge(mask, 3), vertical_fade(y0, y1, rim, 20)))
+    if sheen:
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(mask, vertical_fade(y0, y0 + (y1 - y0) * 45 // 100, sheen, 0)))
+
+
+# MARK: 도형
+
+def capsule(start: tuple, end: tuple, width: float) -> Image.Image:
+    mask = new_mask()
+    draw = ImageDraw.Draw(mask)
+    draw.line([(px(x), px(y)) for x, y in (start, end)], fill=255, width=px(width))
+    r = width / 2
+    for x, y in (start, end):
+        draw.ellipse([px(x - r), px(y - r), px(x + r), px(y + r)], fill=255)
+    return mask
+
+
+def m_bars(width: float = 96, scale: float = 1.0) -> list:
+    """M을 이루는 막대 4개 (뒤 → 앞): 왼쪽 기둥, 오른쪽 기둥, 왼쪽 사선, 오른쪽 사선"""
+    c = SIZE / 2
+
+    def p(x: float, y: float) -> tuple:
+        return (c + (x - c) * scale, c + (y - c) * scale)
+
+    left, right, top, bottom = 322, 702, 352, 676
+    valley = p(512, 590)
+    return [
+        capsule(p(left, top), p(left, bottom), width * scale),
+        capsule(p(right, top), p(right, bottom), width * scale),
+        capsule(p(left, top), valley, width * scale),
+        capsule(p(right, top), valley, width * scale),
+    ]
+
+
+def disc(radius: float) -> Image.Image:
+    mask = new_mask()
+    c = SIZE / 2
+    ImageDraw.Draw(mask).ellipse([px(c - radius), px(c - radius), px(c + radius), px(c + radius)], fill=255)
+    return mask
+
+
+# MARK: 안
+
+def render_liquid() -> Image.Image:
+    """밝은 바탕 + 파랑 동심원 3겹 + 흰 유리 M"""
+    image = gradient_background(LIGHT_TOP, LIGHT_BOTTOM)
+    for radius, color in [(410, BLUE_DEEP), (318, BLUE), (226, BLUE_LIGHT)]:
+        mask = disc(radius)
+        soft_shadow(image, mask, SHADOW_BLUE, 10, 22, 0.22)
+        _, y0, _, y1 = mask.getbbox()
+        # 원판도 유리: 위가 조금 밝다
+        top_color = tuple(min(255, v + 26) for v in color)
+        image.paste(Image.composite(solid(color), solid(top_color), vertical_fade(y0, y1, 0, 255)), (0, 0), mask)
+        specular(image, mask, rim=170, sheen=34)
+
+    for piece in m_bars(width=92, scale=0.86):
+        soft_shadow(image, piece, SHADOW_BLUE, 12, 16, 0.42)
+        image.paste(image.filter(ImageFilter.GaussianBlur(px(16))), (0, 0), piece)
+        _, y0, _, y1 = piece.getbbox()
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(piece, vertical_fade(y0, y1, 242, 196)))
+        specular(image, piece, rim=255, sheen=0)
+    return image
+
+
+def render_petals(width: float = 136) -> Image.Image:
+    """밝은 바탕 + 색이 다른 반투명 막대 4개가 겹쳐 M. 겹친 곳은 곱하기로 섞인다. width: 막대 굵기(1024 기준)"""
+    image = gradient_background(LIGHT_TOP, LIGHT_BOTTOM)
+    colors = [SKY, VIOLET, BLUE, INDIGO]
+    for piece, color in zip(m_bars(width=width), colors):
+        soft_shadow(image, piece, color, 14, 20, 0.30)
+        # 아래 그림과 곱해 섞고, 제 색 쪽으로 당긴다 (흰 바탕 위에서는 제 색, 다른 막대 위에서는 섞인 색)
+        mixed = Image.blend(ImageChops.multiply(image, solid(color)), solid(color), 0.35)
+        _, y0, _, y1 = piece.getbbox()
+        lighter = Image.blend(mixed, solid(WHITE), 0.18)
+        glass = Image.composite(mixed, lighter, vertical_fade(y0, y1, 0, 255))
+        image.paste(glass, (0, 0), scaled(piece, 0.92))
+        specular(image, piece, rim=230, sheen=60)
+    return image
+
+
+def render_rings(midnight: bool = False) -> Image.Image:
+    """한 색조 바탕 + 반투명 동심원 + 흰 반유리 M"""
+    if midnight:
+        image, shadow_color = solid(MIDNIGHT), (0, 0, 0)
+    else:
+        image, shadow_color = gradient_background(RINGS_TOP, RINGS_BOTTOM), RINGS_SHADOW
+    for radius, alpha in [(400, 0.11), (304, 0.14), (208, 0.18)]:
+        mask = disc(radius)
+        soft_shadow(image, mask, shadow_color, 8, 18, 0.18)
+        image.paste(solid(INK), (0, 0), scaled(mask, alpha))
+        _, y0, _, y1 = mask.getbbox()
+        image.paste(solid(INK), (0, 0), ImageChops.multiply(edge(mask, 2), vertical_fade(y0, y1, 90, 10)))
+    bars = m_bars()
+    _, m_top, _, m_bottom = bars[0].getbbox()
+    for piece in bars:
+        soft_shadow(image, piece, shadow_color, 12, 16, 0.38)
+        image.paste(image.filter(ImageFilter.GaussianBlur(px(18))), (0, 0), piece)
+        image.paste(solid(INK), (0, 0), ImageChops.multiply(piece, vertical_fade(m_top, m_bottom, 235, 150)))
+    return image
+
+
+VARIANTS = {
+    "liquid": render_liquid,
+    "petals": render_petals,
+    "rings": render_rings,
+    "rings-midnight": lambda: render_rings(midnight=True),
+}
+
+
+def main() -> None:
+    variant = sys.argv[1] if len(sys.argv) > 1 else "petals"
+    out = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else OUT
+    image = VARIANTS[variant]().resize((SIZE, SIZE), Image.LANCZOS)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    image.save(out, "PNG", optimize=True)
+    print(f"wrote {out} {image.size} {image.mode} ({variant})")
+
+
+if __name__ == "__main__":
+    main()

@@ -43,7 +43,9 @@ Masense/
   App/              MasenseApp.swift, 루트 내비게이션, DI
   Models/           SwiftData @Model 들 (DATA_MODEL.md와 1:1)
   Features/
+    Onboarding/     첫 실행 4페이지 (역할·연령 고지, 처방, 권한)
     Today/          홈 화면 (카운트다운, 오늘 할 일)
+    History/        기록 탭 (투약·컨디션·체중·습관 목록)
     Dose/           투약 기록, 바디맵
     Condition/      48h 컨디션 체크
     Habits/         단백질, 근력운동, 기본 습관
@@ -88,7 +90,10 @@ xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' 
 ```
 
 - HealthKit·StoreKit은 프로토콜로 추상화하고 테스트에서는 Fake 주입
-- 미리보기(`#Preview`)에는 항상 in-memory `ModelContainer` 사용
+- 미리보기(`#Preview`)에는 항상 in-memory `ModelContainer` 사용 (`ModelContainer.preview`)
+- 단위 테스트는 Swift Testing (`import Testing`, `@Test`, `#expect`)
+- GitHub Actions(`.github/workflows/ci.yml`)가 푸시마다 macOS 러너에서 `xcodebuild test`를 돌린다. Xcode 없는 환경에서 작업할 때는 이 결과로 검증한다
+- 프로젝트 파일은 Xcode 16 폴더 동기화 그룹을 쓴다. `Masense/`, `MasenseTests/` 아래에 파일을 추가하면 자동으로 타깃에 포함되므로 `project.pbxproj`를 손대지 않는다
 
 ## 커밋
 
