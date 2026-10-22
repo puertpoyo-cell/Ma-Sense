@@ -1,6 +1,8 @@
 """앱 아이콘: 단색 바탕 위 유리 모노그램 (DESIGN_SYSTEM.md 6). Pillow 필요.
 
-- 바탕은 midnight 단색. 마크 자체가 유리(글래스모피즘)다
+- `rings` (기본, 2026-10-22 참고 이미지 방향): 한 색조 바탕 + 반투명 동심원 원판 3겹(한 주씩 반복되는 마디의 리듬)
+  + 그 위 밝은 반유리 캡슐 막대 4개로 세운 "M" (위는 거의 흰빛, 아래로 갈수록 투명). 막대마다 그림자를 둬 겹침이 보인다
+- 아래 나머지 안은 midnight 단색 바탕. 마크 자체가 유리(글래스모피즘)다
 - 마크 뒤에 accent → 인디고 구(球) 하나가 있고, 유리 마크가 그 위에 겹쳐 흐릿하게 비친다 = 이번 마디
 - 유리 마크: 뒤를 흐리게 비치는 반투명 채움 + 위가 밝고 아래로 옅어지는 테두리 + 위쪽 광택 + 옅은 그림자 (FrostCard와 같은 재질)
 - 모노그램은 앱 이름(마선생 / Masense)에서만 가져온다. 의약품 상표·로고를 연상시키는 형태·색·서체는 쓰지 않는다 (COMPLIANCE.md 2.1-2)
@@ -11,7 +13,7 @@
 - 글꼴 파일 없이 선·원으로 그린다
 
 출력: Masense/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png (1024×1024, RGB, 알파 없음)
-실행: python3 scripts/make_app_icon.py [m4|ma|hangul] [출력 경로]
+실행: python3 scripts/make_app_icon.py [rings|rings-midnight|m4|ma|hangul] [출력 경로]
 """
 
 import pathlib
@@ -112,6 +114,11 @@ def glyph_hangul() -> tuple:
 
 VARIANTS = {"m4": glyph_m4, "ma": glyph_ma, "hangul": glyph_hangul}
 
+# rings 안의 바탕: accent 계열 파랑 한 색조, 위가 조금 밝다
+RINGS_TOP = (0x5A, 0x7B, 0xF0)
+RINGS_BOTTOM = (0x33, 0x45, 0xC2)
+RINGS_SHADOW = (0x14, 0x1E, 0x66)
+
 
 # MARK: 재질
 
@@ -171,10 +178,64 @@ def render(variant: str) -> Image.Image:
     return image.resize((SIZE, SIZE), Image.LANCZOS)
 
 
+def gradient_background(top: tuple, bottom: tuple) -> Image.Image:
+    fade = vertical_fade(0, S, 0, 255)
+    return Image.composite(Image.new("RGB", (S, S), bottom), Image.new("RGB", (S, S), top), fade)
+
+
+def soft_shadow(image: Image.Image, mask: Image.Image, color: tuple, offset: float, blur: float, strength: float) -> None:
+    shadow = ImageChops.offset(mask, 0, px(offset)).filter(ImageFilter.GaussianBlur(px(blur)))
+    image.paste(Image.new("RGB", (S, S), color), (0, 0), shadow.point(lambda v: int(v * strength)))
+
+
+def disc(radius: float) -> Image.Image:
+    mask = new_mask()
+    c = SIZE / 2
+    ImageDraw.Draw(mask).ellipse([px(c - radius), px(c - radius), px(c + radius), px(c + radius)], fill=255)
+    return mask
+
+
+def render_rings(midnight: bool = False) -> Image.Image:
+    if midnight:
+        image, shadow_color = Image.new("RGB", (S, S), MIDNIGHT), (0, 0, 0)
+    else:
+        image, shadow_color = gradient_background(RINGS_TOP, RINGS_BOTTOM), RINGS_SHADOW
+
+    # 동심원 원판 3겹: 안쪽일수록 밝다. 원판마다 옅은 그림자와 위가 밝은 테두리
+    for radius, alpha in [(400, 0.11), (304, 0.14), (208, 0.18)]:
+        mask = disc(radius)
+        soft_shadow(image, mask, shadow_color, 8, 18, 0.18)
+        image.paste(Image.new("RGB", (S, S), INK), (0, 0), mask.point(lambda v: int(v * alpha)))
+        edge = ImageChops.subtract(mask, mask.filter(ImageFilter.MinFilter(px(2) * 2 + 1)))
+        _, y0, _, y1 = mask.getbbox()
+        image.paste(Image.new("RGB", (S, S), INK), (0, 0), ImageChops.multiply(edge, vertical_fade(y0, y1, 90, 10)))
+
+    # 반유리 막대 4개 M: 뒤를 살짝 흐리게 비치고, 위는 흰빛 92% → 아래 60%
+    width = 96
+    left, right, top, bottom = 322, 702, 352, 676
+    valley = (512, 590)
+    pieces = [
+        capsule((left, top), (left, bottom), width),
+        capsule((right, top), (right, bottom), width),
+        capsule((left, top), valley, width),
+        capsule((right, top), valley, width),
+    ]
+    _, m_top, _, m_bottom = pieces[0].getbbox()
+    for piece in pieces:
+        soft_shadow(image, piece, shadow_color, 12, 16, 0.38)
+        image.paste(image.filter(ImageFilter.GaussianBlur(px(18))), (0, 0), piece)
+        white = ImageChops.multiply(piece, vertical_fade(m_top, m_bottom, 235, 150))
+        image.paste(Image.new("RGB", (S, S), INK), (0, 0), white)
+    return image.resize((SIZE, SIZE), Image.LANCZOS)
+
+
 def main() -> None:
-    variant = sys.argv[1] if len(sys.argv) > 1 else "m4"
+    variant = sys.argv[1] if len(sys.argv) > 1 else "rings"
     out = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else OUT
-    image = render(variant)
+    if variant.startswith("rings"):
+        image = render_rings(midnight=variant == "rings-midnight")
+    else:
+        image = render(variant)
     out.parent.mkdir(parents=True, exist_ok=True)
     image.save(out, "PNG", optimize=True)
     print(f"wrote {out} {image.size} {image.mode} ({variant})")

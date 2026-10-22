@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
   push:
 
-concurrency:
-  group: shots-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   shots:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[shots]')
+    # 동시성은 job에 둔다. 워크플로 단위로 두면 [shots] 없는 푸시도 진행 중인 촬영을 취소한다
+    concurrency:
+      group: shots-${{ github.ref }}
+      cancel-in-progress: true
     name: 시뮬레이터 스크린샷
     runs-on: macos-15
     timeout-minutes: 40
