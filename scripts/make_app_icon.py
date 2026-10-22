@@ -15,8 +15,11 @@ Apple 기본 앱 아이콘의 유리 문법을 참고한다(사람이 준 참고
 - `rings`: 파랑 한 색조 바탕 + 반투명 동심원 + 흰 반유리 M
 - `rings-midnight`: 같은 구성의 midnight 바탕
 
+- `mark`: 시작 전환 화면(SplashView)용. `petals`의 M 막대만 오려 낸 투명 PNG (바탕·그림자 없음, 여백 없이 자름)
+
 출력: Masense/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png (1024×1024, RGB, 알파 없음)
 실행: python3 scripts/make_app_icon.py [petals|liquid|rings|rings-midnight] [출력 경로]
+      python3 scripts/make_app_icon.py mark  → Masense/Resources/Assets.xcassets/SplashMark.imageset/SplashMark.png
 """
 
 import pathlib
@@ -195,18 +198,33 @@ def render_rings(midnight: bool = False) -> Image.Image:
     return image
 
 
+def render_mark(width: float = 136) -> Image.Image:
+    """`petals`의 M만 남긴 투명 이미지. 밝은 바탕 위에서 섞인 색 그대로, 막대 바깥은 투명"""
+    image = render_petals(width).convert("RGBA")
+    alpha = new_mask()
+    for piece in m_bars(width=width):
+        alpha = ImageChops.lighter(alpha, piece)
+    image.putalpha(alpha)
+    return image.crop(alpha.getbbox())
+
+
 VARIANTS = {
     "liquid": render_liquid,
     "petals": render_petals,
     "rings": render_rings,
     "rings-midnight": lambda: render_rings(midnight=True),
+    "mark": render_mark,
 }
+
+MARK_OUT = ROOT / "Masense" / "Resources" / "Assets.xcassets" / "SplashMark.imageset" / "SplashMark.png"
 
 
 def main() -> None:
     variant = sys.argv[1] if len(sys.argv) > 1 else "petals"
-    out = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else OUT
-    image = VARIANTS[variant]().resize((SIZE, SIZE), Image.LANCZOS)
+    out = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else (MARK_OUT if variant == "mark" else OUT)
+    image = VARIANTS[variant]()
+    # 4배로 그린 것을 1/4로 줄인다 (아이콘은 1024×1024, 마크는 자른 크기의 1/4)
+    image = image.resize((image.width // SCALE, image.height // SCALE), Image.LANCZOS)
     out.parent.mkdir(parents=True, exist_ok=True)
     image.save(out, "PNG", optimize=True)
     print(f"wrote {out} {image.size} {image.mode} ({variant})")

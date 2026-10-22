@@ -21,4 +21,29 @@ enum SiteRules {
     static func recencyRank(of site: BodySite, in history: [SiteUse]) -> Int? {
         history.firstIndex { $0.site == site }
     }
+
+    /// 부위별 마지막 사용 시각 (취소 제외). 쓴 적 없는 부위는 키가 없다. 바디맵 구역 날짜와 부위별 목록에 쓴다
+    static func lastUseBySite(doses: [DoseSnapshot]) -> [BodySite: Date] {
+        doses
+            .filter { !$0.isCancelled }
+            .reduce(into: [BodySite: Date]()) { result, dose in
+                result[dose.site] = max(result[dose.site] ?? .distantPast, dose.administeredAt)
+            }
+    }
+
+    /// 투약 기록 화면 위의 "지난 투약" 안내: 직전 투약(취소 제외)의 부위·시각과 지난 날 수. 기록이 없으면 nil.
+    /// 사실만 알린다. 다음 부위를 제안하지 않는다
+    static func lastDoseNote(doses: [DoseSnapshot], now: Date, calendar: Calendar) -> LastDoseNote? {
+        guard let last = siteHistory(doses: doses, limit: 1).first else { return nil }
+        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: last.date), to: calendar.startOfDay(for: now)).day ?? 0
+        return LastDoseNote(site: last.site, date: last.date, daysAgo: max(days, 0))
+    }
+}
+
+/// 지난 투약 안내 (R6)
+struct LastDoseNote: Equatable {
+    let site: BodySite
+    let date: Date
+    /// 달력 날짜 기준. 오늘이면 0
+    let daysAgo: Int
 }

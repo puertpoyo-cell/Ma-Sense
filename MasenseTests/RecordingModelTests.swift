@@ -36,6 +36,8 @@ struct RecordingModelTests {
         #expect(model.site == nil)
         #expect(!model.canSave)
         #expect(model.history.isEmpty)
+        // 처음 기록할 때는 지난 투약 안내가 없다
+        #expect(model.lastDoseNote == nil)
         #expect(try model.save(in: context)?.id == nil)
     }
 
@@ -56,6 +58,24 @@ struct RecordingModelTests {
         let next = DoseLogModel(prescription: prescription, now: TestCalendar.date(2026, 10, 29, 20), calendar: calendar)
         #expect(next.sequence == 2)
         #expect(next.history.first?.site == .abdomenUpperRight)
+    }
+
+    /// R6: 부위는 몸 기준이라 새 처방에서도 이전 처방의 기록을 보여 준다. 지난 투약 안내는 사실만
+    @Test func doseLogShowsSitesAcrossPrescriptions() throws {
+        let old = try makePrescription()
+        let administered = TestCalendar.date(2026, 10, 22, 20, 5)
+        let dose = Dose(administeredAt: administered, scheduledFor: TestCalendar.date(2026, 10, 22, 20), site: .thighLeft, sequence: 1)
+        context.insert(dose)
+        dose.prescription = old
+        let new = Prescription(startDate: TestCalendar.date(2026, 10, 27, 9), penCount: 1, scheduledWeekday: 5, scheduledHour: 20)
+        try Prescription.activate(new, in: context, calendar: calendar)
+        try context.save()
+
+        let model = DoseLogModel(prescription: new, now: TestCalendar.date(2026, 10, 29, 19), calendar: calendar)
+        #expect(model.sequence == 1)
+        #expect(model.history.map(\.site) == [.thighLeft])
+        #expect(model.lastUseBySite == [.thighLeft: administered])
+        #expect(model.lastDoseNote == LastDoseNote(site: .thighLeft, date: administered, daysAgo: 7))
     }
 
     @Test func backdatedDoseClearsMissedCycle() throws {

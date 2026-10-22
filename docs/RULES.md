@@ -84,6 +84,15 @@ func recencyRank(of site: BodySite, in history: [SiteUse]) -> Int?   // 0이 가
 - 최근 4회 사용 부위와 날짜를 돌려줌. UI는 최근 순으로 진하게 표시 (`Color.siteRecent(rank:)`)
 - 표시 (DESIGN_SYSTEM.md 5.3): 직전 1회는 `accent` 채움 + "① 마지막: 부위 (M/d)" 칩, 2~4회는 옅은 채움·얇은 테두리 + "② 이전: 부위 (M/d)" 텍스트
 - **추천하지 않는다.** "다음은 왼쪽 허벅지" 같은 제안 없음. 사용자가 보고 고름
+- D5 (2026-10-22 사람 결정):
+
+```swift
+func lastUseBySite(doses: [DoseSnapshot]) -> [BodySite: Date]            // 부위별 마지막 사용, 취소 제외, 쓴 적 없으면 키 없음
+func lastDoseNote(doses: [DoseSnapshot], now: Date, calendar: Calendar) -> LastDoseNote?   // 직전 투약 부위·시각, 달력 기준 지난 날 수
+```
+
+  - 바디맵 구역 날짜와 "부위별 마지막 사용" 표, 투약 기록 화면 위 "지난 투약" 한 줄에 쓴다. 문구는 사실만 ("지난 투약: 허벅지 왼쪽 · 10월 15일 (목) · 7일 전")
+  - 입력은 처방과 무관하게 모든 투약 기록 (새 처방을 시작해도 이전 처방의 부위가 보이게)
 
 ## R7. 체중 추이
 

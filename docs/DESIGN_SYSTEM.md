@@ -107,8 +107,9 @@ Deep Midnight Navy 배경 위에 상단 하이라이트 보더가 적용된 Fros
 - 8구역(`BodySite`): 복부 4, 허벅지 2, 상완 2. 정면이므로 화면 왼쪽이 본인의 오른쪽이고, 그림 아래에 "오른쪽 / 왼쪽" 라벨을 둔다.
 - 이력 표시 (`RULES.md` R6 — **부위 추천 금지**, 화살표·"다음은" 표시 없음):
   1. **직전 1회**: 구역을 `accent` 1.0으로 채우고, 그림 아래 첫 행에 `accentSoft` 칩 **"① 마지막: 복부 왼쪽 아래 (10/16)"**
-  2. **이전 2~4회**: 구역은 `siteRecent` 0.45 → 0.25 + 얇은 `accent` 테두리, 아래 행에 `inkSecondary` 텍스트 **"② 이전: 허벅지 오른쪽 (10/09)"**, ③, ④
-  3. **선택 상태** (`DoseLogSheet`): 탭한 구역은 `accent` 채움 + `ink` 1.5px 테두리 + 체크 아이콘 (색만으로 구분하지 않기 위해)
+  2. **이전 2~4회**: 구역은 `siteRecent` 0.45 → 0.25 + 얇은 `accent` 테두리
+  3. **부위별 마지막 날짜** (D5, 2026-10-22 사람 결정): 쓴 적 있는 구역마다 마지막 사용일 `M/d`를 9pt semibold로 적는다(직전 1회 구역은 `midnight` 글자, 나머지 `ink`). 칩 아래에 "부위별 마지막 사용" 표 — 그림과 같은 방향으로 두 칸씩(팔·복부 위·복부 아래·허벅지), 쓴 적 없는 부위는 `inkTertiary` "—". 이전의 "② 이전" 텍스트 행은 이 표로 바꿨다
+  4. **선택 상태** (`DoseLogSheet`): 탭한 구역은 `accent` 채움 + `ink` 1.5px 테두리 + 체크 아이콘 (색만으로 구분하지 않기 위해). 선택한 구역에는 날짜 대신 체크만
 
 ### 5.4 `SymptomChip` (48h 컨디션 체크)
 - 한 줄: 좌측 증상 이름, 우측 강도 `0 | 1 | 2 | 3` 세그먼트 트랙. 시트 위에 범례 "0 없음 · 1 약함 · 2 보통 · 3 심함".
@@ -147,6 +148,7 @@ Deep Midnight Navy 배경 위에 상단 하이라이트 보더가 적용된 Fros
   - `.medium`: `WeightEntrySheet`, 구매 시트
   - `.large`: `DoseLogSheet`, `ConditionCheckSheet`, `ProteinSheet`, `StrengthSheet`, `PrescriptionSheet`
 - **모션**: 카드 등장 `opacity 0→1` + `offset(y: 8→0)`, `.easeOut(duration: 0.25)` (손쉬운 사용 "동작 줄이기"면 생략). 숫자 변경 `.contentTransition(.numericText())`. 축하 애니메이션 없음.
+- **시작 전환 화면** (`SplashView`, D5, 2026-10-22 사람 요청): 앱을 새로 열 때 `midnight` 바탕에 앱 아이콘의 M 마크(`SplashMark`, `make_app_icon.py mark`, 폭 112pt) + "마선생" + "처방은 의사가, 기록은 마선생이."를 1초 보여 준 뒤 `opacity`만 0.3초 `easeOut`으로 사라진다. 크기·회전 애니메이션 없음. 그동안 아래에서 온보딩·홈을 준비한다. 시스템 시작 화면 바탕도 같은 `midnight`(`LaunchBackground` 색, Info.plist `UILaunchScreen`)라 색이 튀지 않는다
 - **아이콘 금지**: `syringe`(주사기), `pills`(알약), 체중계(`scalemass`) 심볼. 투약·마디 아이콘은 `circle.grid.cross` 또는 `calendar.badge.clock`만.
 - **앱 아이콘**: `midnight` 배경 위에 건축 스케일(자의 눈금)과 마디를 결합한 수직·수평 도면 선.
   - 1차안 "겹친 유리 M" (2026-10-22 사람 선택, `scripts/make_app_icon.py`, 기본 `petals`, 막대 굵기 136): Apple 기본 앱(사진·팟캐스트·홈·나의 찾기)의 유리 문법을 참고. 밝은 바탕(흰빛 → 옅은 회청) 위에 하늘(왼쪽 기둥)·보라(오른쪽 기둥)·파랑·남색(두 사선) 반투명 캡슐 막대 4개가 겹쳐 M을 이룬다. 겹친 곳은 색이 곱해져 섞이고(가운데 골이 가장 진함), 막대마다 위가 밝은 테두리·위쪽 광택·제 색 그림자

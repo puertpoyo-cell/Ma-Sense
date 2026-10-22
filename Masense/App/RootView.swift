@@ -11,6 +11,7 @@ struct RootView: View {
     @Environment(\.services) private var services
     @Environment(\.scenePhase) private var scenePhase
     @State private var phase: Phase = .loading
+    @State private var showsSplash = RootView.startsWithSplash
 
     var body: some View {
         Group {
@@ -24,7 +25,22 @@ struct RootView: View {
                     .environment(\.restartOnboarding) { phase = .onboarding }
             }
         }
+        .overlay {
+            if showsSplash {
+                SplashView()
+                    .transition(.opacity)
+            }
+        }
         .preferredColorScheme(.dark)
+        .task {
+            // 시작 전환 화면: 1초 머문 뒤 흐려지며 사라진다. 그동안 아래에서 온보딩·홈을 준비한다
+            guard showsSplash else { return }
+            #if DEBUG
+            if ScreenshotRoute.current == .splash { return }
+            #endif
+            try? await Task.sleep(for: SplashView.duration)
+            withAnimation(.easeOut(duration: 0.3)) { showsSplash = false }
+        }
         .task {
             guard phase == .loading else { return }
             // 온보딩 도중 종료했다가 다시 열어도 역할·연령 확인을 마쳤으면 홈으로 간다.
@@ -37,6 +53,18 @@ struct RootView: View {
             guard newPhase == .active, phase == .main else { return }
             Task { await services.refreshNotifications(context: context) }
         }
+    }
+}
+
+extension RootView {
+    /// 앱을 새로 열 때만. 백그라운드에서 돌아올 때는 보이지 않는다 (상태가 살아 있으므로).
+    /// 스크린샷 경로(DEBUG `-route`)로 띄울 때는 바로 화면으로 간다
+    static var startsWithSplash: Bool {
+        #if DEBUG
+        return ScreenshotRoute.current == nil || ScreenshotRoute.current == .splash
+        #else
+        return true
+        #endif
     }
 }
 

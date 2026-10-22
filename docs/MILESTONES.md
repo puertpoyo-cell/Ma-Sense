@@ -149,6 +149,13 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - [x] E. `Rules/ExportCodec.swift` + 가져오기(교체/추가, 2단계 확인) + `UTExportedTypeDeclarations`(`.masense.json`) — 지금의 JSON 내보내기를 `EXPORT_FORMAT.md` 형식으로. E-1 형식·규칙·서비스·fixture 테스트, E-2 설정 > 데이터 가져오기 시트(S6-1)·내보내기 전 안내. 실기기에서 AirDrop·파일 앱 왕복은 사람 확인
 - [x] (사양 대조 중 발견) S6 설정 > 처방 "이전 처방" 접힌 목록 — 시작일~종료일, 메모, 투약 기록·처방 회차 수 (`PrescriptionHistory` + 테스트)
 
+## D5 — 사람 요청 (2026-10-22)
+
+- [x] 앱 버전 0.2
+- [ ] a. BMI 숫자 (설정에서 키 입력, 체중 카드·기록 탭·리포트에 숫자만, 구간 이름 없음). `UserSettings.heightCm` 추가로 SchemaV2 경량 이전
+- [x] b. 투약 기록 화면 위 "지난 투약" 한 줄(사실만) + 바디맵 구역별 마지막 사용일·부위별 표 (R6 `lastUseBySite`·`lastDoseNote`, 이전 처방 기록 포함)
+- [x] c. 시작 전환 화면 1초 (`SplashView`, M 마크 `SplashMark`, 시스템 시작 화면 바탕 midnight)
+
 ## M3 — 출시 준비 (1주)
 
 - [ ] `COMPLIANCE.md` 6 출시 전 확인 전부 — 사람

@@ -154,6 +154,23 @@
         }
       }
     },
+    "app.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masense"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마선생"
+          }
+        }
+      }
+    },
     "appetite.normal": {
       "extractionState": "manual",
       "localizations": {
@@ -205,19 +222,36 @@
         }
       }
     },
+    "bodymap.bySite": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last used, by site"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "부위별 마지막 사용"
+          }
+        }
+      }
+    },
     "bodymap.hint": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The last site is shown solid; the three before it are shown faintly."
+            "value": "Each area shows the date it was last used. The last site is solid; the three before it are faint."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "직전 1회는 진하게, 그 전 3회는 옅게 표시됩니다."
+            "value": "구역의 날짜는 그 부위를 마지막으로 쓴 날입니다. 직전 1회는 진하게, 그 전 3회는 옅게 표시됩니다."
           }
         }
       }
@@ -252,23 +286,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "왼쪽"
-          }
-        }
-      }
-    },
-    "bodymap.previous %@ %@ %@": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ Earlier: %2$@ (%3$@)"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ 이전: %2$@ (%3$@)"
           }
         }
       }
@@ -592,6 +609,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "모든 기록은 이 기기에만 저장되며 외부로 전송되지 않습니다."
+          }
+        }
+      }
+    },
+    "dose.lastNote %@ %@ %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last dose: %1$@ · %2$@ · %3$lld days ago"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 투약: %1$@ · %2$@ · %3$lld일 전"
+          }
+        }
+      }
+    },
+    "dose.lastNote.today %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last dose: %1$@ · %2$@ · today"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 투약: %1$@ · %2$@ · 오늘"
           }
         }
       }
@@ -5454,6 +5505,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "상완 오른쪽"
+          }
+        }
+      }
+    },
+    "splash.tagline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The doctor prescribes. Masense records."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방은 의사가, 기록은 마선생이."
           }
         }
       }

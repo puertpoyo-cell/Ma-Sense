@@ -18,6 +18,14 @@ struct DoseLogSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let note = model.lastDoseNote {
+                    // 지난 투약: 사실만 알린다. 다음 부위를 제안하지 않는다 (R6)
+                    Section {
+                        LastDoseNoteRow(note: note)
+                    }
+                    .frostRow()
+                }
+
                 Section {
                     DatePicker(
                         "dose.time",
@@ -29,7 +37,7 @@ struct DoseLogSheet: View {
                 .frostRow()
 
                 Section {
-                    BodyMapView(selection: $model.site, history: model.history)
+                    BodyMapView(selection: $model.site, history: model.history, lastUseBySite: model.lastUseBySite)
                         .padding(.vertical, Spacing.s3)
                 } header: {
                     SectionHeaderText("dose.site")
@@ -78,5 +86,23 @@ struct DoseLogSheet: View {
         Task { await services.refreshNotifications(context: context) }
         dismiss()
         onSaved()
+    }
+}
+
+/// "지난 투약: 왼쪽 허벅지 · 10월 15일 (목) · 7일 전"
+private struct LastDoseNoteRow: View {
+    let note: LastDoseNote
+
+    var body: some View {
+        let day = note.date.formatted(.dateTime.month(.wide).day().weekday(.abbreviated))
+        Group {
+            if note.daysAgo == 0 {
+                Text("dose.lastNote.today \(note.site.localizedName) \(day)")
+            } else {
+                Text("dose.lastNote \(note.site.localizedName) \(day) \(note.daysAgo)")
+            }
+        }
+        .font(Typography.body)
+        .foregroundStyle(Color.ink)
     }
 }

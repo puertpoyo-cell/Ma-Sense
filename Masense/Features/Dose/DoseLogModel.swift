@@ -15,6 +15,10 @@ final class DoseLogModel {
     let openedAt: Date
     /// 바디맵 최근 사용 부위 (R6)
     let history: [SiteUse]
+    /// 바디맵 구역 날짜·부위별 목록 (R6)
+    let lastUseBySite: [BodySite: Date]
+    /// 화면 위 "지난 투약" 안내. 사실만, 추천 없음 (R6)
+    let lastDoseNote: LastDoseNote?
     let dosesPerPen: Int
     let totalDoses: Int
 
@@ -29,7 +33,11 @@ final class DoseLogModel {
         openedAt = now
         administeredAt = min(initialDate ?? now, now)
         sequence = PrescriptionRules.nextSequence(doses: doses)
-        history = SiteRules.siteHistory(doses: doses)
+        // 부위는 몸 기준이라 이전 처방의 기록도 함께 본다
+        let allDoses = (try? prescription.modelContext?.fetch(FetchDescriptor<Dose>())).map { $0.map(\.snapshot) } ?? doses
+        history = SiteRules.siteHistory(doses: allDoses)
+        lastUseBySite = SiteRules.lastUseBySite(doses: allDoses)
+        lastDoseNote = SiteRules.lastDoseNote(doses: allDoses, now: now, calendar: calendar)
         dosesPerPen = prescription.dosesPerPen
         totalDoses = prescription.totalDoses
     }
