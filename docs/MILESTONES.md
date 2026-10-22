@@ -141,7 +141,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 
 main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서에 합쳤다. 문서가 진실 원천이므로 아래 코드 작업이 남는다. 스키마 변경(B·C)은 출시 전 재정리로 한 번에 처리했다.
 
-- [ ] A. App Groups capability `group.com.puertpoyo.masense` + 스토어를 App Group 컨테이너 경로에 (`ModelContainer+Masense`), 테스트·미리보기는 in-memory 그대로. 기존 기본 경로 스토어가 있으면 첫 실행에 옮김 — 새 Capability라 서명 팀 선택 후 실기기 확인 필요
+- [x] A. App Groups capability `group.com.puertpoyo.masense` + 스토어를 App Group 컨테이너 경로에 (`StoreLocation`, `ModelContainer+Masense`), 테스트·미리보기는 in-memory 그대로. 기존 기본 경로 스토어가 있으면 첫 실행에 옮김 (D4-A). 실기기 서명·기록 유지 확인은 사람 (사람 확인 대기 표 11번)
 - [x] B. CloudKit 호환 스키마: `@Attribute(.unique)` 제거, 모든 저장 속성에 기본값 또는 옵셔널, 열거형 `xxxRaw` 저장 + 계산 프로퍼티. 출시 전이라 V1~V3 이력을 접고 새 `SchemaV1` 하나로 재정리 (2026-10-22 사람 결정, D4-a). `SchemaTests`
 - [x] C-1. `Prescription.endDate` + 새 처방 시작 시 이전 처방 `endDate`(= 새 시작일 전날)·`isActive` 갱신 (`Prescription.activate`, D4-a)
 - [x] C-2. R13 `prescriptionTimeline`·`transitionCount` + 리포트 처방 전환 세로선·라벨·요약 칸(전환 1회 이상일 때만) + 기록 탭 "처방 변경 · {메모}" 구분 행 (D4-b)
@@ -173,7 +173,8 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 | 8 | ~~리포트 기본 기간 저장~~ — **결정: 저장 (2026-10-22), D3-b 반영** | `UserSettings.reportDefaultPeriod`, SchemaV3 | — |
 | 9 | ~~앱 이름~~ — **결정: 마선생 (2026-10-22)**. 아이콘 1차안 "겹친 유리 M"(굵기 136) 사람 선택. 남은 것: 부제 | 스토어 문구(부제), `INFOPLIST_KEY_CFBundleDisplayName`(이미 "마선생"), `scripts/make_app_icon.py` | 부제 없이 이름만 |
 | 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장, 내보내기 → AirDrop·파일 앱 → 가져오기 왕복 | — | — |
-| 11 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
+| 11 | App Group 실기기 확인: Xcode Signing & Capabilities에서 App Groups `group.com.puertpoyo.masense`가 체크되어 있는지(빨간 표시면 새로고침), 업데이트 설치 후 이전 기록이 그대로 보이는지 | `Config/Masense.entitlements` | 그룹을 못 얻으면 앱 기본 경로를 그대로 써서 기록은 유지 |
+| 12 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
 
 ## 작업 분해 규칙
 

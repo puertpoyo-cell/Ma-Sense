@@ -19,7 +19,10 @@ let config = ModelConfiguration("Masense", schema: schema, url: url,
                                 cloudKitDatabase: .none)
 ```
 
-- Xcode: 앱 타깃에 App Groups capability 추가, 위젯·Watch 타깃이 생기면 같은 그룹 ID 추가
+- 구현 (D4-A): `App/StoreLocation.swift`가 위치를 정하고 `ModelContainer.masense()`가 쓴다
+  - 그룹 컨테이너를 얻지 못하면(App Group 서명이 없는 빌드) 앱 기본 경로 `Application Support/Masense.store`를 그대로 쓴다. `!` 강제 언래핑 대신 이 폴백
+  - D4-A 이전 빌드가 앱 기본 경로에 만든 스토어가 있고 그룹 쪽에 스토어가 없으면 첫 실행에 옮긴다. 본 파일과 `-wal`·`-shm`을 모두 복사한 뒤에만 이전 파일을 지우고, 하나라도 실패하면 복사본을 지우고 이전 경로를 쓴다 (`StoreLocationTests`)
+- Xcode: 앱 타깃에 App Groups capability 추가 (`Config/Masense.entitlements`의 `com.apple.security.application-groups`), 위젯·Watch 타깃이 생기면 같은 그룹 ID 추가. 개발자 계정에 그룹이 등록되어 있어야 실기기 서명이 된다 (자동 서명이면 Xcode가 등록)
 - 쓰기는 앱 타깃만. 위젯 등 익스텐션은 읽기 전용으로 쓰고, 기록 액션은 딥링크로 앱을 연다 (동시 쓰기 회피)
 - 테스트·미리보기는 `isStoredInMemoryOnly: true`로 App Group을 쓰지 않는다
 
