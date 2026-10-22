@@ -9,13 +9,14 @@ Apple 기본 앱 아이콘의 유리 문법을 참고한다(사람이 준 참고
 - 빨강·초록은 쓰지 않는다 (판단하지 않는 색 원칙)
 
 안:
-- `liquid` (기본): 밝은 바탕 + 파랑 동심원 원판 3겹(한 주씩 반복되는 마디의 리듬) + 흰 유리 M. 나의 찾기·팟캐스트 계열
-- `petals`: 밝은 바탕 + 하늘·파랑·남색·보라 반투명 막대 4개가 겹쳐 M. 겹친 곳은 색이 섞인다. 사진 앱 계열
+- `petals` (기본, 2026-10-22 사람 선택, 막대 굵기 136): 밝은 바탕 + 하늘·보라·파랑·남색 반투명 막대 4개가 겹쳐 M.
+  겹친 곳은 색이 섞인다. 사진 앱 계열
+- `liquid`: 밝은 바탕 + 파랑 동심원 원판 3겹(한 주씩 반복되는 마디의 리듬) + 흰 유리 M. 나의 찾기·팟캐스트 계열
 - `rings`: 파랑 한 색조 바탕 + 반투명 동심원 + 흰 반유리 M
 - `rings-midnight`: 같은 구성의 midnight 바탕
 
 출력: Masense/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png (1024×1024, RGB, 알파 없음)
-실행: python3 scripts/make_app_icon.py [liquid|petals|rings|rings-midnight] [출력 경로]
+실행: python3 scripts/make_app_icon.py [petals|liquid|rings|rings-midnight] [출력 경로]
 """
 
 import pathlib
@@ -157,7 +158,7 @@ def render_liquid() -> Image.Image:
     return image
 
 
-def render_petals(width: float = 118) -> Image.Image:
+def render_petals(width: float = 136) -> Image.Image:
     """밝은 바탕 + 색이 다른 반투명 막대 4개가 겹쳐 M. 겹친 곳은 곱하기로 섞인다. width: 막대 굵기(1024 기준)"""
     image = gradient_background(LIGHT_TOP, LIGHT_BOTTOM)
     colors = [SKY, VIOLET, BLUE, INDIGO]
@@ -203,7 +204,7 @@ VARIANTS = {
 
 
 def main() -> None:
-    variant = sys.argv[1] if len(sys.argv) > 1 else "liquid"
+    variant = sys.argv[1] if len(sys.argv) > 1 else "petals"
     out = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else OUT
     image = VARIANTS[variant]().resize((SIZE, SIZE), Image.LANCZOS)
     out.parent.mkdir(parents=True, exist_ok=True)

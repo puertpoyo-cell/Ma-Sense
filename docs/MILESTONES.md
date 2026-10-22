@@ -128,7 +128,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] D3-a HealthKit 읽기 연동: entitlement, `NSHealthShareUsageDescription`(ko/en), 금지선 점검이 권한 문구도 본다
 - [x] D3-b 리포트 기본 기간 저장: SchemaV3(`UserSettings.reportDefaultPeriod`), V1·V2 `UserSettings` 고정 사본, R12 `defaultPeriod(saved:…)`, 설정 > 리포트 "기본 기간", 마이그레이션 테스트 V2 → V3
 - [x] D3-c 감량 속도 안내: CDC 주 0.5~1 kg 기준으로 R8을 kg 단위로 바꾸고 표시(`pace.source`). 문구는 "일반적인 권장일 뿐 사람마다 다를 수 있으니 의사와 상의하세요"로 끝낸다
-- [x] D3-e 앱 아이콘 1차안 "동심원 유리 M" — Apple 기본 앱 유리 문법 참고. 밝은 바탕, 파랑 동심원 3겹, 캡슐형 흰 유리 막대 4개 M (`scripts/make_app_icon.py` → `AppIcon.png`, 대안 `petals`·`rings`, DESIGN_SYSTEM.md 6)
+- [x] D3-e 앱 아이콘 1차안 "겹친 유리 M" — Apple 기본 앱 유리 문법 참고, 사람 선택(B안, 막대 굵기 136). 밝은 바탕, 하늘·보라·파랑·남색 반투명 캡슐 막대 4개가 겹쳐 섞이는 M (`scripts/make_app_icon.py` → `AppIcon.png`, 대안 `liquid`·`rings`, DESIGN_SYSTEM.md 6)
 - [x] 시뮬레이터 스크린샷으로 찾은 버그: 바디맵 실루엣·구역이 캔버스 밖으로 밀림(정렬 기준 누락), 예정 시간 "(금요일)" 괄호
 - [x] 2차 스크린샷으로 찾은 것: 체중 차트 투약일이 전체 높이 점선이던 것을 4pt 눈금으로(사양 5.5), 습관 캘린더가 접근성 최대 글자에서 숫자가 두 줄로 쪼개지던 것 (격자만 글자 크기 상한 accessibility1)
 - [x] D3-f 시뮬레이터 스크린샷 워크플로 (`screenshots.yml`, `[shots]` 커밋 또는 수동 실행, DEBUG `-route`)
@@ -157,7 +157,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 6 | ~~감량 속도 출처~~ — **결정: CDC 주 0.5~1 kg 기준으로 표시 (2026-10-22), D3-c 반영** | `pace.notice`, `pace.source`, `PaceRules.weeklyChangeThresholdKg` | — |
 | 7 | 맨몸 예시 루틴 문구 검토 | `Localizable.xcstrings`의 `exercise.routine.*` | 초안 그대로 표시 (일반 건강관리 정보 고지와 함께) |
 | 8 | ~~리포트 기본 기간 저장~~ — **결정: 저장 (2026-10-22), D3-b 반영** | `UserSettings.reportDefaultPeriod`, SchemaV3 | — |
-| 9 | 앱 이름·부제·아이콘 (브랜딩 논의) — 아이콘 1차안 "동심원 유리 M" 적용 (2026-10-22), 대안 petals·rings | 스토어 문구, `INFOPLIST_KEY_CFBundleDisplayName`, `scripts/make_app_icon.py` | 작업명 "마선생", 아이콘 1차안 |
+| 9 | 앱 이름·부제·아이콘 (브랜딩 논의) — 아이콘 1차안 "겹친 유리 M"(굵기 136) 사람 선택 (2026-10-22), 대안 liquid·rings | 스토어 문구, `INFOPLIST_KEY_CFBundleDisplayName`, `scripts/make_app_icon.py` | 작업명 "마선생", 아이콘 1차안 |
 | 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장 | — | — |
 | 11 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
 
@@ -182,6 +182,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 | 2026-10-22 | 리포트 기본 기간을 설정에 저장 (SchemaV3, 경량 마이그레이션) | 사람 결정. 바뀐 모델은 이전 버전에 고정 사본 |
 | 2026-10-22 | 감량 속도 안내 기준을 주 1%에서 주 1 kg(CDC 주 0.5~1 kg 상한)으로 | 사람 결정. % 기준은 확인 가능한 공식 출처가 없음 |
 | 2026-10-22 | 단백질 권고 범위 1.2~1.6 g/kg 표시, 출처 2025 공동 권고문 | 사람 결정. 원문 문장 확인(검색 발췌, AJCN 판) |
+| 2026-10-22 | 앱 아이콘 1차안 "겹친 유리 M"(막대 굵기 136) | 사람 선택. 의약품 상표 연상·주사기·알약 표현 제외 |
 | 2026-10-21 | `Prescription.scheduledTime`은 `scheduledHour`·`scheduledMinute` Int 2개로 저장, `DateComponents`는 계산 속성 | SwiftData Codable 저장 안정성 |
 | 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
 | 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |
