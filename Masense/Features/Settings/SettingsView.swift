@@ -103,10 +103,14 @@ private struct SettingsForm: View {
             notificationStatus = await services.notifications.authorizationStatus()
             product = await services.store.loadProduct()
             settings.hasPurchasedPro = await services.store.refreshEntitlement()
-            #if DEBUG
-            openImportForScreenshot()
-            #endif
         }
+        #if DEBUG
+        // 스토어 응답을 기다리지 않게 따로 연다. 화면 전환이 끝난 뒤에 띄운다
+        .task {
+            try? await Task.sleep(for: .seconds(1))
+            openImportForScreenshot()
+        }
+        #endif
         .sheet(item: $sheet) { sheet in
             switch sheet {
             case .editPrescription: PrescriptionSheet(editing: prescription)
