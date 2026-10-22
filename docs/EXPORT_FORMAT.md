@@ -10,6 +10,8 @@
 ## 파일
 
 - 확장자 `.masense.json`, UTType `com.puertpoyo.masense.export` (Info.plist `UTExportedTypeDeclarations`에 선언, `conformsTo: public.json`)
+  - 선언 위치: `Config/Masense-Info.plist` (`INFOPLIST_FILE`, 나머지 키는 Xcode가 생성해 합친다)
+  - iOS는 마지막 확장자(`json`)로 파일 형식을 정하므로 공유·파일 앱에서는 일반 JSON으로 보인다. 가져오기 파일 선택기는 `.json`도 받는다
 - 파일명 `Masense_Export_2026-10-21.masense.json`
 - 인코딩 UTF-8, 날짜는 ISO 8601 with fractional seconds + 타임존 오프셋 (`2026-10-21T20:00:00.000+09:00`)
 - `JSONEncoder.outputFormatting = [.sortedKeys, .prettyPrinted]` — 사람이 열어 읽을 수 있게

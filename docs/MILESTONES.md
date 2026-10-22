@@ -37,8 +37,8 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [ ] 로컬 구매 테스트용 `.storekit` 구성 파일 — App Store Connect에 상품을 만든 뒤 Xcode에서 "Sync this file with an app in App Store Connect"로 생성 (가격·이름이 ASC 값을 따른다). 스킴 Run > Options > StoreKit Configuration에 지정 — 사람
 - [x] 번들 ID 확정 — `com.masense.app` (테스트 `com.masense.app.tests`), 2026-10-22 사람 결정
 - [x] 서명 팀 선택 — Xcode Signing & Capabilities (2026-10-22 사람 지정, `DEVELOPMENT_TEAM`)
-- [ ] `Rules/ExportCodec.swift` + `ExportService` — 내보내기·가져오기 (`EXPORT_FORMAT.md`), round-trip 테스트 + fixture (main E, D4에서)
-- [ ] Info.plist `UTExportedTypeDeclarations` (`.masense.json`) (main E, D4에서)
+- [x] `Rules/ExportCodec.swift` + `ExportService` — 내보내기·가져오기 (`EXPORT_FORMAT.md`), round-trip 테스트 + fixture (main E, D4-E1)
+- [x] Info.plist `UTExportedTypeDeclarations` (`.masense.json`) — `Config/Masense-Info.plist` (main E, D4-E2)
 
 ### M1-c 화면
 - [x] S0 온보딩 4페이지 (HealthKit 버튼은 Info.plist 키 추가 전까지 숨김)
@@ -146,7 +146,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - [x] C-1. `Prescription.endDate` + 새 처방 시작 시 이전 처방 `endDate`(= 새 시작일 전날)·`isActive` 갱신 (`Prescription.activate`, D4-a)
 - [x] C-2. R13 `prescriptionTimeline`·`transitionCount` + 리포트 처방 전환 세로선·라벨·요약 칸(전환 1회 이상일 때만) + 기록 탭 "처방 변경 · {메모}" 구분 행 (D4-b)
 - [x] D. `CycleRules`가 `intervalDays` 대신 7일 고정, `PrescriptionSnapshot`에서 간격 필드 제거 (동작 동일, D4-c)
-- [ ] E. `Rules/ExportCodec.swift` + 가져오기(교체/추가, 2단계 확인) + `UTExportedTypeDeclarations`(`.masense.json`) — 지금의 JSON 내보내기를 `EXPORT_FORMAT.md` 형식으로
+- [x] E. `Rules/ExportCodec.swift` + 가져오기(교체/추가, 2단계 확인) + `UTExportedTypeDeclarations`(`.masense.json`) — 지금의 JSON 내보내기를 `EXPORT_FORMAT.md` 형식으로. E-1 형식·규칙·서비스·fixture 테스트, E-2 설정 > 데이터 가져오기 시트(S6-1)·내보내기 전 안내. 실기기에서 AirDrop·파일 앱 왕복은 사람 확인
 
 ## M3 — 출시 준비 (1주)
 
@@ -172,7 +172,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 | 7 | 맨몸 예시 루틴 문구 검토 | `Localizable.xcstrings`의 `exercise.routine.*` | 초안 그대로 표시 (일반 건강관리 정보 고지와 함께) |
 | 8 | ~~리포트 기본 기간 저장~~ — **결정: 저장 (2026-10-22), D3-b 반영** | `UserSettings.reportDefaultPeriod`, SchemaV3 | — |
 | 9 | ~~앱 이름~~ — **결정: 마선생 (2026-10-22)**. 아이콘 1차안 "겹친 유리 M"(굵기 136) 사람 선택. 남은 것: 부제 | 스토어 문구(부제), `INFOPLIST_KEY_CFBundleDisplayName`(이미 "마선생"), `scripts/make_app_icon.py` | 부제 없이 이름만 |
-| 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장 | — | — |
+| 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장, 내보내기 → AirDrop·파일 앱 → 가져오기 왕복 | — | — |
 | 11 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
 
 ## 작업 분해 규칙

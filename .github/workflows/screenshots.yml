@@ -65,7 +65,7 @@ jobs:
             echo "captured $1"
           }
           for route in today settings history.dose history.condition history.weight history.habits report \
-                       sheet.dose sheet.condition sheet.protein sheet.strength; do
+                       sheet.dose sheet.condition sheet.protein sheet.strength sheet.import sheet.import.result; do
             shoot "$route" "$route"
           done
           # 접근성 최대 글자 크기

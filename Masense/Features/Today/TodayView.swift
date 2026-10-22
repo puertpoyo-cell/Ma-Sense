@@ -40,7 +40,7 @@ struct TodayView: View {
     @Query(sort: \HabitCheck.date) private var habits: [HabitCheck]
     @State private var sheet: Sheet?
     #if DEBUG
-    @State private var opensSettingsForScreenshot = ScreenshotRoute.current == .settings
+    @State private var opensSettingsForScreenshot = ScreenshotRoute.current.map { [.settings, .importSheet, .importResult].contains($0) } ?? false
     #endif
     @State private var showsToast = false
 

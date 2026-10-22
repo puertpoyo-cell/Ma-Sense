@@ -15,6 +15,8 @@ enum ScreenshotRoute: String, CaseIterable {
     case conditionSheet = "sheet.condition"
     case proteinSheet = "sheet.protein"
     case strengthSheet = "sheet.strength"
+    case importSheet = "sheet.import"
+    case importResult = "sheet.import.result"
 
     static let current: ScreenshotRoute? = {
         let arguments = ProcessInfo.processInfo.arguments

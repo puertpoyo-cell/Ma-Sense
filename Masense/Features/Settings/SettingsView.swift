@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 import UserNotifications
 
 /// S6 설정. 처방 · 알림 · 연동 · 구매 · 데이터 · 정보. 리포트 섹션(테마·기본 기간)은 M1-d.
@@ -30,9 +31,19 @@ struct SettingsView: View {
 private struct SettingsForm: View {
     @Bindable var settings: UserSettings
 
-    private enum Sheet: String, Identifiable {
+    private enum Sheet: Identifiable {
         case editPrescription, newPrescription, roleNotice
-        var id: String { rawValue }
+        /// `result`는 DEBUG 스크린샷용 결과 화면 미리보기
+        case importFile(ExportDocument, result: ExportCodec.ImportResult? = nil)
+
+        var id: String {
+            switch self {
+            case .editPrescription: "editPrescription"
+            case .newPrescription: "newPrescription"
+            case .roleNotice: "roleNotice"
+            case .importFile: "importFile"
+            }
+        }
     }
 
     @Environment(\.modelContext) private var context
@@ -52,6 +63,8 @@ private struct SettingsForm: View {
     @State private var exportURL: URL?
     @State private var confirmsDelete = false
     @State private var confirmsDeleteAgain = false
+    @State private var importsFile = false
+    @State private var importError: ExportCodec.ImportError?
 
     private var prescription: Prescription? { activePrescriptions.first }
 
@@ -90,13 +103,25 @@ private struct SettingsForm: View {
             notificationStatus = await services.notifications.authorizationStatus()
             product = await services.store.loadProduct()
             settings.hasPurchasedPro = await services.store.refreshEntitlement()
+            #if DEBUG
+            openImportForScreenshot()
+            #endif
         }
         .sheet(item: $sheet) { sheet in
             switch sheet {
             case .editPrescription: PrescriptionSheet(editing: prescription)
             case .newPrescription: PrescriptionSheet()
             case .roleNotice: RoleNoticeSheet()
+            case let .importFile(document, result): ImportSheet(document: document, result: result)
             }
+        }
+        .fileImporter(isPresented: $importsFile, allowedContentTypes: [.masenseExport, .json]) { selection in
+            readImportFile(selection)
+        }
+        .alert("import.error.title", isPresented: showsImportError) {
+            Button("action.ok") {}
+        } message: {
+            Text(importErrorMessage)
         }
         .confirmationDialog("settings.data.deleteAll.confirm1", isPresented: $confirmsDelete, titleVisibility: .visible) {
             Button("settings.data.deleteAll.continue") { confirmsDeleteAgain = true }
@@ -395,14 +420,54 @@ private struct SettingsForm: View {
                     exportURL = try? ExportService.writeExportFile(context: context)
                 }
             }
+            Button("settings.data.import") { importsFile = true }
             // 빨강 금지: destructive 역할 대신 일반 버튼 + 2단계 확인
             Button("settings.data.deleteAll") { confirmsDelete = true }
         } header: {
             SectionHeaderText("settings.section.data")
         } footer: {
-            Text("data.local")
+            // 내보내기 전 한 줄 안내 (EXPORT_FORMAT.md 보안·프라이버시)
+            VStack(alignment: .leading, spacing: Spacing.s2) {
+                Text("settings.data.export.notice")
+                Text("data.local")
+            }
         }
         .frostRow()
+    }
+
+    /// 형식·버전을 먼저 확인하고(규칙 1~3), 맞으면 방식을 고르는 시트를 연다
+    private func readImportFile(_ selection: Result<URL, Error>) {
+        do {
+            let document = try ExportService.readFile(at: selection.get())
+            sheet = .importFile(document)
+        } catch let error as ExportCodec.ImportError {
+            importError = error
+        } catch {
+            importError = .unreadable
+        }
+    }
+
+    #if DEBUG
+    /// 실행 인자 `-route sheet.import`, `sheet.import.result` (ScreenshotRoute). 표본 데이터를 내보낸 문서로 시트를 연다
+    private func openImportForScreenshot() {
+        guard let route = ScreenshotRoute.current, route == .importSheet || route == .importResult,
+              let document = try? ExportService.makeDocument(context: context, now: Date())
+        else { return }
+        let result = route == .importResult ? ExportCodec.importPlan(document, mode: .replace, existingIDs: []).result : nil
+        sheet = .importFile(document, result: result)
+    }
+    #endif
+
+    private var showsImportError: Binding<Bool> {
+        Binding(get: { importError != nil }, set: { if !$0 { importError = nil } })
+    }
+
+    private var importErrorMessage: LocalizedStringKey {
+        switch importError {
+        case .notMasenseExport?: "import.error.notMasense"
+        case .needsAppUpdate?: "import.error.needsUpdate"
+        case .unreadable?, nil: "import.error.unreadable"
+        }
     }
 
     private func deleteAll() {

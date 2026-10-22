@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import UniformTypeIdentifiers
 
 /// 설정 > 데이터: 전체 내보내기·가져오기·전체 삭제 (EXPORT_FORMAT.md). 서버 없이 기기 안에서만 처리한다.
 /// 파일 형식과 가져오기 규칙은 `ExportCodec`(Rules), 이 서비스는 SwiftData 읽기·쓰기만 맡는다.
@@ -68,13 +69,8 @@ enum ExportService {
 
     // MARK: 가져오기
 
-    /// 파일 선택기가 준 URL을 읽어 가져온다. 알림 재등록과 건강 앱 재동기화(규칙 8)는 부르는 쪽이 한다
-    static func importFile(
-        at url: URL,
-        mode: ExportCodec.ImportMode,
-        context: ModelContext,
-        calendar: Calendar = .current
-    ) throws -> ExportCodec.ImportResult {
+    /// 파일 선택기가 준 URL을 읽고 형식·버전을 확인한다 (규칙 1~3). 저장은 사용자가 방식을 고른 뒤 `apply`
+    static func readFile(at url: URL) throws -> ExportDocument {
         let accessing = url.startAccessingSecurityScopedResource()
         defer {
             if accessing { url.stopAccessingSecurityScopedResource() }
@@ -85,10 +81,11 @@ enum ExportService {
         } catch {
             throw ExportCodec.ImportError.unreadable
         }
-        return try apply(ExportCodec.decode(data), mode: mode, context: context, calendar: calendar)
+        return try ExportCodec.decode(data)
     }
 
-    /// 규칙 4~7. 교체 모드는 기록을 모두 지운 뒤 넣고(설정 레코드는 남겨 값만 바꾼다), 추가 모드는 같은 ID를 건너뛴다
+    /// 규칙 4~7. 교체 모드는 기록을 모두 지운 뒤 넣고(설정 레코드는 남겨 값만 바꾼다), 추가 모드는 같은 ID를 건너뛴다.
+    /// 지우기와 넣기를 한 번에 저장한다. 던지면 부르는 쪽이 `context.rollback()`
     static func apply(
         _ document: ExportDocument,
         mode: ExportCodec.ImportMode,
@@ -101,9 +98,8 @@ enum ExportService {
         var existingIDs: Set<UUID> = []
         switch mode {
         case .replace:
-            // 지운 레코드가 아래 조회(규칙 7)에 섞이지 않게 먼저 저장한다
+            // 저장은 마지막에 한 번만. 실패하면 부르는 쪽이 rollback해 이 기기의 기록이 그대로 남는다
             try deleteRecords(context: context)
-            try context.save()
         case .add:
             prescriptions = try uniqueByID(context.fetch(FetchDescriptor<Prescription>()), id: \.id)
             doses = try uniqueByID(context.fetch(FetchDescriptor<Dose>()), id: \.id)
@@ -149,7 +145,8 @@ enum ExportService {
 
     /// 규칙 7. 이 기기의 처방과 가져온 처방을 함께 보고 활성 처방을 하나로 맞춘다
     static func resolveActivePrescriptions(context: ModelContext, calendar: Calendar) throws {
-        let all = try context.fetch(FetchDescriptor<Prescription>())
+        // 교체 모드에서 지우고 아직 저장하지 않은 처방은 뺀다
+        let all = try context.fetch(FetchDescriptor<Prescription>()).filter { !$0.isDeleted }
         let resolved = PrescriptionRules.resolvingActive(all.map(\.span), calendar: calendar)
         for (prescription, span) in zip(all, resolved) {
             prescription.isActive = span.isActive
@@ -180,4 +177,10 @@ enum ExportService {
         try context.fetch(FetchDescriptor<StrengthSession>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<HabitCheck>()).forEach { context.delete($0) }
     }
+}
+
+extension UTType {
+    /// `.masense.json` 내보내기 파일 (Config/Masense-Info.plist `UTExportedTypeDeclarations`).
+    /// iOS는 마지막 확장자(json)로 형식을 정하므로 파일 선택기는 `.json`도 함께 받는다
+    static let masenseExport = UTType(exportedAs: ExportCodec.typeIdentifier, conformingTo: .json)
 }
