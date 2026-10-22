@@ -46,7 +46,18 @@ struct MainTabView: View {
         case today, history, report
     }
 
-    @State private var selection: Tab = .today
+    @State private var selection: Tab = MainTabView.initialTab
+
+    private static var initialTab: Tab {
+        #if DEBUG
+        switch ScreenshotRoute.current {
+        case .historyDose?, .historyCondition?, .historyWeight?, .historyHabits?: return .history
+        case .report?: return .report
+        default: break
+        }
+        #endif
+        return .today
+    }
 
     var body: some View {
         TabView(selection: $selection) {

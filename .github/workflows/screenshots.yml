@@ -1,0 +1,96 @@
+name: Screenshots
+
+# 시뮬레이터에서 앱을 예시 데이터로 띄워 화면별 스크린샷을 찍는다 (육안 확인·스토어 스크린샷 초안).
+# 커밋 메시지에 [shots]가 있거나 수동 실행(workflow_dispatch)일 때만 돈다. 화면은 DEBUG 실행 인자 -route (ScreenshotRoute)
+on:
+  workflow_dispatch:
+  push:
+
+concurrency:
+  group: shots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shots:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[shots]')
+    name: 시뮬레이터 스크린샷
+    runs-on: macos-15
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick an available iPhone simulator
+        id: sim
+        run: |
+          set -euo pipefail
+          DEVICE=$(xcrun simctl list devices available -j \
+            | jq -c '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))] | first')
+          echo "Using simulator: $DEVICE"
+          echo "udid=$(echo "$DEVICE" | jq -r .udid)" >> "$GITHUB_OUTPUT"
+
+      - name: Build app (Debug, simulator)
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project Masense.xcodeproj \
+            -scheme Masense \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath build \
+            -skipPackagePluginValidation \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Boot simulator and install
+        run: |
+          set -euo pipefail
+          UDID=${{ steps.sim.outputs.udid }}
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4 || true
+          xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/Masense.app
+
+      - name: Capture screens
+        run: |
+          set -euo pipefail
+          UDID=${{ steps.sim.outputs.udid }}
+          BUNDLE=com.masense.Masense
+          mkdir -p shots
+          shoot() {
+            xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
+            xcrun simctl launch "$UDID" "$BUNDLE" -seedSampleData -route "$2" -AppleLanguages "(ko)" -AppleLocale ko_KR > /dev/null
+            sleep 6
+            xcrun simctl io "$UDID" screenshot "shots/$1.png" > /dev/null
+            echo "captured $1"
+          }
+          for route in today settings history.dose history.condition history.weight history.habits report \
+                       sheet.dose sheet.condition sheet.protein sheet.strength; do
+            shoot "$route" "$route"
+          done
+          # 접근성 최대 글자 크기
+          if xcrun simctl ui "$UDID" content_size accessibility-extra-extra-extra-large; then
+            for route in today history.habits; do
+              shoot "ax-$route" "$route"
+            done
+            xcrun simctl ui "$UDID" content_size large || true
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: shots/*.png
+
+      # 아티팩트를 받을 수 없는 환경에서도 볼 수 있게, 줄인 JPEG을 로그에 base64로 남긴다
+      - name: Print compressed screenshots
+        run: |
+          for f in shots/*.png; do
+            name=$(basename "$f" .png)
+            sips -s format jpeg -s formatOptions 50 -Z 1400 "$f" --out "shots/$name.jpg" > /dev/null
+            echo "=====SHOT $name"
+            base64 -b 76 -i "shots/$name.jpg"
+            echo "=====END $name"
+          done

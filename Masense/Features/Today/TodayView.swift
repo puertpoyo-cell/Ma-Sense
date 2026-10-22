@@ -39,6 +39,9 @@ struct TodayView: View {
     @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
     @Query(sort: \HabitCheck.date) private var habits: [HabitCheck]
     @State private var sheet: Sheet?
+    #if DEBUG
+    @State private var opensSettingsForScreenshot = ScreenshotRoute.current == .settings
+    #endif
     @State private var showsToast = false
 
     private var prescription: Prescription? { activePrescriptions.first }
@@ -78,6 +81,10 @@ struct TodayView: View {
                 .accessibilityLabel("settings.title")
             }
         }
+        #if DEBUG
+        .navigationDestination(isPresented: $opensSettingsForScreenshot) { SettingsView() }
+        .task { openSheetForScreenshot() }
+        #endif
         .sheet(item: $sheet) { sheet in
             sheetContent(sheet)
         }
@@ -201,6 +208,22 @@ struct TodayView: View {
     }
 
     // MARK: 시트
+
+    #if DEBUG
+    /// 실행 인자 `-route sheet.*`로 시작할 때 해당 시트를 연다 (ScreenshotRoute)
+    private func openSheetForScreenshot() {
+        switch ScreenshotRoute.current {
+        case .doseSheet?: sheet = .dose
+        case .proteinSheet?: sheet = .protein(preselected: nil)
+        case .strengthSheet?: sheet = .strength
+        case .conditionSheet?:
+            if let dose = prescription?.doses.filter({ !$0.isCancelled }).max(by: { $0.administeredAt < $1.administeredAt }) {
+                sheet = .condition(doseID: dose.id, window: .h24)
+            }
+        default: break
+        }
+    }
+    #endif
 
     @ViewBuilder
     private func sheetContent(_ sheet: Sheet) -> some View {

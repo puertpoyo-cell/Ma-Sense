@@ -32,7 +32,7 @@ struct HistoryView: View {
     @Query(sort: \ProteinEntry.date) private var proteins: [ProteinEntry]
     @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
     @Query private var settingsList: [UserSettings]
-    @State private var segment: Segment = .dose
+    @State private var segment: Segment = HistoryView.initialSegment
     /// 습관 캘린더에 보이는 달. nil이면 이번 달
     @State private var habitMonth: Date?
     @State private var sheet: Sheet?
@@ -40,6 +40,18 @@ struct HistoryView: View {
 
     private var activePrescription: Prescription? { prescriptions.first { $0.isActive } }
     private var allDoses: [Dose] { prescriptions.flatMap(\.doses) }
+
+    private static var initialSegment: Segment {
+        #if DEBUG
+        switch ScreenshotRoute.current {
+        case .historyCondition?: return .condition
+        case .historyWeight?: return .weight
+        case .historyHabits?: return .habits
+        default: break
+        }
+        #endif
+        return .dose
+    }
 
     var body: some View {
         TimelineView(.everyMinute) { timeline in
