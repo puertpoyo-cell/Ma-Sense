@@ -202,6 +202,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 | 2026-10-22 | 앱 이름 "마선생" 확정 | 사람 결정. 상표 등록 검색은 COMPLIANCE.md 6 출시 전 확인에 남김 |
 | 2026-10-22 | 번들 ID `com.masense.app` (테스트 `com.masense.app.tests`) | 사람 결정. 앱스토어에 올린 뒤에는 바꿀 수 없다 |
 | 2026-10-22 | 출시 전 스키마 재정리: V1~V3 이력을 접고 CloudKit 호환 규칙 + 처방 endDate를 담은 새 SchemaV1 | 사람 결정. 사용자 데이터 없음, 영구히 남을 옛 필드를 만들지 않으려고 |
+| 2026-10-22 | 앱 버전(`MARKETING_VERSION`) 0.2 | 사람 결정. 빌드 번호(`CURRENT_PROJECT_VERSION`)는 1부터, TestFlight 업로드마다 올린다 |
 | 2026-10-21 | `Prescription.scheduledTime`은 `scheduledHour`·`scheduledMinute` Int 2개로 저장, `DateComponents`는 계산 속성 | SwiftData Codable 저장 안정성 |
 | 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
 | 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |

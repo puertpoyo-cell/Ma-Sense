@@ -355,7 +355,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -389,7 +389,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -408,7 +408,7 @@
 				DEVELOPMENT_TEAM = 24F957FFAD;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -427,7 +427,7 @@
 				DEVELOPMENT_TEAM = 24F957FFAD;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
