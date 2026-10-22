@@ -46,7 +46,9 @@ struct SchemaTests {
             try context.save()
         }
 
-        let context = try ModelContainer.masense(url: url).mainContext
+        // 컨테이너를 붙잡아 둔다. 임시값의 mainContext만 쓰면 컨테이너가 해제되어 테스트 프로세스가 죽는다
+        let container = try ModelContainer.masense(url: url)
+        let context = container.mainContext
         let dose = try #require(try context.fetch(FetchDescriptor<Dose>()).first)
         #expect(dose.site == .thighLeft)
         #expect(dose.siteRaw == "thighLeft")
@@ -77,8 +79,8 @@ struct SchemaTests {
 
     /// 규칙 2: 모든 저장 속성에 기본값이 있어 인자 없이도 만들 수 있다 (UserSettings)
     @Test func settingsDefaults() throws {
-        let context = try ModelContainer.masense(inMemory: true).mainContext
-        let settings = try UserSettings.current(in: context)
+        let container = try ModelContainer.masense(inMemory: true)
+        let settings = try UserSettings.current(in: container.mainContext)
         #expect(settings.reportTheme == "midnight")
         #expect(settings.reportDefaultPeriod == nil)
         #expect(settings.eveningReminderHour == 20)
