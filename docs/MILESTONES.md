@@ -137,6 +137,16 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] D3-f 시뮬레이터 스크린샷 워크플로 (`screenshots.yml`, `[shots]` 커밋 또는 수동 실행, DEBUG `-route`)
 - [x] D3-d 단백질 권고 범위 표시: 출처 2025 공동 권고문(감량 중 1.2~1.6 g/kg/일 제안, 일반 성인 기준 0.8 g/kg, 하루 2 g/kg 초과 지속은 피함). `protein.guide`에 "감량 중"을 밝히고 "의사와 상의하세요"로 끝낸다
 
+## D4 — main 사양 A~E 코드 반영 (2026-10-22 통합)
+
+main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서에 합쳤다. 문서가 진실 원천이므로 아래 코드 작업이 남는다. 스키마 변경(B·C)은 한 번에 SchemaV4로 묶는다.
+
+- [ ] A. App Groups capability `group.com.puertpoyo.masense` + 스토어를 App Group 컨테이너 경로에 (`ModelContainer+Masense`), 테스트·미리보기는 in-memory 그대로. 기존 기본 경로 스토어가 있으면 첫 실행에 옮김 — 새 Capability라 서명 팀 선택 후 실기기 확인 필요
+- [ ] B. CloudKit 호환 스키마 (SchemaV4): `@Attribute(.unique)` 제거, 모든 속성에 기본값 또는 옵셔널, 관계 옵셔널, 열거형 rawValue 저장 (DATA_MODEL.md 표의 기본값 열). 고정 사본 + 마이그레이션 테스트
+- [ ] C. `Prescription.endDate`(SchemaV4) + 새 처방 시작 서비스(이전 처방 endDate·isActive 갱신) + R13 `prescriptionTimeline` + 리포트 처방 전환 세로선·요약 칸 + 기록 탭 "처방 변경" 구분 행
+- [ ] D. `CycleRules`가 `intervalDays` 대신 7일 고정 (동작 동일, 사양 문구에 맞춤)
+- [ ] E. `Rules/ExportCodec.swift` + 가져오기(교체/추가, 2단계 확인) + `UTExportedTypeDeclarations`(`.masense.json`) — 지금의 JSON 내보내기를 `EXPORT_FORMAT.md` 형식으로
+
 ## M3 — 출시 준비 (1주)
 
 - [ ] `COMPLIANCE.md` 6 출시 전 확인 전부 — 사람
