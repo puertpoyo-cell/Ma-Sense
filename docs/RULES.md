@@ -92,6 +92,7 @@ struct WeekPoint { let weekStart: Date; let averageKg: Double?; let sampleCount:
 - 주 단위 평균. 샘플 없는 주는 `nil`로 두고 선을 끊음 (보간 금지)
 - 같은 날 여러 샘플이면 먼저 하루 평균으로 묶고, 그 하루 평균들의 평균을 주 평균으로 한다
 - 결과는 오래된 주부터 `weeks`개, 마지막이 `now`가 속한 주. 주 시작은 `calendar.firstWeekday`
+- 차트의 투약일 눈금은 `doseTicks(doses:series:now:)`: 시리즈 첫 주 시작부터 `now`까지, 취소한 기록 제외 (홈 스파크라인, 기록 탭 차트)
 
 ## R8. 감량 속도 안내 (M2)
 

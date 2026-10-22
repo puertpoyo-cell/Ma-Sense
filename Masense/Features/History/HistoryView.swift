@@ -94,8 +94,7 @@ struct HistoryView: View {
                     doseRow(row)
                 }
             } header: {
-                Text(month.start.formatted(.dateTime.year().month(.wide)))
-                    .foregroundStyle(Color.inkSecondary)
+                sectionHeader(Text(month.start.formatted(.dateTime.year().month(.wide))))
             }
         }
     }
@@ -130,7 +129,7 @@ struct HistoryView: View {
                 }
             }
             .foregroundStyle(isCancelled ? Color.inkTertiary : Color.ink)
-            .listRowBackground(Color.frost)
+            .frostRow()
             .swipeActions(edge: .trailing) {
                 // 빨강 금지: destructive 역할 대신 중립색
                 Button(LocalizedStringKey(isCancelled ? "history.restoreDose" : "history.cancelDose")) {
@@ -189,8 +188,7 @@ struct HistoryView: View {
                     conditionRow(slot, doseID: group.doseID)
                 }
             } header: {
-                Text("history.condition.doseHeader \(group.administeredAt.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated)))")
-                    .foregroundStyle(Color.inkSecondary)
+                sectionHeader(Text("history.condition.doseHeader \(group.administeredAt.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated)))"))
             }
         }
     }
@@ -225,23 +223,25 @@ struct HistoryView: View {
                 .foregroundStyle(Color.accent)
             }
         }
-        .listRowBackground(Color.frost)
+        .frostRow()
     }
 
     // MARK: 체중
 
     @ViewBuilder
     private func weightSections(now: Date) -> some View {
-        let series = WeightRules.weeklyWeightSeries(samples: weights.map(\.snapshot), weeks: 12, now: now, calendar: calendar)
+        let series = WeightRules.weeklyWeightSeries(samples: weights.map(\.snapshot), weeks: Self.weightWeeks, now: now, calendar: calendar)
         if weights.isEmpty {
             emptyRow("weight.empty")
         } else {
             Section {
-                WeekChart(points: series)
+                WeekChart(points: series, tickDates: WeightRules.doseTicks(doses: allDoses.map(\.snapshot), series: series, now: now))
                     .frame(height: 180)
                     .padding(.vertical, Spacing.s3)
+            } header: {
+                sectionHeader(Text("history.weight.chartTitle \(Self.weightWeeks)"))
             }
-            .listRowBackground(Color.frost)
+            .frostRow()
 
             Section {
                 ForEach(weights) { sample in
@@ -254,11 +254,15 @@ struct HistoryView: View {
                                 .foregroundStyle(Color.inkSecondary)
                         }
                         Spacer()
-                        Text("weight.kg \(sample.kilograms.formatted(.number.precision(.fractionLength(1))))")
-                            .font(Typography.mono)
+                        DimensionValue(
+                            sample.kilograms.formatted(.number.precision(.fractionLength(1))),
+                            unit: "unit.kg",
+                            valueFont: Typography.body.weight(.semibold),
+                            unitFont: Typography.caption
+                        )
                     }
                     .foregroundStyle(Color.ink)
-                    .listRowBackground(Color.frost)
+                    .frostRow()
                     .swipeActions(edge: .trailing) {
                         // HealthKit 샘플은 Apple Health에서 관리한다. 다음 동기화에 다시 들어오므로 수동 입력만 지운다
                         if sample.source == .manual {
@@ -303,18 +307,28 @@ struct HistoryView: View {
             .buttonStyle(.plain)
             .foregroundStyle(Color.ink)
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.s1), count: 7), spacing: Spacing.s2) {
-                ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
-                    Text(verbatim: symbol)
-                        .font(Typography.caption)
-                        .foregroundStyle(Color.inkSecondary)
-                }
-                ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
-                    if let cell {
-                        habitDayCell(cell)
-                    } else {
-                        Color.clear.frame(height: 40)
+            VStack(spacing: 0) {
+                LazyVGrid(columns: Self.weekColumns, spacing: 0) {
+                    ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
+                        Text(verbatim: symbol)
+                            .font(Typography.caption)
+                            .foregroundStyle(Color.inkSecondary)
+                            .padding(.bottom, Spacing.s2)
                     }
+                }
+                BlueprintDivider(crosshair: .none)
+                // 7칸 도면 격자: 칸 사이 선과 교차점 마커 (DESIGN_SYSTEM.md 1)
+                LazyVGrid(columns: Self.weekColumns, spacing: 0) {
+                    ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
+                        if let cell {
+                            habitDayCell(cell)
+                        } else {
+                            Color.clear.frame(height: Self.dayCellHeight)
+                        }
+                    }
+                }
+                .overlay {
+                    BlueprintGridLines(rows: (cells.count + 6) / 7, columns: 7)
                 }
             }
 
@@ -338,8 +352,12 @@ struct HistoryView: View {
                     .foregroundStyle(Color.inkSecondary)
             }
         }
-        .listRowBackground(Color.frost)
+        .frostRow()
     }
+
+    private static let weightWeeks = 12
+    private static let weekColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
+    private static let dayCellHeight: CGFloat = 44
 
     private var weekdaySymbols: [String] {
         let symbols = calendar.veryShortWeekdaySymbols
@@ -368,7 +386,7 @@ struct HistoryView: View {
             }
             .frame(height: 8)
         }
-        .frame(maxWidth: .infinity, minHeight: 40)
+        .frame(maxWidth: .infinity, minHeight: Self.dayCellHeight)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(habitDayLabel(day))
     }
@@ -381,6 +399,12 @@ struct HistoryView: View {
     }
 
     // MARK: 공용
+
+    private func sectionHeader(_ text: Text) -> some View {
+        text
+            .font(Typography.label)
+            .foregroundStyle(Color.inkSecondary)
+    }
 
     private func emptyRow(_ key: LocalizedStringKey) -> some View {
         Text(key)

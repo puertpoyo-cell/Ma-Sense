@@ -103,3 +103,53 @@ struct BlueprintSplit<Leading: View, Trailing: View>: View {
         }
     }
 }
+
+/// 같은 크기 칸이 반복되는 격자(캘린더 등)의 도면 선: 칸 사이 `gridHairline` 1px와 안쪽 교차점 `+` 마커 (DESIGN_SYSTEM.md 1).
+/// 칸을 간격 0으로 깔고 `.overlay`로 얹는다. 바깥 테두리는 카드·리스트 행 경계와 겹치지 않도록 그리지 않는다.
+struct BlueprintGridLines: View {
+    let rows: Int
+    let columns: Int
+
+    /// `+` 마커 한쪽 팔 길이
+    private let arm: CGFloat = 3
+
+    var body: some View {
+        Canvas { context, size in
+            guard rows > 0, columns > 0 else { return }
+            let xs = (1..<columns).map { (size.width * CGFloat($0) / CGFloat(columns)).rounded() }
+            let ys = (1..<rows).map { (size.height * CGFloat($0) / CGFloat(rows)).rounded() }
+
+            var lines = Path()
+            for x in xs {
+                lines.move(to: CGPoint(x: x, y: 0))
+                lines.addLine(to: CGPoint(x: x, y: size.height))
+            }
+            for y in ys {
+                lines.move(to: CGPoint(x: 0, y: y))
+                lines.addLine(to: CGPoint(x: size.width, y: y))
+            }
+            context.stroke(lines, with: .color(.gridHairline), lineWidth: 1)
+
+            var marks = Path()
+            for x in xs {
+                for y in ys {
+                    marks.move(to: CGPoint(x: x - arm, y: y))
+                    marks.addLine(to: CGPoint(x: x + arm, y: y))
+                    marks.move(to: CGPoint(x: x, y: y - arm))
+                    marks.addLine(to: CGPoint(x: x, y: y + arm))
+                }
+            }
+            context.stroke(marks, with: .color(.gridCrosshair), lineWidth: 1)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+extension View {
+    /// List·Form 행을 도면 카드처럼: 배경 `frost`, 행 구분선 `gridHairline` (DESIGN_SYSTEM.md 5.1을 리스트에 옮긴 것)
+    func frostRow() -> some View {
+        listRowBackground(Color.frost)
+            .listRowSeparatorTint(Color.gridHairline)
+    }
+}

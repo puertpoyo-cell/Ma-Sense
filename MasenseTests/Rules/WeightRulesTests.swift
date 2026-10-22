@@ -46,4 +46,16 @@ struct WeightRulesTests {
         #expect(WeightRules.latestSample(samples)?.kilograms == 79.5)
         #expect(WeightRules.latestSample([]) == nil)
     }
+
+    @Test func doseTicksWithinSeriesExcludeCancelledAndFuture() {
+        let series = WeightRules.weeklyWeightSeries(samples: [], weeks: 2, now: now, calendar: calendar) // 10-11 ~
+        func dose(_ day: Int, cancelled: Bool = false) -> DoseSnapshot {
+            let date = TestCalendar.date(2026, 10, day, 20)
+            return DoseSnapshot(administeredAt: date, scheduledFor: date, site: .thighLeft, sequence: day, isCancelled: cancelled)
+        }
+        let doses = [dose(15), dose(8), dose(22), dose(13, cancelled: true), dose(10)]
+        // 10-8·10-10은 첫 주 전, 10-22 20시는 now(12시) 뒤, 10-13은 취소
+        #expect(WeightRules.doseTicks(doses: doses, series: series, now: now) == [TestCalendar.date(2026, 10, 15, 20)])
+        #expect(WeightRules.doseTicks(doses: doses, series: [], now: now).isEmpty)
+    }
 }

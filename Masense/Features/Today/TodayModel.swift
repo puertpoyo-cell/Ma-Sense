@@ -86,14 +86,7 @@ struct TodayModel: Equatable {
         let series = WeightRules.weeklyWeightSeries(samples: weights, weeks: Self.weightWeeks, now: now, calendar: calendar)
         weightSeries = series
         paceNotice = PaceRules.paceNotice(series: series)
-        if let start = series.first?.weekStart {
-            doseDatesInSeries = doses
-                .filter { !$0.isCancelled && $0.administeredAt >= start && $0.administeredAt <= now }
-                .map(\.administeredAt)
-                .sorted()
-        } else {
-            doseDatesInSeries = []
-        }
+        doseDatesInSeries = WeightRules.doseTicks(doses: doses, series: series, now: now)
 
         guard let p = prescription else {
             countdown = .noPrescription

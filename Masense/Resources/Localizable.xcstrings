@@ -1412,6 +1412,23 @@
         }
       }
     },
+    "history.weight.chartTitle %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly average · last %lld weeks"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "주 평균 · 최근 %lld주"
+          }
+        }
+      }
+    },
     "history.weight.delete": {
       "extractionState": "manual",
       "localizations": {
@@ -5505,23 +5522,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "체중 입력"
-          }
-        }
-      }
-    },
-    "weight.kg %@": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ kg"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ kg"
           }
         }
       }

@@ -50,6 +50,15 @@ enum WeightRules {
         }
     }
 
+    /// 체중 차트의 투약일 눈금 (DESIGN_SYSTEM.md 5.5). 시리즈 첫 주 시작부터 `now`까지, 취소한 기록 제외, 시간순
+    static func doseTicks(doses: [DoseSnapshot], series: [WeekPoint], now: Date) -> [Date] {
+        guard let start = series.first?.weekStart else { return [] }
+        return doses
+            .filter { !$0.isCancelled && $0.administeredAt >= start && $0.administeredAt <= now }
+            .map(\.administeredAt)
+            .sorted()
+    }
+
     /// 가장 최근 샘플 (홈 1-3 카드)
     static func latestSample(_ samples: [WeightSampleSnapshot]) -> WeightSampleSnapshot? {
         samples.max { $0.measuredAt < $1.measuredAt }
