@@ -36,7 +36,7 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] StoreKit 상품 ID 확정 — `com.masense.pro` 유지 (2026-10-22 사람 결정)
 - [ ] 로컬 구매 테스트용 `.storekit` 구성 파일 — App Store Connect에 상품을 만든 뒤 Xcode에서 "Sync this file with an app in App Store Connect"로 생성 (가격·이름이 ASC 값을 따른다). 스킴 Run > Options > StoreKit Configuration에 지정 — 사람
 - [x] 번들 ID 확정 — `com.masense.app` (테스트 `com.masense.app.tests`), 2026-10-22 사람 결정
-- [ ] 서명 팀 선택 — Xcode Signing & Capabilities (사람)
+- [x] 서명 팀 선택 — Xcode Signing & Capabilities (2026-10-22 사람 지정, `DEVELOPMENT_TEAM`)
 - [ ] `Rules/ExportCodec.swift` + `ExportService` — 내보내기·가져오기 (`EXPORT_FORMAT.md`), round-trip 테스트 + fixture (main E, D4에서)
 - [ ] Info.plist `UTExportedTypeDeclarations` (`.masense.json`) (main E, D4에서)
 
@@ -163,7 +163,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 
 | # | 항목 | 바꿀 곳 | 정하기 전 동작 |
 |---|---|---|---|
-| 1 | ~~번들 ID~~ — **결정: `com.masense.app` (2026-10-22)**. 남은 것: 서명 팀 선택 | Xcode Signing & Capabilities | 시뮬레이터·CI는 서명 없이 동작 |
+| 1 | ~~번들 ID~~ — **결정: `com.masense.app` (2026-10-22)**. 서명 팀도 지정됨 (2026-10-22) | Xcode Signing & Capabilities | 시뮬레이터·CI는 서명 없이 동작 |
 | 2 | ~~인앱 구매 상품 ID~~ — **결정: `com.masense.pro` 유지 (2026-10-22)**. App Store Connect에 같은 ID로 비소모성 상품 생성 필요 | `StoreService.productID` | 상품을 못 불러오면 구매 버튼이 안 보임, 복원 버튼만 |
 | 3 | ~~HealthKit 사용~~ — **결정: 사용 (2026-10-22), D3-a 반영** | `Config/Masense.entitlements`, `INFOPLIST_KEY_NSHealthShareUsageDescription`, `InfoPlist.xcstrings` | — |
 | 4 | ~~처리방침 게시~~ — **결정: https://masense-privacy.vercel.app/ (Vercel), 시행 2026-10-30, 문의 이메일 기재 (2026-10-22)** | `AppConfig.privacyPolicyURL`, `docs/privacy/index.html` | — |

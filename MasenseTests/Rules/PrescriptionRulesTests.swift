@@ -86,4 +86,38 @@ struct PrescriptionRulesTests {
         // 기간 뒤에 시작하는 처방은 빠진다
         #expect(PrescriptionRules.prescriptionTimeline(all: [chain(11, 20)], in: period, calendar: calendar).isEmpty)
     }
+
+    // MARK: 활성 처방 하나로 맞추기 (EXPORT_FORMAT.md 가져오기 규칙 7)
+
+    @Test func resolvingActiveKeepsLatestStartAndEndsOthersBeforeNext() {
+        let archived = PrescriptionSpan(id: UUID(), startDate: TestCalendar.date(2026, 8, 7), endDate: TestCalendar.date(2026, 9, 3), isActive: false)
+        let imported = PrescriptionSpan(id: UUID(), startDate: TestCalendar.date(2026, 9, 4), endDate: nil, isActive: true)
+        let local = PrescriptionSpan(id: UUID(), startDate: TestCalendar.date(2026, 10, 1, 9), endDate: nil, isActive: true)
+
+        let resolved = PrescriptionRules.resolvingActive([local, archived, imported], calendar: calendar)
+
+        // 입력 순서 유지. 늦게 시작한 처방만 활성, 다른 활성 처방은 다음 처방 시작 전날로 끝난다
+        #expect(resolved == [
+            local,
+            archived,
+            PrescriptionSpan(id: imported.id, startDate: imported.startDate, endDate: TestCalendar.date(2026, 9, 30), isActive: false),
+        ])
+    }
+
+    @Test func resolvingActiveWithSameDayStartsEndsOnOwnStart() {
+        let morning = PrescriptionSpan(id: UUID(), startDate: TestCalendar.date(2026, 10, 1, 9), endDate: nil, isActive: true)
+        let evening = PrescriptionSpan(id: UUID(), startDate: TestCalendar.date(2026, 10, 1, 21), endDate: nil, isActive: true)
+        let resolved = PrescriptionRules.resolvingActive([morning, evening], calendar: calendar)
+        #expect(resolved[0] == PrescriptionSpan(id: morning.id, startDate: morning.startDate, endDate: TestCalendar.date(2026, 10, 1), isActive: false))
+        #expect(resolved[1] == evening)
+    }
+
+    @Test func resolvingActiveLeavesSingleActiveChainAlone() {
+        let spans = [
+            PrescriptionSpan(id: UUID(), startDate: TestCalendar.date(2026, 8, 7), endDate: TestCalendar.date(2026, 9, 3), isActive: false),
+            PrescriptionSpan(id: UUID(), startDate: TestCalendar.date(2026, 9, 4), endDate: nil, isActive: true),
+        ]
+        #expect(PrescriptionRules.resolvingActive(spans, calendar: calendar) == spans)
+        #expect(PrescriptionRules.resolvingActive([], calendar: calendar).isEmpty)
+    }
 }

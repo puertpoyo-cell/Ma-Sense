@@ -14,4 +14,11 @@ enum AppConfig {
     /// 감량 속도 일반 권장 범위(주 0.5~1 kg) 출처 문구의 `Localizable` 키 (COMPLIANCE.md 2.2).
     /// nil이면 체중 카드의 감량 속도 안내(R8)를 보이지 않는다. 2026-10-22 결정: CDC 기준으로 표시
     static let paceGuideSource: String? = "pace.source"
+
+    // MARK: 번들 정보
+
+    /// "1.0.0". 설정 > 정보, 리포트 바닥글
+    static var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+    }
 }

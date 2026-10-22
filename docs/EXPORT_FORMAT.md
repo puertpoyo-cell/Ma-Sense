@@ -57,10 +57,14 @@
   "exhaustionReminderDosesLeft": 2,
   "proteinTargetGrams": 110,
   "bodyWeightForGuideKg": null,
-  "reportTheme": "midnight"
+  "reportTheme": "midnight",
+  "reportDefaultPeriod": null
 }
 ```
 `healthKitAuthorized`, `hasPurchasedPro`는 **내보내지 않는다** — 기기·계정에 종속. 가져온 뒤 HealthKit은 다시 권한 요청, 구매는 StoreKit 복원.
+`reportDefaultPeriod`(D3, 리포트 기본 기간)는 출시 전 v1 초판에 포함. 키가 없는 파일은 `null`로 읽는다.
+
+비어 있는 값은 키를 지우지 않고 `null`로 쓴다 (모든 레코드 공통). 가져오기는 키 없음과 `null`을 같게 본다.
 
 ### prescriptions[]
 ```json
@@ -123,9 +127,13 @@
 }
 ```
 `source == "healthKit"`인 샘플은 **가져오기 시 복원하지 않는다.** 새 기기에서 HealthKit을 다시 읽으면 같은 샘플이 들어오므로 중복이 생긴다. 내보내기에는 포함(사람이 읽는 기록으로서), 가져오기는 `manual`만.
+`strengthSessions[]`의 `source == "healthKit"`(Apple Watch 운동)도 같은 이유로 가져오지 않는다 (2026-10-22 구현 결정). 결과 화면에는 건너뜀이 아니라 "건강 앱에서 다시 읽음" 건수로 따로 보인다.
 
 ### proteinEntries[], strengthSessions[], habitChecks[] (M2)
 DATA_MODEL 필드 그대로. `foods`는 rawValue 문자열 배열.
+
+rawValue는 문자열 그대로 옮긴다. 앱이 모르는 값(다음 버전이 더한 부위 등)이 와도 파일을 거부하지 않고 그대로 저장하며, 화면은 모델의 기본값 규칙(DATA_MODEL.md)으로 읽는다. 예외로 `symptoms[].symptom`은 저장 형식이 열거형이라 모르는 증상은 빠진다.
+날짜는 소수 초 없는 ISO 8601(`2026-10-21T20:00:00+09:00`)과 `Z` 표기도 읽는다 (사람이 고친 파일).
 
 ## 가져오기 규칙
 
@@ -133,17 +141,22 @@ DATA_MODEL 필드 그대로. `foods`는 rawValue 문자열 배열.
 2. `formatVersion > 앱이 아는 최대 버전` → 거부, "앱을 업데이트한 뒤 가져오세요"
 3. `formatVersion < 현재` → 마이그레이션 함수 체인 (`ExportMigration.v1to2(...)`) 적용 후 진행. 마이그레이션은 순수 함수, 테스트 대상
 4. **병합 방식 선택**: "현재 기록을 모두 지우고 교체" / "기존 기록에 추가". 기본은 교체, 2단계 확인
-5. 추가 모드에서는 `id`가 같은 레코드는 건너뜀 (덮어쓰지 않음). ID는 CloudKit 규칙상 unique 제약이 없으므로 가져오기 전에 조회로 확인
+   - 교체: 기록 레코드를 모두 지우고 파일의 `settings` 값을 이 기기 설정 레코드에 덮어쓴다. `healthKitAuthorized`·`hasPurchasedPro`는 그대로, 이 기기에서 이미 마친 온보딩 확인(`hasAcceptedRoleNotice`, `hasConfirmedAdult`)은 되돌리지 않는다
+   - 추가: 이 기기의 설정을 그대로 둔다 (2026-10-22 구현 결정)
+5. 추가 모드에서는 `id`가 같은 레코드는 건너뜀 (덮어쓰지 않음). ID는 CloudKit 규칙상 unique 제약이 없으므로 가져오기 전에 조회로 확인. 파일 안에서 같은 `id`가 겹치면 처음 것만 넣는다
 6. 참조 무결성: `doses[].prescriptionId`가 파일 안에 없으면 그 Dose는 건너뛰고 건수를 결과에 보고. 앱이 임의로 처방을 만들어 붙이지 않음
-7. 활성 처방이 둘 이상이면 `startDate`가 가장 늦은 것만 `isActive = true`, 나머지는 `endDate` 보정
+   - 추가 모드에서 처방이 이미 있어 건너뛰었으면, 그 처방에 딸린 투약은 이 기기의 같은 처방에 붙는다
+   - `conditionChecks[].doseId`는 파일 안에서 살아남은 투약(위 규칙을 통과한 것)을 가리켜야 한다. 아니면 건너뜀
+7. 활성 처방이 둘 이상이면 `startDate`가 가장 늦은 것만 `isActive = true`, 나머지는 `endDate` 보정. 추가 모드에서는 이 기기의 처방까지 함께 본다. `endDate`가 비어 있으면 다음 처방 시작 전날(자기 시작일보다 앞서지 않게)로 채운다 — `Prescription.activate`와 같은 규칙, `PrescriptionRules.resolvingActive`
 8. 가져오기 완료 후 알림 전부 재등록 (R4), HealthKit 캐시 재동기화
 9. 결과 화면: 레코드 종류별 가져온 수, 건너뛴 수. "기록했습니다." 톤 유지, 성공 애니메이션 없음
 
 ## 구현 위치
 
-- `Services/ExportService.swift` — `export() -> URL`, `import(url:mode:) -> ImportResult`
-- `Rules/ExportCodec.swift` — 모델 ↔ DTO 변환, 순수 함수. `ExportDocument: Codable` 구조체가 이 문서의 형식 정의
-- `Rules/ExportMigration.swift` — 버전 간 마이그레이션
+- `Services/ExportService.swift` — `writeExportFile(context:now:calendar:) -> URL`, `importFile(at:mode:context:calendar:) -> ImportResult` (`import`는 Swift 예약어라 이름을 바꿈), 알림 재등록·HealthKit 재동기화(규칙 8)는 부르는 화면이 한다
+- `Rules/ExportCodec.swift` — `ExportDocument: Codable` 구조체가 이 문서의 형식 정의. 인코딩·디코딩·버전 확인(규칙 1~3)과 가져오기 계획(규칙 4~6, `importPlan`)은 순수 함수
+- `Models/ExportRecords+Models.swift` — 모델 ↔ DTO 변환. `Rules/`는 Foundation만 쓰므로(CLAUDE.md) SwiftData에 닿는 변환은 `Snapshots+Models.swift`처럼 Models에 둔다
+- `Rules/ExportMigration.swift` — 버전 간 마이그레이션. JSON 객체(`[String: Any]`) 단위로 한 단계씩 고친 뒤 현재 `ExportDocument`로 읽는다
 - 테스트: 고정 샘플 파일 `MasenseTests/Fixtures/export_v1.masense.json`으로 round-trip (내보내기 → 가져오기 → 동일) 검증. `formatVersion`을 올릴 때마다 이전 버전 fixture를 추가하고 마이그레이션 테스트
 
 ## 보안·프라이버시

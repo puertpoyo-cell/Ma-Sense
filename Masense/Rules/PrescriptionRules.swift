@@ -62,6 +62,40 @@ enum PrescriptionRules {
     static func transitionCount(_ markers: [PrescriptionMarker]) -> Int {
         max(markers.count - 1, 0)
     }
+
+    // MARK: 활성 처방 하나로 맞추기 (EXPORT_FORMAT.md 가져오기 규칙 7)
+
+    /// 활성 처방이 둘 이상이면 `startDate`가 가장 늦은 것만 활성으로 둔다. 나머지는 보관하고,
+    /// `endDate`가 비어 있으면 다음 처방 시작 전날로 채운다 (자기 시작일보다 앞서지 않게, `Prescription.activate`와 같은 규칙).
+    /// 입력 순서를 그대로 돌려준다. 활성 처방이 하나 이하면 바꾸지 않는다
+    static func resolvingActive(_ spans: [PrescriptionSpan], calendar: Calendar) -> [PrescriptionSpan] {
+        let active = spans.filter(\.isActive)
+        guard active.count > 1, let kept = active.max(by: { $0.startDate < $1.startDate }) else { return spans }
+        return spans.map { span in
+            guard span.isActive, span.id != kept.id else { return span }
+            var resolved = span
+            resolved.isActive = false
+            if resolved.endDate == nil {
+                // 같은 날 시작한 처방도 "다음"으로 본다. 활성으로 남는 처방이 있으므로 항상 하나는 있다
+                let nextStart = spans
+                    .filter { $0.id != span.id && $0.startDate >= span.startDate }
+                    .map(\.startDate)
+                    .min() ?? kept.startDate
+                let ownStart = calendar.startOfDay(for: span.startDate)
+                let dayBefore = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: nextStart)) ?? ownStart
+                resolved.endDate = max(dayBefore, ownStart)
+            }
+            return resolved
+        }
+    }
+}
+
+/// 처방 이력 체인에서 활성·종료일만 다루는 값 (규칙 7)
+struct PrescriptionSpan: Equatable {
+    let id: UUID
+    let startDate: Date
+    var endDate: Date?
+    var isActive: Bool
 }
 
 /// 리포트·기록 탭의 처방 전환 표시 (RULES.md R13). 라벨은 사용자 메모 그대로이며 앱은 해석하지 않는다

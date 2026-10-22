@@ -1,0 +1,139 @@
+import Foundation
+import SwiftData
+import Testing
+
+@testable import Masense
+
+// 설정 > 데이터: 내보내기·가져오기·전체 삭제 (EXPORT_FORMAT.md)
+@MainActor
+struct ExportServiceTests {
+    private let container: ModelContainer
+
+    init() throws {
+        container = try ModelContainer.masense(inMemory: true)
+    }
+
+    private var context: ModelContext { container.mainContext }
+
+    private func seed() throws {
+        let prescription = Prescription(
+            startDate: TestCalendar.date(2026, 10, 16, 9),
+            penCount: 1,
+            scheduledWeekday: 5,
+            scheduledHour: 20,
+            doseLabel: "메모"
+        )
+        try Prescription.activate(prescription, in: context)
+        let administered = TestCalendar.date(2026, 10, 22, 20)
+        let dose = Dose(administeredAt: administered, scheduledFor: administered, site: .abdomenUpperLeft, sequence: 1, note: "왼쪽")
+        context.insert(dose)
+        dose.prescription = prescription
+        let check = ConditionCheck(
+            checkedAt: TestCalendar.date(2026, 10, 23, 20),
+            window: .h24,
+            symptoms: [SymptomEntry(symptom: .nausea, severity: 1)]
+        )
+        context.insert(check)
+        check.dose = dose
+        context.insert(WeightSample(measuredAt: TestCalendar.date(2026, 10, 20, 8), kilograms: 80.4, source: .manual))
+        _ = try UserSettings.current(in: context)
+        try context.save()
+    }
+
+    @Test func exportFileIsNamedAndReadsBack() throws {
+        try seed()
+        let url = try ExportService.writeExportFile(context: context, now: TestCalendar.date(2026, 10, 24, 9), calendar: TestCalendar.seoul)
+        defer { try? FileManager.default.removeItem(at: url) }
+        #expect(url.lastPathComponent == "Masense_Export_2026-10-24.masense.json")
+
+        let document = try ExportCodec.decode(Data(contentsOf: url))
+        #expect(document.schemaVersion == "1.0.0")
+        #expect(document.prescriptions.map(\.doseLabel) == ["메모"])
+        #expect(document.doses.map(\.note) == ["왼쪽"])
+        #expect(document.doses.first?.prescriptionId == document.prescriptions.first?.id)
+        #expect(document.conditionChecks.first?.doseId == document.doses.first?.id)
+        #expect(document.weightSamples.map(\.kilograms) == [80.4])
+        #expect(document.settings?.reminderEnabled == true)
+    }
+
+    /// 내보내기 → 가져오기 → 같은 파일. 건강 앱 기록은 가져오지 않으므로 빠진다
+    @Test func fixtureRoundTripsThroughStore() throws {
+        let fixture = try ExportFixture.document()
+        let result = try ExportService.apply(fixture, mode: .replace, context: context, calendar: TestCalendar.seoul)
+        #expect(result.prescriptions.imported == 2)
+        #expect(result.doses.imported == 3)
+        #expect(result.conditionChecks.imported == 1)
+        #expect(result.leftToHealthApp == 2)
+        #expect(result.totalSkipped == 0)
+
+        let exported = try ExportService.makeDocument(
+            context: context,
+            now: fixture.exportedAt,
+            appVersion: fixture.appVersion,
+            device: fixture.device
+        )
+        var expected = fixture
+        expected.weightSamples.removeAll { $0.source == "healthKit" }
+        expected.strengthSessions.removeAll { $0.source == "healthKit" }
+        #expect(exported == expected)
+    }
+
+    @Test func replaceImportClearsRecordsButKeepsDeviceSettings() throws {
+        try seed()
+        let settings = try UserSettings.current(in: context)
+        settings.hasPurchasedPro = true
+        settings.healthKitAuthorized = true
+        try context.save()
+
+        let fixture = try ExportFixture.document()
+        _ = try ExportService.apply(fixture, mode: .replace, context: context, calendar: TestCalendar.seoul)
+
+        #expect(try Set(context.fetch(FetchDescriptor<Prescription>()).map(\.id)) == Set(fixture.prescriptions.map(\.id)))
+        #expect(try context.fetch(FetchDescriptor<Dose>()).count == 3)
+        #expect(try context.fetch(FetchDescriptor<WeightSample>()).map(\.kilograms) == [79.1])
+        let after = try context.fetch(FetchDescriptor<UserSettings>())
+        #expect(after.count == 1)
+        #expect(after.first?.hasPurchasedPro == true)
+        #expect(after.first?.healthKitAuthorized == true)
+        #expect(after.first?.proteinTargetGrams == 110)
+    }
+
+    @Test func addImportTwiceSkipsEverythingTheSecondTime() throws {
+        let fixture = try ExportFixture.document()
+        _ = try ExportService.apply(fixture, mode: .add, context: context, calendar: TestCalendar.seoul)
+        let second = try ExportService.apply(fixture, mode: .add, context: context, calendar: TestCalendar.seoul)
+
+        #expect(second.prescriptions == ExportCodec.ImportResult.Count(imported: 0, skipped: 2))
+        #expect(second.doses == ExportCodec.ImportResult.Count(imported: 0, skipped: 3))
+        #expect(second.conditionChecks == ExportCodec.ImportResult.Count(imported: 0, skipped: 1))
+        #expect(try context.fetch(FetchDescriptor<Dose>()).count == 3)
+        #expect(try context.fetch(FetchDescriptor<ConditionCheck>()).count == 1)
+    }
+
+    /// 규칙 7: 이 기기의 활성 처방과 파일의 활성 처방이 겹치면 늦게 시작한 쪽만 활성으로 남는다
+    @Test func addImportResolvesTwoActivePrescriptions() throws {
+        let local = Prescription(startDate: TestCalendar.date(2026, 10, 20, 9), penCount: 1, scheduledWeekday: 2, scheduledHour: 9)
+        try Prescription.activate(local, in: context, calendar: TestCalendar.seoul)
+        try context.save()
+
+        let fixture = try ExportFixture.document()
+        _ = try ExportService.apply(fixture, mode: .add, context: context, calendar: TestCalendar.seoul)
+
+        let all = try context.fetch(FetchDescriptor<Prescription>())
+        #expect(all.filter(\.isActive).map(\.id) == [local.id])
+        let imported = try #require(all.first(where: { $0.id == fixture.prescriptions[1].id }))
+        #expect(imported.endDate == TestCalendar.date(2026, 10, 19))
+        // 가져온 투약은 파일의 처방에 붙는다
+        #expect(imported.doses.count == 2)
+    }
+
+    @Test func deleteAllRemovesEverything() throws {
+        try seed()
+        try ExportService.deleteAll(context: context)
+        #expect(try context.fetch(FetchDescriptor<Prescription>()).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<Dose>()).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<ConditionCheck>()).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<WeightSample>()).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<UserSettings>()).isEmpty)
+    }
+}

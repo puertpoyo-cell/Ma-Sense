@@ -392,7 +392,7 @@ private struct SettingsForm: View {
                 }
             } else {
                 Button("settings.data.export") {
-                    exportURL = try? DataExportService.writeExportFile(context: context)
+                    exportURL = try? ExportService.writeExportFile(context: context)
                 }
             }
             // 빨강 금지: destructive 역할 대신 일반 버튼 + 2단계 확인
@@ -406,7 +406,7 @@ private struct SettingsForm: View {
     }
 
     private func deleteAll() {
-        guard (try? DataExportService.deleteAll(context: context)) != nil else { return }
+        guard (try? ExportService.deleteAll(context: context)) != nil else { return }
         Task {
             await services.notifications.replaceAll(with: [])
             restartOnboarding()
@@ -418,7 +418,7 @@ private struct SettingsForm: View {
     private var infoSection: some View {
         Section {
             LabeledContent("settings.info.version") {
-                Text(verbatim: DataExportService.appVersion)
+                Text(verbatim: AppConfig.appVersion)
             }
             if let url = AppConfig.privacyPolicyURL {
                 Link("settings.info.privacy", destination: url)

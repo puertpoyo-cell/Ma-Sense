@@ -135,7 +135,7 @@ struct ReportView: View {
             proteinTarget: settings?.proteinTargetGrams,
             now: now,
             calendar: calendar,
-            appVersion: DataExportService.appVersion
+            appVersion: AppConfig.appVersion
         )
     }
 }
