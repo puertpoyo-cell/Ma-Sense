@@ -185,9 +185,14 @@ def render_petals(width: float = 136) -> Image.Image:
 
 
 def render_glass(width: float = 155, scale: float = 1.28) -> Image.Image:
-    """`petals`를 굵고 크게 + 유리 질감을 키운 안 (2026-10-23 사람 요청: 더 굵게, 타일에 꽉 차게, 유리 효과 증대).
-    막대마다: 아래 그림이 비쳐 굴절된 듯 흐린 배경 + 제 색, 위가 밝은 채움, 막대 축을 따라 흐르는 빛줄기(유리 막대의 반사),
-    위쪽 밝은 테두리와 아래쪽 은은한 반사 테두리, 제 색으로 번지는 큰 그림자.
+    """`petals`를 굵고 크게 + 유리 질감을 키운 안.
+    2026-10-23 사람 요청 1: 더 굵게, 타일에 꽉 차게, 유리 효과 증대 → 굵기 155 × 1.28배
+    2026-10-23 사람 요청 2: 같은 굵기에서 유리 테두리·굴절을 또렷하게, 조금 더 맑게
+    막대마다:
+    - 굴절: 아래 그림을 막대 축의 오른쪽 아래로 비켜 비춘다. 겹친 막대의 가장자리가 유리 안에서 꺾여 보인다
+    - 맑은 채움: 제 색을 옅게 섞고 위를 밝게. 아래가 비쳐 보이도록 불투명도를 낮춘다
+    - 테두리: 바깥 가는 진한 선 + 그 안쪽 밝은 선(위가 더 밝다) + 가장자리가 밝아지는 두께감(프레넬)
+    - 막대 축을 따라 흐르는 빛줄기, 아래쪽 안에서 돌아 나오는 빛, 제 색 그림자
     캡슐은 폭만 줄여 다시 그리면 안쪽으로 깎은 모양이 되므로, 테두리는 큰 침식 필터 대신 두 캡슐의 차로 만든다 (빠르다)"""
     image = gradient_background(LIGHT_TOP, LIGHT_BOTTOM)
     colors = [SKY, VIOLET, BLUE, INDIGO]
@@ -195,33 +200,44 @@ def render_glass(width: float = 155, scale: float = 1.28) -> Image.Image:
     for (start, end), color in zip(m_segments(scale), colors):
         piece = capsule(start, end, bar_width)
 
-        def ring(inset: float) -> Image.Image:
-            return ImageChops.subtract(piece, capsule(start, end, bar_width - 2 * inset))
+        def inset(amount: float) -> Image.Image:
+            return capsule(start, end, bar_width - 2 * amount)
+
+        def band(outer: float, inner: float) -> Image.Image:
+            return ImageChops.subtract(inset(outer), inset(inner))
 
         _, y0, _, y1 = piece.getbbox()
-        soft_shadow(image, piece, color, 22, 34, 0.36)
+        soft_shadow(image, piece, color, 20, 32, 0.30)
 
-        # 굴절: 아래 그림을 흐리게 비추고 제 색과 곱해 섞는다
-        backdrop = image.filter(ImageFilter.GaussianBlur(px(12)))
-        mixed = Image.blend(ImageChops.multiply(backdrop, solid(color)), solid(color), 0.42)
-        top_tint = Image.blend(mixed, solid(WHITE), 0.34)
-        bottom_tint = Image.blend(mixed, solid(SHADOW_BLUE), 0.06)
+        # 굴절: 아래 그림을 조금 흐리게, 오른쪽 아래로 비켜 비춘다
+        backdrop = ImageChops.offset(image.filter(ImageFilter.GaussianBlur(px(4))), px(bar_width * 0.05), px(bar_width * 0.08))
+        mixed = Image.blend(ImageChops.multiply(backdrop, solid(color)), solid(color), 0.26)
+        top_tint = Image.blend(mixed, solid(WHITE), 0.40)
+        bottom_tint = Image.blend(mixed, solid(SHADOW_BLUE), 0.05)
         glass_fill = Image.composite(bottom_tint, top_tint, vertical_fade(y0, y1, 0, 255))
-        image.paste(glass_fill, (0, 0), scaled(piece, 0.90))
+        image.paste(glass_fill, (0, 0), scaled(piece, 0.82))
+
+        # 두께감: 가장자리 쪽이 밝아진다
+        fresnel = band(0, 18).filter(ImageFilter.GaussianBlur(px(6)))
+        image.paste(solid(WHITE), (0, 0), scaled(ImageChops.multiply(fresnel, piece), 0.30))
 
         # 유리 막대의 반사: 축을 따라 왼쪽 위로 비켜 난 가는 빛줄기, 막대 안쪽에서만
         offset = bar_width * 0.17
         streak = capsule((start[0] - offset, start[1] - offset * 0.6), (end[0] - offset, end[1] - offset * 0.6), bar_width * 0.20)
         streak = streak.filter(ImageFilter.GaussianBlur(px(bar_width * 0.06)))
-        streak = ImageChops.multiply(streak, capsule(start, end, bar_width - 12))
-        image.paste(solid(WHITE), (0, 0), scaled(streak, 0.55))
+        streak = ImageChops.multiply(streak, inset(6))
+        image.paste(solid(WHITE), (0, 0), scaled(streak, 0.62))
 
-        # 테두리: 위는 밝게, 아래는 은은하게 (빛이 안에서 돌아 나오는 느낌)
-        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(ring(4), vertical_fade(y0, y1, 255, 70)))
-        inner_glow = ring(10).filter(ImageFilter.GaussianBlur(px(3)))
-        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(inner_glow, vertical_fade(y0 + (y1 - y0) * 55 // 100, y1, 0, 110)))
+        # 아래쪽 안에서 돌아 나오는 빛
+        caustic = band(8, 20).filter(ImageFilter.GaussianBlur(px(4)))
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(caustic, vertical_fade(y0 + (y1 - y0) * 50 // 100, y1, 0, 150)))
+
+        # 테두리: 바깥 가는 진한 선으로 윤곽을 세우고, 그 안쪽에 밝은 선 (위가 더 밝다)
+        edge_color = Image.blend(solid(color), solid(SHADOW_BLUE), 0.45)
+        image.paste(edge_color, (0, 0), scaled(band(0, 2.2), 0.55))
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(band(2.2, 6), vertical_fade(y0, y1, 255, 150)))
         # 위쪽 광택
-        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(piece, vertical_fade(y0, y0 + (y1 - y0) * 38 // 100, 70, 0)))
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(piece, vertical_fade(y0, y0 + (y1 - y0) * 36 // 100, 60, 0)))
     return image
 
 
