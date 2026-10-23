@@ -184,10 +184,12 @@ def render_petals(width: float = 136) -> Image.Image:
     return image
 
 
-def render_glass(width: float = 155, scale: float = 1.28) -> Image.Image:
+def render_glass(width: float = 155, scale: float = 1.28, clarity: float = 1.0) -> Image.Image:
     """`petals`를 굵고 크게 + 유리 질감을 키운 안.
     2026-10-23 사람 요청 1: 더 굵게, 타일에 꽉 차게, 유리 효과 증대 → 굵기 155 × 1.28배
-    2026-10-23 사람 요청 2: 같은 굵기에서 유리 테두리·굴절을 또렷하게, 조금 더 맑게
+    2026-10-23 사람 요청 2: 같은 굵기에서 유리 테두리·굴절을 또렷하게, 조금 더 맑게 (clarity 0)
+    2026-10-23 사람 요청 3: "맑은 유리" → clarity 1.0 (기본). 채움 불투명도 0.82 → 0.52, 섞는 색을 옅게,
+      가장자리에만 짙은 색(빛이 길게 지나는 색유리 가장자리), 빛줄기·광택을 조금 더 밝게, 그림자는 옅게
     막대마다:
     - 굴절: 아래 그림을 막대 축의 오른쪽 아래로 비켜 비춘다. 겹친 막대의 가장자리가 유리 안에서 꺾여 보인다
     - 맑은 채움: 제 색을 옅게 섞고 위를 밝게. 아래가 비쳐 보이도록 불투명도를 낮춘다
@@ -207,26 +209,32 @@ def render_glass(width: float = 155, scale: float = 1.28) -> Image.Image:
             return ImageChops.subtract(inset(outer), inset(inner))
 
         _, y0, _, y1 = piece.getbbox()
-        soft_shadow(image, piece, color, 20, 32, 0.30)
+        soft_shadow(image, piece, color, 20, 32, 0.30 - 0.08 * clarity)
 
         # 굴절: 아래 그림을 조금 흐리게, 오른쪽 아래로 비켜 비춘다
         backdrop = ImageChops.offset(image.filter(ImageFilter.GaussianBlur(px(4))), px(bar_width * 0.05), px(bar_width * 0.08))
-        mixed = Image.blend(ImageChops.multiply(backdrop, solid(color)), solid(color), 0.26)
+        mixed = Image.blend(ImageChops.multiply(backdrop, solid(color)), solid(color), 0.26 - 0.14 * clarity)
         top_tint = Image.blend(mixed, solid(WHITE), 0.40)
         bottom_tint = Image.blend(mixed, solid(SHADOW_BLUE), 0.05)
         glass_fill = Image.composite(bottom_tint, top_tint, vertical_fade(y0, y1, 0, 255))
-        image.paste(glass_fill, (0, 0), scaled(piece, 0.82))
+        image.paste(glass_fill, (0, 0), scaled(piece, 0.82 - 0.30 * clarity))
+
+        # 맑은 색유리: 가운데는 비치고 빛이 길게 지나는 가장자리에서 색이 짙다
+        if clarity > 0:
+            rim_tint = band(2.2, 24).filter(ImageFilter.GaussianBlur(px(8)))
+            deep = Image.blend(solid(color), solid(SHADOW_BLUE), 0.15)
+            image.paste(deep, (0, 0), scaled(ImageChops.multiply(rim_tint, piece), 0.50 * clarity))
 
         # 두께감: 가장자리 쪽이 밝아진다
         fresnel = band(0, 18).filter(ImageFilter.GaussianBlur(px(6)))
-        image.paste(solid(WHITE), (0, 0), scaled(ImageChops.multiply(fresnel, piece), 0.30))
+        image.paste(solid(WHITE), (0, 0), scaled(ImageChops.multiply(fresnel, piece), 0.30 - 0.10 * clarity))
 
         # 유리 막대의 반사: 축을 따라 왼쪽 위로 비켜 난 가는 빛줄기, 막대 안쪽에서만
         offset = bar_width * 0.17
         streak = capsule((start[0] - offset, start[1] - offset * 0.6), (end[0] - offset, end[1] - offset * 0.6), bar_width * 0.20)
         streak = streak.filter(ImageFilter.GaussianBlur(px(bar_width * 0.06)))
         streak = ImageChops.multiply(streak, inset(6))
-        image.paste(solid(WHITE), (0, 0), scaled(streak, 0.62))
+        image.paste(solid(WHITE), (0, 0), scaled(streak, 0.62 + 0.18 * clarity))
 
         # 아래쪽 안에서 돌아 나오는 빛
         caustic = band(8, 20).filter(ImageFilter.GaussianBlur(px(4)))
@@ -237,7 +245,7 @@ def render_glass(width: float = 155, scale: float = 1.28) -> Image.Image:
         image.paste(edge_color, (0, 0), scaled(band(0, 2.2), 0.55))
         image.paste(solid(WHITE), (0, 0), ImageChops.multiply(band(2.2, 6), vertical_fade(y0, y1, 255, 150)))
         # 위쪽 광택
-        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(piece, vertical_fade(y0, y0 + (y1 - y0) * 36 // 100, 60, 0)))
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(piece, vertical_fade(y0, y0 + (y1 - y0) * 36 // 100, round(60 + 20 * clarity), 0)))
     return image
 
 
