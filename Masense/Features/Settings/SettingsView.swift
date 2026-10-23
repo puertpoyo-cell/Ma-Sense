@@ -154,6 +154,9 @@ private struct SettingsForm: View {
                     Text("today.remaining \(prescription.remainingDoses) \(prescription.totalDoses)")
                         .monospacedDigit()
                 }
+                // 펜 그림 (R13-1, D7)
+                PenGauge(status: PrescriptionRules.penStatus(p: prescription.snapshot, doses: prescription.doseSnapshots))
+                    .padding(.vertical, Spacing.s2)
                 if let clinic = prescription.nextClinicDate {
                     LabeledContent("prescription.nextClinic") {
                         Text(clinic.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated)))

@@ -36,6 +36,7 @@ struct TodayModelTests {
         let today = model(nil, now: TestCalendar.date(2026, 10, 16, 9))
         #expect(today.countdown == .noPrescription)
         #expect(today.remainingDoses == nil)
+        #expect(today.pens == nil)
         #expect(today.conditionPrompt == nil)
         #expect(today.clinicDate == nil)
     }
@@ -113,5 +114,13 @@ struct TodayModelTests {
         #expect(model(prescription(), doses: [dose(10, 22, 20), dose(11, 5, 20)], now: now).backfillCount == 0)
         #expect(model(prescription(totalDoses: 1), doses: [dose(11, 5, 20)], now: now).backfillCount == 0)
         #expect(model(nil, now: now).backfillCount == 0)
+    }
+
+    /// 1-1b 펜 현황 (D7): 펜 3개(12회) 중 첫 펜 1회를 썼고 소진 예상일은 마지막 마디
+    @Test func penStatusAndExhaustion() {
+        let today = model(prescription(), doses: [dose(10, 22, 20, 5)], now: TestCalendar.date(2026, 10, 23, 9))
+        #expect(today.pens?.usedPerPen == [1, 0, 0])
+        #expect(today.pens?.remainingPens == 3)
+        #expect(today.exhaustionDate == TestCalendar.date(2027, 1, 7, 20))
     }
 }

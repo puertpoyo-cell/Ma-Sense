@@ -31,6 +31,26 @@ struct PrescriptionRulesTests {
         #expect(PrescriptionRules.penPosition(sequence: 3, dosesPerPen: 0) == (pen: 1, position: 3))
     }
 
+    /// R13-1 (D7): 쓴 회차를 앞 펜부터 채운다. 취소는 세지 않는다
+    @Test func penStatusFillsPensInOrder() {
+        let p = PrescriptionSnapshot(startDate: TestCalendar.date(2026, 10, 16, 9), scheduledWeekday: 5, scheduledHour: 20, dosesPerPen: 4, totalDoses: 16)
+        let doses = [dose(10, 22), dose(10, 29), dose(11, 5), dose(11, 12), dose(11, 19), dose(11, 26, isCancelled: true), dose(12, 3)]
+        let status = PrescriptionRules.penStatus(p: p, doses: doses)
+        #expect(status.usedPerPen == [4, 2, 0, 0])
+        #expect(status.penCount == 4)
+        #expect(status.remainingPens == 3)
+        #expect(status.remainingDoses == 10)
+
+        // 한 번 쓰는 키트 4개
+        let kits = PrescriptionSnapshot(startDate: TestCalendar.date(2026, 10, 16, 9), scheduledWeekday: 5, scheduledHour: 20, dosesPerPen: 1, totalDoses: 4)
+        let three = PrescriptionRules.penStatus(p: kits, doses: Array(doses.prefix(3)))
+        #expect(three.usedPerPen == [1, 1, 1, 0])
+        #expect(three.remainingPens == 1)
+        // 처방보다 많이 기록해도 넘치지 않는다
+        #expect(PrescriptionRules.penStatus(p: kits, doses: doses).usedPerPen == [1, 1, 1, 1])
+        #expect(PrescriptionRules.penStatus(p: kits, doses: doses).remainingPens == 0)
+    }
+
     @Test func exhaustionEstimateIsLastCycle() {
         let now = TestCalendar.date(2026, 10, 16, 9)
         #expect(PrescriptionRules.exhaustionEstimate(p: prescription(), doses: [], now: now, calendar: calendar) == TestCalendar.date(2027, 1, 7, 20))

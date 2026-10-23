@@ -61,6 +61,9 @@ struct TodayModel: Equatable {
     let daily: DailyCycle
     /// R8. 표시는 출처가 정해졌을 때만 (AppConfig.paceGuideSource)
     let paceNotice: PaceNotice?
+    /// 1-1b 펜 현황 (R13-1, D7)과 소진 예상일 (R13)
+    let pens: PenStatus?
+    let exhaustionDate: Date?
     /// R3-1 (D6). 처방의 첫 기록보다 앞선 누락 마디 수 = 이 앱을 쓰기 전에 맞았을 수 있는 주. 남은 회차가 없으면 0
     let backfillCount: Int
 
@@ -103,12 +106,16 @@ struct TodayModel: Equatable {
             conditionPrompt = nil
             clinicDate = nil
             backfillCount = 0
+            pens = nil
+            exhaustionDate = nil
             return
         }
 
         let remaining = PrescriptionRules.remainingDoses(p: p, doses: doses)
         remainingDoses = remaining
         totalDoses = p.totalDoses
+        pens = PrescriptionRules.penStatus(p: p, doses: doses)
+        exhaustionDate = PrescriptionRules.exhaustionEstimate(p: p, doses: doses, now: now, calendar: calendar)
         backfillCount = remaining > 0
             ? BackfillRules.leadingCount(candidates: BackfillRules.candidates(prescription: p, doses: doses, now: now, calendar: calendar), doses: doses)
             : 0

@@ -231,6 +231,17 @@ struct PrescriptionMarker { let startDate: Date; let label: String?; let isFirst
   - `remainingDoses == 0` → nil
   - 그 외 남은 회차를 모두 쓰는 마지막 마디의 `scheduledDate` (= R1 `cycles(until: .distantFuture)`의 마지막 마디). 누락이 있으면 그만큼 뒤로 밀린다
 
+### R13-1. 펜 현황 (D7, 2026-10-23 사람 결정)
+
+```swift
+func penStatus(p: PrescriptionSnapshot, doses: [DoseSnapshot]) -> PenStatus
+struct PenStatus { let usedPerPen: [Int]; let dosesPerPen: Int }   // remainingPens, remainingDoses
+```
+
+- 펜 수 = `totalDoses / dosesPerPen`. 쓴 회차(취소 제외, 처방 회차를 넘지 않게)를 앞 펜부터 차례로 채운다
+- "남은 펜"은 한 회차라도 남은 펜 수(쓰는 중인 펜 포함). 한 번 쓰는 키트는 펜당 회차 1로 입력하면 같은 그림이 된다
+- 용량(mg·mL) 수치는 다루지 않는다 (2026-10-23 사람 결정: 넣지 않음). 처방 메모는 사용자가 적은 그대로만 함께 보인다
+
 ## R14. BMI 숫자 (D5)
 
 ```swift

@@ -3231,6 +3231,108 @@
         }
       }
     },
+    "pen.a11y %lld %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$lld of %1$lld pens left, %3$lld doses left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펜 %1$lld개 중 %2$lld개 남음, 남은 회차 %3$lld회"
+          }
+        }
+      }
+    },
+    "pen.detail %lld %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld doses left · Runs out around %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 회차 %1$lld회 · 소진 예상 %2$@"
+          }
+        }
+      }
+    },
+    "pen.detail.noEstimate %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld doses left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 회차 %lld회"
+          }
+        }
+      }
+    },
+    "pen.memo %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prescription memo · %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 메모 · %@"
+          }
+        }
+      }
+    },
+    "pen.summary %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$lld of %1$lld pens left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펜 %1$lld개 중 %2$lld개 남음"
+          }
+        }
+      }
+    },
+    "pen.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 펜"
+          }
+        }
+      }
+    },
     "prescription.dosesPerPen": {
       "extractionState": "manual",
       "localizations": {

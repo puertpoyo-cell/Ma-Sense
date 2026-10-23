@@ -35,6 +35,17 @@ enum PrescriptionRules {
             .last?.scheduledDate
     }
 
+    // MARK: 펜 현황 (D7)
+
+    /// R13-1. 펜마다 쓴 회차 수. 쓴 회차(취소 제외)를 앞 펜부터 차례로 채운다. 사실만 보이고 판단하지 않는다
+    static func penStatus(p: PrescriptionSnapshot, doses: [DoseSnapshot]) -> PenStatus {
+        let perPen = max(p.dosesPerPen, 1)
+        let penCount = max(p.totalDoses / perPen, 0)
+        let used = min(usedDoses(doses), penCount * perPen)
+        let pens = (0..<penCount).map { index in min(max(used - index * perPen, 0), perPen) }
+        return PenStatus(usedPerPen: pens, dosesPerPen: perPen)
+    }
+
     // MARK: 처방 전환 타임라인 (main C)
 
     /// 기간과 겹치는 처방을 시작일 오름차순으로. 기간 시작 전에 시작한 처방은 `isFirstInPeriod`.
@@ -88,6 +99,18 @@ enum PrescriptionRules {
             return resolved
         }
     }
+}
+
+/// 펜 현황 (R13-1, D7). 펜 수·펜당 회차는 처방 입력 그대로. 용량 수치는 다루지 않는다
+struct PenStatus: Equatable {
+    /// 펜마다 쓴 회차 수 (0...dosesPerPen), 처방 순서대로
+    let usedPerPen: [Int]
+    let dosesPerPen: Int
+
+    var penCount: Int { usedPerPen.count }
+    /// 한 회차라도 남은 펜 (쓰는 중인 펜 포함)
+    var remainingPens: Int { usedPerPen.filter { $0 < dosesPerPen }.count }
+    var remainingDoses: Int { usedPerPen.reduce(0) { $0 + dosesPerPen - $1 } }
 }
 
 /// 처방 이력 체인에서 활성·종료일만 다루는 값 (규칙 7)

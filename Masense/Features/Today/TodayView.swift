@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-2 컨디션, 1-3 체중, 1-4 오늘의 마디, 1-5 진료.
+/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-1a 지난 투약 안내, 1-2 컨디션, 1-1b 남은 펜, 1-3 체중, 1-4 오늘의 마디, 1-5 진료.
 struct TodayView: View {
     var openReport: () -> Void = {}
 
@@ -68,6 +68,9 @@ struct TodayView: View {
                         }
                         if let prompt = model.conditionPrompt {
                             conditionCard(prompt)
+                        }
+                        if let pens = model.pens {
+                            PenStatusCard(status: pens, exhaustionDate: model.exhaustionDate, memo: prescription.doseLabel)
                         }
                         weightCard(model)
                         dailyCycleCard(model.daily, now: timeline.date)
