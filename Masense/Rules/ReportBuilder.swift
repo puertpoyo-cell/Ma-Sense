@@ -79,6 +79,12 @@ struct ClinicReport: Equatable {
         let text: String
     }
 
+    /// G. 진료 때 물어볼 것 한 줄 (D6, R15). 사용자가 적은 문장 그대로
+    struct QuestionLine: Equatable, Identifiable {
+        let id: UUID
+        let text: String
+    }
+
     /// F. 감량의 질 (M2). 기간 안에 단백질·운동·제지방량 기록이 하나도 없으면 nil이라 섹션을 그리지 않는다.
     /// "충분", "부족" 같은 평가어 없이 사실만
     struct QualitySection: Equatable {
@@ -109,6 +115,8 @@ struct ClinicReport: Equatable {
     let notes: [NoteLine]
     let generatedAt: Date
     let appVersion: String
+    /// G 위 "진료 때 물어볼 것" (D6). 비어 있으면 그리지 않는다
+    var questions: [QuestionLine] = []
 }
 
 /// R12 리포트 기간 선택지
@@ -149,6 +157,9 @@ enum ReportBuilder {
     /// G 메모 최대 줄 수와 줄당 글자 수
     static let maxNotes = 5
     static let noteLength = 60
+    /// G 진료 때 물어볼 것 최대 줄 수 (D6). 물어볼 것과 메모를 합쳐 `maxQuestionAndNoteLines`줄까지라 질문이 많으면 메모가 줄어든다
+    static let maxQuestions = 5
+    static let maxQuestionAndNoteLines = 8
     /// 예정일과 실제일 차이 표시 기준 (일)
     static let offsetThresholdDays = 2
 
@@ -215,6 +226,7 @@ enum ReportBuilder {
         sessions: [StrengthSessionSnapshot] = [],
         proteinTarget: Int? = nil,
         heightCm: Double? = nil,
+        questions: [ClinicQuestionSnapshot] = [],
         now: Date,
         calendar: Calendar,
         appVersion: String
@@ -301,6 +313,7 @@ enum ReportBuilder {
             PrescriptionRules.exhaustionEstimate(p: $0.prescription, doses: $0.doses, now: now, calendar: calendar)
         }
 
+        let questionRows = Self.questionLines(questions, now: now)
         return ClinicReport(
             period: period,
             weeks: weeks,
@@ -336,10 +349,25 @@ enum ReportBuilder {
                 proteinTarget: proteinTarget,
                 calendar: calendar
             ),
-            notes: noteLines(doses: periodDoses, checks: periodChecks.filter { inPeriod($0.checkedAt) }),
+            notes: noteLines(
+                doses: periodDoses,
+                checks: periodChecks.filter { inPeriod($0.checkedAt) },
+                limit: min(maxNotes, maxQuestionAndNoteLines - questionRows.count)
+            ),
             generatedAt: now,
-            appVersion: appVersion
+            appVersion: appVersion,
+            questions: questionRows
         )
+    }
+
+    /// 아직 묻지 않은 것을 적은 순으로 5개까지, 60자에서 자른다 (R15). 기간과 무관하다 (다음 진료를 위한 것)
+    static func questionLines(_ questions: [ClinicQuestionSnapshot], now: Date) -> [ClinicReport.QuestionLine] {
+        ClinicQuestionRules.pending(questions)
+            .filter { $0.createdAt <= now }
+            .prefix(maxQuestions)
+            .compactMap { question in
+                trimmed(question.text).map { ClinicReport.QuestionLine(id: question.id, text: truncated($0)) }
+            }
     }
 
     // MARK: 세부
@@ -406,8 +434,8 @@ enum ReportBuilder {
         }
     }
 
-    /// 비어 있지 않은 투약·컨디션 메모 최근 5개, 60자에서 자른다
-    static func noteLines(doses: [DoseSnapshot], checks: [ConditionCheckSnapshot]) -> [ClinicReport.NoteLine] {
+    /// 비어 있지 않은 투약·컨디션 메모 최근 `limit`개(기본 5), 60자에서 자른다
+    static func noteLines(doses: [DoseSnapshot], checks: [ConditionCheckSnapshot], limit: Int = maxNotes) -> [ClinicReport.NoteLine] {
         let doseNotes = doses.compactMap { dose -> ClinicReport.NoteLine? in
             guard let text = trimmed(dose.note) else { return nil }
             return ClinicReport.NoteLine(id: "dose.\(dose.id.uuidString)", date: dose.administeredAt, text: truncated(text))
@@ -420,7 +448,7 @@ enum ReportBuilder {
                 text: truncated(text)
             )
         }
-        return Array((doseNotes + checkNotes).sorted { $0.date > $1.date }.prefix(maxNotes))
+        return Array((doseNotes + checkNotes).sorted { $0.date > $1.date }.prefix(max(limit, 0)))
     }
 
     static func offsetText(scheduled: Date, actual: Date, calendar: Calendar) -> String? {

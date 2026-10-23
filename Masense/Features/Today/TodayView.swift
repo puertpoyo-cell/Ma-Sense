@@ -13,10 +13,12 @@ struct TodayView: View {
         case protein(preselected: ProteinFood?)
         case strength
         case backfill
+        case questions
 
         var id: String {
             switch self {
             case .backfill: return "backfill"
+            case .questions: return "questions"
             case .prescription: return "prescription"
             case .dose: return "dose"
             case let .condition(doseID, window): return "condition.\(doseID.uuidString).\(window.rawValue)"
@@ -41,6 +43,7 @@ struct TodayView: View {
     @Query(sort: \ProteinEntry.date) private var proteins: [ProteinEntry]
     @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
     @Query(sort: \HabitCheck.date) private var habits: [HabitCheck]
+    @Query(filter: #Predicate<ClinicQuestion> { $0.askedAt == nil }) private var pendingQuestions: [ClinicQuestion]
     @State private var sheet: Sheet?
     #if DEBUG
     @State private var opensSettingsForScreenshot = ScreenshotRoute.current.map { [.settings, .importSheet, .importResult].contains($0) } ?? false
@@ -237,13 +240,24 @@ struct TodayView: View {
 
     // MARK: 1-5 진료
 
+    /// 진료 7일 전부터. 물어볼 것(D6)을 적거나 진료에서 물어봤다고 표시하고, 리포트를 준비한다
     private func clinicCard(_ date: Date) -> some View {
         FrostCard {
             VStack(alignment: .leading, spacing: Spacing.s4) {
-                Text("clinic.card \(date.formatted(.dateTime.month(.defaultDigits).day()))")
-                    .font(Typography.title)
-                    .foregroundStyle(Color.ink)
-                GhostButton("clinic.prepareReport", action: openReport)
+                VStack(alignment: .leading, spacing: Spacing.s1) {
+                    Text("clinic.card \(date.formatted(.dateTime.month(.defaultDigits).day()))")
+                        .font(Typography.title)
+                        .foregroundStyle(Color.ink)
+                    if !pendingQuestions.isEmpty {
+                        Text("clinic.card.questions \(pendingQuestions.count)")
+                            .font(Typography.caption)
+                            .foregroundStyle(Color.inkSecondary)
+                    }
+                }
+                AdaptiveStack(spacing: Spacing.s2) {
+                    GhostButton("clinic.questions.title") { sheet = .questions }
+                    GhostButton("clinic.prepareReport", action: openReport)
+                }
             }
         }
     }
@@ -272,6 +286,7 @@ struct TodayView: View {
         case .proteinSheet?: sheet = .protein(preselected: nil)
         case .strengthSheet?: sheet = .strength
         case .backfillSheet?: sheet = .backfill
+        case .questionsSheet?: sheet = .questions
         case .conditionSheet?:
             if let dose = prescription?.doses.filter({ !$0.isCancelled }).max(by: { $0.administeredAt < $1.administeredAt }) {
                 sheet = .condition(doseID: dose.id, window: .h24)
@@ -312,6 +327,8 @@ struct TodayView: View {
             if let prescription {
                 BackfillSheet(prescription: prescription) { showsToast = true }
             }
+        case .questions:
+            ClinicQuestionsSheet()
         }
     }
 

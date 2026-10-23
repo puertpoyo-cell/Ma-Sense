@@ -54,7 +54,8 @@ enum ExportService {
             weightSamples: WeightSample.all(in: context).map(\.exportRecord),
             proteinEntries: context.fetch(FetchDescriptor<ProteinEntry>(sortBy: [SortDescriptor(\.date)])).map(\.exportRecord),
             strengthSessions: context.fetch(FetchDescriptor<StrengthSession>(sortBy: [SortDescriptor(\.startedAt)])).map(\.exportRecord),
-            habitChecks: context.fetch(FetchDescriptor<HabitCheck>(sortBy: [SortDescriptor(\.date)])).map(\.exportRecord)
+            habitChecks: context.fetch(FetchDescriptor<HabitCheck>(sortBy: [SortDescriptor(\.date)])).map(\.exportRecord),
+            clinicQuestions: context.fetch(FetchDescriptor<ClinicQuestion>(sortBy: [SortDescriptor(\.createdAt)])).map(\.exportRecord)
         )
     }
 
@@ -110,6 +111,7 @@ enum ExportService {
                 .union(context.fetch(FetchDescriptor<ProteinEntry>()).map(\.id))
                 .union(context.fetch(FetchDescriptor<StrengthSession>()).map(\.id))
                 .union(context.fetch(FetchDescriptor<HabitCheck>()).map(\.id))
+                .union(context.fetch(FetchDescriptor<ClinicQuestion>()).map(\.id))
         }
 
         let plan = ExportCodec.importPlan(document, mode: mode, existingIDs: existingIDs)
@@ -137,6 +139,7 @@ enum ExportService {
         plan.proteinEntries.forEach { context.insert(ProteinEntry(record: $0)) }
         plan.strengthSessions.forEach { context.insert(StrengthSession(record: $0)) }
         plan.habitChecks.forEach { context.insert(HabitCheck(record: $0)) }
+        plan.clinicQuestions.forEach { context.insert(ClinicQuestion(record: $0)) }
 
         try resolveActivePrescriptions(context: context, calendar: calendar)
         try context.save()
@@ -176,6 +179,7 @@ enum ExportService {
         try context.fetch(FetchDescriptor<ProteinEntry>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<StrengthSession>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<HabitCheck>()).forEach { context.delete($0) }
+        try context.fetch(FetchDescriptor<ClinicQuestion>()).forEach { context.delete($0) }
     }
 }
 

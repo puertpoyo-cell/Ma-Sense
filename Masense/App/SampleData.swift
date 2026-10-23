@@ -82,6 +82,11 @@ enum SampleData {
         context.insert(StrengthSession(startedAt: at(-4, 7), durationMinutes: 20, kind: .strength))
 
         context.insert(HabitCheck(date: today, water: true, fiber: false, sleep: true))
+
+        // 진료 때 물어볼 것 (D6): 아직 묻지 않은 것 2개, 지난 진료에서 물어본 것 1개
+        context.insert(ClinicQuestion(text: "투약 다음 날 피로가 길어질 때 일상에서 조심할 것", createdAt: at(-3, 21)))
+        context.insert(ClinicQuestion(text: "근력운동을 주 몇 회까지 해도 되는지", createdAt: at(-1, 8)))
+        context.insert(ClinicQuestion(text: "변비가 이어질 때 상담이 필요한 시점", askedAt: at(-30, 11), createdAt: at(-33, 20)))
         try context.save()
     }
 }

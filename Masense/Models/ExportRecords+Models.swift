@@ -251,3 +251,13 @@ extension HabitCheck {
         )
     }
 }
+
+extension ClinicQuestion {
+    var exportRecord: ExportDocument.ClinicQuestionRecord {
+        ExportDocument.ClinicQuestionRecord(id: id, text: text, askedAt: askedAt, createdAt: createdAt)
+    }
+
+    convenience init(record: ExportDocument.ClinicQuestionRecord) {
+        self.init(id: record.id, text: record.text, askedAt: record.askedAt, createdAt: record.createdAt)
+    }
+}

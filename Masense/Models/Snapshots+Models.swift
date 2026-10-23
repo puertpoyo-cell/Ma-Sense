@@ -88,3 +88,9 @@ extension HabitCheck {
         HabitCheckSnapshot(date: date, water: water, fiber: fiber, sleep: sleep)
     }
 }
+
+extension ClinicQuestion {
+    var snapshot: ClinicQuestionSnapshot {
+        ClinicQuestionSnapshot(id: id, text: text, askedAt: askedAt, createdAt: createdAt)
+    }
+}

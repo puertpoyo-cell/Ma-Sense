@@ -168,3 +168,20 @@ struct HabitCheckSnapshot: Equatable {
     let fiber: Bool
     let sleep: Bool
 }
+
+// MARK: D6
+
+struct ClinicQuestionSnapshot: Equatable, Identifiable {
+    let id: UUID
+    let text: String
+    /// nil이면 아직 묻지 않음
+    let askedAt: Date?
+    let createdAt: Date
+
+    init(id: UUID = UUID(), text: String, askedAt: Date? = nil, createdAt: Date) {
+        self.id = id
+        self.text = text
+        self.askedAt = askedAt
+        self.createdAt = createdAt
+    }
+}

@@ -24,6 +24,8 @@ struct ExportDocument: Equatable {
     var proteinEntries: [ProteinEntryRecord] = []
     var strengthSessions: [StrengthSessionRecord] = []
     var habitChecks: [HabitCheckRecord] = []
+    /// D6 (SchemaV3). 키가 없는 파일은 빈 배열로 읽는다
+    var clinicQuestions: [ClinicQuestionRecord] = []
 
     struct Device: Codable, Equatable {
         /// "iPhone16,2"
@@ -132,6 +134,13 @@ struct ExportDocument: Equatable {
         var sleep: Bool
         var createdAt: Date
     }
+
+    struct ClinicQuestionRecord: Codable, Equatable {
+        var id: UUID
+        var text: String
+        var askedAt: Date?
+        var createdAt: Date
+    }
 }
 
 // MARK: - Codable
@@ -140,9 +149,10 @@ extension ExportDocument: Codable {
     private enum CodingKeys: String, CodingKey {
         case format, formatVersion, appVersion, schemaVersion, exportedAt, device, settings
         case prescriptions, doses, conditionChecks, weightSamples, proteinEntries, strengthSessions, habitChecks
+        case clinicQuestions
     }
 
-    /// 배열은 키가 없어도 빈 배열로 읽는다 (M2 이전 빌드가 만든 파일)
+    /// 배열은 키가 없어도 빈 배열로 읽는다 (M2·D6 이전 빌드가 만든 파일)
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         format = try c.decode(String.self, forKey: .format)
@@ -159,6 +169,7 @@ extension ExportDocument: Codable {
         proteinEntries = try c.decodeIfPresent([ProteinEntryRecord].self, forKey: .proteinEntries) ?? []
         strengthSessions = try c.decodeIfPresent([StrengthSessionRecord].self, forKey: .strengthSessions) ?? []
         habitChecks = try c.decodeIfPresent([HabitCheckRecord].self, forKey: .habitChecks) ?? []
+        clinicQuestions = try c.decodeIfPresent([ClinicQuestionRecord].self, forKey: .clinicQuestions) ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -177,6 +188,7 @@ extension ExportDocument: Codable {
         try c.encode(proteinEntries, forKey: .proteinEntries)
         try c.encode(strengthSessions, forKey: .strengthSessions)
         try c.encode(habitChecks, forKey: .habitChecks)
+        try c.encode(clinicQuestions, forKey: .clinicQuestions)
     }
 }
 
@@ -276,6 +288,16 @@ extension ExportDocument.StrengthSessionRecord {
     }
 }
 
+extension ExportDocument.ClinicQuestionRecord {
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(text, forKey: .text)
+        try c.encodeNullable(askedAt, forKey: .askedAt)
+        try c.encode(createdAt, forKey: .createdAt)
+    }
+}
+
 private extension KeyedEncodingContainer {
     mutating func encodeNullable<T: Encodable>(_ value: T?, forKey key: Key) throws {
         if let value {
@@ -322,11 +344,12 @@ enum ExportCodec {
         var proteinEntries = Count()
         var strengthSessions = Count()
         var habitChecks = Count()
+        var clinicQuestions = Count()
         /// 건강 앱에서 온 체중·운동. 가져오지 않고 건강 앱에서 다시 읽는다 (건너뜀으로 세지 않는다)
         var leftToHealthApp = 0
 
         var totalSkipped: Int {
-            [prescriptions, doses, conditionChecks, weightSamples, proteinEntries, strengthSessions, habitChecks]
+            [prescriptions, doses, conditionChecks, weightSamples, proteinEntries, strengthSessions, habitChecks, clinicQuestions]
                 .map(\.skipped)
                 .reduce(0, +)
         }
@@ -343,6 +366,7 @@ enum ExportCodec {
         var proteinEntries: [ExportDocument.ProteinEntryRecord] = []
         var strengthSessions: [ExportDocument.StrengthSessionRecord] = []
         var habitChecks: [ExportDocument.HabitCheckRecord] = []
+        var clinicQuestions: [ExportDocument.ClinicQuestionRecord] = []
         var result = ImportResult()
     }
 
@@ -496,6 +520,15 @@ enum ExportCodec {
                 plan.result.habitChecks.imported += 1
             } else {
                 plan.result.habitChecks.skipped += 1
+            }
+        }
+
+        for record in document.clinicQuestions {
+            if admit(record.id) {
+                plan.clinicQuestions.append(record)
+                plan.result.clinicQuestions.imported += 1
+            } else {
+                plan.result.clinicQuestions.skipped += 1
             }
         }
 

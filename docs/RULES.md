@@ -243,6 +243,20 @@ func bmi(kilograms: Double, heightCm: Double?) -> Double?   // kg / m², 소수 
 - 표시: 홈 체중 카드(최근 체중의 BMI), 기록 탭 체중 목록(샘플마다), 리포트 B 체중 칸 보조 줄("BMI 28.5 → 27.4", 기간 첫·마지막 체중)
 - BMI 목표 입력·목표 BMI까지 남은 값 같은 표현은 만들지 않는다 (2.1-3 목표 체중과 같은 이유)
 
+## R15. 진료 때 물어볼 것 (D6, 2026-10-23 사람 결정)
+
+```swift
+static let maxLength = 200
+func normalized(_ text: String) -> String?                                  // 앞뒤 공백 제거, 줄바꿈 → 공백, 비면 nil, 200자에서 자름
+func pending(_ questions: [ClinicQuestionSnapshot]) -> [ClinicQuestionSnapshot]  // 아직 묻지 않은 것, 적은 순
+func asked(_ questions: [ClinicQuestionSnapshot]) -> [ClinicQuestionSnapshot]    // 물어본 것, 최근에 물어본 순
+```
+
+- 사용자가 적은 문장을 그대로 둔다. 앱은 질문을 분류하거나 답하거나 "이런 걸 물어보세요" 같은 제안을 하지 않는다 (의료 조언 아님)
+- 리포트 (`ReportBuilder.questionLines`): 아직 묻지 않은 것 중 리포트를 만든 시각까지 적은 것을 적은 순으로 최대 5개, 60자에서 자름. 기간과 무관 (다음 진료를 위한 것)
+- 리포트 G 영역은 물어볼 것과 메모를 합쳐 8줄까지: 메모는 `min(5, 8 - 물어볼 것 수)`줄. A4 한 장 유지 (`ReportRendererTests.fullTwelveWeekReportFitsOnePage`)
+- 진료에서 물어봤으면 눌러서 `askedAt`을 남긴다. 다시 누르면 되돌린다. 지우기는 실제 삭제
+
 ## 테스트 체크리스트
 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
@@ -250,6 +264,7 @@ func bmi(kilograms: Double, heightCm: Double?) -> Double?   // kg / m², 소수 
 - [x] R3 과거 Dose 추가로 누락 해제
 - [x] R3-1 앞선 누락만 세기, 남은 회차까지만 켜기, 시간 순 회차와 뒤 기록 밀기, 취소 기록 제외 (`BackfillRulesTests`, `BackfillModelTests`)
 - [x] R6 부위 기록 없음은 바디맵 이력·부위별 날짜에서 제외 (`SiteRulesTests`)
+- [x] R15 입력 정리, 아직 묻지 않은 것 순서, 리포트 5개·메모와 합쳐 8줄 (`ClinicQuestionRulesTests`, `ReportBuilderTests`)
 - [x] R4 4주 제한, 재등록 시 중복 없음
 - [x] R5 창 경계값 (12h, 36h, 96h)
 - [x] R7 샘플 없는 주 nil 처리

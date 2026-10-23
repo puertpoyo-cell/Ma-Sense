@@ -50,6 +50,9 @@ struct ReportPage: View {
             if let quality = report.quality {
                 qualityRow(quality)
             }
+            if !report.questions.isEmpty {
+                questions
+            }
             if !report.notes.isEmpty {
                 notes
             }
@@ -378,6 +381,26 @@ struct ReportPage: View {
             }
         }
         .frame(height: 36 * Self.mm, alignment: .top)
+    }
+
+    // MARK: G. 진료 때 물어볼 것 (D6)
+
+    private var questions: some View {
+        VStack(alignment: .leading, spacing: 1.5 * Self.mm) {
+            sectionTitle("report.section.questions")
+            ForEach(Array(report.questions.enumerated()), id: \.element.id) { index, line in
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(verbatim: "\(index + 1).")
+                        .font(.system(size: 7.5, weight: .medium))
+                        .monospacedDigit()
+                        .foregroundStyle(gray)
+                        .frame(width: 30, alignment: .leading)
+                    Text(verbatim: line.text)
+                        .font(.system(size: 8))
+                        .lineLimit(1)
+                }
+            }
+        }
     }
 
     // MARK: G. 메모 발췌

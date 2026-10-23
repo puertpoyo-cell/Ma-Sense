@@ -42,8 +42,11 @@ struct ReportRendererTests {
         )
     }
 
-    /// 칸마다 상한(타임라인 12칸, 증상 10개, 메모 5줄 60자)까지 채운 12주 리포트. 기간과 무관하게 이보다 길어지지 않는다
-    private func fullReport(noteCount: Int = ReportBuilder.maxNotes) -> ClinicReport {
+    /// 칸마다 상한(타임라인 12칸, 증상 10개, 물어볼 것·메모 합쳐 8줄 60자)까지 채운 12주 리포트. 기간과 무관하게 이보다 길어지지 않는다
+    private func fullReport(
+        questionCount: Int = ReportBuilder.maxQuestions,
+        noteCount: Int = ReportBuilder.maxQuestionAndNoteLines - ReportBuilder.maxQuestions
+    ) -> ClinicReport {
         let start = TestCalendar.date(2026, 8, 6, 20)
         let week: TimeInterval = 7 * 86_400
         let cycles = (0..<ReportBuilder.maxCells).map { index in
@@ -82,7 +85,8 @@ struct ReportRendererTests {
                                                  leanMassStartText: "58.2", leanMassEndText: "57.9"),
             notes: (0..<noteCount).map { ClinicReport.NoteLine(id: "note.\($0)", date: start.addingTimeInterval(Double($0) * week), text: longNote) },
             generatedAt: start.addingTimeInterval(12 * week),
-            appVersion: "1.0"
+            appVersion: "1.0",
+            questions: (0..<questionCount).map { _ in ClinicReport.QuestionLine(id: UUID(), text: longNote) }
         )
     }
 
@@ -110,6 +114,9 @@ struct ReportRendererTests {
     /// REPORT_SPEC.md 수용 기준 "12주 데이터로 A4 1장 안에 들어감"
     @Test func fullTwelveWeekReportFitsOnePage() {
         let full = ReportRenderer.naturalHeight(of: fullReport(), calendar: calendar)
+        // 물어볼 것이 없으면 메모 5줄. 이 경우도 한 장
+        let notesOnly = ReportRenderer.naturalHeight(of: fullReport(questionCount: 0, noteCount: ReportBuilder.maxNotes), calendar: calendar)
+        #expect(notesOnly <= ReportPage.size.height, "자연 높이 \(notesOnly)pt, A4 \(ReportPage.size.height)pt")
         #expect(full > ReportRenderer.naturalHeight(of: sampleReport(), calendar: calendar))
         #expect(full <= ReportPage.size.height, "자연 높이 \(full)pt, A4 \(ReportPage.size.height)pt")
     }

@@ -36,6 +36,7 @@ struct ExportServiceTests {
         context.insert(check)
         check.dose = dose
         context.insert(WeightSample(measuredAt: TestCalendar.date(2026, 10, 20, 8), kilograms: 80.4, source: .manual))
+        context.insert(ClinicQuestion(text: "질문", createdAt: TestCalendar.date(2026, 10, 21, 9)))
         _ = try UserSettings.current(in: context)
         try context.save()
     }
@@ -47,7 +48,7 @@ struct ExportServiceTests {
         #expect(url.lastPathComponent == "Masense_Export_2026-10-24.masense.json")
 
         let document = try ExportCodec.decode(Data(contentsOf: url))
-        #expect(document.schemaVersion == "1.1.0")
+        #expect(document.schemaVersion == "1.2.0")
         #expect(document.prescriptions.map(\.doseLabel) == ["메모"])
         #expect(document.doses.map(\.note) == ["왼쪽"])
         #expect(document.doses.first?.prescriptionId == document.prescriptions.first?.id)
@@ -117,6 +118,28 @@ struct ExportServiceTests {
         #expect(try UserSettings.current(in: context).heightCm == 168.5)
     }
 
+    /// D6: 진료 때 물어볼 것도 내보내고 가져온다. 물어본 시각이 없으면 null
+    @Test func clinicQuestionsRoundTripThroughExport() throws {
+        context.insert(ClinicQuestion(text: "아직 묻지 않음", createdAt: TestCalendar.date(2026, 10, 20, 9)))
+        context.insert(ClinicQuestion(text: "물어봄", askedAt: TestCalendar.date(2026, 10, 22, 10), createdAt: TestCalendar.date(2026, 10, 21, 9)))
+        try context.save()
+        let data = try ExportCodec.encode(ExportService.makeDocument(context: context, now: TestCalendar.date(2026, 10, 24, 9)), timeZone: TestCalendar.seoul.timeZone)
+        let object = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let records = try #require(object["clinicQuestions"] as? [[String: Any]])
+        #expect(records.map { $0["text"] as? String } == ["아직 묻지 않음", "물어봄"])
+        #expect(records[0]["askedAt"] is NSNull)
+
+        let document = try ExportCodec.decode(data)
+        let result = try ExportService.apply(document, mode: .replace, context: context, calendar: TestCalendar.seoul)
+        #expect(result.clinicQuestions == ExportCodec.ImportResult.Count(imported: 2, skipped: 0))
+        let stored = try context.fetch(FetchDescriptor<ClinicQuestion>(sortBy: [SortDescriptor(\.createdAt)]))
+        #expect(stored.map(\.text) == ["아직 묻지 않음", "물어봄"])
+        #expect(stored.map(\.askedAt) == [nil, TestCalendar.date(2026, 10, 22, 10)])
+
+        let again = try ExportService.apply(document, mode: .add, context: context, calendar: TestCalendar.seoul)
+        #expect(again.clinicQuestions == ExportCodec.ImportResult.Count(imported: 0, skipped: 2))
+    }
+
     @Test func addImportTwiceSkipsEverythingTheSecondTime() throws {
         let fixture = try ExportFixture.document()
         _ = try ExportService.apply(fixture, mode: .add, context: context, calendar: TestCalendar.seoul)
@@ -154,5 +177,6 @@ struct ExportServiceTests {
         #expect(try context.fetch(FetchDescriptor<ConditionCheck>()).isEmpty)
         #expect(try context.fetch(FetchDescriptor<WeightSample>()).isEmpty)
         #expect(try context.fetch(FetchDescriptor<UserSettings>()).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<ClinicQuestion>()).isEmpty)
     }
 }

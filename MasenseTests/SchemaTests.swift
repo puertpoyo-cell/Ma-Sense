@@ -81,7 +81,7 @@ struct SchemaTests {
         #expect(protein.foods == [.egg, .other])
     }
 
-    /// V1 저장소를 지금 스키마로 열면 기록과 설정이 그대로 남고 키는 비어 있다 (D5)
+    /// V1 저장소를 지금 스키마로 열면 기록과 설정이 그대로 남고 키는 비어 있다 (D5, V1 → V2 → V3)
     @Test func schemaV1StoreMigratesToV2() throws {
         let (directory, url) = try diskStore()
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -101,17 +101,7 @@ struct SchemaTests {
             try context.save()
         }
 
-        // V1 컨테이너가 아직 파일을 붙잡고 있으면 같은 파일의 이전(migration)이 독점 잠금을 기다리다 멈출 수 있다.
-        // 저장한 파일(본 파일·-wal·-shm)을 새 위치로 복사해 그 사본을 연다 (앱에서는 컨테이너가 하나라 해당 없음)
-        let migratedURL = directory.appendingPathComponent("Migrated.store")
-        for suffix in StoreLocation.fileSuffixes {
-            let source = URL(fileURLWithPath: url.path + suffix)
-            if FileManager.default.fileExists(atPath: source.path) {
-                try FileManager.default.copyItem(at: source, to: URL(fileURLWithPath: migratedURL.path + suffix))
-            }
-        }
-
-        let container = try ModelContainer.masense(url: migratedURL)
+        let container = try ModelContainer.masense(url: copyStore(url, in: directory))
         let context = container.mainContext
         let settings = try #require(try context.fetch(FetchDescriptor<UserSettings>()).first)
         #expect(settings.hasAcceptedRoleNotice)
@@ -122,6 +112,55 @@ struct SchemaTests {
         settings.heightCm = 170.5
         try context.save()
         #expect(try context.fetch(FetchDescriptor<UserSettings>()).first?.heightCm == 170.5)
+    }
+
+    /// V2 저장소를 지금 스키마로 열면 기록이 그대로 남고 물어볼 것을 새로 적을 수 있다 (D6, V2 → V3)
+    @Test func schemaV2StoreMigratesToV3() throws {
+        let (directory, url) = try diskStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        try autoreleasepool {
+            let schema = Schema(versionedSchema: SchemaV2.self)
+            let v2 = try ModelContainer(
+                for: schema,
+                configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)]
+            )
+            let context = v2.mainContext
+            let settings = UserSettings()
+            settings.heightCm = 168
+            context.insert(settings)
+            let prescription = Prescription(startDate: TestCalendar.date(2026, 10, 16, 9), penCount: 1, scheduledWeekday: 5, scheduledHour: 20)
+            context.insert(prescription)
+            let dose = Dose(administeredAt: TestCalendar.date(2026, 10, 22, 20), scheduledFor: TestCalendar.date(2026, 10, 22, 20), site: nil, sequence: 1)
+            context.insert(dose)
+            dose.prescription = prescription
+            try context.save()
+        }
+
+        let container = try ModelContainer.masense(url: copyStore(url, in: directory))
+        let context = container.mainContext
+        #expect(try context.fetch(FetchDescriptor<UserSettings>()).first?.heightCm == 168)
+        let dose = try #require(try context.fetch(FetchDescriptor<Dose>()).first)
+        #expect(dose.site == nil)
+        #expect(dose.prescription?.penCount == 1)
+        #expect(try context.fetch(FetchDescriptor<ClinicQuestion>()).isEmpty)
+
+        context.insert(ClinicQuestion(text: "질문"))
+        try context.save()
+        #expect(try context.fetch(FetchDescriptor<ClinicQuestion>()).map(\.text) == ["질문"])
+    }
+
+    /// 이전 버전 컨테이너가 아직 파일을 붙잡고 있으면 같은 파일의 이전(migration)이 독점 잠금을 기다리다 멈출 수 있다.
+    /// 저장한 파일(본 파일·-wal·-shm)을 새 위치로 복사해 그 사본을 연다 (앱에서는 컨테이너가 하나라 해당 없음)
+    private func copyStore(_ url: URL, in directory: URL) throws -> URL {
+        let migratedURL = directory.appendingPathComponent("Migrated.store")
+        for suffix in StoreLocation.fileSuffixes {
+            let source = URL(fileURLWithPath: url.path + suffix)
+            if FileManager.default.fileExists(atPath: source.path) {
+                try FileManager.default.copyItem(at: source, to: URL(fileURLWithPath: migratedURL.path + suffix))
+            }
+        }
+        return migratedURL
     }
 
     /// 규칙 2: 모든 저장 속성에 기본값이 있어 인자 없이도 만들 수 있다 (UserSettings)

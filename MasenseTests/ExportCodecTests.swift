@@ -47,6 +47,8 @@ struct ExportCodecTests {
         ])
         #expect(document.weightSamples.map(\.kilograms) == [79.1, 78.4])
         #expect(document.proteinEntries.first?.foods == ["egg", "egg", "milk"])
+        // D6 이전 파일: clinicQuestions 키가 없으면 빈 배열
+        #expect(document.clinicQuestions.isEmpty)
     }
 
     @Test func encodeWritesOffsetDatesAndExplicitNulls() throws {

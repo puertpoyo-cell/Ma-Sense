@@ -48,6 +48,7 @@ final class DataImportModel {
             ("import.kind.proteinEntries", document.proteinEntries.count),
             ("import.kind.strengthSessions", document.strengthSessions.count),
             ("import.kind.habitChecks", document.habitChecks.count),
+            ("import.kind.clinicQuestions", document.clinicQuestions.count),
         ]
         return counts
             .filter { $0.1 > 0 }
@@ -64,6 +65,7 @@ final class DataImportModel {
             Row(titleKey: "import.kind.proteinEntries", count: result.proteinEntries),
             Row(titleKey: "import.kind.strengthSessions", count: result.strengthSessions),
             Row(titleKey: "import.kind.habitChecks", count: result.habitChecks),
+            Row(titleKey: "import.kind.clinicQuestions", count: result.clinicQuestions),
         ]
         .filter { $0.count.imported > 0 || $0.count.skipped > 0 }
     }

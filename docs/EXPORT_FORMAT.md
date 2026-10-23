@@ -34,14 +34,15 @@
   "weightSamples": [ ... ],
   "proteinEntries": [ ... ],
   "strengthSessions": [ ... ],
-  "habitChecks": [ ... ]
+  "habitChecks": [ ... ],
+  "clinicQuestions": [ ... ]
 }
 ```
 
 - `format`은 항상 `"masense-export"`. 가져오기 시 첫 검사
 - `formatVersion`은 **이 문서의 버전**. 스키마 버전(`schemaVersion`)과 별개로, 파일 구조가 바뀔 때만 올림
 - 관계는 중첩이 아니라 **ID 참조**로 평탄화. `doses[].prescriptionId`, `conditionChecks[].doseId`
-- M2 이전 빌드가 만든 파일은 `proteinEntries` 등이 빈 배열 또는 키 없음. 가져오기는 둘 다 허용
+- M2 이전 빌드가 만든 파일은 `proteinEntries` 등이 빈 배열 또는 키 없음. 가져오기는 둘 다 허용. D6 이전 빌드가 만든 파일은 `clinicQuestions` 키가 없다 (빈 배열로 읽음)
 
 ## 레코드 형식
 
@@ -135,6 +136,9 @@
 ### proteinEntries[], strengthSessions[], habitChecks[] (M2)
 DATA_MODEL 필드 그대로. `foods`는 rawValue 문자열 배열.
 
+### clinicQuestions[] (D6)
+`id`, `text`, `askedAt`(null이면 아직 묻지 않음), `createdAt`. 가져오기는 규칙 5(같은 `id` 건너뜀)만 적용. 배열 추가라 `formatVersion`은 그대로 1 (이전 앱은 모르는 키를 무시한다).
+
 rawValue는 문자열 그대로 옮긴다. 앱이 모르는 값(다음 버전이 더한 부위 등)이 와도 파일을 거부하지 않고 그대로 저장하며, 화면은 모델의 기본값 규칙(DATA_MODEL.md)으로 읽는다. 예외로 `symptoms[].symptom`은 저장 형식이 열거형이라 모르는 증상은 빠진다.
 날짜는 소수 초 없는 ISO 8601(`2026-10-21T20:00:00+09:00`)과 `Z` 표기도 읽는다 (사람이 고친 파일).
 
@@ -173,3 +177,4 @@ rawValue는 문자열 그대로 옮긴다. 앱이 모르는 값(다음 버전이
 | formatVersion | 날짜 | 변경 |
 |---|---|---|
 | 1 | 2026-10-21 | 초판. SchemaV1 전체 + M2 배열(비어 있을 수 있음) |
+| 1 | 2026-10-23 | 같은 버전 안에서 추가: `clinicQuestions` 배열(키가 없으면 빈 배열), 투약 `site`의 `"unknown"`(부위 기록 없음). 이전 파일·이전 앱과 서로 읽힌다 |

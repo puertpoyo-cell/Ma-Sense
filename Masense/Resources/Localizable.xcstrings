@@ -511,6 +511,23 @@
         }
       }
     },
+    "clinic.card.questions %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld questions to ask"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것 %lld개"
+          }
+        }
+      }
+    },
     "clinic.prepareReport": {
       "extractionState": "manual",
       "localizations": {
@@ -524,6 +541,227 @@
           "stringUnit": {
             "state": "translated",
             "value": "리포트 준비"
+          }
+        }
+      }
+    },
+    "clinic.questions.a11y.asked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asked"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어봄"
+          }
+        }
+      }
+    },
+    "clinic.questions.a11y.pending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not yet asked"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 묻지 않음"
+          }
+        }
+      }
+    },
+    "clinic.questions.add": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "추가"
+          }
+        }
+      }
+    },
+    "clinic.questions.asked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asked"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어본 것"
+          }
+        }
+      }
+    },
+    "clinic.questions.askedOn %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asked %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 물어봄"
+          }
+        }
+      }
+    },
+    "clinic.questions.delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지우기"
+          }
+        }
+      }
+    },
+    "clinic.questions.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questions you write here are included in the visit report."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 때 물어볼 것을 적어 두면 리포트에 함께 실립니다."
+          }
+        }
+      }
+    },
+    "clinic.questions.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questions not yet asked are included in the visit report (up to 5). Tap one after you ask it."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 묻지 않은 것은 진료 전 리포트에 함께 실립니다(최대 5개). 진료에서 물어봤으면 눌러서 표시하세요."
+          }
+        }
+      }
+    },
+    "clinic.questions.manage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write questions"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것 적기"
+          }
+        }
+      }
+    },
+    "clinic.questions.more %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld more"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "외 %lld개"
+          }
+        }
+      }
+    },
+    "clinic.questions.pending %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld not yet asked"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 묻지 않은 것 %lld개"
+          }
+        }
+      }
+    },
+    "clinic.questions.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a question in one line"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것을 한 줄로 적으세요"
+          }
+        }
+      }
+    },
+    "clinic.questions.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questions for the visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 때 물어볼 것"
           }
         }
       }
@@ -2071,6 +2309,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "파일에 담긴 기록"
+          }
+        }
+      }
+    },
+    "import.kind.clinicQuestions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questions"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것"
           }
         }
       }
@@ -3839,6 +4094,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "감량의 질"
+          }
+        }
+      }
+    },
+    "report.section.questions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questions for the visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 때 물어볼 것"
           }
         }
       }

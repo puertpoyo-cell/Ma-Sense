@@ -212,6 +212,34 @@ struct ReportBuilderTests {
         #expect(report.notes.last?.text == "메모 1")
     }
 
+    /// D6 R15: 아직 묻지 않은 것만 적은 순으로 5개. 물어볼 것과 메모는 합쳐 8줄이라 질문이 많으면 메모가 줄어든다
+    @Test func questionsArePendingInWrittenOrderAndShareLinesWithNotes() {
+        let now = TestCalendar.date(2026, 11, 2, 9)
+        let doses = (0..<6).map { dose(10, 22 + $0, note: "메모 \($0)") }
+        let data = ReportBuilder.PrescriptionData(prescription: prescription(), doses: doses, isActive: true)
+        let written = (0..<6).map { index in
+            ClinicQuestionSnapshot(text: "질문 \(index)", createdAt: TestCalendar.date(2026, 10, 20 + index, 9))
+        }
+        let asked = ClinicQuestionSnapshot(text: "물어본 질문", askedAt: TestCalendar.date(2026, 10, 30, 10), createdAt: TestCalendar.date(2026, 10, 1, 9))
+        let later = ClinicQuestionSnapshot(text: "나중 질문", createdAt: TestCalendar.date(2026, 11, 3, 9))
+        let report = ReportBuilder.build(
+            period: ReportBuilder.interval(for: .sinceClinic, activePrescriptionStart: start, now: now, calendar: calendar),
+            prescriptions: [data], checks: [], weights: [],
+            questions: written.reversed() + [asked, later],
+            now: now, calendar: calendar, appVersion: "1.0"
+        )
+        #expect(report.questions.map(\.text) == ["질문 0", "질문 1", "질문 2", "질문 3", "질문 4"])
+        #expect(report.notes.count == ReportBuilder.maxQuestionAndNoteLines - ReportBuilder.maxQuestions)
+
+        let two = ReportBuilder.build(
+            period: report.period, prescriptions: [data], checks: [], weights: [],
+            questions: Array(written.prefix(2)), now: now, calendar: calendar, appVersion: "1.0"
+        )
+        #expect(two.questions.count == 2)
+        #expect(two.notes.count == ReportBuilder.maxNotes)
+        #expect(build([data], now: now).questions.isEmpty)
+    }
+
     @Test func archivedPrescriptionDoesNotAddMissedCells() {
         let old = ReportBuilder.PrescriptionData(prescription: prescription(), doses: [dose(10, 22)], isActive: false)
         let new = ReportBuilder.PrescriptionData(

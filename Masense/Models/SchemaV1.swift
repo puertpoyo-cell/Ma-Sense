@@ -5,6 +5,7 @@ import SwiftData
 /// 이전 개발용 V1~V3 이력을 접었다. 스키마를 바꿀 때는 바뀌는 모델의 고정 사본을 이 버전에 두고
 /// 다음 버전과 `MasenseMigrationPlan`의 단계를 더한다. CloudKit 규칙 5에 따라 변경은 필드·모델 추가만.
 /// V2(D5)에서 `UserSettings.heightCm`이 더해져 `UserSettings`만 고정 사본을 둔다.
+/// V3(D6)는 `ClinicQuestion` 모델만 더해 기존 모델은 V2와 같다 (고정 사본 없음).
 enum SchemaV1: VersionedSchema {
     static let versionIdentifier = Schema.Version(1, 0, 0)
 
@@ -62,15 +63,27 @@ enum SchemaV2: VersionedSchema {
     }
 }
 
+/// D6 (2026-10-23 사람 결정): 진료 때 물어볼 것 `ClinicQuestion` 모델 추가. 관계 없는 모델 추가라 경량 이전
+enum SchemaV3: VersionedSchema {
+    static let versionIdentifier = Schema.Version(1, 2, 0)
+
+    static var models: [any PersistentModel.Type] {
+        SchemaV2.models + [ClinicQuestion.self]
+    }
+}
+
 /// 지금 앱이 여는 스키마
-typealias CurrentSchema = SchemaV2
+typealias CurrentSchema = SchemaV3
 
 enum MasenseMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [SchemaV1.self, SchemaV2.self]
+        [SchemaV1.self, SchemaV2.self, SchemaV3.self]
     }
 
     static var stages: [MigrationStage] {
-        [.lightweight(fromVersion: SchemaV1.self, toVersion: SchemaV2.self)]
+        [
+            .lightweight(fromVersion: SchemaV1.self, toVersion: SchemaV2.self),
+            .lightweight(fromVersion: SchemaV2.self, toVersion: SchemaV3.self),
+        ]
     }
 }

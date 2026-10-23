@@ -58,6 +58,7 @@ Prescription 1 ─── * Dose 1 ─── * ConditionCheck
 ProteinEntry        (날짜 기준 독립)
 StrengthSession     (날짜 기준 독립)
 HabitCheck          (날짜 기준 독립)
+ClinicQuestion      (독립, D6)
 WeightSample        (HealthKit 캐시 + 수동 입력)
 UserSettings        (단일 레코드)
 ```
@@ -219,6 +220,17 @@ enum ProteinFood: String, Codable, CaseIterable {
 | sleep | Bool | `false` |  |
 | createdAt | Date | `.now` |  |
 
+### ClinicQuestion — 진료 때 물어볼 것 (D6, SchemaV3)
+
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| text | String | `""` | 사용자가 적은 문장 그대로 (앞뒤 공백·줄바꿈 정리, 200자까지, R15). 앱은 해석·분류하지 않는다 |
+| askedAt | Date? |  | 진료에서 물어봤다고 표시한 시각. nil이면 아직 묻지 않음 → 리포트에 실림 |
+| createdAt | Date | `.now` | 적은 순 정렬 |
+
+관계 없음. 지우기는 실제 삭제 (투약 기록과 달리 리포트 무결성과 무관한 메모).
+
 ### UserSettings — 단일 레코드
 
 | 필드 | 타입 | 기본값 | 설명 |
@@ -270,9 +282,13 @@ enum SchemaV2: VersionedSchema {   // D5: UserSettings.heightCm 추가
     static let versionIdentifier = Schema.Version(1, 1, 0)
     // 나머지 모델은 V1과 같은 타입, UserSettings만 지금 모델
 }
-typealias CurrentSchema = SchemaV2
+enum SchemaV3: VersionedSchema {   // D6: ClinicQuestion 모델 추가
+    static let versionIdentifier = Schema.Version(1, 2, 0)
+    static var models: [any PersistentModel.Type] { SchemaV2.models + [ClinicQuestion.self] }
+}
+typealias CurrentSchema = SchemaV3
 enum MasenseMigrationPlan: SchemaMigrationPlan {
-    // [SchemaV1, SchemaV2], .lightweight(V1 → V2)
+    // [SchemaV1, SchemaV2, SchemaV3], .lightweight(V1 → V2), .lightweight(V2 → V3)
 }
 ```
 
@@ -280,7 +296,8 @@ enum MasenseMigrationPlan: SchemaMigrationPlan {
 - 개발 빌드(`DEBUG`)는 이전 구조의 저장소를 열지 못하면 지우고 새로 만든다 (`ModelContainer.masense`). 릴리스 빌드는 그러지 않는다
 - 출시 뒤 스키마를 바꿀 때: 바뀌는 모델의 **고정 사본**을 이전 버전(`SchemaV1.Xxx`)에 두고 `SchemaV2`와 마이그레이션 단계를 더한다. 고정 사본의 저장 속성은 고치지 않는다(기존 저장소의 버전을 알아보는 기준). CloudKit 규칙 5에 따라 변경은 추가만
 - V2 (D5, 2026-10-22 사람 결정): `UserSettings.heightCm` 옵셔널 추가 → 경량 이전. 개발 중 기기에 있는 V1 저장소의 기록을 지우지 않으려고 고정 사본 방식으로 올렸다
-- `SchemaTests`: unique 없음, 열거형 rawValue 디스크 왕복, 모르는 rawValue 기본값, 설정 기본값, V1 저장소 → V2 이전
+- V3 (D6, 2026-10-23 사람 결정): 관계 없는 `ClinicQuestion` 모델 추가 → 경량 이전. 기존 모델은 바뀌지 않아 고정 사본이 없다
+- `SchemaTests`: unique 없음, 열거형 rawValue 디스크 왕복, 모르는 rawValue 기본값, 설정 기본값, V1 저장소 → 지금 스키마 이전, V2 저장소 → V3 이전
 
 M1 출시 전에는 마이그레이션 없이 스키마 자유 변경. 베타 배포 후부터 `SchemaMigrationPlan` 필수.
 
