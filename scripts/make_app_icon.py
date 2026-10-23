@@ -15,12 +15,13 @@ Apple 기본 앱 아이콘의 유리 문법을 참고한다(사람이 준 참고
 - `rings`: 파랑 한 색조 바탕 + 반투명 동심원 + 흰 반유리 M
 - `rings-midnight`: 같은 구성의 midnight 바탕
 
-- `glass` (기본, 2026-10-23 사람 요청 "더 굵게, 타일에 꽉 차게, 유리 효과 증대"): `petals`와 같은 4색 막대를 굵기 155·1.28배로
-  키워 M이 타일의 약 70%를 채운다. 막대마다 굴절된 듯 흐린 배경, 축을 따라 흐르는 빛줄기, 위 밝은·아래 은은한 테두리, 큰 색 그림자
-- `mark`: 시작 전환 화면(SplashView)용. `glass`의 M 막대만 오려 낸 투명 PNG (바탕·그림자 없음, 여백 없이 자름)
+- `clear` (기본, 2026-10-23 사람 확정 "딱 요정도 볼륨, 약간 더 맑은 유리, 끝부분 하이라이트"): `petals`의 굵기 비율(136)을
+  1.28배로 키워 타일을 채우고, 조금 더 맑게 칠한 뒤 막대 양 끝에 밝은 호와 초승달 반사
+- `glass`: 같은 날의 중간안. 굵기 155·1.28배, 굴절·빛줄기·윤곽선을 강하게, `clarity`로 맑기 조절. 사람이 "볼륨은 1차안 정도"로 되돌림
+- `mark`: 시작 전환 화면(SplashView)용. `clear`의 M 막대만 오려 낸 투명 PNG (바탕·그림자 없음, 여백 없이 자름)
 
 출력: Masense/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png (1024×1024, RGB, 알파 없음)
-실행: python3 scripts/make_app_icon.py [glass|petals|liquid|rings|rings-midnight] [출력 경로]
+실행: python3 scripts/make_app_icon.py [clear|glass|petals|liquid|rings|rings-midnight] [출력 경로]
       python3 scripts/make_app_icon.py mark  → Masense/Resources/Assets.xcassets/SplashMark.imageset/SplashMark.png
 """
 
@@ -184,6 +185,58 @@ def render_petals(width: float = 136) -> Image.Image:
     return image
 
 
+def render_clear(width: float = 136, scale: float = 1.28) -> Image.Image:
+    """`petals`의 볼륨(막대 굵기 비율 136) + 유리 효과를 조금 올린 안 (2026-10-23 사람 요청: "딱 요정도 볼륨,
+    약간 더 맑은 유리처럼, 끝부분 하이라이트 추가"). 앱 아이콘에서는 1.28배로 키워 타일을 채운다.
+    `petals`보다: 채움을 덜 불투명하게(0.92 → 0.84) 밝게 섞어 맑게, 테두리 반사를 조금 더 밝게,
+    막대 양 끝(둥근 마구리)에 가장자리를 따라 도는 밝은 호와 초승달 반사(위쪽 끝은 왼쪽 위, 아래쪽 끝은 아래 가장자리). 빛은 왼쪽 위에서 오므로 아래쪽 끝은 약하게"""
+    image = gradient_background(LIGHT_TOP, LIGHT_BOTTOM)
+    colors = [SKY, VIOLET, BLUE, INDIGO]
+    bar = width * scale
+    radius = bar / 2
+
+    def disc_at(center: tuple, r: float) -> Image.Image:
+        mask = new_mask()
+        x, y = center
+        ImageDraw.Draw(mask).ellipse([px(x - r), px(y - r), px(x + r), px(y + r)], fill=255)
+        return mask
+
+    for (start, end), color in zip(m_segments(scale), colors):
+        piece = capsule(start, end, bar)
+
+        def band(outer: float, inner: float) -> Image.Image:
+            return ImageChops.subtract(capsule(start, end, bar - 2 * outer), capsule(start, end, bar - 2 * inner))
+
+        _, y0, _, y1 = piece.getbbox()
+        soft_shadow(image, piece, color, 14 * scale, 20 * scale, 0.26)
+        # 아래 그림과 곱해 섞고 제 색 쪽으로 당긴다 (petals와 같은 섞임). 흰빛을 더 섞고 덜 불투명하게 칠해 맑게
+        mixed = Image.blend(ImageChops.multiply(image, solid(color)), solid(color), 0.30)
+        lighter = Image.blend(mixed, solid(WHITE), 0.26)
+        image.paste(Image.composite(mixed, lighter, vertical_fade(y0, y1, 0, 255)), (0, 0), scaled(piece, 0.84))
+        # 테두리 반사(위가 밝다)와 위쪽 광택
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(band(0, 3), vertical_fade(y0, y1, 245, 45)))
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(piece, vertical_fade(y0, y0 + (y1 - y0) * 45 // 100, 66, 0)))
+
+        # 끝부분 하이라이트: 마구리 가장자리를 따라 도는 밝은 호 + 안쪽 왼쪽 위에 맺히는 초승달 반사
+        for tip, other in ((start, end), (end, start)):
+            dx, dy = tip[0] - other[0], tip[1] - other[1]
+            length = max((dx * dx + dy * dy) ** 0.5, 1)
+            ux, uy = dx / length, dy / length
+            strength = 1.0 if uy < 0 else 0.5
+            cap = disc_at((tip[0] + ux * radius * 0.30, tip[1] + uy * radius * 0.30), radius * 0.95)
+            arc = ImageChops.multiply(band(1.5, 7), cap).filter(ImageFilter.GaussianBlur(px(1.5)))
+            image.paste(solid(WHITE), (0, 0), scaled(arc, 0.85 * strength))
+            # 위쪽 끝은 왼쪽 위 가장자리에, 아래쪽 끝은 아래 가장자리에 맺힌다 (빛이 막대 안을 지나 아래로 모인다)
+            shift = (radius * 0.16, radius * 0.20) if uy < 0 else (radius * 0.10, -radius * 0.22)
+            crescent = ImageChops.subtract(
+                disc_at(tip, radius * 0.74),
+                disc_at((tip[0] + shift[0], tip[1] + shift[1]), radius * 0.76),
+            )
+            crescent = ImageChops.multiply(crescent, cap).filter(ImageFilter.GaussianBlur(px(radius * 0.035)))
+            image.paste(solid(WHITE), (0, 0), scaled(ImageChops.multiply(crescent, piece), 0.70 * strength))
+    return image
+
+
 def render_glass(width: float = 155, scale: float = 1.28, clarity: float = 1.0) -> Image.Image:
     """`petals`를 굵고 크게 + 유리 질감을 키운 안.
     2026-10-23 사람 요청 1: 더 굵게, 타일에 꽉 차게, 유리 효과 증대 → 굵기 155 × 1.28배
@@ -270,9 +323,9 @@ def render_rings(midnight: bool = False) -> Image.Image:
     return image
 
 
-def render_mark(width: float = 155, scale: float = 1.28) -> Image.Image:
-    """앱 아이콘(`glass`)의 M만 남긴 투명 이미지. 밝은 바탕 위에서 섞인 색 그대로, 막대 바깥(그림자·번짐)은 투명"""
-    image = render_glass(width, scale).convert("RGBA")
+def render_mark(width: float = 136, scale: float = 1.28) -> Image.Image:
+    """앱 아이콘(`clear`)의 M만 남긴 투명 이미지. 밝은 바탕 위에서 섞인 색 그대로, 막대 바깥(그림자·번짐)은 투명"""
+    image = render_clear(width, scale).convert("RGBA")
     alpha = new_mask()
     for piece in m_bars(width=width, scale=scale):
         alpha = ImageChops.lighter(alpha, piece)
@@ -287,13 +340,14 @@ VARIANTS = {
     "rings-midnight": lambda: render_rings(midnight=True),
     "mark": render_mark,
     "glass": render_glass,
+    "clear": render_clear,
 }
 
 MARK_OUT = ROOT / "Masense" / "Resources" / "Assets.xcassets" / "SplashMark.imageset" / "SplashMark.png"
 
 
 def main() -> None:
-    variant = sys.argv[1] if len(sys.argv) > 1 else "glass"
+    variant = sys.argv[1] if len(sys.argv) > 1 else "clear"
     out = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else (MARK_OUT if variant == "mark" else OUT)
     image = VARIANTS[variant]()
     # 4배로 그린 것을 1/4로 줄인다 (아이콘은 1024×1024, 마크는 자른 크기의 1/4)
