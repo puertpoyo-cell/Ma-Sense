@@ -4,6 +4,11 @@ name: Screenshots
 # 커밋 메시지에 [shots]가 있거나 수동 실행(workflow_dispatch)일 때만 돈다. 화면은 DEBUG 실행 인자 -route (ScreenshotRoute)
 on:
   workflow_dispatch:
+    inputs:
+      xcode:
+        description: "Xcode 버전 앞자리 (예: 26). 비우면 러너 기본 Xcode"
+        required: false
+        default: ""
   push:
 
 jobs:
@@ -19,12 +24,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 실기기와 같은 SDK로 확인할 때 (예: iOS 26 기기에서만 보이는 문제)
+      - name: Select Xcode
+        if: github.event_name == 'workflow_dispatch' && inputs.xcode != ''
+        run: |
+          set -euo pipefail
+          ls -d /Applications/Xcode_* || true
+          APP=$(ls -d /Applications/Xcode_${{ inputs.xcode }}*.app | sort -V | tail -1)
+          sudo xcode-select -s "$APP"
+          xcodebuild -version
+
       - name: Pick an available iPhone simulator
         id: sim
         run: |
           set -euo pipefail
+          # 가장 새 iOS 런타임의 iPhone
           DEVICE=$(xcrun simctl list devices available -j \
-            | jq -c '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))] | first')
+            | jq -c '[.devices | to_entries | map(select(.key | contains("iOS"))) | sort_by(.key) | last | .value[] | select(.name | startswith("iPhone"))] | first')
           echo "Using simulator: $DEVICE"
           echo "udid=$(echo "$DEVICE" | jq -r .udid)" >> "$GITHUB_OUTPUT"
 
