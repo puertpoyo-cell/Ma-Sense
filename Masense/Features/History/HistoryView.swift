@@ -239,7 +239,7 @@ struct HistoryView: View {
         guard let dose = allDoses.first(where: { $0.id == doseID }) else { return }
         dose.isCancelled = cancelled
         try? context.save()
-        Task { await services.refreshNotifications(context: context) }
+        Task { await services.refreshReminders(context: context) }
     }
 
     // MARK: 컨디션

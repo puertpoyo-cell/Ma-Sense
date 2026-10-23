@@ -164,7 +164,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - [x] a1. 알림에서 바로 기록·1시간 뒤 다시 (R4-1, `NotificationActions`, `NotificationResponder`, `AppRouter`)
 - [x] a2. 지난 투약 한꺼번에 입력 + 부위 모름 (사람 결정: 부위 모름 허용) — R3-1 `BackfillRules`, `BackfillSheet`(S2-1), 오늘 1-1a 안내 카드, 기록 탭 버튼·부위 고치기(`SiteEditSheet`), `siteRaw "unknown"`
 - [x] a3. 진료 때 물어볼 것 메모 — `ClinicQuestion` 모델, SchemaV3(1.2.0) 경량 이전 (사람 결정), R15, 리포트 G 위 섹션, 리포트 탭 카드·오늘 진료 카드·`ClinicQuestionsSheet`(S5-1), 내보내기 `clinicQuestions`
-- [ ] b1. 홈·잠금화면 위젯 — 위젯 확장 타깃, App Group 스냅샷 JSON
+- [x] b1. 홈·잠금화면 위젯 — 위젯 확장 타깃 `MasenseWidgets`(`com.masense.app.widgets`, App Group 같은 ID), `Shared/WidgetSnapshot` JSON, `WidgetRules`·`WidgetService`, SCREENS 위젯. 실기기 확인은 사람 (사람 확인 대기 13번)
 - [ ] b2. 투약일 Live Activity — `NSSupportsLiveActivities` (사람 결정). 서버가 없어 투약일에 앱을 열었을 때만 시작
 
 ## M3 — 출시 준비 (1주)
@@ -194,6 +194,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 | 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장, 내보내기 → AirDrop·파일 앱 → 가져오기 왕복 | — | — |
 | 11 | App Group 실기기 확인: Xcode Signing & Capabilities에서 App Groups `group.com.puertpoyo.masense`가 체크되어 있는지(빨간 표시면 새로고침), 업데이트 설치 후 이전 기록이 그대로 보이는지 | `Config/Masense.entitlements` | 그룹을 못 얻으면 앱 기본 경로를 그대로 써서 기록은 유지 |
 | 12 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
+| 13 | 위젯 실기기 확인 (D6): Signing & Capabilities에서 `MasenseWidgets` 타깃의 팀·App Groups `group.com.puertpoyo.masense` 체크, 홈·잠금화면에 위젯을 놓고 투약 기록 뒤 바로 바뀌는지, 예정일에 눌러 투약 기록 시트가 열리는지 | `Config/MasenseWidgets.entitlements` | 그룹을 못 얻으면 위젯은 "처방을 입력하면…"만 보이고 앱은 그대로 |
 
 ## 작업 분해 규칙
 

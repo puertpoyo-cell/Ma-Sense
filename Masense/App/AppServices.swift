@@ -6,31 +6,35 @@ final class AppServices {
     let notifications: NotificationScheduling
     let healthKit: HealthKitReading
     let store: StorePurchasing
+    let widgets: WidgetPublishing
     let calendar: Calendar
 
     init(
         notifications: NotificationScheduling,
         healthKit: HealthKitReading,
         store: StorePurchasing,
+        widgets: WidgetPublishing = FakeWidgetService(),
         calendar: Calendar = .current
     ) {
         self.notifications = notifications
         self.healthKit = healthKit
         self.store = store
+        self.widgets = widgets
         self.calendar = calendar
     }
 
     static func live(notifications: NotificationService = NotificationService()) -> AppServices {
-        AppServices(notifications: notifications, healthKit: HealthKitService(), store: StoreService())
+        AppServices(notifications: notifications, healthKit: HealthKitService(), store: StoreService(), widgets: WidgetService())
     }
 
     static func fake() -> AppServices {
         AppServices(notifications: FakeNotificationService(), healthKit: FakeHealthKitService(), store: FakeStoreService())
     }
 
-    /// 저장된 데이터로 알림을 전부 다시 등록한다 (RULES.md R4)
+    /// 기록·처방·설정이 바뀌었거나 앱이 앞으로 왔을 때: 알림을 전부 다시 등록하고(RULES.md R4) 위젯 요약을 다시 쓴다 (D6)
     @MainActor
-    func refreshNotifications(context: ModelContext, now: Date = Date()) async {
+    func refreshReminders(context: ModelContext, now: Date = Date()) async {
+        widgets.publish(WidgetService.snapshot(context: context, now: now, calendar: calendar))
         await NotificationCoordinator(service: notifications, calendar: calendar).refresh(context: context, now: now)
     }
 }

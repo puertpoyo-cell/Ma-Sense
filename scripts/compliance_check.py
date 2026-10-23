@@ -13,9 +13,9 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-# 화면 문구(Localizable)와 권한 요청 문구(InfoPlist) 카탈로그
-CATALOGS = sorted((ROOT / "Masense" / "Resources").glob("*.xcstrings"))
-CODE_DIRS = [ROOT / "Masense", ROOT / "MasenseTests"]
+# 화면 문구(Localizable)와 권한 요청 문구(InfoPlist) 카탈로그, 위젯 확장 문구 (D6)
+CATALOGS = sorted((ROOT / "Masense" / "Resources").glob("*.xcstrings")) + sorted((ROOT / "MasenseWidgets").glob("*.xcstrings"))
+CODE_DIRS = [ROOT / "Masense", ROOT / "MasenseTests", ROOT / "MasenseWidgets", ROOT / "Shared"]
 DOC_DIRS = [ROOT / "docs"]
 
 # 2.1-2 특정 약물명·상표명·성분명 (코드 식별자·주석·문구·문서 전부)
@@ -86,7 +86,8 @@ def main() -> int:
             for word, reason in FORBIDDEN_KO.items():
                 if word in value:
                     problems.append(f"[문구] {key} '{word}' — {reason}: {value}")
-            if key.startswith("notif."):
+            # 알림과 위젯(잠금화면에도 놓인다)
+            if key.startswith("notif.") or key.startswith("widget."):
                 for word in NOTIFICATION_FORBIDDEN:
                     if word in value:
                         problems.append(f"[알림] {key} '{word}' — 3.3 잠금화면 민감어: {value}")

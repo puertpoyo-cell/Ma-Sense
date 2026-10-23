@@ -24,6 +24,7 @@ let config = ModelConfiguration("Masense", schema: schema, url: url,
   - D4-A 이전 빌드가 앱 기본 경로에 만든 스토어가 있고 그룹 쪽에 스토어가 없으면 첫 실행에 옮긴다. 본 파일과 `-wal`·`-shm`을 모두 복사한 뒤에만 이전 파일을 지우고, 하나라도 실패하면 복사본을 지우고 이전 경로를 쓴다 (`StoreLocationTests`)
 - Xcode: 앱 타깃에 App Groups capability 추가 (`Config/Masense.entitlements`의 `com.apple.security.application-groups`), 위젯·Watch 타깃이 생기면 같은 그룹 ID 추가. 개발자 계정에 그룹이 등록되어 있어야 실기기 서명이 된다 (자동 서명이면 Xcode가 등록)
 - 쓰기는 앱 타깃만. 위젯 등 익스텐션은 읽기 전용으로 쓰고, 기록 액션은 딥링크로 앱을 연다 (동시 쓰기 회피)
+- D6 위젯 구현 (2026-10-23): 위젯 확장은 SwiftData 스토어를 **열지 않고**, 앱이 같은 App Group 컨테이너에 써 두는 요약 `WidgetSnapshot.json`(`Shared/WidgetSnapshot.swift`, 다음 예정·마지막 투약과 부위 표시명·남은 회차)만 읽는다. 위젯 프로세스가 스토어를 열면 스키마 이전과 파일 잠금을 두 프로세스가 다뤄야 하고, 위젯에 필요한 값은 몇 개뿐이라서. 요약은 기록·처방·설정이 바뀔 때와 앱이 앞으로 올 때 `AppServices.refreshReminders`가 다시 쓴다 (`WidgetRules`, `WidgetService`). 스토어를 App Group에 둔 이유(나중에 Watch 등이 읽을 수 있게)는 그대로
 - 테스트·미리보기는 `isStoredInMemoryOnly: true`로 App Group을 쓰지 않는다
 
 ### CloudKit 호환 규칙 (v1부터 적용, 동기화는 꺼 둠)

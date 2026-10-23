@@ -89,7 +89,7 @@ struct BackfillSheet: View {
 
     private func save() {
         guard let saved = try? model.save(in: context), saved > 0 else { return }
-        Task { await services.refreshNotifications(context: context) }
+        Task { await services.refreshReminders(context: context) }
         dismiss()
         onSaved()
     }

@@ -100,7 +100,7 @@ private struct SettingsForm: View {
         .foregroundStyle(Color.ink)
         .onChange(of: notificationSignature) {
             try? context.save()
-            Task { await services.refreshNotifications(context: context) }
+            Task { await services.refreshReminders(context: context) }
         }
         .task {
             notificationStatus = await services.notifications.authorizationStatus()
@@ -206,7 +206,7 @@ private struct SettingsForm: View {
                     Task {
                         _ = await services.notifications.requestAuthorization()
                         notificationStatus = await services.notifications.authorizationStatus()
-                        await services.refreshNotifications(context: context)
+                        await services.refreshReminders(context: context)
                     }
                 }
             default:

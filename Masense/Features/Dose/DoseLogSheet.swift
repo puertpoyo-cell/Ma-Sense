@@ -86,7 +86,7 @@ struct DoseLogSheet: View {
         Task {
             // 기록했으면 미뤄 둔 투약 알림은 필요 없다
             await services.notifications.cancelSnooze()
-            await services.refreshNotifications(context: context)
+            await services.refreshReminders(context: context)
         }
         dismiss()
         onSaved()

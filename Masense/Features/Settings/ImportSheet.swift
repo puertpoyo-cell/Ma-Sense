@@ -116,7 +116,7 @@ struct ImportSheet: View {
         model.importRecords(context: context, calendar: calendar)
         guard model.result != nil else { return }
         Task {
-            await services.refreshNotifications(context: context)
+            await services.refreshReminders(context: context)
             if (try? UserSettings.current(in: context))?.healthKitAuthorized == true {
                 try? await HealthSyncService.syncAll(reader: services.healthKit, context: context)
             }

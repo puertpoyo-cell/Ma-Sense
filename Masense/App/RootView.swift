@@ -51,7 +51,7 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, newPhase in
             // R4: 포그라운드로 올 때마다 전부 취소 후 재등록
             guard newPhase == .active, phase == .main else { return }
-            Task { await services.refreshNotifications(context: context) }
+            Task { await services.refreshReminders(context: context) }
         }
     }
 }

@@ -3,7 +3,7 @@ import Foundation
 /// SwiftData 스토어 파일 위치 (DATA_MODEL.md "저장 위치 — App Group 컨테이너").
 /// v2 위젯·Live Activity·Watch가 같은 스토어를 읽도록 App Group 컨테이너에 둔다.
 enum StoreLocation {
-    static let appGroupID = "group.com.puertpoyo.masense"
+    static let appGroupID = AppGroup.identifier
     static let fileName = "Masense.store"
 
     /// SQLite 저장소 파일과 저널 파일 접미사
