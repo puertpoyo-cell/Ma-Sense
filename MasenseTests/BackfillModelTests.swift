@@ -47,12 +47,14 @@ struct BackfillModelTests {
         ])
         // 남은 회차(7)가 넉넉하면 모두 켜고 부위는 비워 둔다
         #expect(model.rows.allSatisfy { $0.isIncluded && $0.site == nil })
+        try #require(model.rows.count == 4)
         model.rows[0].isIncluded = false
         model.rows[2].site = .abdomenLowerRight
         #expect(model.renumberedCount == 1)
 
         #expect(try model.save(in: context) == 3)
         let doses = prescription.doses.sorted { $0.administeredAt < $1.administeredAt }
+        try #require(doses.count == 4)
         #expect(doses.map(\.administeredAt) == [
             TestCalendar.date(2026, 10, 1, 20),
             TestCalendar.date(2026, 10, 8, 20),
@@ -78,6 +80,7 @@ struct BackfillModelTests {
         #expect(capped.remaining == 2)
         // 최근 두 주만 켜 두고, 꺼진 주는 더 켤 수 없다
         #expect(capped.rows.map(\.isIncluded) == [false, false, true, true])
+        try #require(capped.rows.count == 4)
         #expect(!capped.canToggle(capped.rows[0]))
         #expect(capped.canToggle(capped.rows[3]))
         #expect(capped.canSave)

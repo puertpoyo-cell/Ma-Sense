@@ -127,7 +127,7 @@ struct ExportServiceTests {
         let object = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         let records = try #require(object["clinicQuestions"] as? [[String: Any]])
         #expect(records.map { $0["text"] as? String } == ["아직 묻지 않음", "물어봄"])
-        #expect(records[0]["askedAt"] is NSNull)
+        #expect(records.first?["askedAt"] is NSNull)
 
         let document = try ExportCodec.decode(data)
         let result = try ExportService.apply(document, mode: .replace, context: context, calendar: TestCalendar.seoul)

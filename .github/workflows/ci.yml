@@ -61,3 +61,9 @@ jobs:
           # 크래시·실패 원인은 xcodebuild 로그에 안 나오고 결과 번들에만 남는다
           xcrun xcresulttool get test-results summary --path TestResults.xcresult --format json \
             | jq '{result, failedTests, testFailures}' || true
+          # "Test crashed with signal trap"의 원인 줄(Fatal error 등)은 시뮬레이터 크래시 보고서에 있다
+          for report in $(ls -t ~/Library/Logs/DiagnosticReports/Masense*.ips 2>/dev/null | head -2); do
+            echo "== $report"
+            grep -E '"asi"|Fatal error|fatalError|Precondition|Index out of range|Unexpectedly found nil' "$report" | head -20 || true
+            python3 -c "import json,sys; t=open(sys.argv[1]).read().split('\n',1)[1]; d=json.loads(t); print('asi', d.get('asi')); print('exception', d.get('exception')); th=[x for x in d.get('threads',[]) if x.get('triggered')]; fr=th[0]['frames'][:25] if th else []; imgs=d.get('usedImages',[]); [print(i, imgs[f['imageIndex']].get('name','?') if f.get('imageIndex') is not None and f['imageIndex']<len(imgs) else '?', f.get('symbol','?'), f.get('sourceFile',''), f.get('sourceLine','')) for i,f in enumerate(fr)]" "$report" || true
+          done

@@ -10,7 +10,7 @@ struct MasenseSmokeTests {
         let modelNames = Set(container.schema.entities.map(\.name))
         #expect(modelNames == [
             "Prescription", "Dose", "ConditionCheck", "WeightSample", "UserSettings",
-            "ProteinEntry", "StrengthSession", "HabitCheck",
+            "ProteinEntry", "StrengthSession", "HabitCheck", "ClinicQuestion",
         ])
     }
 
