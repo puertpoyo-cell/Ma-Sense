@@ -75,6 +75,7 @@ struct MainTabView: View {
     }
 
     @State private var selection: Tab = MainTabView.initialTab
+    @Environment(\.router) private var router
 
     private static var initialTab: Tab {
         #if DEBUG
@@ -109,6 +110,12 @@ struct MainTabView: View {
             .tag(Tab.report)
         }
         .tint(Color.accent)
+        // 알림·위젯에서 들어오면 오늘 탭으로. 시트는 오늘 화면이 연다
+        .onChange(of: router.pending, initial: true) { _, route in
+            if route != nil {
+                selection = .today
+            }
+        }
     }
 }
 

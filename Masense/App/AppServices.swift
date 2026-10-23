@@ -20,8 +20,8 @@ final class AppServices {
         self.calendar = calendar
     }
 
-    static func live() -> AppServices {
-        AppServices(notifications: NotificationService(), healthKit: HealthKitService(), store: StoreService())
+    static func live(notifications: NotificationService = NotificationService()) -> AppServices {
+        AppServices(notifications: notifications, healthKit: HealthKitService(), store: StoreService())
     }
 
     static func fake() -> AppServices {

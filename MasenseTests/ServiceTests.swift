@@ -46,6 +46,19 @@ struct ServiceTests {
         #expect(fake.pending.contains { $0.kind == .conditionH24 })
     }
 
+    /// R4-1: 미룬 알림은 재등록에도 남고, 투약을 기록하면 지운다
+    @Test func snoozeSurvivesRefreshUntilCancelled() async throws {
+        let fake = FakeNotificationService()
+        let snoozed = NotificationActions.snoozed(kind: .doseDue, now: TestCalendar.date(2026, 10, 22, 20))
+        await fake.schedule(snoozed)
+        await fake.replaceAll(with: [PlannedNotification(id: "dose.due.1", kind: .doseDue, fireDate: TestCalendar.date(2026, 10, 29, 20))])
+        let afterRefresh = await fake.pendingIdentifiers()
+        #expect(Set(afterRefresh) == ["dose.due.1", NotificationActions.snoozeIdentifier])
+        await fake.cancelSnooze()
+        let afterCancel = await fake.pendingIdentifiers()
+        #expect(afterCancel == ["dose.due.1"])
+    }
+
     @Test func notificationCoordinatorWithoutPrescriptionRegistersNothing() async throws {
         let context = makeContext()
         let fake = FakeNotificationService()

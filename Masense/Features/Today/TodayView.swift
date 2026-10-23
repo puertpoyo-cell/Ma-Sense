@@ -28,6 +28,7 @@ struct TodayView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.services) private var services
     @Environment(\.calendar) private var calendar
+    @Environment(\.router) private var router
     @Query(filter: #Predicate<Prescription> { $0.isActive })
     private var activePrescriptions: [Prescription]
     @Query(sort: \ConditionCheck.checkedAt)
@@ -87,6 +88,9 @@ struct TodayView: View {
         #endif
         .sheet(item: $sheet) { sheet in
             sheetContent(sheet)
+        }
+        .onChange(of: router.pending, initial: true) { _, route in
+            if let route { open(route) }
         }
         .recordedToast(isPresented: $showsToast)
         .task { await syncHealthIfAuthorized() }
@@ -217,6 +221,20 @@ struct TodayView: View {
     }
 
     // MARK: 시트
+
+    /// 알림의 "기록하기"·위젯 링크 (D6). 처방이 없거나 열 컨디션 체크가 없으면 오늘 화면만 보여 준다
+    private func open(_ route: AppRoute) {
+        defer { router.finish(route) }
+        switch route {
+        case .logDose:
+            if prescription != nil { sheet = .dose }
+        case .conditionCheck:
+            // 알림에서 들어온 순간이 now 주입 지점
+            if let prompt = makeModel(now: Date()).conditionPrompt {
+                sheet = .condition(doseID: prompt.doseID, window: prompt.window)
+            }
+        }
+    }
 
     #if DEBUG
     /// 실행 인자 `-route sheet.*`로 시작할 때 해당 시트를 연다 (ScreenshotRoute)

@@ -157,6 +157,16 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - [x] c. 시작 전환 화면 1초 (`SplashView`, M 마크 `SplashMark`, 시스템 시작 화면 바탕 midnight)
 - [x] d. 앱 아이콘 확정안 "네이비 유리 M" — 다크 네이비 바탕, 1차안 M 그대로(굵기 비율 136) 1.28배, 유리 테두리 약간·조금 더 맑게·굴절 조금 (옵션 R1~R3 중 사람이 R2 선택). 하이라이트 그림 요소 없음. 중간에 굵기 155 `glass`·끝 반사 `clear`안을 거침 (`make_app_icon.py navy`, `SplashMark`도 같이)
 
+## D6 — 쓸모·후킹 (2026-10-23 사람 결정)
+
+게임식 장치(연속 기록·배지·랭킹·축하)는 COMPLIANCE 2.1-4로 쓰지 않는다. "필요한 순간에 한 번에 끝나게"와 "기록이 진료에 바로 쓰이게"로 붙잡는다.
+
+- [x] a1. 알림에서 바로 기록·1시간 뒤 다시 (R4-1, `NotificationActions`, `NotificationResponder`, `AppRouter`)
+- [ ] a2. 지난 투약 한꺼번에 입력 + 부위 모름 (사람 결정: 부위 모름 허용)
+- [ ] a3. 진료 때 물어볼 것 메모 — `ClinicQuestion` 모델, SchemaV3 경량 이전 (사람 결정), 리포트·내보내기 포함
+- [ ] b1. 홈·잠금화면 위젯 — 위젯 확장 타깃, App Group 스냅샷 JSON
+- [ ] b2. 투약일 Live Activity — `NSSupportsLiveActivities` (사람 결정). 서버가 없어 투약일에 앱을 열었을 때만 시작
+
 ## M3 — 출시 준비 (1주)
 
 - [ ] `COMPLIANCE.md` 6 출시 전 확인 전부 — 사람

@@ -63,6 +63,23 @@ struct PlannedNotification { let id: String; let kind: NotificationKind; let fir
 - Dose를 기록하면 그 마디의 투약·저녁 알림을 즉시 제거
 - 알림 문구에 약 이름·용량 없음
 
+### R4-1. 알림에서 바로 하는 일 (D6, 2026-10-23 사람 결정)
+
+```swift
+enum NotificationActions { static func category(for: NotificationKind) -> String?; static func response(action:category:) -> Response?; static func snoozed(kind:now:) -> PlannedNotification }
+enum AppRoute { case logDose, conditionCheck }
+```
+
+| 알림 | 버튼 (알림을 길게 누름) | 본문을 누름 |
+|---|---|---|
+| 투약·저녁 리마인드 | "기록하기"(앱을 열고 투약 기록 시트) · "1시간 뒤 다시 알림"(앱을 열지 않음) | 투약 기록 시트 |
+| 컨디션 24h·48h | "컨디션 기록"(지금 열린 컨디션 체크 시트) | 컨디션 체크 시트 |
+| 진료·소진 | 없음 | 앱만 연다 |
+
+- 미루기는 같은 문구를 **한 시간 뒤 한 번** 더 보낸다(`dose.snooze`, 다시 미루면 덮어씀). 앱이 판단하지 않는다
+- 미룬 알림은 포그라운드 재등록(R4)에도 남고, 투약을 기록하면 지운다
+- 처방이 없거나 열린 컨디션 체크가 없으면 오늘 화면만 연다
+
 ## R5. 컨디션 체크 윈도우
 
 ```swift

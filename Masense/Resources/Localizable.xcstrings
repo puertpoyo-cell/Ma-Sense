@@ -2330,6 +2330,57 @@
         }
       }
     },
+    "notif.action.logCondition": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log condition"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "컨디션 기록"
+          }
+        }
+      }
+    },
+    "notif.action.logDose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log dose"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록하기"
+          }
+        }
+      }
+    },
+    "notif.action.snooze": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remind me in 1 hour"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1시간 뒤 다시 알림"
+          }
+        }
+      }
+    },
     "notif.clinic.soon": {
       "extractionState": "manual",
       "localizations": {

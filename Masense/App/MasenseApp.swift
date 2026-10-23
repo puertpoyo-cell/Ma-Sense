@@ -1,12 +1,24 @@
 import SwiftData
 import SwiftUI
+import UserNotifications
 
 @main
 struct MasenseApp: App {
     private let container: ModelContainer
-    private let services = AppServices.live()
+    private let services: AppServices
+    private let router: AppRouter
+    /// 알림 응답 처리. `UNUserNotificationCenter.delegate`는 약한 참조라 앱이 붙잡는다
+    private let notificationResponder: NotificationResponder
 
     init() {
+        let router = AppRouter()
+        let notifications = NotificationService()
+        notifications.registerCategories()
+        self.router = router
+        services = AppServices.live(notifications: notifications)
+        notificationResponder = NotificationResponder(router: router, service: notifications)
+        UNUserNotificationCenter.current().delegate = notificationResponder
+
         do {
             container = try ModelContainer.masense()
         } catch {
@@ -26,6 +38,13 @@ struct MasenseApp: App {
         WindowGroup {
             RootView()
                 .environment(\.services, services)
+                .environment(\.router, router)
+                // 위젯·Live Activity의 링크 (masense://log-dose)
+                .onOpenURL { url in
+                    if let route = AppRouter.route(for: url) {
+                        router.open(route)
+                    }
+                }
         }
         .modelContainer(container)
     }
