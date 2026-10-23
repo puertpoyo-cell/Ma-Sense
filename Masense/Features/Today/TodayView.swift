@@ -12,9 +12,11 @@ struct TodayView: View {
         case weight
         case protein(preselected: ProteinFood?)
         case strength
+        case backfill
 
         var id: String {
             switch self {
+            case .backfill: return "backfill"
             case .prescription: return "prescription"
             case .dose: return "dose"
             case let .condition(doseID, window): return "condition.\(doseID.uuidString).\(window.rawValue)"
@@ -44,6 +46,8 @@ struct TodayView: View {
     @State private var opensSettingsForScreenshot = ScreenshotRoute.current.map { [.settings, .importSheet, .importResult].contains($0) } ?? false
     #endif
     @State private var showsToast = false
+    /// 지난 투약 안내 카드를 닫은 처방 id (D6). 기기 화면 상태라 SwiftData 대신 UserDefaults
+    @AppStorage("backfill.dismissedPrescription") private var dismissedBackfill = ""
 
     private var prescription: Prescription? { activePrescriptions.first }
 
@@ -55,7 +59,10 @@ struct TodayView: View {
                 VStack(spacing: Spacing.cardGap) {
                     countdownCard(model)
                     // 처방이 없으면 1-1만 보인다 (SCREENS.md 빈 상태)
-                    if prescription != nil {
+                    if let prescription {
+                        if model.backfillCount > 0, dismissedBackfill != prescription.id.uuidString {
+                            backfillCard(count: model.backfillCount, prescriptionID: prescription.id)
+                        }
                         if let prompt = model.conditionPrompt {
                             conditionCard(prompt)
                         }
@@ -123,6 +130,27 @@ struct TodayView: View {
             onLogDose: { sheet = .dose },
             onEnterPrescription: { sheet = .prescription }
         )
+    }
+
+    // MARK: 1-1a 지난 투약 안내 (D6)
+
+    /// 처방 시작일 이후 첫 기록 전에 빈 주가 있을 때. 사실만 알리고 한꺼번에 기록할 수 있게 한다
+    private func backfillCard(count: Int, prescriptionID: UUID) -> some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
+                Text("backfill.title")
+                    .font(Typography.sectionHeader)
+                    .foregroundStyle(Color.ink)
+                Text("backfill.card.message \(count)")
+                    .font(Typography.body)
+                    .foregroundStyle(Color.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                AdaptiveStack(spacing: Spacing.s2) {
+                    GhostButton("backfill.card.action") { sheet = .backfill }
+                    GhostButton("backfill.card.dismiss") { dismissedBackfill = prescriptionID.uuidString }
+                }
+            }
+        }
     }
 
     // MARK: 1-2 컨디션 체크
@@ -243,6 +271,7 @@ struct TodayView: View {
         case .doseSheet?: sheet = .dose
         case .proteinSheet?: sheet = .protein(preselected: nil)
         case .strengthSheet?: sheet = .strength
+        case .backfillSheet?: sheet = .backfill
         case .conditionSheet?:
             if let dose = prescription?.doses.filter({ !$0.isCancelled }).max(by: { $0.administeredAt < $1.administeredAt }) {
                 sheet = .condition(doseID: dose.id, window: .h24)
@@ -279,6 +308,10 @@ struct TodayView: View {
             ) { showsToast = true }
         case .strength:
             StrengthSheet(isLowCondition: makeModel(now: .now).daily.isLowCondition) { showsToast = true }
+        case .backfill:
+            if let prescription {
+                BackfillSheet(prescription: prescription) { showsToast = true }
+            }
         }
     }
 

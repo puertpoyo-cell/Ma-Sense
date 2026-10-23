@@ -67,11 +67,15 @@ struct SchemaTests {
         #expect(session.source == .healthKit)
     }
 
-    /// 모르는 rawValue(나중 버전이 더한 값 등)는 기본값으로 읽는다
+    /// 모르는 rawValue(나중 버전이 더한 값 등)는 기본값으로 읽는다. 부위는 "부위 기록 없음"(nil)으로 읽는다 (D6)
     @Test func unknownRawValuesFallBack() {
         let dose = Dose(administeredAt: .now, scheduledFor: .now, site: .thighRight, sequence: 1)
         dose.siteRaw = "unknownSite"
-        #expect(dose.site == .abdomenUpperLeft)
+        #expect(dose.site == nil)
+        let unknown = Dose(administeredAt: .now, scheduledFor: .now, site: nil, sequence: 1)
+        #expect(unknown.siteRaw == Dose.unknownSiteRaw)
+        unknown.site = .thighLeft
+        #expect(unknown.siteRaw == "thighLeft")
         let protein = ProteinEntry(date: .now, meal: .lunch, foods: [.egg], estimatedGrams: 6)
         protein.foodsRaw = ["egg", "somethingNew"]
         #expect(protein.foods == [.egg, .other])

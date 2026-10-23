@@ -27,7 +27,8 @@ struct ClinicReport: Equatable {
     struct CycleCell: Equatable, Identifiable {
         enum State: Equatable {
             /// `offsetText`: 예정일과 실제일이 2일 이상 차이 나면 "+2d" / "-2d"
-            case recorded(date: Date, site: BodySite, sequence: Int, offsetText: String?)
+            /// `site` nil = 부위 기록 없음 (D6)
+            case recorded(date: Date, site: BodySite?, sequence: Int, offsetText: String?)
             case missed
             /// 진행 중인 마디, 아직 기록 없음
             case pending

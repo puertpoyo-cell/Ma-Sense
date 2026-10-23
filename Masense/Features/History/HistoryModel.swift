@@ -6,7 +6,8 @@ enum HistoryModel {
 
     struct DoseRow: Identifiable, Equatable {
         enum Kind: Equatable {
-            case dose(id: UUID, site: BodySite, sequence: Int, hasNote: Bool, isCancelled: Bool)
+            /// `site` nil = 부위 기록 없음 (D6). 눌러서 나중에 부위를 고칠 수 있다
+            case dose(id: UUID, site: BodySite?, sequence: Int, hasNote: Bool, isCancelled: Bool)
             /// 구간이 끝났는데 기록이 없는 마디 (R3). `canAddDose`는 현재 처방의 마디라 과거 기록을 더할 수 있는지
             case missed(scheduled: Date, canAddDose: Bool)
             /// 두 번째 처방부터 시작일에 놓는 구분 행 "처방 변경 · {doseLabel}" (R13). 라벨은 해석하지 않는다
@@ -113,6 +114,7 @@ enum HistoryModel {
     }
 
     /// 투약별 24h·48h 요약, 최근 투약 순. 취소된 투약은 제외.
+    /// 컨디션 창이 닫힌 뒤에 만든 기록은 체크가 하나도 없으면 넣지 않는다 (D6)
     static func conditionGroups(doses: [DoseSnapshot], checks: [ConditionCheckSnapshot], now: Date) -> [ConditionGroup] {
         doses
             .filter { !$0.isCancelled }
@@ -135,6 +137,11 @@ enum HistoryModel {
                     }
                     return now >= opensAt ? ConditionSlot(window: window, state: .missing) : nil
                 }
+                // 창이 다 닫힌 뒤에 만든 기록(지난 투약 한꺼번에 입력 등)은 체크가 없으면 빈칸을 만들지 않는다 (D6)
+                let recordedLate = dose.createdAt.map {
+                    $0.timeIntervalSince(dose.administeredAt) >= ConditionRules.h48Window.upperBound
+                } ?? false
+                if recordedLate, slots.allSatisfy({ $0.state == .missing }) { return nil }
                 return slots.isEmpty ? nil : ConditionGroup(doseID: dose.id, administeredAt: dose.administeredAt, slots: slots)
             }
     }

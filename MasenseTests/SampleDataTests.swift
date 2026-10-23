@@ -41,6 +41,9 @@ struct SampleDataTests {
 
         let cycles = CycleRules.cycles(for: prescription.snapshot, doses: prescription.doseSnapshots, now: now, until: now, calendar: calendar)
         #expect(CycleRules.missedCycles(cycles: cycles, doses: prescription.doseSnapshots, now: now).count == 1)
+        // 첫 기록은 부위 기록 없음 (D6 예시). 누락은 첫 기록 뒤라 오늘 화면 안내 카드는 없다
+        #expect(prescription.doses.filter { $0.site == nil }.count == 1)
+        #expect(today.backfillCount == 0)
     }
 
     @Test func settingsMarkOnboardingDone() throws {

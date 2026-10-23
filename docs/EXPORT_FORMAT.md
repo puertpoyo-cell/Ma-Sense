@@ -45,7 +45,7 @@
 
 ## 레코드 형식
 
-각 레코드는 `DATA_MODEL.md`의 필드를 camelCase 그대로 쓰고, `xxxRaw` 저장 필드는 `Raw` 접미사를 떼고 rawValue 문자열로 내보낸다 (`siteRaw` → `"site": "abdomenUpperLeft"`).
+각 레코드는 `DATA_MODEL.md`의 필드를 camelCase 그대로 쓰고, `xxxRaw` 저장 필드는 `Raw` 접미사를 떼고 rawValue 문자열로 내보낸다 (`siteRaw` → `"site": "abdomenUpperLeft"`). 투약의 `site`는 부위 기록 없음이면 `"unknown"` (D6, 형식 v1 안에서 값만 늘어남. 이전 앱은 모르는 값을 그대로 저장하고 부위 기록 없음으로 읽는다).
 
 ### settings
 ```json

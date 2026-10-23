@@ -13,12 +13,18 @@ struct HistoryView: View {
         case dose(initialDate: Date)
         case condition(doseID: UUID, window: ConditionWindow)
         case weight
+        /// 지난 투약 한꺼번에 입력 (D6)
+        case backfill
+        /// 부위 기록 없음 고치기 (D6)
+        case site(doseID: UUID)
 
         var id: String {
             switch self {
             case let .dose(date): return "dose.\(date.timeIntervalSinceReferenceDate)"
             case let .condition(doseID, window): return "condition.\(doseID.uuidString).\(window.rawValue)"
             case .weight: return "weight"
+            case .backfill: return "backfill"
+            case let .site(doseID): return "site.\(doseID.uuidString)"
             }
         }
     }
@@ -100,6 +106,15 @@ struct HistoryView: View {
         if months.isEmpty {
             emptyRow("history.empty")
         }
+        // 누락 마디가 둘 이상이면 한꺼번에 기록 (D6). 남은 회차가 없으면 숨긴다
+        if backfillCount(now: now) >= 2 {
+            Button { sheet = .backfill } label: {
+                Label("history.backfill", systemImage: "calendar.badge.plus")
+                    .font(Typography.label)
+                    .foregroundStyle(Color.accent)
+            }
+            .frostRow()
+        }
         ForEach(months) { month in
             Section {
                 ForEach(month.rows) { row in
@@ -115,14 +130,24 @@ struct HistoryView: View {
     private func doseRow(_ row: HistoryModel.DoseRow) -> some View {
         switch row.kind {
         case let .dose(id, site, sequence, hasNote, isCancelled):
+            // 부위 기록 없음은 눌러서 나중에 고친다 (D6)
+            let editsSite = site == nil && !isCancelled
             AdaptiveStack(spacing: Spacing.s3) {
                 VStack(alignment: .leading, spacing: Spacing.s1) {
                     Text(row.date.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated).hour().minute()))
                         .font(Typography.body)
                         .strikethrough(isCancelled)
-                    Text(site.localizedName)
-                        .font(Typography.caption)
-                        .foregroundStyle(Color.inkSecondary)
+                    Group {
+                        if let site {
+                            Text(site.localizedName)
+                        } else if editsSite {
+                            Text("history.site.unknown")
+                        } else {
+                            Text("site.unknown")
+                        }
+                    }
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
                 }
                 Spacer()
                 if hasNote {
@@ -141,6 +166,12 @@ struct HistoryView: View {
                 }
             }
             .foregroundStyle(isCancelled ? Color.inkTertiary : Color.ink)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if editsSite { sheet = .site(doseID: id) }
+            }
+            .accessibilityAddTraits(editsSite ? .isButton : [])
+            .accessibilityHint(editsSite ? Text("history.site.unknown.hint") : Text(verbatim: ""))
             .frostRow()
             .swipeActions(edge: .trailing) {
                 // 빨강 금지: destructive 역할 대신 중립색
@@ -194,6 +225,14 @@ struct HistoryView: View {
             .listRowSeparator(.hidden)
             .accessibilityElement(children: .combine)
         }
+    }
+
+    /// 활성 처방의 누락 마디 수. 남은 회차가 없으면 0 (R3-1)
+    private func backfillCount(now: Date) -> Int {
+        guard let activePrescription else { return 0 }
+        let doses = activePrescription.doseSnapshots
+        guard PrescriptionRules.remainingDoses(p: activePrescription.snapshot, doses: doses) > 0 else { return 0 }
+        return BackfillRules.candidates(prescription: activePrescription.snapshot, doses: doses, now: now, calendar: calendar).count
     }
 
     private func setCancelled(_ cancelled: Bool, doseID: UUID) {
@@ -471,6 +510,14 @@ struct HistoryView: View {
             }
         case .weight:
             WeightEntrySheet { showsToast = true }
+        case .backfill:
+            if let activePrescription {
+                BackfillSheet(prescription: activePrescription) { showsToast = true }
+            }
+        case let .site(doseID):
+            if let dose = allDoses.first(where: { $0.id == doseID }) {
+                SiteEditSheet(dose: dose) { showsToast = true }
+            }
         }
     }
 }

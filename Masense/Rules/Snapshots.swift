@@ -46,20 +46,24 @@ struct DoseSnapshot: Equatable, Identifiable {
     let id: UUID
     let administeredAt: Date
     let scheduledFor: Date
-    let site: BodySite
+    /// nil = 부위 기록 없음 (D6 지난 투약 한꺼번에 입력). 바디맵 이력에서 빠진다
+    let site: BodySite?
     let sequence: Int
     let isCancelled: Bool
     /// 자유 메모. 기록 탭 메모 표시, 리포트 G 섹션
     let note: String?
+    /// 기록을 만든 시각. 컨디션 창이 닫힌 뒤 늦게 기록한 투약을 가린다 (HistoryModel). 모르면 nil
+    let createdAt: Date?
 
     init(
         id: UUID = UUID(),
         administeredAt: Date,
         scheduledFor: Date,
-        site: BodySite,
+        site: BodySite?,
         sequence: Int,
         isCancelled: Bool = false,
-        note: String? = nil
+        note: String? = nil,
+        createdAt: Date? = nil
     ) {
         self.id = id
         self.administeredAt = administeredAt
@@ -68,6 +72,7 @@ struct DoseSnapshot: Equatable, Identifiable {
         self.sequence = sequence
         self.isCancelled = isCancelled
         self.note = note
+        self.createdAt = createdAt
     }
 }
 

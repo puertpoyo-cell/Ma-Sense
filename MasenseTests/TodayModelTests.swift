@@ -102,4 +102,16 @@ struct TodayModelTests {
         #expect(today.weightSeries.count == TodayModel.weightWeeks)
         #expect(today.doseDatesInSeries == [TestCalendar.date(2026, 10, 22, 20)])
     }
+
+    /// R3-1 (D6): 첫 기록 전에 비어 있는 주만 센다. 남은 회차가 없으면 안내하지 않는다
+    @Test func backfillCountsLeadingMissedWeeks() {
+        // 10-22, 10-29 마디가 비었고 11-5에 첫 기록. 지금 11-6
+        let now = TestCalendar.date(2026, 11, 6, 9)
+        #expect(model(prescription(), now: now).backfillCount == 2)
+        #expect(model(prescription(), doses: [dose(11, 5, 20)], now: now).backfillCount == 2)
+        // 첫 기록(10-22) 뒤의 누락(10-29)은 앱을 쓰기 전이 아니다
+        #expect(model(prescription(), doses: [dose(10, 22, 20), dose(11, 5, 20)], now: now).backfillCount == 0)
+        #expect(model(prescription(totalDoses: 1), doses: [dose(11, 5, 20)], now: now).backfillCount == 0)
+        #expect(model(nil, now: now).backfillCount == 0)
+    }
 }

@@ -39,6 +39,25 @@ enum NextDose { case due(Cycle, remaining: TimeInterval), overdue(Cycle, elapsed
 - 누락은 저장하지 않고 항상 계산. 리포트에는 "누락 n회"로 표시만 함
 - 누락 뒤 사용자가 "맞았는데 기록을 안 했다"면 과거 날짜로 Dose 추가 가능 → 누락 해제
 
+### R3-1. 지난 투약 한꺼번에 입력 (D6, 2026-10-23 사람 결정)
+
+이 앱을 쓰기 전에 치료를 시작한 사람이 지난 투약을 한 번에 채우는 기능. 앱은 어느 주를 맞았는지 판단하지 않고, 사용자가 켜 둔 주만 기록한다.
+
+```swift
+func candidates(prescription: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, calendar: Calendar) -> [Cycle]  // 활성 처방의 누락 마디 (R3)
+func leadingCount(candidates: [Cycle], doses: [DoseSnapshot]) -> Int      // 첫 기록(취소 제외)보다 앞선 누락 수, 기록 없으면 전부
+func defaultSelection(candidates: [Cycle], remaining: Int) -> Set<Int>    // 처음에 켜 둘 마디 index: 최근부터 남은 회차까지
+func plan(selected: [Date], doses: [DoseSnapshot]) -> Plan                // 새 기록 회차, 밀리는 기존 기록 회차
+```
+
+- 대상은 **활성 처방**의 누락 마디만. 보관된 처방의 누락은 기록 탭에서 보기만 한다 (기존과 같음)
+- 기록 시각 = 마디 예정 일시 (`administeredAt == scheduledFor`)
+- 켤 수 있는 수는 남은 회차(R13 `remainingDoses`)까지. 처음에는 최근 마디부터 남은 회차만큼 켠다
+- 부위는 고르거나 비워 둔다. 비우면 `siteRaw = "unknown"` (부위 기록 없음, R6)
+- 회차: 새 기록은 취소되지 않은 기존 기록과 합쳐 시간 순으로 센 번호. 새 기록보다 뒤에 맞은 기존 기록은 그 앞에 넣은 새 기록 수만큼 회차가 밀린다. 취소된 기록은 세지도 바꾸지도 않는다
+- 오늘 화면 안내 카드는 `leadingCount > 0`이고 남은 회차가 있을 때만 (첫 기록 뒤의 누락은 "앱을 쓰기 전"이 아니므로 세지 않는다). 기록 탭 버튼은 누락이 2개 이상일 때 (1개는 누락 행을 눌러 기록)
+- 컨디션: 창(투약 후 96시간)이 다 닫힌 뒤에 만든 기록은 체크가 하나도 없으면 기록 탭 컨디션 목록에 빈칸을 만들지 않는다 (`createdAt` 기준). 체크가 있으면 그대로 보인다
+
 ## R4. 알림 스케줄
 
 ```swift
@@ -110,6 +129,7 @@ func lastDoseNote(doses: [DoseSnapshot], now: Date, calendar: Calendar) -> LastD
 
   - 바디맵 구역 날짜와 "부위별 마지막 사용" 표, 투약 기록 화면 위 "지난 투약" 한 줄에 쓴다. 문구는 사실만 ("지난 투약 / 허벅지 왼쪽 / 10월 15일 (목) · 7일 전")
   - 입력은 처방과 무관하게 모든 투약 기록 (새 처방을 시작해도 이전 처방의 부위가 보이게)
+- 부위 기록 없음 (D6): `DoseSnapshot.site == nil` (`siteRaw = "unknown"`이나 모르는 값). `siteHistory`·`lastUseBySite`에서 빠진다 (바디맵 이력에 나오지 않음). `lastDoseNote`는 직전 투약이 부위 기록 없음이면 부위 없이 알린다. 기록 탭·리포트에는 "부위 기록 없음"/"—"으로 보이고, 기록 탭에서 눌러 나중에 부위를 고칠 수 있다
 
 ## R7. 체중 추이
 
@@ -228,6 +248,8 @@ func bmi(kilograms: Double, heightCm: Double?) -> Double?   // kg / m², 소수 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
 - [x] R2 예정 시각 직전·직후 `.due`/`.overdue` 전환
 - [x] R3 과거 Dose 추가로 누락 해제
+- [x] R3-1 앞선 누락만 세기, 남은 회차까지만 켜기, 시간 순 회차와 뒤 기록 밀기, 취소 기록 제외 (`BackfillRulesTests`, `BackfillModelTests`)
+- [x] R6 부위 기록 없음은 바디맵 이력·부위별 날짜에서 제외 (`SiteRulesTests`)
 - [x] R4 4주 제한, 재등록 시 중복 없음
 - [x] R5 창 경계값 (12h, 36h, 96h)
 - [x] R7 샘플 없는 주 nil 처리

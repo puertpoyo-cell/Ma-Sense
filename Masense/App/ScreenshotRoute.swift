@@ -17,6 +17,7 @@ enum ScreenshotRoute: String, CaseIterable {
     case conditionSheet = "sheet.condition"
     case proteinSheet = "sheet.protein"
     case strengthSheet = "sheet.strength"
+    case backfillSheet = "sheet.backfill"
     case importSheet = "sheet.import"
     case importResult = "sheet.import.result"
 

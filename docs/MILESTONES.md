@@ -162,7 +162,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 게임식 장치(연속 기록·배지·랭킹·축하)는 COMPLIANCE 2.1-4로 쓰지 않는다. "필요한 순간에 한 번에 끝나게"와 "기록이 진료에 바로 쓰이게"로 붙잡는다.
 
 - [x] a1. 알림에서 바로 기록·1시간 뒤 다시 (R4-1, `NotificationActions`, `NotificationResponder`, `AppRouter`)
-- [ ] a2. 지난 투약 한꺼번에 입력 + 부위 모름 (사람 결정: 부위 모름 허용)
+- [x] a2. 지난 투약 한꺼번에 입력 + 부위 모름 (사람 결정: 부위 모름 허용) — R3-1 `BackfillRules`, `BackfillSheet`(S2-1), 오늘 1-1a 안내 카드, 기록 탭 버튼·부위 고치기(`SiteEditSheet`), `siteRaw "unknown"`
 - [ ] a3. 진료 때 물어볼 것 메모 — `ClinicQuestion` 모델, SchemaV3 경량 이전 (사람 결정), 리포트·내보내기 포함
 - [ ] b1. 홈·잠금화면 위젯 — 위젯 확장 타깃, App Group 스냅샷 JSON
 - [ ] b2. 투약일 Live Activity — `NSSupportsLiveActivities` (사람 결정). 서버가 없어 투약일에 앱을 열었을 때만 시작

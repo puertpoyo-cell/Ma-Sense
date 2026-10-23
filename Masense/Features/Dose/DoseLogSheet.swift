@@ -103,7 +103,7 @@ private struct LastDoseNoteRow: View {
             Text("dose.lastNote.title")
                 .font(Typography.caption)
                 .foregroundStyle(Color.inkSecondary)
-            Text(note.site.localizedName)
+            Text(BodySite.localizedName(note.site))
                 .font(Typography.body.weight(.semibold))
                 .foregroundStyle(Color.ink)
             Group {

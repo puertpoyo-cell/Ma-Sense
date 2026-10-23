@@ -103,7 +103,7 @@ extension Dose {
             id: record.id,
             administeredAt: record.administeredAt,
             scheduledFor: record.scheduledFor,
-            site: .abdomenUpperLeft,
+            site: nil,
             sequence: record.sequence,
             note: record.note,
             isCancelled: record.isCancelled,

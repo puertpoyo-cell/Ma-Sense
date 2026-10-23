@@ -11,9 +11,12 @@ struct HistoryModelTests {
         PrescriptionSnapshot(startDate: start, scheduledWeekday: 5, scheduledHour: 20, totalDoses: totalDoses)
     }
 
-    private func dose(_ month: Int, _ day: Int, note: String? = nil, isCancelled: Bool = false) -> DoseSnapshot {
+    private func dose(_ month: Int, _ day: Int, note: String? = nil, isCancelled: Bool = false, createdAt: Date? = nil) -> DoseSnapshot {
         let date = TestCalendar.date(2026, month, day, 20)
-        return DoseSnapshot(administeredAt: date, scheduledFor: date, site: .thighLeft, sequence: 1, isCancelled: isCancelled, note: note)
+        return DoseSnapshot(
+            administeredAt: date, scheduledFor: date, site: .thighLeft, sequence: 1,
+            isCancelled: isCancelled, note: note, createdAt: createdAt
+        )
     }
 
     @Test func monthsAreNewestFirstWithMissedRows() {
@@ -121,5 +124,16 @@ struct HistoryModelTests {
         let recent = dose(10, 29)
         let groups = HistoryModel.conditionGroups(doses: [cancelled, recent], checks: [], now: TestCalendar.date(2026, 10, 29, 21))
         #expect(groups.isEmpty)
+    }
+
+    /// D6: 컨디션 창(투약 후 96시간)이 닫힌 뒤에 만든 기록은 체크가 없으면 빈칸을 만들지 않는다 (지난 투약 한꺼번에 입력)
+    @Test func conditionGroupsSkipDosesRecordedAfterTheWindows() {
+        let now = TestCalendar.date(2026, 10, 30, 10)
+        let backfilled = dose(10, 8, createdAt: now)
+        let backfilledChecked = dose(10, 15, createdAt: now)
+        let onTime = dose(10, 22, createdAt: TestCalendar.date(2026, 10, 22, 20, 5))
+        let check = ConditionCheckSnapshot(doseID: backfilledChecked.id, window: .h24, checkedAt: now)
+        let groups = HistoryModel.conditionGroups(doses: [backfilled, backfilledChecked, onTime], checks: [check], now: now)
+        #expect(groups.map(\.doseID) == [onTime.id, backfilledChecked.id])
     }
 }

@@ -222,6 +222,176 @@
         }
       }
     },
+    "backfill.card.action": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log at once"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한꺼번에 기록"
+          }
+        }
+      }
+    },
+    "backfill.card.dismiss": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "닫기"
+          }
+        }
+      }
+    },
+    "backfill.card.message %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There are %lld weeks without a record between the prescription start and your first entry. If you took doses before using this app, you can log them at once."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 시작일 이후 첫 기록 전에 기록이 없는 주가 %lld번 있습니다. 이 앱을 쓰기 전에 투약했다면 한꺼번에 기록할 수 있습니다."
+          }
+        }
+      }
+    },
+    "backfill.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you don't remember the site, leave it as Site not recorded. You can edit it later in History."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "부위가 기억나지 않으면 부위 기록 없음으로 두세요. 기록 탭에서 나중에 고칠 수 있습니다."
+          }
+        }
+      }
+    },
+    "backfill.intro %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These are weeks without a record since the prescription start (%@). Turn on only the weeks you took a dose before using this app. Each is logged at its scheduled time."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 시작일(%@) 이후 기록이 없는 주입니다. 이 앱을 쓰기 전에 투약한 주만 켜 두세요. 각 주의 예정 일시로 기록합니다."
+          }
+        }
+      }
+    },
+    "backfill.remaining %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can log up to the %lld remaining doses."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 회차 %lld회까지 기록할 수 있습니다."
+          }
+        }
+      }
+    },
+    "backfill.renumbered %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The dose number of %lld later records changes too."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "뒤에 있는 기록 %lld개의 회차도 함께 바뀝니다."
+          }
+        }
+      }
+    },
+    "backfill.save %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log %lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld회 기록"
+          }
+        }
+      }
+    },
+    "backfill.section %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld weeks without a record"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록 없는 주 %lld개"
+          }
+        }
+      }
+    },
+    "backfill.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Past doses"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 투약 기록"
+          }
+        }
+      }
+    },
     "bodymap.bySite": {
       "extractionState": "manual",
       "localizations": {
@@ -1140,6 +1310,23 @@
         }
       }
     },
+    "history.backfill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log past doses at once"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 투약 한꺼번에 기록"
+          }
+        }
+      }
+    },
     "history.cancelDose": {
       "extractionState": "manual",
       "localizations": {
@@ -1544,6 +1731,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld회차"
+          }
+        }
+      }
+    },
+    "history.site.unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Site not recorded · Tap to edit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "부위 기록 없음 · 눌러서 고치기"
+          }
+        }
+      }
+    },
+    "history.site.unknown.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the site for this record"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "부위를 골라 기록을 고칩니다"
           }
         }
       }
@@ -5458,6 +5679,23 @@
         }
       }
     },
+    "site.edit.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit site"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "부위 고치기"
+          }
+        }
+      }
+    },
     "site.short.abdomenLowerLeft": {
       "extractionState": "manual",
       "localizations": {
@@ -5560,6 +5798,23 @@
         }
       }
     },
+    "site.short.unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "—"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "—"
+          }
+        }
+      }
+    },
     "site.short.upperArmLeft": {
       "extractionState": "manual",
       "localizations": {
@@ -5624,6 +5879,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "허벅지 오른쪽"
+          }
+        }
+      }
+    },
+    "site.unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Site not recorded"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "부위 기록 없음"
           }
         }
       }

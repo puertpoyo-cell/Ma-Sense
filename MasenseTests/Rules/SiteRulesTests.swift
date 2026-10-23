@@ -5,7 +5,7 @@ import Testing
 
 // RULES.md R6
 struct SiteRulesTests {
-    private func dose(_ day: Int, _ site: BodySite, isCancelled: Bool = false) -> DoseSnapshot {
+    private func dose(_ day: Int, _ site: BodySite?, isCancelled: Bool = false) -> DoseSnapshot {
         let date = TestCalendar.date(2026, 10, day, 20)
         return DoseSnapshot(administeredAt: date, scheduledFor: date, site: site, sequence: day, isCancelled: isCancelled)
     }
@@ -62,5 +62,17 @@ struct SiteRulesTests {
         let sameDay = SiteRules.lastDoseNote(doses: doses, now: TestCalendar.date(2026, 10, 15, 23), calendar: TestCalendar.seoul)
         #expect(sameDay?.daysAgo == 0)
         #expect(SiteRules.lastDoseNote(doses: [], now: TestCalendar.date(2026, 10, 22), calendar: TestCalendar.seoul) == nil)
+    }
+
+    /// D6: 부위 기록 없음은 바디맵 이력·부위별 날짜에 넣지 않는다. 지난 투약 안내는 부위 없이 알린다
+    @Test func unknownSitesStayOutOfTheBodyMap() {
+        let doses = [dose(1, .thighLeft), dose(8, nil), dose(15, .thighRight), dose(22, nil)]
+        #expect(SiteRules.siteHistory(doses: doses).map(\.site) == [.thighRight, .thighLeft])
+        #expect(SiteRules.lastUseBySite(doses: doses) == [
+            .thighLeft: TestCalendar.date(2026, 10, 1, 20),
+            .thighRight: TestCalendar.date(2026, 10, 15, 20),
+        ])
+        let note = SiteRules.lastDoseNote(doses: doses, now: TestCalendar.date(2026, 10, 29, 9), calendar: TestCalendar.seoul)
+        #expect(note == LastDoseNote(site: nil, date: TestCalendar.date(2026, 10, 22, 20), daysAgo: 7))
     }
 }

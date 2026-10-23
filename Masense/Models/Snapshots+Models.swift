@@ -32,7 +32,8 @@ extension Dose {
             site: site,
             sequence: sequence,
             isCancelled: isCancelled,
-            note: note
+            note: note,
+            createdAt: createdAt
         )
     }
 }

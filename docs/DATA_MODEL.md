@@ -103,7 +103,7 @@ UserSettings        (단일 레코드)
 | id | UUID | `UUID()` |  |
 | administeredAt | Date | `.now` | 실제 투약 시각 |
 | scheduledFor | Date | `.now` | 예정일 (마디 기준점) |
-| siteRaw | String | `"abdomenUpperLeft"` | `BodySite` rawValue. 계산 프로퍼티 `site: BodySite`로 접근 |
+| siteRaw | String | `"abdomenUpperLeft"` | `BodySite` rawValue. 계산 프로퍼티 `site: BodySite?`로 접근. 부위 기록 없음은 `"unknown"` (`Dose.unknownSiteRaw`, D6 지난 투약 한꺼번에 입력). 모르는 값도 nil(부위 기록 없음)로 읽는다 |
 | sequence | Int | `1` | 처방 내 회차 (1부터) |
 | note | String? |  | 자유 메모 |
 | isCancelled | Bool | `false` | 잘못 기록 취소용. 리포트에서는 제외 |
@@ -122,7 +122,7 @@ enum BodySite: String, Codable, CaseIterable {
 }
 ```
 
-표시명은 `Localizable.xcstrings`에서. 그룹: `abdomen`, `thigh`, `upperArm`. 저장은 `siteRaw: String`이며 모델에 `var site: BodySite { get set }` 계산 프로퍼티를 둔다. 다른 enum(`ConditionWindow`, `AppetiteLevel`, `WeightSource`, `MealSlot`, `SessionKind`, `Intensity`, `SessionSource`)도 같은 패턴(`xxxRaw` 저장 + 계산 프로퍼티).
+표시명은 `Localizable.xcstrings`에서. 그룹: `abdomen`, `thigh`, `upperArm`. 저장은 `siteRaw: String`이며 모델에 `var site: BodySite? { get set }` 계산 프로퍼티를 둔다 (nil = 부위 기록 없음, 저장값 `"unknown"`. 필드 타입·기본값은 그대로라 스키마 변경 아님). 다른 enum(`ConditionWindow`, `AppetiteLevel`, `WeightSource`, `MealSlot`, `SessionKind`, `Intensity`, `SessionSource`)도 같은 패턴(`xxxRaw` 저장 + 계산 프로퍼티).
 
 ### ConditionCheck — 컨디션 체크
 

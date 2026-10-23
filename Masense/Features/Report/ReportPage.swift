@@ -232,7 +232,7 @@ struct ReportPage: View {
                         Text(verbatim: "(\(offsetText))").font(.system(size: 6))
                     }
                 }
-                Text(L10n.string("site.short." + site.rawValue)).font(.system(size: 7.5))
+                Text(L10n.string("site.short." + (site?.rawValue ?? "unknown"))).font(.system(size: 7.5))
                 Text("report.cell.sequence \(sequence)").font(.system(size: 7)).foregroundStyle(gray)
             case .missed:
                 Text(verbatim: shortDate(cell.scheduledDate)).font(.system(size: 8, weight: .semibold))

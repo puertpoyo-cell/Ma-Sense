@@ -38,9 +38,10 @@ enum SampleData {
         var sequence = 1
         for cycle in cycles {
             let administered = cycle.scheduledDate.addingTimeInterval(30 * 60)
-            // 세 번째 마디는 기록 없음 (기록 탭·리포트의 누락 표시 예시)
+            // 세 번째 마디는 기록 없음 (기록 탭·리포트의 누락 표시 예시). 첫 마디는 부위 기록 없음 (D6 지난 투약 예시)
             guard cycle.index != 2, administered < now else { continue }
-            let dose = Dose(administeredAt: administered, scheduledFor: cycle.scheduledDate, site: sites[cycle.index % sites.count], sequence: sequence)
+            let site: BodySite? = cycle.index == 0 ? nil : sites[cycle.index % sites.count]
+            let dose = Dose(administeredAt: administered, scheduledFor: cycle.scheduledDate, site: site, sequence: sequence)
             sequence += 1
             context.insert(dose)
             dose.prescription = prescription
