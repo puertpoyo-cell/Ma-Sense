@@ -239,7 +239,48 @@ def render_clear(width: float = 136, scale: float = 1.28) -> Image.Image:
     return image
 
 
-def render_navy(width: float = 136, scale: float = 1.28, top: tuple = (0x1C, 0x2D, 0x5A), bottom: tuple = (0x0D, 0x17, 0x33)) -> Image.Image:
+def render_rim(width: float = 136, scale: float = 1.28, rim: float = 0.5, fill: float = 0.86, refract: float = 0.06,
+               inner_line: float = 0.0) -> Image.Image:
+    """1차안(`petals`) 그대로에 유리 처리만 살짝 (2026-10-23 사람 요청: "하이라이트 말고 유리 끝면에 테두리 약간 유리효과,
+    약간 맑은 유리로 굴절 조금만 더"). 반짝임·빛줄기 같은 그림 요소는 넣지 않는다.
+    - rim: 막대 가장자리를 따라 도는 가는 유리 테두리의 세기 (위가 조금 더 밝다)
+    - fill: 채움 불투명도 (petals 0.92). 낮을수록 맑다
+    - refract: 아래 그림을 비켜 비추는 정도 (막대 굵기 대비). 겹친 막대의 가장자리가 유리 안에서 살짝 꺾여 보인다
+    - inner_line: 테두리 안쪽에 한 줄 더 비치는 유리 두께선의 세기 (0이면 없음)"""
+    image = gradient_background(LIGHT_TOP, LIGHT_BOTTOM)
+    colors = [SKY, VIOLET, BLUE, INDIGO]
+    bar = width * scale
+    for (start, end), color in zip(m_segments(scale), colors):
+        piece = capsule(start, end, bar)
+
+        def band(outer: float, inner: float) -> Image.Image:
+            return ImageChops.subtract(capsule(start, end, bar - 2 * outer), capsule(start, end, bar - 2 * inner))
+
+        _, y0, _, y1 = piece.getbbox()
+        soft_shadow(image, piece, color, 14 * scale, 20 * scale, 0.30)
+        backdrop = image
+        if refract:
+            backdrop = ImageChops.offset(image.filter(ImageFilter.GaussianBlur(px(2))), px(bar * refract * 0.6), px(bar * refract))
+        # petals와 같은 섞임: 아래 그림과 곱해 섞고 제 색 쪽으로 당긴다. 맑을수록 흰빛을 조금 더
+        clear = (0.92 - fill) / 0.92
+        mixed = Image.blend(ImageChops.multiply(backdrop, solid(color)), solid(color), 0.35)
+        lighter = Image.blend(mixed, solid(WHITE), 0.18 + clear * 0.5)
+        image.paste(Image.composite(mixed, lighter, vertical_fade(y0, y1, 0, 255)), (0, 0), scaled(piece, fill))
+        # petals의 반사 (위가 밝은 테두리 + 위쪽 광택)
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(band(0, 3), vertical_fade(y0, y1, 230, 20)))
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(piece, vertical_fade(y0, y0 + (y1 - y0) * 45 // 100, 60, 0)))
+        # 유리 테두리: 가장자리를 따라 도는 가는 선, 위가 조금 더 밝다
+        if rim:
+            edge_line = band(0.6, 2.6).filter(ImageFilter.GaussianBlur(px(0.6)))
+            image.paste(solid(WHITE), (0, 0), ImageChops.multiply(edge_line, vertical_fade(y0, y1, round(255 * rim), round(150 * rim))))
+        if inner_line:
+            thickness = band(6, 7.5).filter(ImageFilter.GaussianBlur(px(0.8)))
+            image.paste(solid(WHITE), (0, 0), scaled(thickness, inner_line))
+    return image
+
+
+def render_navy(width: float = 136, scale: float = 1.28, top: tuple = (0x1C, 0x2D, 0x5A), bottom: tuple = (0x0D, 0x17, 0x33),
+                mark=None) -> Image.Image:
     """다크 네이비 바탕 + `clear`의 M (2026-10-23 사람 요청 "다크네이비 배경"). 시작 화면에서 남색 위에 놓인 마크와 같은 모습.
     막대는 밝은 바탕에서 섞인 색 그대로 오려 붙이고(유리끼리 겹친 색이 살아 있게), 아래에 제 색으로 은은하게 번지는 빛을 깐다"""
     image = gradient_background(top, bottom)
@@ -250,7 +291,7 @@ def render_navy(width: float = 136, scale: float = 1.28, top: tuple = (0x1C, 0x2
     alpha = new_mask()
     for piece in bars:
         alpha = ImageChops.lighter(alpha, piece)
-    image.paste(render_clear(width, scale), (0, 0), scaled(alpha, 0.97))
+    image.paste(mark if mark is not None else render_clear(width, scale), (0, 0), scaled(alpha, 0.97))
     return image
 
 
