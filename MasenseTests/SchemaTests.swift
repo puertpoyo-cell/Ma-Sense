@@ -82,7 +82,7 @@ struct SchemaTests {
         let (directory, url) = try diskStore()
         defer { try? FileManager.default.removeItem(at: directory) }
 
-        do {
+        try autoreleasepool {
             let schema = Schema(versionedSchema: SchemaV1.self)
             let v1 = try ModelContainer(
                 for: schema,
@@ -97,7 +97,17 @@ struct SchemaTests {
             try context.save()
         }
 
-        let container = try ModelContainer.masense(url: url)
+        // V1 컨테이너가 아직 파일을 붙잡고 있으면 같은 파일의 이전(migration)이 독점 잠금을 기다리다 멈출 수 있다.
+        // 저장한 파일(본 파일·-wal·-shm)을 새 위치로 복사해 그 사본을 연다 (앱에서는 컨테이너가 하나라 해당 없음)
+        let migratedURL = directory.appendingPathComponent("Migrated.store")
+        for suffix in StoreLocation.fileSuffixes {
+            let source = URL(fileURLWithPath: url.path + suffix)
+            if FileManager.default.fileExists(atPath: source.path) {
+                try FileManager.default.copyItem(at: source, to: URL(fileURLWithPath: migratedURL.path + suffix))
+            }
+        }
+
+        let container = try ModelContainer.masense(url: migratedURL)
         let context = container.mainContext
         let settings = try #require(try context.fetch(FetchDescriptor<UserSettings>()).first)
         #expect(settings.hasAcceptedRoleNotice)
