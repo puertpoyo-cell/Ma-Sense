@@ -613,36 +613,53 @@
         }
       }
     },
-    "dose.lastNote %@ %@ %lld": {
+    "dose.lastNote.title": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Last dose: %1$@ · %2$@ · %3$lld days ago"
+            "value": "Last dose"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "지난 투약: %1$@ · %2$@ · %3$lld일 전"
+            "value": "지난 투약"
           }
         }
       }
     },
-    "dose.lastNote.today %@ %@": {
+    "dose.lastNote.when %@ %lld": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Last dose: %1$@ · %2$@ · today"
+            "value": "%1$@ · %2$lld days ago"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "지난 투약: %1$@ · %2$@ · 오늘"
+            "value": "%1$@ · %2$lld일 전"
+          }
+        }
+      }
+    },
+    "dose.lastNote.whenToday %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · today"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · 오늘"
           }
         }
       }

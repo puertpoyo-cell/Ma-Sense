@@ -91,7 +91,7 @@ func lastUseBySite(doses: [DoseSnapshot]) -> [BodySite: Date]            // 부�
 func lastDoseNote(doses: [DoseSnapshot], now: Date, calendar: Calendar) -> LastDoseNote?   // 직전 투약 부위·시각, 달력 기준 지난 날 수
 ```
 
-  - 바디맵 구역 날짜와 "부위별 마지막 사용" 표, 투약 기록 화면 위 "지난 투약" 한 줄에 쓴다. 문구는 사실만 ("지난 투약: 허벅지 왼쪽 · 10월 15일 (목) · 7일 전")
+  - 바디맵 구역 날짜와 "부위별 마지막 사용" 표, 투약 기록 화면 위 "지난 투약" 한 줄에 쓴다. 문구는 사실만 ("지난 투약 / 허벅지 왼쪽 / 10월 15일 (목) · 7일 전")
   - 입력은 처방과 무관하게 모든 투약 기록 (새 처방을 시작해도 이전 처방의 부위가 보이게)
 
 ## R7. 체중 추이

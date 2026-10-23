@@ -89,20 +89,30 @@ struct DoseLogSheet: View {
     }
 }
 
-/// "지난 투약: 왼쪽 허벅지 · 10월 15일 (목) · 7일 전"
+/// 지난 투약 / 허벅지 왼쪽 / 10월 15일 (목) · 7일 전
 private struct LastDoseNoteRow: View {
     let note: LastDoseNote
 
     var body: some View {
         let day = note.date.formatted(.dateTime.month(.wide).day().weekday(.abbreviated))
-        Group {
-            if note.daysAgo == 0 {
-                Text("dose.lastNote.today \(note.site.localizedName) \(day)")
-            } else {
-                Text("dose.lastNote \(note.site.localizedName) \(day) \(note.daysAgo)")
+        VStack(alignment: .leading, spacing: Spacing.s1) {
+            Text("dose.lastNote.title")
+                .font(Typography.caption)
+                .foregroundStyle(Color.inkSecondary)
+            Text(note.site.localizedName)
+                .font(Typography.body.weight(.semibold))
+                .foregroundStyle(Color.ink)
+            Group {
+                if note.daysAgo == 0 {
+                    Text("dose.lastNote.whenToday \(day)")
+                } else {
+                    Text("dose.lastNote.when \(day) \(note.daysAgo)")
+                }
             }
+            .font(Typography.caption)
+            .foregroundStyle(Color.inkSecondary)
         }
-        .font(Typography.body)
-        .foregroundStyle(Color.ink)
+        .padding(.vertical, Spacing.s1)
+        .accessibilityElement(children: .combine)
     }
 }
