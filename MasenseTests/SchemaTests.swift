@@ -4,7 +4,7 @@ import Testing
 
 @testable import Masense
 
-// DATA_MODEL.md CloudKit 호환 규칙과 디스크 저장 (2026-10-22 출시 전 재정리 후 단일 SchemaV1)
+// DATA_MODEL.md CloudKit 호환 규칙과 디스크 저장. 출시 스키마 V1(1.0.0) → V2(1.1.0, 키 추가) 경량 이전
 @MainActor
 struct SchemaTests {
     private func diskStore() throws -> (URL, URL) {
@@ -77,6 +77,39 @@ struct SchemaTests {
         #expect(protein.foods == [.egg, .other])
     }
 
+    /// V1 저장소를 지금 스키마로 열면 기록과 설정이 그대로 남고 키는 비어 있다 (D5)
+    @Test func schemaV1StoreMigratesToV2() throws {
+        let (directory, url) = try diskStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        do {
+            let schema = Schema(versionedSchema: SchemaV1.self)
+            let v1 = try ModelContainer(
+                for: schema,
+                configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)]
+            )
+            let context = v1.mainContext
+            let settings = SchemaV1.UserSettings()
+            settings.hasAcceptedRoleNotice = true
+            settings.proteinTargetGrams = 100
+            context.insert(settings)
+            context.insert(Prescription(startDate: TestCalendar.date(2026, 10, 16, 9), penCount: 2, scheduledWeekday: 5, scheduledHour: 20))
+            try context.save()
+        }
+
+        let container = try ModelContainer.masense(url: url)
+        let context = container.mainContext
+        let settings = try #require(try context.fetch(FetchDescriptor<UserSettings>()).first)
+        #expect(settings.hasAcceptedRoleNotice)
+        #expect(settings.proteinTargetGrams == 100)
+        #expect(settings.heightCm == nil)
+        #expect(try context.fetch(FetchDescriptor<Prescription>()).first?.penCount == 2)
+
+        settings.heightCm = 170.5
+        try context.save()
+        #expect(try context.fetch(FetchDescriptor<UserSettings>()).first?.heightCm == 170.5)
+    }
+
     /// 규칙 2: 모든 저장 속성에 기본값이 있어 인자 없이도 만들 수 있다 (UserSettings)
     @Test func settingsDefaults() throws {
         let container = try ModelContainer.masense(inMemory: true)
@@ -84,5 +117,6 @@ struct SchemaTests {
         #expect(settings.reportTheme == "midnight")
         #expect(settings.reportDefaultPeriod == nil)
         #expect(settings.eveningReminderHour == 20)
+        #expect(settings.heightCm == nil)
     }
 }

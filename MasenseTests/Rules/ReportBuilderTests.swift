@@ -21,12 +21,16 @@ struct ReportBuilderTests {
         _ data: [ReportBuilder.PrescriptionData],
         checks: [ConditionCheckSnapshot] = [],
         weights: [WeightSampleSnapshot] = [],
+        heightCm: Double? = nil,
         now: Date,
         period: DateInterval? = nil
     ) -> ClinicReport {
         let active = data.last { $0.isActive }?.prescription.startDate
         let interval = period ?? ReportBuilder.interval(for: .sinceClinic, activePrescriptionStart: active, now: now, calendar: calendar)
-        return ReportBuilder.build(period: interval, prescriptions: data, checks: checks, weights: weights, now: now, calendar: calendar, appVersion: "1.0")
+        return ReportBuilder.build(
+            period: interval, prescriptions: data, checks: checks, weights: weights, heightCm: heightCm,
+            now: now, calendar: calendar, appVersion: "1.0"
+        )
     }
 
     // MARK: R12 기간
@@ -137,6 +141,21 @@ struct ReportBuilderTests {
         #expect(report.summary.weightChangeText == "-3.2")
         #expect(report.weightSource == .mixed)
         #expect(report.weight.count == report.weeks)
+        // 키를 입력하지 않았으면 BMI 없음
+        #expect(report.summary.bmiStartText == nil)
+        #expect(report.summary.bmiEndText == nil)
+    }
+
+    /// R14: 키가 있으면 기간 첫·마지막 체중의 BMI 숫자
+    @Test func bmiRangeFollowsFirstAndLastWeight() {
+        let weights = [
+            WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 10, 17, 8), kilograms: 82.4, source: .manual),
+            WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 11, 10, 8), kilograms: 79.2, source: .manual),
+        ]
+        let data = ReportBuilder.PrescriptionData(prescription: prescription(), doses: [], isActive: true)
+        let report = build([data], weights: weights, heightCm: 170, now: TestCalendar.date(2026, 11, 12, 9))
+        #expect(report.summary.bmiStartText == "28.5")
+        #expect(report.summary.bmiEndText == "27.4")
     }
 
     @Test func kilogramFormatting() {

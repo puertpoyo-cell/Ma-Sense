@@ -117,8 +117,14 @@ struct ReportPage: View {
                     Text("report.summary.weight.none")
                 }
             } detail: {
-                if let start = s.weightStartText, let end = s.weightEndText {
-                    Text("report.summary.weight.range \(start) \(end)")
+                VStack(alignment: .leading, spacing: 1) {
+                    if let start = s.weightStartText, let end = s.weightEndText {
+                        Text("report.summary.weight.range \(start) \(end)")
+                    }
+                    // R14: 키를 입력했을 때만 숫자로. 구간 이름 없음
+                    if let start = s.bmiStartText, let end = s.bmiEndText {
+                        Text("report.summary.bmi.range \(start) \(end)")
+                    }
                 }
             }
             summaryCell("report.summary.condition") {

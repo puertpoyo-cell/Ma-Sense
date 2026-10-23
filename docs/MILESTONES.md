@@ -152,7 +152,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 ## D5 — 사람 요청 (2026-10-22)
 
 - [x] 앱 버전 0.2
-- [ ] a. BMI 숫자 (설정에서 키 입력, 체중 카드·기록 탭·리포트에 숫자만, 구간 이름 없음). `UserSettings.heightCm` 추가로 SchemaV2 경량 이전
+- [x] a. BMI 숫자 (설정 > 신체 정보에서 키 입력, 홈 체중 카드·기록 탭·리포트에 숫자만, 구간 이름 없음, R14). `UserSettings.heightCm` 추가로 SchemaV2 경량 이전 (`SchemaTests`), 내보내기 `settings.heightCm`, 금지선 점검에 구간 이름 추가
 - [x] b. 투약 기록 화면 위 "지난 투약" 한 줄(사실만) + 바디맵 구역별 마지막 사용일·부위별 표 (R6 `lastUseBySite`·`lastDoseNote`, 이전 처방 기록 포함)
 - [x] c. 시작 전환 화면 1초 (`SplashView`, M 마크 `SplashMark`, 시스템 시작 화면 바탕 midnight)
 
@@ -210,6 +210,9 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 | 2026-10-22 | 번들 ID `com.masense.app` (테스트 `com.masense.app.tests`) | 사람 결정. 앱스토어에 올린 뒤에는 바꿀 수 없다 |
 | 2026-10-22 | 출시 전 스키마 재정리: V1~V3 이력을 접고 CloudKit 호환 규칙 + 처방 endDate를 담은 새 SchemaV1 | 사람 결정. 사용자 데이터 없음, 영구히 남을 옛 필드를 만들지 않으려고 |
 | 2026-10-22 | 앱 버전(`MARKETING_VERSION`) 0.2 | 사람 결정. 빌드 번호(`CURRENT_PROJECT_VERSION`)는 1부터, TestFlight 업로드마다 올린다 |
+| 2026-10-22 | BMI는 숫자만 (구간 이름 없음), 키 입력은 설정에서 선택, SchemaV2 경량 이전 | 사람 결정. 판단어 금지(3.1)와 목표 체중 금지(2.1-3)를 지키면서 진료 때 참고할 숫자만 |
+| 2026-10-22 | 투약 시 안내는 지난 부위·날짜 사실만, 바디맵에 부위별 마지막 날짜 | 사람 결정. R6 부위 추천 금지 유지 |
+| 2026-10-22 | 시작 전환 화면 1초 | 사람 요청. 담담한 페이드만 |
 | 2026-10-21 | `Prescription.scheduledTime`은 `scheduledHour`·`scheduledMinute` Int 2개로 저장, `DateComponents`는 계산 속성 | SwiftData Codable 저장 안정성 |
 | 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
 | 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |

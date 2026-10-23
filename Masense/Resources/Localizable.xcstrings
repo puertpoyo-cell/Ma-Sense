@@ -3605,6 +3605,23 @@
         }
       }
     },
+    "report.summary.bmi.range %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BMI %1$@ → %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BMI %1$@ → %2$@"
+          }
+        }
+      }
+    },
     "report.summary.condition": {
       "extractionState": "manual",
       "localizations": {
@@ -4145,6 +4162,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "걷기"
+          }
+        }
+      }
+    },
+    "settings.body.height": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Height"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "키"
+          }
+        }
+      }
+    },
+    "settings.body.height.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Used only to calculate the BMI number. Leave it empty to hide BMI."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BMI 숫자를 계산하는 데만 씁니다. 비워 두면 BMI를 보이지 않습니다."
+          }
+        }
+      }
+    },
+    "settings.body.height.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not set"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "입력 안 함"
           }
         }
       }
@@ -5012,6 +5080,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "당일"
+          }
+        }
+      }
+    },
+    "settings.section.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "신체 정보"
           }
         }
       }
@@ -6406,6 +6491,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "회"
+          }
+        }
+      }
+    },
+    "weight.bmi %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BMI %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BMI %@"
           }
         }
       }

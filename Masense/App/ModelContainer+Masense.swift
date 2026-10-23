@@ -6,7 +6,7 @@ extension ModelContainer {
     /// 앱의 저장소는 App Group 컨테이너에 둔다 (`StoreLocation`). 테스트·미리보기는 in-memory라 App Group을 쓰지 않는다
     /// - Parameter url: 테스트에서 디스크 저장소 위치를 지정할 때만 쓴다
     static func masense(inMemory: Bool = false, url: URL? = nil) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: SchemaV1.self)
+        let schema = Schema(versionedSchema: CurrentSchema.self)
         let configuration: ModelConfiguration
         if let url {
             configuration = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)

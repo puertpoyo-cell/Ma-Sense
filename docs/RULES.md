@@ -194,6 +194,18 @@ struct PrescriptionMarker { let startDate: Date; let label: String?; let isFirst
   - `remainingDoses == 0` → nil
   - 그 외 남은 회차를 모두 쓰는 마지막 마디의 `scheduledDate` (= R1 `cycles(until: .distantFuture)`의 마지막 마디). 누락이 있으면 그만큼 뒤로 밀린다
 
+## R14. BMI 숫자 (D5)
+
+```swift
+static let bmiHeightRangeCm: ClosedRange<Double> = 100...250
+func bmi(kilograms: Double, heightCm: Double?) -> Double?   // kg / m², 소수 1자리 반올림
+```
+
+- 2026-10-22 사람 결정: **숫자만** 보여 준다. 저체중·정상·과체중·비만 같은 구간 이름, 색, 화살표로 판단하지 않는다 (COMPLIANCE.md 2.2, 3.1)
+- 키는 설정 > 신체 정보에서 사용자가 입력(선택). 없거나 100~250 cm 밖이면 nil이고 화면은 BMI를 숨긴다. 체중이 0 이하면 nil
+- 표시: 홈 체중 카드(최근 체중의 BMI), 기록 탭 체중 목록(샘플마다), 리포트 B 체중 칸 보조 줄("BMI 28.5 → 27.4", 기간 첫·마지막 체중)
+- BMI 목표 입력·목표 BMI까지 남은 값 같은 표현은 만들지 않는다 (2.1-3 목표 체중과 같은 이유)
+
 ## 테스트 체크리스트
 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우

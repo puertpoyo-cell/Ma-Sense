@@ -47,7 +47,7 @@ struct ExportServiceTests {
         #expect(url.lastPathComponent == "Masense_Export_2026-10-24.masense.json")
 
         let document = try ExportCodec.decode(Data(contentsOf: url))
-        #expect(document.schemaVersion == "1.0.0")
+        #expect(document.schemaVersion == "1.1.0")
         #expect(document.prescriptions.map(\.doseLabel) == ["메모"])
         #expect(document.doses.map(\.note) == ["왼쪽"])
         #expect(document.doses.first?.prescriptionId == document.prescriptions.first?.id)
@@ -73,6 +73,8 @@ struct ExportServiceTests {
             device: fixture.device
         )
         var expected = fixture
+        // fixture는 스키마 1.0.0 때 내보낸 파일이다. 다시 내보내면 지금 스키마 버전이 적힌다
+        expected.schemaVersion = ExportService.schemaVersion
         expected.weightSamples.removeAll { $0.source == "healthKit" }
         expected.strengthSessions.removeAll { $0.source == "healthKit" }
         #expect(exported == expected)
@@ -96,6 +98,23 @@ struct ExportServiceTests {
         #expect(after.first?.hasPurchasedPro == true)
         #expect(after.first?.healthKitAuthorized == true)
         #expect(after.first?.proteinTargetGrams == 110)
+        // fixture는 키가 없던 때의 파일이라 비어 있다
+        #expect(after.first?.heightCm == nil)
+    }
+
+    /// D5: 키(heightCm)도 내보내고 교체 가져오기에서 되살린다
+    @Test func heightRoundTripsThroughExport() throws {
+        let settings = try UserSettings.current(in: context)
+        settings.heightCm = 168.5
+        try context.save()
+        let data = try ExportCodec.encode(ExportService.makeDocument(context: context, now: TestCalendar.date(2026, 10, 24, 9)), timeZone: TestCalendar.seoul.timeZone)
+        let document = try ExportCodec.decode(data)
+        #expect(document.settings?.heightCm == 168.5)
+
+        settings.heightCm = nil
+        try context.save()
+        _ = try ExportService.apply(document, mode: .replace, context: context, calendar: TestCalendar.seoul)
+        #expect(try UserSettings.current(in: context).heightCm == 168.5)
     }
 
     @Test func addImportTwiceSkipsEverythingTheSecondTime() throws {

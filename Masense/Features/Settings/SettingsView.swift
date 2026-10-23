@@ -85,6 +85,7 @@ private struct SettingsForm: View {
         Form {
             prescriptionSection
             notificationSection
+            bodySection
             proteinSection
             if services.healthKit.isAvailable {
                 healthSection
@@ -244,6 +245,27 @@ private struct SettingsForm: View {
     private func hourText(_ hour: Int) -> String {
         let date = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: calendar.startOfDay(for: .now)) ?? .now
         return date.formatted(date: .omitted, time: .shortened)
+    }
+
+    // MARK: 신체 정보 (D5, R14)
+
+    private var bodySection: some View {
+        Section {
+            LabeledContent("settings.body.height") {
+                HStack(spacing: Spacing.s1) {
+                    TextField("settings.body.height.placeholder", value: $settings.heightCm, format: .number.precision(.fractionLength(0...1)))
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .monospacedDigit()
+                    Text(verbatim: "cm").foregroundStyle(Color.inkSecondary)
+                }
+            }
+        } header: {
+            SectionHeaderText("settings.section.body")
+        } footer: {
+            Text("settings.body.height.footer")
+        }
+        .frostRow()
     }
 
     // MARK: 단백질 (M2, R9)

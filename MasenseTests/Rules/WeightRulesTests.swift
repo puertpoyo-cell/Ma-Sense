@@ -58,4 +58,21 @@ struct WeightRulesTests {
         #expect(WeightRules.doseTicks(doses: doses, series: series, now: now) == [TestCalendar.date(2026, 10, 15, 20)])
         #expect(WeightRules.doseTicks(doses: doses, series: [], now: now).isEmpty)
     }
+
+    // MARK: R14 BMI
+
+    @Test func bmiIsKilogramsOverMetersSquaredRoundedToOneDecimal() {
+        #expect(WeightRules.bmi(kilograms: 78.4, heightCm: 170) == 27.1)
+        #expect(WeightRules.bmi(kilograms: 60, heightCm: 160) == 23.4)
+        #expect(WeightRules.bmi(kilograms: 95.25, heightCm: 182.5) == 28.6)
+    }
+
+    @Test func bmiNeedsHeightInRangeAndPositiveWeight() {
+        #expect(WeightRules.bmi(kilograms: 78.4, heightCm: nil) == nil)
+        #expect(WeightRules.bmi(kilograms: 78.4, heightCm: 99) == nil)
+        #expect(WeightRules.bmi(kilograms: 78.4, heightCm: 251) == nil)
+        #expect(WeightRules.bmi(kilograms: 0, heightCm: 170) == nil)
+        #expect(WeightRules.bmi(kilograms: 50, heightCm: 100) == 50.0)
+        #expect(WeightRules.bmi(kilograms: 50, heightCm: 250) == 8.0)
+    }
 }

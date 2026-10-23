@@ -102,6 +102,7 @@ struct TodayView: View {
             sessions: sessions.map(\.snapshot),
             habits: habits.map(\.snapshot),
             proteinTarget: settingsList.first?.proteinTargetGrams,
+            heightCm: settingsList.first?.heightCm,
             now: now,
             calendar: calendar
         )
@@ -144,7 +145,15 @@ struct TodayView: View {
                 VStack(spacing: 0) {
                     BlueprintSplit {
                         BlueprintCell("weight.title") {
-                            DimensionValue(latest.kilograms.formatted(.number.precision(.fractionLength(1))), unit: "unit.kg")
+                            VStack(alignment: .leading, spacing: Spacing.s1) {
+                                DimensionValue(latest.kilograms.formatted(.number.precision(.fractionLength(1))), unit: "unit.kg")
+                                // R14: 키를 입력했을 때만 숫자로. 구간 이름 없음
+                                if let bmi = model.latestBMI {
+                                    Text("weight.bmi \(bmi.formatted(.number.precision(.fractionLength(1))))")
+                                        .font(Typography.caption)
+                                        .foregroundStyle(Color.inkSecondary)
+                                }
+                            }
                         }
                     } trailing: {
                         BlueprintCell("weight.measured") {

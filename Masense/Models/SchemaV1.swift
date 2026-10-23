@@ -1,11 +1,52 @@
 import Foundation
 import SwiftData
 
-/// 출시 스키마 (DATA_MODEL.md "스키마 버전"). 2026-10-22 출시 전 재정리: CloudKit 호환 규칙(B)과 처방 endDate(C)를 담아
-/// 이전 개발용 V1~V3 이력을 접었다. 출시(베타 배포) 뒤 스키마를 바꿀 때는 바뀌는 모델의 고정 사본을 이 버전에 두고
-/// `SchemaV2`와 `MasenseMigrationPlan`의 단계를 더한다. CloudKit 규칙 5에 따라 변경은 필드·모델 추가만.
+/// 출시 스키마 1.0.0 (DATA_MODEL.md "스키마 버전"). 2026-10-22 출시 전 재정리: CloudKit 호환 규칙(B)과 처방 endDate(C)를 담아
+/// 이전 개발용 V1~V3 이력을 접었다. 스키마를 바꿀 때는 바뀌는 모델의 고정 사본을 이 버전에 두고
+/// 다음 버전과 `MasenseMigrationPlan`의 단계를 더한다. CloudKit 규칙 5에 따라 변경은 필드·모델 추가만.
+/// V2(D5)에서 `UserSettings.heightCm`이 더해져 `UserSettings`만 고정 사본을 둔다.
 enum SchemaV1: VersionedSchema {
     static let versionIdentifier = Schema.Version(1, 0, 0)
+
+    static var models: [any PersistentModel.Type] {
+        [
+            Prescription.self,
+            Dose.self,
+            ConditionCheck.self,
+            WeightSample.self,
+            SchemaV1.UserSettings.self,
+            ProteinEntry.self,
+            StrengthSession.self,
+            HabitCheck.self,
+        ]
+    }
+
+    /// 1.0.0의 `UserSettings` 고정 사본 (V1 저장소를 열고 V2로 옮길 때만 쓴다)
+    @Model
+    final class UserSettings {
+        var id: UUID = UUID()
+        var hasAcceptedRoleNotice: Bool = false
+        var hasConfirmedAdult: Bool = false
+        var reminderEnabled: Bool = true
+        var eveningReminderHour: Int = 20
+        var conditionCheckEnabled: Bool = true
+        var clinicReminderDaysBefore: Int = 1
+        var exhaustionReminderDosesLeft: Int = 2
+        var proteinTargetGrams: Int?
+        var bodyWeightForGuideKg: Double?
+        var healthKitAuthorized: Bool = false
+        var hasPurchasedPro: Bool = false
+        var reportTheme: String = "midnight"
+        var reportDefaultPeriod: String?
+        var createdAt: Date = Date.now
+
+        init() {}
+    }
+}
+
+/// D5 (2026-10-22 사람 결정): `UserSettings.heightCm` 추가. 옵셔널 필드 추가라 경량 이전
+enum SchemaV2: VersionedSchema {
+    static let versionIdentifier = Schema.Version(1, 1, 0)
 
     static var models: [any PersistentModel.Type] {
         [
@@ -21,12 +62,15 @@ enum SchemaV1: VersionedSchema {
     }
 }
 
+/// 지금 앱이 여는 스키마
+typealias CurrentSchema = SchemaV2
+
 enum MasenseMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [SchemaV1.self]
+        [SchemaV1.self, SchemaV2.self]
     }
 
     static var stages: [MigrationStage] {
-        []
+        [.lightweight(fromVersion: SchemaV1.self, toVersion: SchemaV2.self)]
     }
 }

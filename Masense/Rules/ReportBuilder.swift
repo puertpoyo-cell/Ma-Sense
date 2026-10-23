@@ -18,6 +18,9 @@ struct ClinicReport: Equatable {
         let exhaustionDate: Date?
         /// 기간 안 처방 전환 횟수 (R13). 0이면 표시하지 않는다
         var prescriptionTransitions: Int = 0
+        /// 기간 첫·마지막 체중의 BMI (R14). 키가 없으면 nil. 숫자만, 구간 이름 없음
+        var bmiStartText: String?
+        var bmiEndText: String?
     }
 
     /// C. 투약 타임라인 한 칸 (마디)
@@ -210,6 +213,7 @@ enum ReportBuilder {
         proteins: [ProteinEntrySnapshot] = [],
         sessions: [StrengthSessionSnapshot] = [],
         proteinTarget: Int? = nil,
+        heightCm: Double? = nil,
         now: Date,
         calendar: Calendar,
         appVersion: String
@@ -310,7 +314,9 @@ enum ReportBuilder {
                 checksExpected: expected,
                 remainingDoses: remaining,
                 exhaustionDate: exhaustion,
-                prescriptionTransitions: transitions
+                prescriptionTransitions: transitions,
+                bmiStartText: first.flatMap { WeightRules.bmi(kilograms: $0.kilograms, heightCm: heightCm) }.map { kilograms($0) },
+                bmiEndText: last.flatMap { WeightRules.bmi(kilograms: $0.kilograms, heightCm: heightCm) }.map { kilograms($0) }
             ),
             cycles: shownCells,
             weight: series,

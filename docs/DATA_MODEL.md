@@ -233,6 +233,7 @@ enum ProteinFood: String, Codable, CaseIterable {
 | exhaustionReminderDosesLeft | Int | `2` | 남은 회차가 이 값일 때 진료 예약 알림 |
 | proteinTargetGrams | Int? |  | 사용자/의료진 입력. nil이면 안내만 |
 | bodyWeightForGuideKg | Double? |  | 1.2~1.6 g/kg 안내 계산용. 최근 체중 자동 사용 가능 |
+| heightCm | Double? |  | 키(cm). BMI 숫자 계산에만 쓴다(R14). nil이면 BMI를 보이지 않는다. **SchemaV2(1.1.0)에서 추가** (D5, 2026-10-22 사람 결정) |
 | healthKitAuthorized | Bool | `false` |  |
 | hasPurchasedPro | Bool | `false` | StoreKit 검증 결과 캐시. 진실 원천은 StoreKit |
 | reportTheme | String | `"midnight"` |  |
@@ -261,18 +262,25 @@ enum SchemaV1: VersionedSchema {   // 출시 스키마 (2026-10-22 재정리)
     static let versionIdentifier = Schema.Version(1, 0, 0)
     static var models: [any PersistentModel.Type] {
         [Prescription.self, Dose.self, ConditionCheck.self, WeightSample.self,
-         UserSettings.self, ProteinEntry.self, StrengthSession.self, HabitCheck.self]
+         SchemaV1.UserSettings.self, ProteinEntry.self, StrengthSession.self, HabitCheck.self]
     }
+    @Model final class UserSettings { ... }   // 1.0.0 고정 사본 (heightCm 없음)
 }
+enum SchemaV2: VersionedSchema {   // D5: UserSettings.heightCm 추가
+    static let versionIdentifier = Schema.Version(1, 1, 0)
+    // 나머지 모델은 V1과 같은 타입, UserSettings만 지금 모델
+}
+typealias CurrentSchema = SchemaV2
 enum MasenseMigrationPlan: SchemaMigrationPlan {
-    // [SchemaV1], 단계 없음
+    // [SchemaV1, SchemaV2], .lightweight(V1 → V2)
 }
 ```
 
 - **2026-10-22 출시 전 재정리 (사람 결정)**: 개발 중 쌓인 V1(M1)·V2(M2 습관)·V3(리포트 기본 기간) 이력을 접고, CloudKit 호환 규칙(B)과 처방 `endDate`(C)를 담은 새 `SchemaV1` 하나로 시작한다. 출시 전이라 사용자 데이터가 없다
 - 개발 빌드(`DEBUG`)는 이전 구조의 저장소를 열지 못하면 지우고 새로 만든다 (`ModelContainer.masense`). 릴리스 빌드는 그러지 않는다
 - 출시 뒤 스키마를 바꿀 때: 바뀌는 모델의 **고정 사본**을 이전 버전(`SchemaV1.Xxx`)에 두고 `SchemaV2`와 마이그레이션 단계를 더한다. 고정 사본의 저장 속성은 고치지 않는다(기존 저장소의 버전을 알아보는 기준). CloudKit 규칙 5에 따라 변경은 추가만
-- `SchemaTests`: unique 없음, 열거형 rawValue 디스크 왕복, 모르는 rawValue 기본값, 설정 기본값
+- V2 (D5, 2026-10-22 사람 결정): `UserSettings.heightCm` 옵셔널 추가 → 경량 이전. 개발 중 기기에 있는 V1 저장소의 기록을 지우지 않으려고 고정 사본 방식으로 올렸다
+- `SchemaTests`: unique 없음, 열거형 rawValue 디스크 왕복, 모르는 rawValue 기본값, 설정 기본값, V1 저장소 → V2 이전
 
 M1 출시 전에는 마이그레이션 없이 스키마 자유 변경. 베타 배포 후부터 `SchemaMigrationPlan` 필수.
 

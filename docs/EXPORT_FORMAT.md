@@ -60,11 +60,12 @@
   "proteinTargetGrams": 110,
   "bodyWeightForGuideKg": null,
   "reportTheme": "midnight",
-  "reportDefaultPeriod": null
+  "reportDefaultPeriod": null,
+  "heightCm": 170.5
 }
 ```
 `healthKitAuthorized`, `hasPurchasedPro`는 **내보내지 않는다** — 기기·계정에 종속. 가져온 뒤 HealthKit은 다시 권한 요청, 구매는 StoreKit 복원.
-`reportDefaultPeriod`(D3, 리포트 기본 기간)는 출시 전 v1 초판에 포함. 키가 없는 파일은 `null`로 읽는다.
+`reportDefaultPeriod`(D3, 리포트 기본 기간)와 `heightCm`(D5, 키, SchemaV2)는 출시 전 v1 초판에 포함. 키가 없는 파일은 `null`로 읽는다 (formatVersion은 그대로 1).
 
 비어 있는 값은 키를 지우지 않고 `null`로 쓴다 (모든 레코드 공통). 가져오기는 키 없음과 `null`을 같게 본다.
 

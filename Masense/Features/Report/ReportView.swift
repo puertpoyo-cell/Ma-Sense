@@ -133,6 +133,7 @@ struct ReportView: View {
             proteins: proteins.map(\.snapshot),
             sessions: sessions.map(\.snapshot),
             proteinTarget: settings?.proteinTargetGrams,
+            heightCm: settings?.heightCm,
             now: now,
             calendar: calendar,
             appVersion: AppConfig.appVersion

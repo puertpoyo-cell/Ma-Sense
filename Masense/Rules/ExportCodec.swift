@@ -44,6 +44,8 @@ struct ExportDocument: Equatable {
         var bodyWeightForGuideKg: Double?
         var reportTheme: String
         var reportDefaultPeriod: String?
+        /// D5 (SchemaV2). 키가 없는 파일은 null로 읽는다
+        var heightCm: Double?
     }
 
     struct PrescriptionRecord: Codable, Equatable {
@@ -194,6 +196,7 @@ extension ExportDocument.SettingsRecord {
         try c.encodeNullable(bodyWeightForGuideKg, forKey: .bodyWeightForGuideKg)
         try c.encode(reportTheme, forKey: .reportTheme)
         try c.encodeNullable(reportDefaultPeriod, forKey: .reportDefaultPeriod)
+        try c.encodeNullable(heightCm, forKey: .heightCm)
     }
 }
 

@@ -19,6 +19,7 @@ enum SampleData {
         settings.hasAcceptedRoleNotice = true
         settings.hasConfirmedAdult = true
         settings.proteinTargetGrams = 90
+        settings.heightCm = 172
 
         // 다음 투약은 내일(D-1, 마디 구간 안이라 미리 기록 버튼도 보임), 진료 5일 뒤, 7주째 처방.
         // 이전 마디에 기록이 있으면 예정 이틀 전까지는 "이번 마디 기록 완료"로 보이므로 D-1로 둔다 (R1·R2)

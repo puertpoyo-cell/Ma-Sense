@@ -70,7 +70,7 @@ struct ReportRendererTests {
                 dosesTaken: 12, dosesScheduled: 12, missedCount: 0,
                 weightChangeText: "-6.6", weightStartText: "92.4", weightEndText: "85.8",
                 checksAnswered: 24, checksExpected: 24, remainingDoses: 0, exhaustionDate: nil,
-                prescriptionTransitions: 1
+                prescriptionTransitions: 1, bmiStartText: "32.0", bmiEndText: "29.7"
             ),
             cycles: cycles,
             weight: (0..<12).map { WeekPoint(weekStart: start.addingTimeInterval(Double($0) * week), averageKg: 92.4 - Double($0) * 0.6, sampleCount: 7) },

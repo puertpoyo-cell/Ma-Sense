@@ -21,6 +21,8 @@ final class UserSettings {
     var proteinTargetGrams: Int?
     /// 1.2~1.6 g/kg 안내 계산용 (M2)
     var bodyWeightForGuideKg: Double?
+    /// 키 (cm). BMI 숫자 계산에만 쓴다. nil이면 BMI를 보이지 않는다 (D5, SchemaV2)
+    var heightCm: Double?
     var healthKitAuthorized: Bool = false
     /// StoreKit 검증 결과 캐시. 진실 원천은 StoreKit
     var hasPurchasedPro: Bool = false
@@ -41,6 +43,7 @@ final class UserSettings {
         exhaustionReminderDosesLeft: Int = 2,
         proteinTargetGrams: Int? = nil,
         bodyWeightForGuideKg: Double? = nil,
+        heightCm: Double? = nil,
         healthKitAuthorized: Bool = false,
         hasPurchasedPro: Bool = false,
         reportTheme: String = "midnight",
@@ -57,6 +60,7 @@ final class UserSettings {
         self.exhaustionReminderDosesLeft = exhaustionReminderDosesLeft
         self.proteinTargetGrams = proteinTargetGrams
         self.bodyWeightForGuideKg = bodyWeightForGuideKg
+        self.heightCm = heightCm
         self.healthKitAuthorized = healthKitAuthorized
         self.hasPurchasedPro = hasPurchasedPro
         self.reportTheme = reportTheme

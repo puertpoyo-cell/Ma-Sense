@@ -52,6 +52,8 @@ struct TodayModel: Equatable {
     let scheduleDate: Date?
     let conditionPrompt: ConditionPrompt?
     let latestWeight: WeightSampleSnapshot?
+    /// R14. 최근 체중과 설정의 키로 계산한 BMI 숫자. 키가 없으면 nil
+    let latestBMI: Double?
     let weightSeries: [WeekPoint]
     /// 스파크라인 투약일 눈금
     let doseDatesInSeries: [Date]
@@ -69,6 +71,7 @@ struct TodayModel: Equatable {
         sessions: [StrengthSessionSnapshot] = [],
         habits: [HabitCheckSnapshot] = [],
         proteinTarget: Int? = nil,
+        heightCm: Double? = nil,
         now: Date,
         calendar: Calendar
     ) {
@@ -83,6 +86,7 @@ struct TodayModel: Equatable {
         )
 
         latestWeight = WeightRules.latestSample(weights)
+        latestBMI = latestWeight.flatMap { WeightRules.bmi(kilograms: $0.kilograms, heightCm: heightCm) }
         let series = WeightRules.weeklyWeightSeries(samples: weights, weeks: Self.weightWeeks, now: now, calendar: calendar)
         weightSeries = series
         paceNotice = PaceRules.paceNotice(series: series)

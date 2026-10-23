@@ -287,12 +287,20 @@ struct HistoryView: View {
                                 .foregroundStyle(Color.inkSecondary)
                         }
                         Spacer()
-                        DimensionValue(
-                            sample.kilograms.formatted(.number.precision(.fractionLength(1))),
-                            unit: "unit.kg",
-                            valueFont: Typography.body.weight(.semibold),
-                            unitFont: Typography.caption
-                        )
+                        VStack(alignment: .trailing, spacing: Spacing.s1) {
+                            DimensionValue(
+                                sample.kilograms.formatted(.number.precision(.fractionLength(1))),
+                                unit: "unit.kg",
+                                valueFont: Typography.body.weight(.semibold),
+                                unitFont: Typography.caption
+                            )
+                            // R14: 키를 입력했을 때만 숫자로. 구간 이름 없음
+                            if let bmi = WeightRules.bmi(kilograms: sample.kilograms, heightCm: settingsList.first?.heightCm) {
+                                Text("weight.bmi \(bmi.formatted(.number.precision(.fractionLength(1))))")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color.inkSecondary)
+                            }
+                        }
                     }
                     .foregroundStyle(Color.ink)
                     .frostRow()

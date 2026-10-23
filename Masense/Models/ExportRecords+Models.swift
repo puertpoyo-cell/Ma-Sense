@@ -17,7 +17,8 @@ extension UserSettings {
             proteinTargetGrams: proteinTargetGrams,
             bodyWeightForGuideKg: bodyWeightForGuideKg,
             reportTheme: reportTheme,
-            reportDefaultPeriod: reportDefaultPeriod
+            reportDefaultPeriod: reportDefaultPeriod,
+            heightCm: heightCm
         )
     }
 
@@ -35,6 +36,7 @@ extension UserSettings {
         bodyWeightForGuideKg = record.bodyWeightForGuideKg
         reportTheme = record.reportTheme
         reportDefaultPeriod = record.reportDefaultPeriod
+        heightCm = record.heightCm
     }
 }
 

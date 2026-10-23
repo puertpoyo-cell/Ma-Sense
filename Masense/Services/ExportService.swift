@@ -12,9 +12,9 @@ enum ExportService {
         return "\(AppConfig.appVersion) (\(build))"
     }
 
-    /// "1.0.0"
+    /// "1.1.0"
     nonisolated static var schemaVersion: String {
-        let version = SchemaV1.versionIdentifier
+        let version = CurrentSchema.versionIdentifier
         return "\(version.major).\(version.minor).\(version.patch)"
     }
 

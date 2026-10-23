@@ -63,4 +63,17 @@ enum WeightRules {
     static func latestSample(_ samples: [WeightSampleSnapshot]) -> WeightSampleSnapshot? {
         samples.max { $0.measuredAt < $1.measuredAt }
     }
+
+    // MARK: R14 BMI (D5)
+
+    /// BMI 계산에 쓰는 키 범위 (cm). 밖이면 입력 실수로 보고 계산하지 않는다
+    static let bmiHeightRangeCm: ClosedRange<Double> = 100...250
+
+    /// BMI = kg / m², 소수 1자리 반올림. 숫자만 돌려준다. 구간 이름(저체중·비만 등)으로 판단하지 않는다 (COMPLIANCE.md 2.2).
+    /// 키가 없거나 범위 밖이거나 체중이 0 이하면 nil
+    static func bmi(kilograms: Double, heightCm: Double?) -> Double? {
+        guard let heightCm, bmiHeightRangeCm.contains(heightCm), kilograms > 0 else { return nil }
+        let meters = heightCm / 100
+        return (kilograms / (meters * meters) * 10).rounded() / 10
+    }
 }
