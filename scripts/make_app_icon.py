@@ -15,14 +15,15 @@ Apple 기본 앱 아이콘의 유리 문법을 참고한다(사람이 준 참고
 - `rings`: 파랑 한 색조 바탕 + 반투명 동심원 + 흰 반유리 M
 - `rings-midnight`: 같은 구성의 midnight 바탕
 
-- `navy` (기본, 2026-10-23 사람 확정 "다크네이비 배경, 하이라이트는 그림체 같지 않게"): 다크 네이비 그라데이션 바탕 위에
-  `clear`의 M을 오려 붙이고 아래에 제 색으로 은은하게 번지는 빛
-- `clear`: `petals`의 굵기 비율(136)을 1.28배로 키워 타일을 채우고, 조금 더 맑게 칠한 뒤 막대 양 끝에 흐리게 번지는 반사 (밝은 바탕)
+- `navy` (기본, 2026-10-23 사람 확정): 다크 네이비 그라데이션 바탕 위에 `rim`의 M을 오려 붙이고 아래에 제 색으로 은은하게 번지는 빛
+- `rim` (2026-10-23 사람 선택 R2 "하이라이트 말고 유리 끝면 테두리 약간, 약간 맑은 유리, 굴절 조금"): 1차안 볼륨(136) × 1.28배,
+  가장자리를 도는 가는 유리 테두리, 채움 0.84, 아래 그림을 살짝 비켜 비추는 굴절. 반짝임 같은 그림 요소 없음
+- `clear`: 중간안. 막대 양 끝에 반사를 넣은 안 (사람이 "그림체 같다"며 뺌)
 - `glass`: 같은 날의 중간안. 굵기 155·1.28배, 굴절·빛줄기·윤곽선을 강하게, `clarity`로 맑기 조절. 사람이 "볼륨은 1차안 정도"로 되돌림
-- `mark`: 시작 전환 화면(SplashView)용. `clear`의 M 막대만 오려 낸 투명 PNG (바탕·그림자 없음, 여백 없이 자름)
+- `mark`: 시작 전환 화면(SplashView)용. `rim`의 M 막대만 오려 낸 투명 PNG (바탕·그림자 없음, 여백 없이 자름)
 
 출력: Masense/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png (1024×1024, RGB, 알파 없음)
-실행: python3 scripts/make_app_icon.py [clear|glass|petals|liquid|rings|rings-midnight] [출력 경로]
+실행: python3 scripts/make_app_icon.py [navy|rim|clear|glass|petals|liquid|rings|rings-midnight] [출력 경로]
       python3 scripts/make_app_icon.py mark  → Masense/Resources/Assets.xcassets/SplashMark.imageset/SplashMark.png
 """
 
@@ -239,10 +240,11 @@ def render_clear(width: float = 136, scale: float = 1.28) -> Image.Image:
     return image
 
 
-def render_rim(width: float = 136, scale: float = 1.28, rim: float = 0.5, fill: float = 0.86, refract: float = 0.06,
+def render_rim(width: float = 136, scale: float = 1.28, rim: float = 0.65, fill: float = 0.84, refract: float = 0.07,
                inner_line: float = 0.0) -> Image.Image:
     """1차안(`petals`) 그대로에 유리 처리만 살짝 (2026-10-23 사람 요청: "하이라이트 말고 유리 끝면에 테두리 약간 유리효과,
     약간 맑은 유리로 굴절 조금만 더"). 반짝임·빛줄기 같은 그림 요소는 넣지 않는다.
+    옵션 R1(rim 0.45, fill 0.88, refract 0.04)·R2(기본, 사람 선택)·R3(rim 0.75, fill 0.80, refract 0.10, inner_line 0.25) 중 R2
     - rim: 막대 가장자리를 따라 도는 가는 유리 테두리의 세기 (위가 조금 더 밝다)
     - fill: 채움 불투명도 (petals 0.92). 낮을수록 맑다
     - refract: 아래 그림을 비켜 비추는 정도 (막대 굵기 대비). 겹친 막대의 가장자리가 유리 안에서 살짝 꺾여 보인다
@@ -291,7 +293,7 @@ def render_navy(width: float = 136, scale: float = 1.28, top: tuple = (0x1C, 0x2
     alpha = new_mask()
     for piece in bars:
         alpha = ImageChops.lighter(alpha, piece)
-    image.paste(mark if mark is not None else render_clear(width, scale), (0, 0), scaled(alpha, 0.97))
+    image.paste(mark if mark is not None else render_rim(width, scale), (0, 0), scaled(alpha, 0.97))
     return image
 
 
@@ -382,8 +384,8 @@ def render_rings(midnight: bool = False) -> Image.Image:
 
 
 def render_mark(width: float = 136, scale: float = 1.28) -> Image.Image:
-    """앱 아이콘(`clear`)의 M만 남긴 투명 이미지. 밝은 바탕 위에서 섞인 색 그대로, 막대 바깥(그림자·번짐)은 투명"""
-    image = render_clear(width, scale).convert("RGBA")
+    """앱 아이콘(`rim`)의 M만 남긴 투명 이미지. 밝은 바탕 위에서 섞인 색 그대로, 막대 바깥(그림자·번짐)은 투명"""
+    image = render_rim(width, scale).convert("RGBA")
     alpha = new_mask()
     for piece in m_bars(width=width, scale=scale):
         alpha = ImageChops.lighter(alpha, piece)
@@ -400,6 +402,7 @@ VARIANTS = {
     "glass": render_glass,
     "clear": render_clear,
     "navy": render_navy,
+    "rim": render_rim,
 }
 
 MARK_OUT = ROOT / "Masense" / "Resources" / "Assets.xcassets" / "SplashMark.imageset" / "SplashMark.png"
