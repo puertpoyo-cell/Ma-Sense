@@ -15,8 +15,9 @@ Apple 기본 앱 아이콘의 유리 문법을 참고한다(사람이 준 참고
 - `rings`: 파랑 한 색조 바탕 + 반투명 동심원 + 흰 반유리 M
 - `rings-midnight`: 같은 구성의 midnight 바탕
 
-- `clear` (기본, 2026-10-23 사람 확정 "딱 요정도 볼륨, 약간 더 맑은 유리, 끝부분 하이라이트"): `petals`의 굵기 비율(136)을
-  1.28배로 키워 타일을 채우고, 조금 더 맑게 칠한 뒤 막대 양 끝에 밝은 호와 초승달 반사
+- `navy` (기본, 2026-10-23 사람 확정 "다크네이비 배경, 하이라이트는 그림체 같지 않게"): 다크 네이비 그라데이션 바탕 위에
+  `clear`의 M을 오려 붙이고 아래에 제 색으로 은은하게 번지는 빛
+- `clear`: `petals`의 굵기 비율(136)을 1.28배로 키워 타일을 채우고, 조금 더 맑게 칠한 뒤 막대 양 끝에 흐리게 번지는 반사 (밝은 바탕)
 - `glass`: 같은 날의 중간안. 굵기 155·1.28배, 굴절·빛줄기·윤곽선을 강하게, `clarity`로 맑기 조절. 사람이 "볼륨은 1차안 정도"로 되돌림
 - `mark`: 시작 전환 화면(SplashView)용. `clear`의 M 막대만 오려 낸 투명 PNG (바탕·그림자 없음, 여백 없이 자름)
 
@@ -189,7 +190,7 @@ def render_clear(width: float = 136, scale: float = 1.28) -> Image.Image:
     """`petals`의 볼륨(막대 굵기 비율 136) + 유리 효과를 조금 올린 안 (2026-10-23 사람 요청: "딱 요정도 볼륨,
     약간 더 맑은 유리처럼, 끝부분 하이라이트 추가"). 앱 아이콘에서는 1.28배로 키워 타일을 채운다.
     `petals`보다: 채움을 덜 불투명하게(0.92 → 0.84) 밝게 섞어 맑게, 테두리 반사를 조금 더 밝게,
-    막대 양 끝(둥근 마구리)에 가장자리를 따라 도는 밝은 호와 초승달 반사(위쪽 끝은 왼쪽 위, 아래쪽 끝은 아래 가장자리). 빛은 왼쪽 위에서 오므로 아래쪽 끝은 약하게"""
+    막대 양 끝(둥근 마구리)에 흐리게 번지는 반사(위쪽 끝은 왼쪽 위, 아래쪽 끝은 아래 가장자리). 빛은 왼쪽 위에서 오므로 아래쪽 끝은 약하게"""
     image = gradient_background(LIGHT_TOP, LIGHT_BOTTOM)
     colors = [SKY, VIOLET, BLUE, INDIGO]
     bar = width * scale
@@ -217,23 +218,39 @@ def render_clear(width: float = 136, scale: float = 1.28) -> Image.Image:
         image.paste(solid(WHITE), (0, 0), ImageChops.multiply(band(0, 3), vertical_fade(y0, y1, 245, 45)))
         image.paste(solid(WHITE), (0, 0), ImageChops.multiply(piece, vertical_fade(y0, y0 + (y1 - y0) * 45 // 100, 66, 0)))
 
-        # 끝부분 하이라이트: 마구리 가장자리를 따라 도는 밝은 호 + 안쪽 왼쪽 위에 맺히는 초승달 반사
+        # 끝부분 하이라이트 (2026-10-23 "그림체 같지 않게"): 선을 그리지 않고 빛이 번지듯.
+        # 마구리 가장자리를 따라 아주 가는 반사가 흐리게 돌고, 위쪽 끝은 왼쪽 위에 넓게 퍼지는 반사, 아래쪽 끝은 아래 가장자리에 옅은 빛
         for tip, other in ((start, end), (end, start)):
             dx, dy = tip[0] - other[0], tip[1] - other[1]
             length = max((dx * dx + dy * dy) ** 0.5, 1)
             ux, uy = dx / length, dy / length
-            strength = 1.0 if uy < 0 else 0.5
+            is_top = uy < 0
             cap = disc_at((tip[0] + ux * radius * 0.30, tip[1] + uy * radius * 0.30), radius * 0.95)
-            arc = ImageChops.multiply(band(1.5, 7), cap).filter(ImageFilter.GaussianBlur(px(1.5)))
-            image.paste(solid(WHITE), (0, 0), scaled(arc, 0.85 * strength))
-            # 위쪽 끝은 왼쪽 위 가장자리에, 아래쪽 끝은 아래 가장자리에 맺힌다 (빛이 막대 안을 지나 아래로 모인다)
-            shift = (radius * 0.16, radius * 0.20) if uy < 0 else (radius * 0.10, -radius * 0.22)
-            crescent = ImageChops.subtract(
-                disc_at(tip, radius * 0.74),
-                disc_at((tip[0] + shift[0], tip[1] + shift[1]), radius * 0.76),
-            )
-            crescent = ImageChops.multiply(crescent, cap).filter(ImageFilter.GaussianBlur(px(radius * 0.035)))
-            image.paste(solid(WHITE), (0, 0), scaled(ImageChops.multiply(crescent, piece), 0.70 * strength))
+            rim = ImageChops.multiply(band(1, 4), cap).filter(ImageFilter.GaussianBlur(px(2.5)))
+            image.paste(solid(WHITE), (0, 0), scaled(rim, 0.55 if is_top else 0.30))
+            if is_top:
+                center = (tip[0] - radius * 0.22, tip[1] - radius * 0.20)
+                glow, blur, strength = disc_at(center, radius * 0.42), radius * 0.22, 0.42
+            else:
+                center = (tip[0] + ux * radius * 0.55, tip[1] + uy * radius * 0.55)
+                glow, blur, strength = disc_at(center, radius * 0.50), radius * 0.26, 0.22
+            glow = ImageChops.multiply(glow.filter(ImageFilter.GaussianBlur(px(blur))), piece)
+            image.paste(solid(WHITE), (0, 0), scaled(glow, strength))
+    return image
+
+
+def render_navy(width: float = 136, scale: float = 1.28, top: tuple = (0x1C, 0x2D, 0x5A), bottom: tuple = (0x0D, 0x17, 0x33)) -> Image.Image:
+    """다크 네이비 바탕 + `clear`의 M (2026-10-23 사람 요청 "다크네이비 배경"). 시작 화면에서 남색 위에 놓인 마크와 같은 모습.
+    막대는 밝은 바탕에서 섞인 색 그대로 오려 붙이고(유리끼리 겹친 색이 살아 있게), 아래에 제 색으로 은은하게 번지는 빛을 깐다"""
+    image = gradient_background(top, bottom)
+    bars = m_bars(width=width, scale=scale)
+    for piece, color in zip(bars, [SKY, VIOLET, BLUE, INDIGO]):
+        glow = piece.filter(ImageFilter.GaussianBlur(px(38)))
+        image.paste(solid(color), (0, 0), scaled(glow, 0.34))
+    alpha = new_mask()
+    for piece in bars:
+        alpha = ImageChops.lighter(alpha, piece)
+    image.paste(render_clear(width, scale), (0, 0), scaled(alpha, 0.97))
     return image
 
 
@@ -341,13 +358,14 @@ VARIANTS = {
     "mark": render_mark,
     "glass": render_glass,
     "clear": render_clear,
+    "navy": render_navy,
 }
 
 MARK_OUT = ROOT / "Masense" / "Resources" / "Assets.xcassets" / "SplashMark.imageset" / "SplashMark.png"
 
 
 def main() -> None:
-    variant = sys.argv[1] if len(sys.argv) > 1 else "clear"
+    variant = sys.argv[1] if len(sys.argv) > 1 else "navy"
     out = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else (MARK_OUT if variant == "mark" else OUT)
     image = VARIANTS[variant]()
     # 4배로 그린 것을 1/4로 줄인다 (아이콘은 1024×1024, 마크는 자른 크기의 1/4)

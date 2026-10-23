@@ -15,7 +15,7 @@
    3. 프로덕션 배포는 기본 브랜치(main)에서 나간다. 작업 브랜치를 main에 머지하거나, Settings > Git > Production Branch를 작업 브랜치로 바꾼다
    4. `docs/privacy/vercel.json`: 확장자 없는 주소(`cleanUrls`), 처리방침 폴더가 바뀐 커밋만 배포(`ignoreCommand`)
    5. 배포 주소(`https://<프로젝트 이름>.vercel.app`)를 `Masense/App/AppConfig.swift`의 `privacyPolicyURL`과 App Store Connect에 입력. 넣으면 설정 > 정보에 처리방침 링크가 보인다
-6. **앱 아이콘** — 확정안 "맑은 유리 M"(1차안 볼륨 × 1.28배, 막대 끝 하이라이트)이 `AppIcon.appiconset/AppIcon.png`에 들어가 있다 (`python3 scripts/make_app_icon.py`로 다시 생성, DESIGN_SYSTEM.md 6). 앱 이름은 "마선생"으로 확정 (2026-10-22)
+6. **앱 아이콘** — 확정안 "네이비 유리 M"(다크 네이비 바탕, 1차안 볼륨 × 1.28배)이 `AppIcon.appiconset/AppIcon.png`에 들어가 있다 (`python3 scripts/make_app_icon.py`로 다시 생성, DESIGN_SYSTEM.md 6). 앱 이름은 "마선생"으로 확정 (2026-10-22)
 
 ## 2. 빌드 올리기
 
