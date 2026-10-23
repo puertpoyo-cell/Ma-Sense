@@ -87,7 +87,7 @@ def main() -> int:
                 if word in value:
                     problems.append(f"[문구] {key} '{word}' — {reason}: {value}")
             # 알림과 위젯(잠금화면에도 놓인다)
-            if key.startswith("notif.") or key.startswith("widget."):
+            if key.startswith(("notif.", "widget.", "activity.")):
                 for word in NOTIFICATION_FORBIDDEN:
                     if word in value:
                         problems.append(f"[알림] {key} '{word}' — 3.3 잠금화면 민감어: {value}")

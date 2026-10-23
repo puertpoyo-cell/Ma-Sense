@@ -59,7 +59,7 @@ Masense/
   Rules/            RULES.md의 순수 함수들 (테스트 대상)
   DesignSystem/     토큰, 글래스 카드, 공용 컴포넌트
   Resources/        Assets, Localizable.xcstrings
-Shared/             앱과 위젯 확장이 함께 쓰는 Foundation 코드 (WidgetSnapshot, App Group ID)
+Shared/             앱과 위젯 확장이 함께 쓰는 코드 (WidgetSnapshot·App Group ID는 Foundation, Live Activity 속성은 ActivityKit)
 MasenseWidgets/     위젯 확장 (WidgetKit). App Group의 요약 JSON만 읽고 SwiftData는 열지 않음
 MasenseTests/       Rules·Services 단위 테스트
 ```
