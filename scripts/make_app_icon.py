@@ -9,16 +9,18 @@ Apple 기본 앱 아이콘의 유리 문법을 참고한다(사람이 준 참고
 - 빨강·초록은 쓰지 않는다 (판단하지 않는 색 원칙)
 
 안:
-- `petals` (기본, 2026-10-22 사람 선택, 막대 굵기 136): 밝은 바탕 + 하늘·보라·파랑·남색 반투명 막대 4개가 겹쳐 M.
+- `petals` (1차안, 2026-10-22 사람 선택, 막대 굵기 136): 밝은 바탕 + 하늘·보라·파랑·남색 반투명 막대 4개가 겹쳐 M.
   겹친 곳은 색이 섞인다. 사진 앱 계열
 - `liquid`: 밝은 바탕 + 파랑 동심원 원판 3겹(한 주씩 반복되는 마디의 리듬) + 흰 유리 M. 나의 찾기·팟캐스트 계열
 - `rings`: 파랑 한 색조 바탕 + 반투명 동심원 + 흰 반유리 M
 - `rings-midnight`: 같은 구성의 midnight 바탕
 
-- `mark`: 시작 전환 화면(SplashView)용. `petals`의 M 막대만 오려 낸 투명 PNG (바탕·그림자 없음, 여백 없이 자름)
+- `glass` (기본, 2026-10-23 사람 요청 "더 굵게, 타일에 꽉 차게, 유리 효과 증대"): `petals`와 같은 4색 막대를 굵기 155·1.28배로
+  키워 M이 타일의 약 70%를 채운다. 막대마다 굴절된 듯 흐린 배경, 축을 따라 흐르는 빛줄기, 위 밝은·아래 은은한 테두리, 큰 색 그림자
+- `mark`: 시작 전환 화면(SplashView)용. `glass`의 M 막대만 오려 낸 투명 PNG (바탕·그림자 없음, 여백 없이 자름)
 
 출력: Masense/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png (1024×1024, RGB, 알파 없음)
-실행: python3 scripts/make_app_icon.py [petals|liquid|rings|rings-midnight] [출력 경로]
+실행: python3 scripts/make_app_icon.py [glass|petals|liquid|rings|rings-midnight] [출력 경로]
       python3 scripts/make_app_icon.py mark  → Masense/Resources/Assets.xcassets/SplashMark.imageset/SplashMark.png
 """
 
@@ -114,8 +116,8 @@ def capsule(start: tuple, end: tuple, width: float) -> Image.Image:
     return mask
 
 
-def m_bars(width: float = 96, scale: float = 1.0) -> list:
-    """M을 이루는 막대 4개 (뒤 → 앞): 왼쪽 기둥, 오른쪽 기둥, 왼쪽 사선, 오른쪽 사선"""
+def m_segments(scale: float = 1.0) -> list:
+    """M을 이루는 막대 4개의 양 끝점 (뒤 → 앞): 왼쪽 기둥, 오른쪽 기둥, 왼쪽 사선, 오른쪽 사선. scale은 가운데 기준 확대"""
     c = SIZE / 2
 
     def p(x: float, y: float) -> tuple:
@@ -124,11 +126,16 @@ def m_bars(width: float = 96, scale: float = 1.0) -> list:
     left, right, top, bottom = 322, 702, 352, 676
     valley = p(512, 590)
     return [
-        capsule(p(left, top), p(left, bottom), width * scale),
-        capsule(p(right, top), p(right, bottom), width * scale),
-        capsule(p(left, top), valley, width * scale),
-        capsule(p(right, top), valley, width * scale),
+        (p(left, top), p(left, bottom)),
+        (p(right, top), p(right, bottom)),
+        (p(left, top), valley),
+        (p(right, top), valley),
     ]
+
+
+def m_bars(width: float = 96, scale: float = 1.0) -> list:
+    """M을 이루는 막대 4개의 마스크 (뒤 → 앞)"""
+    return [capsule(start, end, width * scale) for start, end in m_segments(scale)]
 
 
 def disc(radius: float) -> Image.Image:
@@ -177,6 +184,47 @@ def render_petals(width: float = 136) -> Image.Image:
     return image
 
 
+def render_glass(width: float = 155, scale: float = 1.28) -> Image.Image:
+    """`petals`를 굵고 크게 + 유리 질감을 키운 안 (2026-10-23 사람 요청: 더 굵게, 타일에 꽉 차게, 유리 효과 증대).
+    막대마다: 아래 그림이 비쳐 굴절된 듯 흐린 배경 + 제 색, 위가 밝은 채움, 막대 축을 따라 흐르는 빛줄기(유리 막대의 반사),
+    위쪽 밝은 테두리와 아래쪽 은은한 반사 테두리, 제 색으로 번지는 큰 그림자.
+    캡슐은 폭만 줄여 다시 그리면 안쪽으로 깎은 모양이 되므로, 테두리는 큰 침식 필터 대신 두 캡슐의 차로 만든다 (빠르다)"""
+    image = gradient_background(LIGHT_TOP, LIGHT_BOTTOM)
+    colors = [SKY, VIOLET, BLUE, INDIGO]
+    bar_width = width * scale
+    for (start, end), color in zip(m_segments(scale), colors):
+        piece = capsule(start, end, bar_width)
+
+        def ring(inset: float) -> Image.Image:
+            return ImageChops.subtract(piece, capsule(start, end, bar_width - 2 * inset))
+
+        _, y0, _, y1 = piece.getbbox()
+        soft_shadow(image, piece, color, 22, 34, 0.36)
+
+        # 굴절: 아래 그림을 흐리게 비추고 제 색과 곱해 섞는다
+        backdrop = image.filter(ImageFilter.GaussianBlur(px(12)))
+        mixed = Image.blend(ImageChops.multiply(backdrop, solid(color)), solid(color), 0.42)
+        top_tint = Image.blend(mixed, solid(WHITE), 0.34)
+        bottom_tint = Image.blend(mixed, solid(SHADOW_BLUE), 0.06)
+        glass_fill = Image.composite(bottom_tint, top_tint, vertical_fade(y0, y1, 0, 255))
+        image.paste(glass_fill, (0, 0), scaled(piece, 0.90))
+
+        # 유리 막대의 반사: 축을 따라 왼쪽 위로 비켜 난 가는 빛줄기, 막대 안쪽에서만
+        offset = bar_width * 0.17
+        streak = capsule((start[0] - offset, start[1] - offset * 0.6), (end[0] - offset, end[1] - offset * 0.6), bar_width * 0.20)
+        streak = streak.filter(ImageFilter.GaussianBlur(px(bar_width * 0.06)))
+        streak = ImageChops.multiply(streak, capsule(start, end, bar_width - 12))
+        image.paste(solid(WHITE), (0, 0), scaled(streak, 0.55))
+
+        # 테두리: 위는 밝게, 아래는 은은하게 (빛이 안에서 돌아 나오는 느낌)
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(ring(4), vertical_fade(y0, y1, 255, 70)))
+        inner_glow = ring(10).filter(ImageFilter.GaussianBlur(px(3)))
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(inner_glow, vertical_fade(y0 + (y1 - y0) * 55 // 100, y1, 0, 110)))
+        # 위쪽 광택
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(piece, vertical_fade(y0, y0 + (y1 - y0) * 38 // 100, 70, 0)))
+    return image
+
+
 def render_rings(midnight: bool = False) -> Image.Image:
     """한 색조 바탕 + 반투명 동심원 + 흰 반유리 M"""
     if midnight:
@@ -198,11 +246,11 @@ def render_rings(midnight: bool = False) -> Image.Image:
     return image
 
 
-def render_mark(width: float = 136) -> Image.Image:
-    """`petals`의 M만 남긴 투명 이미지. 밝은 바탕 위에서 섞인 색 그대로, 막대 바깥은 투명"""
-    image = render_petals(width).convert("RGBA")
+def render_mark(width: float = 155, scale: float = 1.28) -> Image.Image:
+    """앱 아이콘(`glass`)의 M만 남긴 투명 이미지. 밝은 바탕 위에서 섞인 색 그대로, 막대 바깥(그림자·번짐)은 투명"""
+    image = render_glass(width, scale).convert("RGBA")
     alpha = new_mask()
-    for piece in m_bars(width=width):
+    for piece in m_bars(width=width, scale=scale):
         alpha = ImageChops.lighter(alpha, piece)
     image.putalpha(alpha)
     return image.crop(alpha.getbbox())
@@ -214,13 +262,14 @@ VARIANTS = {
     "rings": render_rings,
     "rings-midnight": lambda: render_rings(midnight=True),
     "mark": render_mark,
+    "glass": render_glass,
 }
 
 MARK_OUT = ROOT / "Masense" / "Resources" / "Assets.xcassets" / "SplashMark.imageset" / "SplashMark.png"
 
 
 def main() -> None:
-    variant = sys.argv[1] if len(sys.argv) > 1 else "petals"
+    variant = sys.argv[1] if len(sys.argv) > 1 else "glass"
     out = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else (MARK_OUT if variant == "mark" else OUT)
     image = VARIANTS[variant]()
     # 4배로 그린 것을 1/4로 줄인다 (아이콘은 1024×1024, 마크는 자른 크기의 1/4)
