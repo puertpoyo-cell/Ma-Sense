@@ -13,6 +13,12 @@ struct WeekChart: View {
     var labelFont: Font = .caption2
     /// y축에 최소·최대 2개 라벨만 (DESIGN_SYSTEM.md 5.5 기본)
     var minMaxYAxisOnly = true
+    /// 하루 측정값 점 (D7 체중 확대 그래프). 주 평균 선 아래에 옅게
+    var dailyPoints: [DailyWeight] = []
+    var accessibilityKey: LocalizedStringKey = "weight.trend12.a11y"
+
+    /// 16주를 넘으면 x축 라벨을 달마다
+    private var labelsMonthly: Bool { points.count > 16 }
 
     private struct Plotted: Identifiable {
         let weekStart: Date
@@ -36,13 +42,21 @@ struct WeekChart: View {
     }
 
     private var yValues: [Double] {
-        let values = plotted.map(\.kilograms)
+        let values = plotted.map(\.kilograms) + dailyPoints.map(\.kilograms)
         guard let low = values.min(), let high = values.max() else { return [] }
         return low == high ? [low] : [low, high]
     }
 
     var body: some View {
         Chart {
+            ForEach(dailyPoints) { day in
+                PointMark(
+                    x: .value("day", day.day),
+                    y: .value("kg", day.kilograms)
+                )
+                .foregroundStyle(labelColor.opacity(0.6))
+                .symbolSize(12)
+            }
             ForEach(plotted) { item in
                 LineMark(
                     x: .value("week", item.weekStart),
@@ -62,11 +76,20 @@ struct WeekChart: View {
         }
         .chartYScale(domain: .automatic(includesZero: false))
         .chartXAxis {
-            AxisMarks(values: .stride(by: .weekOfYear, count: 2)) { _ in
-                AxisGridLine().foregroundStyle(gridColor.opacity(0.5))
-                AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
-                    .font(labelFont)
-                    .foregroundStyle(labelColor)
+            if labelsMonthly {
+                AxisMarks(values: .stride(by: .month, count: points.count > 60 ? 3 : 1)) { _ in
+                    AxisGridLine().foregroundStyle(gridColor.opacity(0.5))
+                    AxisValueLabel(format: .dateTime.month(.abbreviated))
+                        .font(labelFont)
+                        .foregroundStyle(labelColor)
+                }
+            } else {
+                AxisMarks(values: .stride(by: .weekOfYear, count: 2)) { _ in
+                    AxisGridLine().foregroundStyle(gridColor.opacity(0.5))
+                    AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
+                        .font(labelFont)
+                        .foregroundStyle(labelColor)
+                }
             }
         }
         .chartYAxis {
@@ -100,6 +123,6 @@ struct WeekChart: View {
             .allowsHitTesting(false)
             .accessibilityHidden(true)
         }
-        .accessibilityLabel(Text("weight.trend12.a11y"))
+        .accessibilityLabel(Text(accessibilityKey))
     }
 }

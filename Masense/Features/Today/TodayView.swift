@@ -14,9 +14,11 @@ struct TodayView: View {
         case strength
         case backfill
         case questions
+        case weightTrend
 
         var id: String {
             switch self {
+            case .weightTrend: return "weightTrend"
             case .backfill: return "backfill"
             case .questions: return "questions"
             case .prescription: return "prescription"
@@ -214,11 +216,15 @@ struct TodayView: View {
                     }
                     .padding(Spacing.cellPadding)
                     BlueprintDivider()
-                    Button("weight.manualEntry") { sheet = .weight }
-                        .font(Typography.label)
-                        .foregroundStyle(Color.accent)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                        .padding(Spacing.cellPadding)
+                    HStack {
+                        // D7: 큰 그래프와 기간 선택
+                        Button("weight.trend.open") { sheet = .weightTrend }
+                        Spacer()
+                        Button("weight.manualEntry") { sheet = .weight }
+                    }
+                    .font(Typography.label)
+                    .foregroundStyle(Color.accent)
+                    .padding(Spacing.cellPadding)
                 }
             }
         } else {
@@ -290,6 +296,7 @@ struct TodayView: View {
         case .strengthSheet?: sheet = .strength
         case .backfillSheet?: sheet = .backfill
         case .questionsSheet?: sheet = .questions
+        case .weightTrendSheet?: sheet = .weightTrend
         case .conditionSheet?:
             if let dose = prescription?.doses.filter({ !$0.isCancelled }).max(by: { $0.administeredAt < $1.administeredAt }) {
                 sheet = .condition(doseID: dose.id, window: .h24)
@@ -332,6 +339,8 @@ struct TodayView: View {
             }
         case .questions:
             ClinicQuestionsSheet()
+        case .weightTrend:
+            WeightTrendSheet()
         }
     }
 

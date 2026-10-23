@@ -7,6 +7,43 @@ struct WeekPoint: Equatable {
     let sampleCount: Int
 }
 
+/// 체중 확대 그래프 기간 (D7)
+enum WeightTrendRange: String, CaseIterable, Hashable {
+    case weeks4, weeks12, months6, all
+
+    /// 주 수. 전체는 nil (첫 기록이 있는 주부터)
+    var weeks: Int? {
+        switch self {
+        case .weeks4: return 4
+        case .weeks12: return 12
+        case .months6: return 26
+        case .all: return nil
+        }
+    }
+}
+
+/// 하루 평균 체중 (확대 그래프의 점)
+struct DailyWeight: Equatable, Identifiable {
+    let day: Date
+    let kilograms: Double
+    var id: Date { day }
+}
+
+/// 체중 확대 그래프 (D7). 판단·목표선 없이 측정값과 주 평균, 시작 대비 변화 숫자만
+struct WeightTrend: Equatable {
+    let weeks: [WeekPoint]
+    let daily: [DailyWeight]
+
+    var first: DailyWeight? { daily.first }
+    var last: DailyWeight? { daily.last }
+
+    /// 기간 첫 측정일 대비 마지막 측정일, 소수 1자리 부호 그대로 ("-3.2", "+0.4", "0.0"). 측정일이 2일 미만이면 nil
+    var changeText: String? {
+        guard daily.count >= 2, let first, let last else { return nil }
+        return ReportBuilder.signedKilograms(last.kilograms - first.kilograms)
+    }
+}
+
 /// R7. 체중 추이.
 enum WeightRules {
     /// 최근 `weeks`주의 주 평균. 오래된 주부터. 같은 날 여러 샘플은 먼저 하루 평균으로 묶은 뒤 주 평균을 낸다.
@@ -57,6 +94,34 @@ enum WeightRules {
             .filter { !$0.isCancelled && $0.administeredAt >= start && $0.administeredAt <= now }
             .map(\.administeredAt)
             .sorted()
+    }
+
+    // MARK: D7 체중 추이 확대
+
+    /// 확대 그래프 기간. 전체는 첫 기록이 있는 주부터 (최소 4주)
+    static func trend(samples: [WeightSampleSnapshot], range: WeightTrendRange, now: Date, calendar: Calendar) -> WeightTrend {
+        let weeks: Int
+        if let fixed = range.weeks {
+            weeks = fixed
+        } else if let earliest = samples.map(\.measuredAt).min(),
+                  let firstWeek = calendar.dateInterval(of: .weekOfYear, for: earliest),
+                  let currentWeek = calendar.dateInterval(of: .weekOfYear, for: now) {
+            let span = calendar.dateComponents([.weekOfYear], from: firstWeek.start, to: currentWeek.start).weekOfYear ?? 0
+            weeks = max(span + 1, 4)
+        } else {
+            weeks = 4
+        }
+        let series = weeklyWeightSeries(samples: samples, weeks: weeks, now: now, calendar: calendar)
+        guard let start = series.first?.weekStart else { return WeightTrend(weeks: [], daily: []) }
+
+        // 하루 평균 (같은 날 여러 번 재면 평균)
+        let grouped = Dictionary(grouping: samples.filter { $0.measuredAt >= start && $0.measuredAt <= now }) {
+            calendar.startOfDay(for: $0.measuredAt)
+        }
+        let daily = grouped
+            .map { day, items in DailyWeight(day: day, kilograms: items.reduce(0) { $0 + $1.kilograms } / Double(items.count)) }
+            .sorted { $0.day < $1.day }
+        return WeightTrend(weeks: series, daily: daily)
     }
 
     /// 가장 최근 샘플 (홈 1-3 카드)

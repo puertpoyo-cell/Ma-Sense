@@ -142,6 +142,7 @@ struct WeekPoint { let weekStart: Date; let averageKg: Double?; let sampleCount:
 - 같은 날 여러 샘플이면 먼저 하루 평균으로 묶고, 그 하루 평균들의 평균을 주 평균으로 한다
 - 결과는 오래된 주부터 `weeks`개, 마지막이 `now`가 속한 주. 주 시작은 `calendar.firstWeekday`
 - 차트의 투약일 눈금은 `doseTicks(doses:series:now:)`: 시리즈 첫 주 시작부터 `now`까지, 취소한 기록 제외 (홈 스파크라인, 기록 탭 차트)
+- D7 확대 그래프 `trend(samples:range:now:calendar:) -> WeightTrend`: 기간 4주·12주·26주(6개월)·전체(첫 기록이 있는 주부터, 최소 4주). 주 평균(위와 같음)과 하루 평균 점. `changeText` = 기간 마지막 측정일 - 첫 측정일, 소수 1자리 부호 그대로("-3.2", "+0.4"), 측정일 2일 미만이면 없음. 목표선·판단 색·속도 평가 없음
 
 ## R8. 감량 속도 안내 (M2)
 
