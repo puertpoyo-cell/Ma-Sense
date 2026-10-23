@@ -77,6 +77,7 @@ struct PlannedNotification { let id: String; let kind: NotificationKind; let fir
 | 컨디션 48h | + 48h | 동일 | `notif.condition.h48` |
 | 진료 | `nextClinicDate - clinicReminderDaysBefore` 09:00 | nextClinicDate 있음 | `notif.clinic.soon` "내일 진료입니다. 리포트를 준비해 두세요" |
 | 소진 | 다음 투약 알림과 함께 | `remainingDoses <= exhaustionReminderDosesLeft` | `notif.prescription.low` "남은 회차가 n회입니다. 진료 예약을 확인하세요" |
+| 체중 (D7, R4-2) | 주 1회 정한 요일·시각 | `weightReminderEnabled`, 그날 체중 기록 없음 | `notif.weight.due` "오늘 체중을 기록할 수 있습니다." |
 
 - 로컬 알림은 iOS 제한(64개) 때문에 **앞으로 4주치**만 등록하고, 앱이 포그라운드로 올 때마다 전부 취소 후 재등록
 - Dose를 기록하면 그 마디의 투약·저녁 알림을 즉시 제거
@@ -86,18 +87,30 @@ struct PlannedNotification { let id: String; let kind: NotificationKind; let fir
 
 ```swift
 enum NotificationActions { static func category(for: NotificationKind) -> String?; static func response(action:category:) -> Response?; static func snoozed(kind:now:) -> PlannedNotification }
-enum AppRoute { case logDose, conditionCheck }
+enum AppRoute { case logDose, conditionCheck, logWeight }
 ```
 
 | 알림 | 버튼 (알림을 길게 누름) | 본문을 누름 |
 |---|---|---|
 | 투약·저녁 리마인드 | "기록하기"(앱을 열고 투약 기록 시트) · "1시간 뒤 다시 알림"(앱을 열지 않음) | 투약 기록 시트 |
 | 컨디션 24h·48h | "컨디션 기록"(지금 열린 컨디션 체크 시트) | 컨디션 체크 시트 |
+| 체중 (D7) | "체중 기록"(체중 입력 시트) | 체중 입력 시트 |
 | 진료·소진 | 없음 | 앱만 연다 |
 
 - 미루기는 같은 문구를 **한 시간 뒤 한 번** 더 보낸다(`dose.snooze`, 다시 미루면 덮어씀). 앱이 판단하지 않는다
 - 미룬 알림은 포그라운드 재등록(R4)에도 남고, 투약을 기록하면 지운다
 - 처방이 없거나 열린 컨디션 체크가 없으면 오늘 화면만 연다
+
+### R4-2. 체중 기록 알림 (D7, 2026-10-23 사람 결정)
+
+```swift
+func weightReminders(settings: SettingsSnapshot, prescriptionWeekday: Int?, weights: [WeightSampleSnapshot], now: Date, calendar: Calendar) -> [PlannedNotification]
+```
+
+- 주 1회. 요일은 설정값, 없으면 처방의 투약 요일, 처방도 없으면 월요일. 시각 기본 08:00. 기본 켜짐
+- 앞으로 4주치(R4와 같은 범위), id `weight.due.<yyyyMMdd>`. 지난 시각은 만들지 않는다
+- 그날 이미 체중을 기록했으면(직접 입력·건강 앱 모두) 그날 알림은 만들지 않는다. 체중을 저장하면 알림을 다시 계산한다
+- 처방이 없어도 보낸다 (체중은 처방과 따로 기록). 문구는 사실만, 목표·변화량 언급 없음
 
 ## R5. 컨디션 체크 윈도우
 

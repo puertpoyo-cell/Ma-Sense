@@ -96,4 +96,38 @@ struct NotificationRulesTests {
         #expect(!plan.contains { $0.id == "dose.due.0" })
         #expect(plan.contains { $0.id == "dose.due.1" })
     }
+
+    // MARK: R4-2 체중 기록 알림 (D7)
+
+    @Test func weightReminderFollowsDoseWeekdayAtEightByDefault() {
+        // 지금 10-16(금) 09:00, 투약 요일 목요일 → 10-22, 10-29, 11-05, 11-12 08:00
+        let plan = NotificationRules.weightReminders(settings: SettingsSnapshot(), prescriptionWeekday: 5, weights: [], now: now, calendar: calendar)
+        #expect(plan.map(\.fireDate) == [
+            TestCalendar.date(2026, 10, 22, 8),
+            TestCalendar.date(2026, 10, 29, 8),
+            TestCalendar.date(2026, 11, 5, 8),
+            TestCalendar.date(2026, 11, 12, 8),
+        ])
+        #expect(plan.allSatisfy { $0.kind == .weightDue })
+        #expect(Set(plan.map(\.id)).count == 4)
+        #expect(plan.first?.id == "weight.due.20261022")
+    }
+
+    @Test func weightReminderUsesChosenDayAndSkipsTodayWhenRecorded() {
+        // 금요일 21:30으로 정하면 오늘(10-16 금) 저녁부터
+        let settings = SettingsSnapshot(weightReminderWeekday: 6, weightReminderHour: 21, weightReminderMinute: 30)
+        let plan = NotificationRules.weightReminders(settings: settings, prescriptionWeekday: 5, weights: [], now: now, calendar: calendar)
+        #expect(plan.first?.fireDate == TestCalendar.date(2026, 10, 16, 21, 30))
+        #expect(plan.count == 4)
+
+        // 오늘 이미 재었으면 오늘 알림은 없다
+        let measured = WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 10, 16, 7), kilograms: 80)
+        let afterRecord = NotificationRules.weightReminders(settings: settings, prescriptionWeekday: 5, weights: [measured], now: now, calendar: calendar)
+        #expect(afterRecord.first?.fireDate == TestCalendar.date(2026, 10, 23, 21, 30))
+
+        // 끄면 없음. 처방도 요일도 없으면 월요일
+        #expect(NotificationRules.weightReminders(settings: SettingsSnapshot(weightReminderEnabled: false), prescriptionWeekday: 5, weights: [], now: now, calendar: calendar).isEmpty)
+        let monday = NotificationRules.weightReminders(settings: SettingsSnapshot(), prescriptionWeekday: nil, weights: [], now: now, calendar: calendar)
+        #expect(monday.first?.fireDate == TestCalendar.date(2026, 10, 19, 8))
+    }
 }

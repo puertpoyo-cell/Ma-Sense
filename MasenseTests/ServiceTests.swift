@@ -92,10 +92,17 @@ struct ServiceTests {
         #expect(afterCancel == ["dose.due.1"])
     }
 
-    @Test func notificationCoordinatorWithoutPrescriptionRegistersNothing() async throws {
+    /// 처방이 없으면 투약 알림은 없고 체중 기록 알림(D7, 월요일 8시)만. 끄면 아무것도 없다
+    @Test func notificationCoordinatorWithoutPrescriptionRegistersOnlyWeightReminders() async throws {
         let context = makeContext()
         let fake = FakeNotificationService()
-        await NotificationCoordinator(service: fake, calendar: TestCalendar.seoul).refresh(context: context, now: .now)
+        let coordinator = NotificationCoordinator(service: fake, calendar: TestCalendar.seoul)
+        await coordinator.refresh(context: context, now: TestCalendar.date(2026, 10, 22, 9))
+        #expect(fake.pending.map(\.kind) == Array(repeating: .weightDue, count: 4))
+        #expect(fake.pending.first?.fireDate == TestCalendar.date(2026, 10, 26, 8))
+
+        try UserSettings.current(in: context).weightReminderEnabled = false
+        await coordinator.refresh(context: context, now: TestCalendar.date(2026, 10, 22, 9))
         #expect(fake.pending.isEmpty)
     }
 

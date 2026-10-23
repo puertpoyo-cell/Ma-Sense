@@ -2840,6 +2840,23 @@
         }
       }
     },
+    "notif.action.logWeight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log weight"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중 기록"
+          }
+        }
+      }
+    },
     "notif.action.snooze": {
       "extractionState": "manual",
       "localizations": {
@@ -2955,6 +2972,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "남은 회차가 %lld회입니다. 진료 예약을 확인하세요."
+          }
+        }
+      }
+    },
+    "notif.weight.due": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can log your weight today."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 체중을 기록할 수 있습니다."
           }
         }
       }
@@ -5335,6 +5369,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "처방 소진 알림"
+          }
+        }
+      }
+    },
+    "settings.notifications.weight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight reminder"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중 기록 알림"
+          }
+        }
+      }
+    },
+    "settings.notifications.weight.sameAsDose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Same as dose day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 요일과 같게"
+          }
+        }
+      }
+    },
+    "settings.notifications.weight.time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시각"
+          }
+        }
+      }
+    },
+    "settings.notifications.weight.weekday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "요일"
           }
         }
       }

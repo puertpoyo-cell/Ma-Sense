@@ -126,7 +126,7 @@ struct SchemaTests {
                 configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)]
             )
             let context = v2.mainContext
-            let settings = UserSettings()
+            let settings = SchemaV2.UserSettings()
             settings.heightCm = 168
             context.insert(settings)
             let prescription = Prescription(startDate: TestCalendar.date(2026, 10, 16, 9), penCount: 1, scheduledWeekday: 5, scheduledHour: 20)
@@ -150,6 +150,41 @@ struct SchemaTests {
         #expect(try context.fetch(FetchDescriptor<ClinicQuestion>()).map(\.text) == ["질문"])
     }
 
+    /// V3 저장소를 지금 스키마로 열면 키·물어볼 것이 남고 체중 알림은 기본값(켜짐, 투약 요일, 8:00)이다 (D7, V3 → V4)
+    @Test func schemaV3StoreMigratesToV4() throws {
+        let (directory, url) = try diskStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        try autoreleasepool {
+            let schema = Schema(versionedSchema: SchemaV3.self)
+            let v3 = try ModelContainer(
+                for: schema,
+                configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)]
+            )
+            let context = v3.mainContext
+            let settings = SchemaV2.UserSettings()
+            settings.heightCm = 171
+            settings.reminderEnabled = false
+            context.insert(settings)
+            context.insert(ClinicQuestion(text: "질문"))
+            try context.save()
+        }
+
+        let container = try ModelContainer.masense(url: copyStore(url, in: directory))
+        let context = container.mainContext
+        let settings = try #require(try context.fetch(FetchDescriptor<UserSettings>()).first)
+        #expect(settings.heightCm == 171)
+        #expect(settings.reminderEnabled == false)
+        #expect(settings.weightReminderEnabled == true)
+        #expect(settings.weightReminderWeekday == nil)
+        #expect(settings.weightReminderHour == 8)
+        #expect(try context.fetch(FetchDescriptor<ClinicQuestion>()).map(\.text) == ["질문"])
+
+        settings.weightReminderWeekday = 2
+        try context.save()
+        #expect(try context.fetch(FetchDescriptor<UserSettings>()).first?.weightReminderWeekday == 2)
+    }
+
     /// 이전 버전 컨테이너가 아직 파일을 붙잡고 있으면 같은 파일의 이전(migration)이 독점 잠금을 기다리다 멈출 수 있다.
     /// 저장한 파일(본 파일·-wal·-shm)을 새 위치로 복사해 그 사본을 연다 (앱에서는 컨테이너가 하나라 해당 없음)
     private func copyStore(_ url: URL, in directory: URL) throws -> URL {
@@ -171,5 +206,8 @@ struct SchemaTests {
         #expect(settings.reportDefaultPeriod == nil)
         #expect(settings.eveningReminderHour == 20)
         #expect(settings.heightCm == nil)
+        #expect(settings.weightReminderEnabled)
+        #expect(settings.weightReminderHour == 8)
+        #expect(settings.weightReminderMinute == 0)
     }
 }

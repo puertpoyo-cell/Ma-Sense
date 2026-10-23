@@ -30,6 +30,12 @@ final class UserSettings {
     var reportTheme: String = "midnight"
     /// 리포트 기본 기간 (`ReportPeriod.storageValue`). nil이면 자동(R12 기본값)
     var reportDefaultPeriod: String?
+    /// 주 1회 체중 기록 알림 (D7, SchemaV4). 기본 켜짐
+    var weightReminderEnabled: Bool = true
+    /// 1(일)~7(토), `Calendar` weekday. nil이면 처방의 투약 요일
+    var weightReminderWeekday: Int?
+    var weightReminderHour: Int = 8
+    var weightReminderMinute: Int = 0
     var createdAt: Date = Date.now
 
     init(
@@ -48,6 +54,10 @@ final class UserSettings {
         hasPurchasedPro: Bool = false,
         reportTheme: String = "midnight",
         reportDefaultPeriod: String? = nil,
+        weightReminderEnabled: Bool = true,
+        weightReminderWeekday: Int? = nil,
+        weightReminderHour: Int = 8,
+        weightReminderMinute: Int = 0,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -65,6 +75,10 @@ final class UserSettings {
         self.hasPurchasedPro = hasPurchasedPro
         self.reportTheme = reportTheme
         self.reportDefaultPeriod = reportDefaultPeriod
+        self.weightReminderEnabled = weightReminderEnabled
+        self.weightReminderWeekday = weightReminderWeekday
+        self.weightReminderHour = weightReminderHour
+        self.weightReminderMinute = weightReminderMinute
         self.createdAt = createdAt
     }
 

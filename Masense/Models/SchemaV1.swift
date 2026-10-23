@@ -6,6 +6,7 @@ import SwiftData
 /// 다음 버전과 `MasenseMigrationPlan`의 단계를 더한다. CloudKit 규칙 5에 따라 변경은 필드·모델 추가만.
 /// V2(D5)에서 `UserSettings.heightCm`이 더해져 `UserSettings`만 고정 사본을 둔다.
 /// V3(D6)는 `ClinicQuestion` 모델만 더해 기존 모델은 V2와 같다 (고정 사본 없음).
+/// V4(D7)에서 `UserSettings`에 체중 알림 필드가 더해져 V2·V3는 `SchemaV2.UserSettings` 고정 사본을 쓴다.
 enum SchemaV1: VersionedSchema {
     static let versionIdentifier = Schema.Version(1, 0, 0)
 
@@ -55,11 +56,34 @@ enum SchemaV2: VersionedSchema {
             Dose.self,
             ConditionCheck.self,
             WeightSample.self,
-            UserSettings.self,
+            SchemaV2.UserSettings.self,
             ProteinEntry.self,
             StrengthSession.self,
             HabitCheck.self,
         ]
+    }
+
+    /// 1.1.0·1.2.0의 `UserSettings` 고정 사본 (heightCm까지, 체중 알림 필드 없음). V2·V3 저장소를 열고 V4로 옮길 때만 쓴다
+    @Model
+    final class UserSettings {
+        var id: UUID = UUID()
+        var hasAcceptedRoleNotice: Bool = false
+        var hasConfirmedAdult: Bool = false
+        var reminderEnabled: Bool = true
+        var eveningReminderHour: Int = 20
+        var conditionCheckEnabled: Bool = true
+        var clinicReminderDaysBefore: Int = 1
+        var exhaustionReminderDosesLeft: Int = 2
+        var proteinTargetGrams: Int?
+        var bodyWeightForGuideKg: Double?
+        var heightCm: Double?
+        var healthKitAuthorized: Bool = false
+        var hasPurchasedPro: Bool = false
+        var reportTheme: String = "midnight"
+        var reportDefaultPeriod: String?
+        var createdAt: Date = Date.now
+
+        init() {}
     }
 }
 
@@ -72,18 +96,38 @@ enum SchemaV3: VersionedSchema {
     }
 }
 
+/// D7 (2026-10-23 사람 결정): `UserSettings`에 주 1회 체중 기록 알림 필드 추가. 기본값 있는 필드 추가라 경량 이전
+enum SchemaV4: VersionedSchema {
+    static let versionIdentifier = Schema.Version(1, 3, 0)
+
+    static var models: [any PersistentModel.Type] {
+        [
+            Prescription.self,
+            Dose.self,
+            ConditionCheck.self,
+            WeightSample.self,
+            UserSettings.self,
+            ProteinEntry.self,
+            StrengthSession.self,
+            HabitCheck.self,
+            ClinicQuestion.self,
+        ]
+    }
+}
+
 /// 지금 앱이 여는 스키마
-typealias CurrentSchema = SchemaV3
+typealias CurrentSchema = SchemaV4
 
 enum MasenseMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [SchemaV1.self, SchemaV2.self, SchemaV3.self]
+        [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self]
     }
 
     static var stages: [MigrationStage] {
         [
             .lightweight(fromVersion: SchemaV1.self, toVersion: SchemaV2.self),
             .lightweight(fromVersion: SchemaV2.self, toVersion: SchemaV3.self),
+            .lightweight(fromVersion: SchemaV3.self, toVersion: SchemaV4.self),
         ]
     }
 }

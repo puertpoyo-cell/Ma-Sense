@@ -18,7 +18,11 @@ extension UserSettings {
             bodyWeightForGuideKg: bodyWeightForGuideKg,
             reportTheme: reportTheme,
             reportDefaultPeriod: reportDefaultPeriod,
-            heightCm: heightCm
+            heightCm: heightCm,
+            weightReminderEnabled: weightReminderEnabled,
+            weightReminderWeekday: weightReminderWeekday,
+            weightReminderHour: weightReminderHour,
+            weightReminderMinute: weightReminderMinute
         )
     }
 
@@ -37,6 +41,11 @@ extension UserSettings {
         reportTheme = record.reportTheme
         reportDefaultPeriod = record.reportDefaultPeriod
         heightCm = record.heightCm
+        // D7 이전 파일에는 없다. 없으면 기본값
+        weightReminderEnabled = record.weightReminderEnabled ?? true
+        weightReminderWeekday = record.weightReminderWeekday
+        weightReminderHour = record.weightReminderHour ?? 8
+        weightReminderMinute = record.weightReminderMinute ?? 0
     }
 }
 

@@ -6,6 +6,8 @@ enum AppRoute: String, Equatable {
     case logDose
     /// 오늘 탭 + 지금 열려 있는 컨디션 체크
     case conditionCheck
+    /// 오늘 탭 + 체중 입력 (D7)
+    case logWeight
 }
 
 /// D6: 알림에서 바로 하는 일 (RULES.md R4-1). 카테고리·액션 식별자, 응답을 앱 안 이동이나 미루기로 바꾸는 규칙.
@@ -13,10 +15,12 @@ enum AppRoute: String, Equatable {
 enum NotificationActions {
     static let doseCategory = "dose"
     static let conditionCategory = "condition"
+    static let weightCategory = "weight"
 
     static let logDose = "action.logDose"
     static let snooze = "action.snooze"
     static let logCondition = "action.logCondition"
+    static let logWeight = "action.logWeight"
     /// 알림 본문을 누른 경우. 서비스가 `UNNotificationDefaultActionIdentifier`를 이 값으로 바꿔 넘긴다
     static let defaultAction = "action.default"
 
@@ -29,11 +33,12 @@ enum NotificationActions {
         case snooze
     }
 
-    /// 투약 알림은 기록하기·1시간 뒤 다시, 컨디션 알림은 컨디션 기록. 그 밖의 알림은 액션 없음
+    /// 투약 알림은 기록하기·1시간 뒤 다시, 컨디션 알림은 컨디션 기록, 체중 알림은 체중 기록. 그 밖의 알림은 액션 없음
     static func category(for kind: NotificationKind) -> String? {
         switch kind {
         case .doseDue, .doseEvening: return doseCategory
         case .conditionH24, .conditionH48: return conditionCategory
+        case .weightDue: return weightCategory
         case .clinicSoon, .prescriptionLow: return nil
         }
     }
@@ -46,6 +51,8 @@ enum NotificationActions {
             return .snooze
         case (conditionCategory, logCondition), (conditionCategory, defaultAction):
             return .open(.conditionCheck)
+        case (weightCategory, logWeight), (weightCategory, defaultAction):
+            return .open(.logWeight)
         default:
             return nil
         }

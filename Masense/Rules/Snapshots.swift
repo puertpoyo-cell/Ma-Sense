@@ -107,19 +107,32 @@ struct SettingsSnapshot: Equatable {
     let conditionCheckEnabled: Bool
     let clinicReminderDaysBefore: Int
     let exhaustionReminderDosesLeft: Int
+    /// D7 주 1회 체중 기록 알림. 요일 nil이면 투약 요일
+    let weightReminderEnabled: Bool
+    let weightReminderWeekday: Int?
+    let weightReminderHour: Int
+    let weightReminderMinute: Int
 
     init(
         reminderEnabled: Bool = true,
         eveningReminderHour: Int = 20,
         conditionCheckEnabled: Bool = true,
         clinicReminderDaysBefore: Int = 1,
-        exhaustionReminderDosesLeft: Int = 2
+        exhaustionReminderDosesLeft: Int = 2,
+        weightReminderEnabled: Bool = true,
+        weightReminderWeekday: Int? = nil,
+        weightReminderHour: Int = 8,
+        weightReminderMinute: Int = 0
     ) {
         self.reminderEnabled = reminderEnabled
         self.eveningReminderHour = eveningReminderHour
         self.conditionCheckEnabled = conditionCheckEnabled
         self.clinicReminderDaysBefore = clinicReminderDaysBefore
         self.exhaustionReminderDosesLeft = exhaustionReminderDosesLeft
+        self.weightReminderEnabled = weightReminderEnabled
+        self.weightReminderWeekday = weightReminderWeekday
+        self.weightReminderHour = weightReminderHour
+        self.weightReminderMinute = weightReminderMinute
     }
 }
 

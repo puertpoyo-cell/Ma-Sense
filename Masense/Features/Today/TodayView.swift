@@ -284,6 +284,8 @@ struct TodayView: View {
             if let prompt = makeModel(now: Date()).conditionPrompt {
                 sheet = .condition(doseID: prompt.doseID, window: prompt.window)
             }
+        case .logWeight:
+            sheet = .weight
         }
     }
 

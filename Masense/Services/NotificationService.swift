@@ -70,9 +70,15 @@ final class NotificationService: NotificationScheduling {
             title: String(localized: "notif.action.logCondition"),
             options: [.foreground]
         )
+        let logWeight = UNNotificationAction(
+            identifier: NotificationActions.logWeight,
+            title: String(localized: "notif.action.logWeight"),
+            options: [.foreground]
+        )
         center.setNotificationCategories([
             UNNotificationCategory(identifier: NotificationActions.doseCategory, actions: [logDose, snooze], intentIdentifiers: []),
             UNNotificationCategory(identifier: NotificationActions.conditionCategory, actions: [logCondition], intentIdentifiers: []),
+            UNNotificationCategory(identifier: NotificationActions.weightCategory, actions: [logWeight], intentIdentifiers: []),
         ])
     }
 

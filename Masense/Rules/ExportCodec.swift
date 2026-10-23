@@ -48,6 +48,11 @@ struct ExportDocument: Equatable {
         var reportDefaultPeriod: String?
         /// D5 (SchemaV2). 키가 없는 파일은 null로 읽는다
         var heightCm: Double?
+        /// D7 (SchemaV4) 체중 기록 알림. 키가 없는 파일은 null이고 가져오면 기본값(켜짐, 투약 요일, 8:00)
+        var weightReminderEnabled: Bool?
+        var weightReminderWeekday: Int?
+        var weightReminderHour: Int?
+        var weightReminderMinute: Int?
     }
 
     struct PrescriptionRecord: Codable, Equatable {
@@ -209,6 +214,10 @@ extension ExportDocument.SettingsRecord {
         try c.encode(reportTheme, forKey: .reportTheme)
         try c.encodeNullable(reportDefaultPeriod, forKey: .reportDefaultPeriod)
         try c.encodeNullable(heightCm, forKey: .heightCm)
+        try c.encodeNullable(weightReminderEnabled, forKey: .weightReminderEnabled)
+        try c.encodeNullable(weightReminderWeekday, forKey: .weightReminderWeekday)
+        try c.encodeNullable(weightReminderHour, forKey: .weightReminderHour)
+        try c.encodeNullable(weightReminderMinute, forKey: .weightReminderMinute)
     }
 }
 

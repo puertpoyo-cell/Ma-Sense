@@ -251,6 +251,10 @@ enum ProteinFood: String, Codable, CaseIterable {
 | hasPurchasedPro | Bool | `false` | StoreKit 검증 결과 캐시. 진실 원천은 StoreKit |
 | reportTheme | String | `"midnight"` |  |
 | reportDefaultPeriod | String? |  | 리포트 기본 기간 `ReportPeriod.storageValue` (`sinceClinic`, `weeks4`·`weeks8`·`weeks12`). nil이면 자동(R12) |
+| weightReminderEnabled | Bool | `true` | 주 1회 체중 기록 알림 (R4-2). **SchemaV4(1.3.0)에서 추가** (D7, 2026-10-23 사람 결정) |
+| weightReminderWeekday | Int? |  | 1(일)~7(토). nil이면 처방의 투약 요일 (V4) |
+| weightReminderHour | Int | `8` | (V4) |
+| weightReminderMinute | Int | `0` | (V4) |
 | createdAt | Date | `.now` |  |
 
 단일 레코드는 CloudKit에서 기기마다 하나씩 생겨 충돌할 수 있다. 동기화를 켤 때는 `createdAt`이 가장 이른 레코드를 정본으로 삼고 나머지를 병합·삭제하는 규칙을 `Rules/SettingsMerge.swift`에 둔다 (v1은 해당 없음).
@@ -287,9 +291,13 @@ enum SchemaV3: VersionedSchema {   // D6: ClinicQuestion 모델 추가
     static let versionIdentifier = Schema.Version(1, 2, 0)
     static var models: [any PersistentModel.Type] { SchemaV2.models + [ClinicQuestion.self] }
 }
-typealias CurrentSchema = SchemaV3
+enum SchemaV4: VersionedSchema {   // D7: UserSettings 체중 알림 필드 4개 추가
+    static let versionIdentifier = Schema.Version(1, 3, 0)
+    // 지금 모델 전부. V2·V3는 `SchemaV2.UserSettings` 고정 사본(heightCm까지)을 쓴다
+}
+typealias CurrentSchema = SchemaV4
 enum MasenseMigrationPlan: SchemaMigrationPlan {
-    // [SchemaV1, SchemaV2, SchemaV3], .lightweight(V1 → V2), .lightweight(V2 → V3)
+    // [SchemaV1, SchemaV2, SchemaV3, SchemaV4], .lightweight(V1 → V2), (V2 → V3), (V3 → V4)
 }
 ```
 
@@ -298,7 +306,8 @@ enum MasenseMigrationPlan: SchemaMigrationPlan {
 - 출시 뒤 스키마를 바꿀 때: 바뀌는 모델의 **고정 사본**을 이전 버전(`SchemaV1.Xxx`)에 두고 `SchemaV2`와 마이그레이션 단계를 더한다. 고정 사본의 저장 속성은 고치지 않는다(기존 저장소의 버전을 알아보는 기준). CloudKit 규칙 5에 따라 변경은 추가만
 - V2 (D5, 2026-10-22 사람 결정): `UserSettings.heightCm` 옵셔널 추가 → 경량 이전. 개발 중 기기에 있는 V1 저장소의 기록을 지우지 않으려고 고정 사본 방식으로 올렸다
 - V3 (D6, 2026-10-23 사람 결정): 관계 없는 `ClinicQuestion` 모델 추가 → 경량 이전. 기존 모델은 바뀌지 않아 고정 사본이 없다
-- `SchemaTests`: unique 없음, 열거형 rawValue 디스크 왕복, 모르는 rawValue 기본값, 설정 기본값, V1 저장소 → 지금 스키마 이전, V2 저장소 → V3 이전
+- V4 (D7, 2026-10-23 사람 결정): `UserSettings` 체중 알림 필드(기본값 있음·옵셔널) 추가 → 경량 이전. V2·V3의 `UserSettings`는 `SchemaV2.UserSettings` 고정 사본으로 바꿨다 (저장 속성은 그때와 같음)
+- `SchemaTests`: unique 없음, 열거형 rawValue 디스크 왕복, 모르는 rawValue 기본값, 설정 기본값, V1 저장소 → 지금 스키마 이전, V2 저장소 → V3 이전, V3 저장소 → V4 이전
 
 M1 출시 전에는 마이그레이션 없이 스키마 자유 변경. 베타 배포 후부터 `SchemaMigrationPlan` 필수.
 

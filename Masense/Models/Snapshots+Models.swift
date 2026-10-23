@@ -60,7 +60,11 @@ extension UserSettings {
             eveningReminderHour: eveningReminderHour,
             conditionCheckEnabled: conditionCheckEnabled,
             clinicReminderDaysBefore: clinicReminderDaysBefore,
-            exhaustionReminderDosesLeft: exhaustionReminderDosesLeft
+            exhaustionReminderDosesLeft: exhaustionReminderDosesLeft,
+            weightReminderEnabled: weightReminderEnabled,
+            weightReminderWeekday: weightReminderWeekday,
+            weightReminderHour: weightReminderHour,
+            weightReminderMinute: weightReminderMinute
         )
     }
 }

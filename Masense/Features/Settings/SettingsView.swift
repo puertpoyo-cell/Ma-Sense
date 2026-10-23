@@ -78,6 +78,10 @@ private struct SettingsForm: View {
             settings.conditionCheckEnabled ? 1 : 0,
             settings.clinicReminderDaysBefore,
             settings.exhaustionReminderDosesLeft,
+            settings.weightReminderEnabled ? 1 : 0,
+            settings.weightReminderWeekday ?? 0,
+            settings.weightReminderHour,
+            settings.weightReminderMinute,
         ]
     }
 
@@ -239,10 +243,41 @@ private struct SettingsForm: View {
                 }
             }
             .disabled(!settings.reminderEnabled)
+
+            // D7 주 1회 체중 기록 알림 (R4-2)
+            Toggle("settings.notifications.weight", isOn: $settings.weightReminderEnabled)
+            Picker("settings.notifications.weight.weekday", selection: $settings.weightReminderWeekday) {
+                Text("settings.notifications.weight.sameAsDose").tag(Int?.none)
+                ForEach(1...7, id: \.self) { weekday in
+                    Text(verbatim: calendar.weekdaySymbols[safe: weekday - 1] ?? "").tag(Int?.some(weekday))
+                }
+            }
+            .disabled(!settings.weightReminderEnabled)
+            DatePicker("settings.notifications.weight.time", selection: weightReminderTime, displayedComponents: .hourAndMinute)
+                .disabled(!settings.weightReminderEnabled)
         } header: {
             SectionHeaderText("settings.section.notifications")
         }
         .frostRow()
+    }
+
+    /// 체중 알림 시각을 오늘 날짜의 시각으로 바꿔 DatePicker에 넘긴다 (저장은 시·분만)
+    private var weightReminderTime: Binding<Date> {
+        Binding(
+            get: {
+                calendar.date(
+                    bySettingHour: settings.weightReminderHour,
+                    minute: settings.weightReminderMinute,
+                    second: 0,
+                    of: calendar.startOfDay(for: .now)
+                ) ?? .now
+            },
+            set: { date in
+                let parts = calendar.dateComponents([.hour, .minute], from: date)
+                settings.weightReminderHour = parts.hour ?? 8
+                settings.weightReminderMinute = parts.minute ?? 0
+            }
+        )
     }
 
     private func hourText(_ hour: Int) -> String {

@@ -23,6 +23,7 @@ final class AppRouter {
         switch url.host {
         case "log-dose": return .logDose
         case "condition": return .conditionCheck
+        case "log-weight": return .logWeight
         default: return nil
         }
     }

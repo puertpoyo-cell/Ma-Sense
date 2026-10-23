@@ -20,16 +20,26 @@ final class NotificationCoordinator {
     }
 
     static func plan(context: ModelContext, now: Date, calendar: Calendar) throws -> [PlannedNotification] {
-        guard let prescription = try Prescription.active(in: context) else { return [] }
+        let prescription = try Prescription.active(in: context)
         let settings = try UserSettings.current(in: context)
-        let checks = try ConditionCheck.all(in: context).compactMap(\.snapshot)
-        return NotificationRules.notificationPlan(
-            p: prescription.snapshot,
+        // D7 체중 기록 알림은 처방이 없어도 보낸다
+        var plan = NotificationRules.weightReminders(
             settings: settings.snapshot,
-            doses: prescription.doseSnapshots,
-            checks: checks,
+            prescriptionWeekday: prescription?.scheduledWeekday,
+            weights: try WeightSample.all(in: context).map(\.snapshot),
             now: now,
             calendar: calendar
         )
+        if let prescription {
+            plan += NotificationRules.notificationPlan(
+                p: prescription.snapshot,
+                settings: settings.snapshot,
+                doses: prescription.doseSnapshots,
+                checks: try ConditionCheck.all(in: context).compactMap(\.snapshot),
+                now: now,
+                calendar: calendar
+            )
+        }
+        return NotificationRules.sorted(plan)
     }
 }

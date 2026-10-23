@@ -48,7 +48,7 @@ struct ExportServiceTests {
         #expect(url.lastPathComponent == "Masense_Export_2026-10-24.masense.json")
 
         let document = try ExportCodec.decode(Data(contentsOf: url))
-        #expect(document.schemaVersion == "1.2.0")
+        #expect(document.schemaVersion == "1.3.0")
         #expect(document.prescriptions.map(\.doseLabel) == ["메모"])
         #expect(document.doses.map(\.note) == ["왼쪽"])
         #expect(document.doses.first?.prescriptionId == document.prescriptions.first?.id)
@@ -76,6 +76,10 @@ struct ExportServiceTests {
         var expected = fixture
         // fixture는 스키마 1.0.0 때 내보낸 파일이다. 다시 내보내면 지금 스키마 버전이 적힌다
         expected.schemaVersion = ExportService.schemaVersion
+        // D7 이전 파일이라 체중 알림 설정이 없다. 가져오면 기본값이 들어가 그대로 내보낸다
+        expected.settings?.weightReminderEnabled = true
+        expected.settings?.weightReminderHour = 8
+        expected.settings?.weightReminderMinute = 0
         expected.weightSamples.removeAll { $0.source == "healthKit" }
         expected.strengthSessions.removeAll { $0.source == "healthKit" }
         #expect(exported == expected)
@@ -103,19 +107,26 @@ struct ExportServiceTests {
         #expect(after.first?.heightCm == nil)
     }
 
-    /// D5: 키(heightCm)도 내보내고 교체 가져오기에서 되살린다
+    /// D5: 키(heightCm)도 내보내고 교체 가져오기에서 되살린다. D7 체중 알림 설정도 같다
     @Test func heightRoundTripsThroughExport() throws {
         let settings = try UserSettings.current(in: context)
         settings.heightCm = 168.5
+        settings.weightReminderWeekday = 3
+        settings.weightReminderHour = 7
         try context.save()
         let data = try ExportCodec.encode(ExportService.makeDocument(context: context, now: TestCalendar.date(2026, 10, 24, 9)), timeZone: TestCalendar.seoul.timeZone)
         let document = try ExportCodec.decode(data)
         #expect(document.settings?.heightCm == 168.5)
+        #expect(document.settings?.weightReminderWeekday == 3)
 
         settings.heightCm = nil
+        settings.weightReminderWeekday = nil
+        settings.weightReminderHour = 8
         try context.save()
         _ = try ExportService.apply(document, mode: .replace, context: context, calendar: TestCalendar.seoul)
         #expect(try UserSettings.current(in: context).heightCm == 168.5)
+        #expect(try UserSettings.current(in: context).weightReminderWeekday == 3)
+        #expect(try UserSettings.current(in: context).weightReminderHour == 7)
     }
 
     /// D6: 진료 때 물어볼 것도 내보내고 가져온다. 물어본 시각이 없으면 null

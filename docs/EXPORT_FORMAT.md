@@ -62,11 +62,16 @@
   "bodyWeightForGuideKg": null,
   "reportTheme": "midnight",
   "reportDefaultPeriod": null,
-  "heightCm": 170.5
+  "heightCm": 170.5,
+  "weightReminderEnabled": true,
+  "weightReminderWeekday": null,
+  "weightReminderHour": 8,
+  "weightReminderMinute": 0
 }
 ```
 `healthKitAuthorized`, `hasPurchasedPro`는 **내보내지 않는다** — 기기·계정에 종속. 가져온 뒤 HealthKit은 다시 권한 요청, 구매는 StoreKit 복원.
 `reportDefaultPeriod`(D3, 리포트 기본 기간)와 `heightCm`(D5, 키, SchemaV2)는 출시 전 v1 초판에 포함. 키가 없는 파일은 `null`로 읽는다 (formatVersion은 그대로 1).
+`weightReminder*`(D7, 체중 기록 알림, SchemaV4)도 같은 버전 안의 추가. 키가 없는 파일을 교체 가져오기하면 기본값(켜짐, 요일 null = 투약 요일, 8:00)이 된다.
 
 비어 있는 값은 키를 지우지 않고 `null`로 쓴다 (모든 레코드 공통). 가져오기는 키 없음과 `null`을 같게 본다.
 
@@ -177,4 +182,4 @@ rawValue는 문자열 그대로 옮긴다. 앱이 모르는 값(다음 버전이
 | formatVersion | 날짜 | 변경 |
 |---|---|---|
 | 1 | 2026-10-21 | 초판. SchemaV1 전체 + M2 배열(비어 있을 수 있음) |
-| 1 | 2026-10-23 | 같은 버전 안에서 추가: `clinicQuestions` 배열(키가 없으면 빈 배열), 투약 `site`의 `"unknown"`(부위 기록 없음). 이전 파일·이전 앱과 서로 읽힌다 |
+| 1 | 2026-10-23 | 같은 버전 안에서 추가: `clinicQuestions` 배열(키가 없으면 빈 배열), 투약 `site`의 `"unknown"`(부위 기록 없음), `settings.weightReminder*`. 이전 파일·이전 앱과 서로 읽힌다 |
