@@ -26,6 +26,12 @@ xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' 
 
 Xcode > Product > Archive → Distribute App → App Store Connect → Upload. 업로드 뒤 App Store Connect > TestFlight에서 수출 규정 질문(암호화: 표준 암호화만 사용 → 면제 해당 여부 확인)에 답한다.
 
+### 실기기에서 화면 좌우에 검은 띠가 보이면
+
+앱이 기기의 화면 크기를 모르는 오래된 SDK로 빌드되어 호환 모드로 도는 경우다. 앱 설정(Info.plist)으로는 끌 수 없고, 기기의 iOS와 같은 세대의 Xcode로 다시 빌드하면 사라진다 ([Apple 개발자 포럼 DTS 답변](https://developer.apple.com/forums/thread/847856)).
+- 기기: 설정 > 일반 > 정보 > iOS 버전, Mac: Xcode > About Xcode 버전을 비교한다 (예: iOS 27 기기면 Xcode 27)
+- 2026-10-23 확인: Xcode 26.3 + iOS 26 시뮬레이터(iPhone 17 Pro)에서는 띠 없이 화면을 다 채운다. CI 스크린샷 워크플로를 수동 실행하며 `xcode` 입력(예: `26`)을 주면 그 Xcode로 찍어 볼 수 있다
+
 ## 3. 베타 테스트 정보 (App Store Connect에 붙여 넣을 문구)
 
 ### 베타 앱 설명
