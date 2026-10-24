@@ -11,7 +11,7 @@ struct BodyMapView: View {
     var lastUseBySite: [BodySite: Date] = [:]
     var calendar: Calendar = .current
 
-    /// 설계 좌표계. 정면이므로 화면 왼쪽이 본인의 오른쪽이다
+    /// 설계 좌표계. 거울처럼 보이게 화면 왼쪽이 본인의 왼쪽이다 (2026-10-24 사람 결정)
     private static let canvas = CGSize(width: 240, height: 340)
 
     var body: some View {
@@ -26,9 +26,9 @@ struct BodyMapView: View {
             .frame(width: Self.canvas.width, height: Self.canvas.height, alignment: .topLeading)
 
             HStack {
-                Text("bodymap.right")
-                Spacer()
                 Text("bodymap.left")
+                Spacer()
+                Text("bodymap.right")
             }
             .font(Typography.caption)
             .foregroundStyle(Color.inkSecondary)
@@ -43,12 +43,12 @@ struct BodyMapView: View {
 
     // MARK: 이력 행
 
-    /// 그림과 같은 방향으로 두 칸씩: 화면 왼쪽이 본인의 오른쪽
+    /// 그림과 같은 방향으로 두 칸씩: 화면 왼쪽이 본인의 왼쪽 (거울)
     private static let siteRows: [(BodySite, BodySite)] = [
-        (.upperArmRight, .upperArmLeft),
-        (.abdomenUpperRight, .abdomenUpperLeft),
-        (.abdomenLowerRight, .abdomenLowerLeft),
-        (.thighRight, .thighLeft),
+        (.upperArmLeft, .upperArmRight),
+        (.abdomenUpperLeft, .abdomenUpperRight),
+        (.abdomenLowerLeft, .abdomenLowerRight),
+        (.thighLeft, .thighRight),
     ]
 
     @ViewBuilder
@@ -131,14 +131,15 @@ struct BodyMapView: View {
 
     static func frame(for site: BodySite) -> CGRect {
         switch site {
-        case .upperArmRight: return CGRect(x: 43, y: 70, width: 28, height: 56)
-        case .upperArmLeft: return CGRect(x: 169, y: 70, width: 28, height: 56)
-        case .abdomenUpperRight: return CGRect(x: 84, y: 112, width: 34, height: 36)
-        case .abdomenUpperLeft: return CGRect(x: 122, y: 112, width: 34, height: 36)
-        case .abdomenLowerRight: return CGRect(x: 84, y: 152, width: 34, height: 36)
-        case .abdomenLowerLeft: return CGRect(x: 122, y: 152, width: 34, height: 36)
-        case .thighRight: return CGRect(x: 83, y: 202, width: 32, height: 64)
-        case .thighLeft: return CGRect(x: 125, y: 202, width: 32, height: 64)
+        // 거울 보기: 본인의 왼쪽 부위가 화면 왼쪽
+        case .upperArmLeft: return CGRect(x: 43, y: 70, width: 28, height: 56)
+        case .upperArmRight: return CGRect(x: 169, y: 70, width: 28, height: 56)
+        case .abdomenUpperLeft: return CGRect(x: 84, y: 112, width: 34, height: 36)
+        case .abdomenUpperRight: return CGRect(x: 122, y: 112, width: 34, height: 36)
+        case .abdomenLowerLeft: return CGRect(x: 84, y: 152, width: 34, height: 36)
+        case .abdomenLowerRight: return CGRect(x: 122, y: 152, width: 34, height: 36)
+        case .thighLeft: return CGRect(x: 83, y: 202, width: 32, height: 64)
+        case .thighRight: return CGRect(x: 125, y: 202, width: 32, height: 64)
         }
     }
 
