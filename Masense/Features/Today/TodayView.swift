@@ -55,6 +55,10 @@ struct TodayView: View {
     @State private var showsToast = false
     /// 지난 투약 안내 카드를 닫은 처방 id (D6). 기기 화면 상태라 SwiftData 대신 UserDefaults
     @AppStorage("backfill.dismissedPrescription") private var dismissedBackfill = ""
+    /// 닫은 사실 한 줄 "종류|날짜", 닫은 주간 정리 구간 시작 (D8). 기기 화면 상태
+    @AppStorage("dailyLine.dismissed") private var dismissedDailyLine = ""
+    @AppStorage("weeklySummary.dismissedStart") private var dismissedWeeklyStart: Double = 0
+    @State private var showsWeeklyList = false
 
     private var prescription: Prescription? { activePrescriptions.first }
 
@@ -64,6 +68,9 @@ struct TodayView: View {
             let model = makeModel(now: timeline.date)
             ScrollView {
                 VStack(spacing: Spacing.cardGap) {
+                    if let line = model.dailyLine, dismissedDailyLine != dailyLineKey(line, now: timeline.date) {
+                        dailyLineView(line, now: timeline.date)
+                    }
                     countdownCard(model)
                     // 처방이 없으면 1-1만 보인다 (SCREENS.md 빈 상태)
                     if let prescription {
@@ -72,6 +79,13 @@ struct TodayView: View {
                         }
                         if let prompt = model.conditionPrompt {
                             conditionCard(prompt)
+                        }
+                        if let summary = model.weeklySummary, summary.period.start.timeIntervalSinceReferenceDate != dismissedWeeklyStart {
+                            WeeklySummaryCard(
+                                summary: summary,
+                                onShowAll: { showsWeeklyList = true },
+                                onDismiss: { dismissedWeeklyStart = summary.period.start.timeIntervalSinceReferenceDate }
+                            )
                         }
                         if let pens = model.pens {
                             PenStatusCard(
@@ -94,6 +108,7 @@ struct TodayView: View {
         }
         .midnightBackground()
         .navigationTitle("tab.today")
+        .navigationDestination(isPresented: $showsWeeklyList) { WeeklySummaryListView() }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
@@ -129,9 +144,53 @@ struct TodayView: View {
             habits: habits.map(\.snapshot),
             proteinTarget: settingsList.first?.proteinTargetGrams,
             heightCm: settingsList.first?.heightCm,
+            allDoses: allPrescriptions.flatMap(\.doses).map(\.snapshot),
             now: now,
             calendar: calendar
         )
+    }
+
+    // MARK: 맨 위 사실 한 줄 (R17, D8)
+
+    /// 하루에 한 번 닫는다: 같은 종류·같은 날이면 숨김
+    private func dailyLineKey(_ line: DailyLine, now: Date) -> String {
+        let day = calendar.dateComponents([.year, .month, .day], from: now)
+        return "\(line.kind)|\(day.year ?? 0)-\(day.month ?? 0)-\(day.day ?? 0)"
+    }
+
+    private func dailyLineView(_ line: DailyLine, now: Date) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.s2) {
+            Group {
+                switch line {
+                case let .doseDay(site?):
+                    Text("daily.line.doseDay \(site.localizedName)")
+                case .doseDay(nil):
+                    Text("daily.line.doseDay.noSite")
+                case let .lowSupply(remaining, true):
+                    Text("daily.line.lowPens \(remaining)")
+                case let .lowSupply(remaining, false):
+                    Text("daily.line.lowDoses \(remaining)")
+                case .noRecentWeight:
+                    Text("daily.line.noWeight")
+                }
+            }
+            .font(Typography.body)
+            .foregroundStyle(Color.ink)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Button {
+                dismissedDailyLine = dailyLineKey(line, now: now)
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.inkSecondary)
+                    .frame(minWidth: 32, minHeight: 32)
+            }
+            .accessibilityLabel(Text("daily.line.dismiss"))
+        }
+        .padding(.leading, Spacing.s4)
+        .padding(.trailing, Spacing.s2)
+        .padding(.vertical, Spacing.s1)
+        .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
     }
 
     // MARK: 1-1 카운트다운 (CountdownHero, DESIGN_SYSTEM.md 5.2)

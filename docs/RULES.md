@@ -285,6 +285,26 @@ func asked(_ questions: [ClinicQuestionSnapshot]) -> [ClinicQuestionSnapshot]   
 - 리포트 G 영역은 물어볼 것과 메모를 합쳐 8줄까지: 메모는 `min(5, 8 - 물어볼 것 수)`줄. A4 한 장 유지 (`ReportRendererTests.fullTwelveWeekReportFitsOnePage`)
 - 진료에서 물어봤으면 눌러서 `askedAt`을 남긴다. 다시 누르면 되돌린다. 지우기는 실제 삭제
 
+## R16. 주간 정리 (D8, 2026-10-24 사람 결정)
+
+```swift
+func finishedPeriods(prescription: PrescriptionSnapshot, now: Date, calendar: Calendar, limit: Int = 12) -> [DateInterval]  // 끝난 구간, 최근 순
+func summary(period:doses:checks:weights:proteins:sessions:proteinTarget:calendar:) -> WeeklySummary
+```
+
+- 구간은 활성 처방의 첫 예정일(R1)이 있는 날 0시부터 7일씩 `[시작, +7일)`. 끝난 구간만
+- 숫자만: 투약 수(취소 제외), 컨디션 체크 수와 강도 1 이상으로 많이 기록된 증상 최대 2개, 체중 측정 수와 구간 첫·마지막 측정 차이(부호 그대로, 2회 이상일 때), 단백질 기록한 날(목표가 있으면 채운 날, R9), 근력운동·가벼운 활동 수
+- 평가어·지난 구간과의 비교·목표 대비 문구 없음. 기록이 하나도 없는 구간은 오늘 카드로 띄우지 않는다
+
+## R17. 오늘 화면 사실 한 줄 (D8, 2026-10-24 사람 결정)
+
+```swift
+func line(prescription: PrescriptionSnapshot?, doses: [DoseSnapshot], allDoses: [DoseSnapshot], weights: [WeightSampleSnapshot], now: Date, calendar: Calendar) -> DailyLine?
+```
+
+- 하나만, 우선순위: 오늘이 예정일이고 기록 전("오늘은 투약일입니다. 지난 부위: …") > 남은 회차 1회 이하("남은 펜이 n개입니다. 다음 진료일을 확인하세요.", 여러 회 쓰는 펜은 회차) > 최근 7일 체중 기록 없음
+- 칭찬·응원·평가 없음 (COMPLIANCE.md 3.1). 닫으면 같은 종류는 그날 다시 보이지 않는다
+
 ## 테스트 체크리스트
 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
@@ -292,6 +312,7 @@ func asked(_ questions: [ClinicQuestionSnapshot]) -> [ClinicQuestionSnapshot]   
 - [x] R3 과거 Dose 추가로 누락 해제
 - [x] R3-1 앞선 누락만 세기, 남은 회차까지만 켜기, 시간 순 회차와 뒤 기록 밀기, 취소 기록 제외 (`BackfillRulesTests`, `BackfillModelTests`)
 - [x] R6 부위 기록 없음은 바디맵 이력·부위별 날짜에서 제외 (`SiteRulesTests`)
+- [x] R16 구간 경계·끝난 구간만·숫자 집계, R17 우선순위 (`WeeklySummaryRulesTests`, `DailyLineRulesTests`, `TodayModelTests`)
 - [x] R15 입력 정리, 아직 묻지 않은 것 순서, 리포트 5개·메모와 합쳐 8줄 (`ClinicQuestionRulesTests`, `ReportBuilderTests`)
 - [x] R4 4주 제한, 재등록 시 중복 없음
 - [x] R5 창 경계값 (12h, 36h, 96h)

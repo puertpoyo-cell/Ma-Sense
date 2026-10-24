@@ -106,6 +106,17 @@ struct HistoryView: View {
         if months.isEmpty {
             emptyRow("history.empty")
         }
+        // 주간 정리 목록 (R16, D8)
+        if activePrescription != nil {
+            NavigationLink {
+                WeeklySummaryListView()
+            } label: {
+                Label("history.weekly", systemImage: "list.bullet.rectangle")
+                    .font(Typography.label)
+                    .foregroundStyle(Color.ink)
+            }
+            .frostRow()
+        }
         // 누락 마디가 둘 이상이면 한꺼번에 기록 (D6). 남은 회차가 없으면 숨긴다
         if backfillCount(now: now) >= 2 {
             Button { sheet = .backfill } label: {

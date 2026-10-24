@@ -61,6 +61,10 @@ struct TodayModel: Equatable {
     let daily: DailyCycle
     /// R8. 표시는 출처가 정해졌을 때만 (AppConfig.paceGuideSource)
     let paceNotice: PaceNotice?
+    /// 맨 위 사실 한 줄 (R17, D8)
+    let dailyLine: DailyLine?
+    /// 1-1c 지난 마디 정리 (R16, D8). 끝난 구간 중 가장 최근, 기록이 하나도 없으면 nil
+    let weeklySummary: WeeklySummary?
     /// 1-1b 펜 현황 (R13-1, D7)과 소진 예상일 (R13)
     let pens: PenStatus?
     let exhaustionDate: Date?
@@ -77,9 +81,35 @@ struct TodayModel: Equatable {
         habits: [HabitCheckSnapshot] = [],
         proteinTarget: Int? = nil,
         heightCm: Double? = nil,
+        allDoses: [DoseSnapshot]? = nil,
         now: Date,
         calendar: Calendar
     ) {
+        // 부위·체중은 처방과 무관하게 본다 (모든 처방의 기록)
+        dailyLine = DailyLineRules.line(
+            prescription: prescription,
+            doses: doses,
+            allDoses: allDoses ?? doses,
+            weights: weights,
+            now: now,
+            calendar: calendar
+        )
+        weeklySummary = prescription
+            .flatMap { WeeklySummaryRules.finishedPeriods(prescription: $0, now: now, calendar: calendar, limit: 1).first }
+            .map { period in
+                WeeklySummaryRules.summary(
+                    period: period,
+                    doses: allDoses ?? doses,
+                    checks: checks,
+                    weights: weights,
+                    proteins: proteins,
+                    sessions: sessions,
+                    proteinTarget: proteinTarget,
+                    calendar: calendar
+                )
+            }
+            .flatMap { $0.isEmpty ? nil : $0 }
+
         let todayProteins = ProteinRules.entries(on: now, from: proteins, calendar: calendar)
         daily = DailyCycle(
             filledMeals: Set(todayProteins.map(\.meal)),

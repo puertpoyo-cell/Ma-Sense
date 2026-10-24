@@ -123,4 +123,19 @@ struct TodayModelTests {
         #expect(today.pens?.remainingPens == 3)
         #expect(today.exhaustionDate == TestCalendar.date(2027, 1, 7, 20))
     }
+
+    /// D8: 맨 위 사실 한 줄(R17)과 지난 마디 정리(R16)
+    @Test func dailyLineAndWeeklySummary() {
+        // 10-22(목) 09:00 투약일, 기록 전
+        let doseDay = model(prescription(), now: TestCalendar.date(2026, 10, 22, 9))
+        #expect(doseDay.dailyLine == .doseDay(lastSite: nil))
+        #expect(doseDay.weeklySummary == nil)
+
+        // 10-29 09:00: 10-22 ~ 10-28 구간이 끝났고 그 안에 투약 1회
+        let after = model(prescription(), doses: [dose(10, 22, 20, 5)], now: TestCalendar.date(2026, 10, 29, 9))
+        #expect(after.weeklySummary?.period.start == TestCalendar.date(2026, 10, 22))
+        #expect(after.weeklySummary?.doseCount == 1)
+        // 기록이 하나도 없는 구간은 카드가 없다
+        #expect(model(prescription(), now: TestCalendar.date(2026, 10, 30, 9)).weeklySummary == nil)
+    }
 }
