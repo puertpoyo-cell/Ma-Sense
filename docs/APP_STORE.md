@@ -102,6 +102,6 @@ To try it: complete onboarding (role notice, age confirmation, prescription), th
 - [ ] 인앱 구매 상품 등록·심사 제출 (스크린샷 포함), 상품 ID = `StoreService.productID`
 - [x] HealthKit capability와 `NSHealthShareUsageDescription` 추가 (D3-a)
 - [ ] 스토어 설명에 HealthKit 사용 명시, 앱 개인정보 보호 항목에 건강·피트니스 데이터(기기 밖으로 수집 안 함) 확인
-- [ ] 앱 아이콘 1024×1024 확정 (1차안 적용됨, DESIGN_SYSTEM.md 6)
+- [ ] 앱 아이콘 1024×1024 확정 (확정안 "네이비 유리 M" 적용됨, DESIGN_SYSTEM.md 6)
 - [ ] TestFlight 2차까지 치명적 문제 없음
 - [ ] 연령 등급 설문, 앱 개인정보 보호 항목, 심사 메모 입력

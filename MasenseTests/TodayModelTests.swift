@@ -36,6 +36,7 @@ struct TodayModelTests {
         let today = model(nil, now: TestCalendar.date(2026, 10, 16, 9))
         #expect(today.countdown == .noPrescription)
         #expect(today.remainingDoses == nil)
+        #expect(today.pens == nil)
         #expect(today.conditionPrompt == nil)
         #expect(today.clinicDate == nil)
     }
@@ -101,5 +102,52 @@ struct TodayModelTests {
         #expect(today.latestWeight?.kilograms == 80.4)
         #expect(today.weightSeries.count == TodayModel.weightWeeks)
         #expect(today.doseDatesInSeries == [TestCalendar.date(2026, 10, 22, 20)])
+    }
+
+    /// R3-1 (D6): 첫 기록 전에 비어 있는 주만 센다. 남은 회차가 없으면 안내하지 않는다
+    @Test func backfillCountsLeadingMissedWeeks() {
+        // 10-22, 10-29 마디가 비었고 11-5에 첫 기록. 지금 11-6
+        let now = TestCalendar.date(2026, 11, 6, 9)
+        #expect(model(prescription(), now: now).backfillCount == 2)
+        #expect(model(prescription(), doses: [dose(11, 5, 20)], now: now).backfillCount == 2)
+        // 첫 기록(10-22) 뒤의 누락(10-29)은 앱을 쓰기 전이 아니다
+        #expect(model(prescription(), doses: [dose(10, 22, 20), dose(11, 5, 20)], now: now).backfillCount == 0)
+        #expect(model(prescription(totalDoses: 1), doses: [dose(11, 5, 20)], now: now).backfillCount == 0)
+        #expect(model(nil, now: now).backfillCount == 0)
+    }
+
+    /// 1-1b 펜 현황 (D7): 펜 3개(12회) 중 첫 펜 1회를 썼고 소진 예상일은 마지막 마디
+    @Test func penStatusAndExhaustion() {
+        let today = model(prescription(), doses: [dose(10, 22, 20, 5)], now: TestCalendar.date(2026, 10, 23, 9))
+        #expect(today.pens?.usedPerPen == [1, 0, 0])
+        #expect(today.pens?.remainingPens == 3)
+        #expect(today.exhaustionDate == TestCalendar.date(2027, 1, 7, 20))
+    }
+
+    /// D8: 맨 위 사실 한 줄(R17)과 지난 마디 정리(R16)
+    @Test func dailyLineAndWeeklySummary() {
+        // 10-22(목) 09:00 투약일, 기록 전
+        let doseDay = model(prescription(), now: TestCalendar.date(2026, 10, 22, 9))
+        #expect(doseDay.dailyLine == .doseDay(lastSite: nil))
+        #expect(doseDay.weeklySummary == nil)
+
+        // 10-29 09:00: 10-22 ~ 10-28 구간이 끝났고 그 안에 투약 1회
+        let after = model(prescription(), doses: [dose(10, 22, 20, 5)], now: TestCalendar.date(2026, 10, 29, 9))
+        #expect(after.weeklySummary?.period.start == TestCalendar.date(2026, 10, 22))
+        #expect(after.weeklySummary?.doseCount == 1)
+        // 기록이 하나도 없는 구간은 카드가 없다
+        #expect(model(prescription(), now: TestCalendar.date(2026, 10, 30, 9)).weeklySummary == nil)
+    }
+
+    @Test func packageSummaryForAWeekAfterFourDoses() {
+        let doses = [dose(10, 22, 20), dose(10, 29, 20), dose(11, 5, 20), dose(11, 12, 20)]
+        // 4회째 다음 주가 끝나기 전에는 없다
+        #expect(model(prescription(), doses: doses, now: TestCalendar.date(2026, 11, 18, 9)).packageSummary == nil)
+        let finished = model(prescription(), doses: doses, now: TestCalendar.date(2026, 11, 19, 9))
+        #expect(finished.packageSummary?.package.number == 1)
+        #expect(finished.packageSummary?.summary.doseCount == 4)
+        #expect(finished.packageSummary?.package.period == DateInterval(start: TestCalendar.date(2026, 10, 22), end: TestCalendar.date(2026, 11, 19)))
+        // 끝난 지 7일이 지나면 오늘 카드에서 내려간다
+        #expect(model(prescription(), doses: doses, now: TestCalendar.date(2026, 11, 26, 9)).packageSummary == nil)
     }
 }

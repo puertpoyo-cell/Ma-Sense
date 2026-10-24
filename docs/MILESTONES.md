@@ -36,9 +36,9 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 - [x] StoreKit 상품 ID 확정 — `com.masense.pro` 유지 (2026-10-22 사람 결정)
 - [ ] 로컬 구매 테스트용 `.storekit` 구성 파일 — App Store Connect에 상품을 만든 뒤 Xcode에서 "Sync this file with an app in App Store Connect"로 생성 (가격·이름이 ASC 값을 따른다). 스킴 Run > Options > StoreKit Configuration에 지정 — 사람
 - [x] 번들 ID 확정 — `com.masense.app` (테스트 `com.masense.app.tests`), 2026-10-22 사람 결정
-- [ ] 서명 팀 선택 — Xcode Signing & Capabilities (사람)
-- [ ] `Rules/ExportCodec.swift` + `ExportService` — 내보내기·가져오기 (`EXPORT_FORMAT.md`), round-trip 테스트 + fixture (main E, D4에서)
-- [ ] Info.plist `UTExportedTypeDeclarations` (`.masense.json`) (main E, D4에서)
+- [x] 서명 팀 선택 — Xcode Signing & Capabilities (2026-10-22 사람 지정, `DEVELOPMENT_TEAM`)
+- [x] `Rules/ExportCodec.swift` + `ExportService` — 내보내기·가져오기 (`EXPORT_FORMAT.md`), round-trip 테스트 + fixture (main E, D4-E1)
+- [x] Info.plist `UTExportedTypeDeclarations` (`.masense.json`) — `Config/Masense-Info.plist` (main E, D4-E2)
 
 ### M1-c 화면
 - [x] S0 온보딩 4페이지 (HealthKit 버튼은 Info.plist 키 추가 전까지 숨김)
@@ -139,13 +139,58 @@ Claude Code는 매 세션 이 파일에서 현재 위치를 확인하고, 완료
 
 ## D4 — main 사양 A~E 코드 반영 (2026-10-22 통합)
 
-main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서에 합쳤다. 문서가 진실 원천이므로 아래 코드 작업이 남는다. 스키마 변경(B·C)은 한 번에 SchemaV4로 묶는다.
+main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서에 합쳤다. 문서가 진실 원천이므로 아래 코드 작업이 남는다. 스키마 변경(B·C)은 출시 전 재정리로 한 번에 처리했다.
 
-- [ ] A. App Groups capability `group.com.puertpoyo.masense` + 스토어를 App Group 컨테이너 경로에 (`ModelContainer+Masense`), 테스트·미리보기는 in-memory 그대로. 기존 기본 경로 스토어가 있으면 첫 실행에 옮김 — 새 Capability라 서명 팀 선택 후 실기기 확인 필요
-- [ ] B. CloudKit 호환 스키마 (SchemaV4): `@Attribute(.unique)` 제거, 모든 속성에 기본값 또는 옵셔널, 관계 옵셔널, 열거형 rawValue 저장 (DATA_MODEL.md 표의 기본값 열). 고정 사본 + 마이그레이션 테스트
-- [ ] C. `Prescription.endDate`(SchemaV4) + 새 처방 시작 서비스(이전 처방 endDate·isActive 갱신) + R13 `prescriptionTimeline` + 리포트 처방 전환 세로선·요약 칸 + 기록 탭 "처방 변경" 구분 행
-- [ ] D. `CycleRules`가 `intervalDays` 대신 7일 고정 (동작 동일, 사양 문구에 맞춤)
-- [ ] E. `Rules/ExportCodec.swift` + 가져오기(교체/추가, 2단계 확인) + `UTExportedTypeDeclarations`(`.masense.json`) — 지금의 JSON 내보내기를 `EXPORT_FORMAT.md` 형식으로
+- [x] A. App Groups capability `group.com.puertpoyo.masense` + 스토어를 App Group 컨테이너 경로에 (`StoreLocation`, `ModelContainer+Masense`), 테스트·미리보기는 in-memory 그대로. 기존 기본 경로 스토어가 있으면 첫 실행에 옮김 (D4-A). 실기기 서명·기록 유지 확인은 사람 (사람 확인 대기 표 11번)
+- [x] B. CloudKit 호환 스키마: `@Attribute(.unique)` 제거, 모든 저장 속성에 기본값 또는 옵셔널, 열거형 `xxxRaw` 저장 + 계산 프로퍼티. 출시 전이라 V1~V3 이력을 접고 새 `SchemaV1` 하나로 재정리 (2026-10-22 사람 결정, D4-a). `SchemaTests`
+- [x] C-1. `Prescription.endDate` + 새 처방 시작 시 이전 처방 `endDate`(= 새 시작일 전날)·`isActive` 갱신 (`Prescription.activate`, D4-a)
+- [x] C-2. R13 `prescriptionTimeline`·`transitionCount` + 리포트 처방 전환 세로선·라벨·요약 칸(전환 1회 이상일 때만) + 기록 탭 "처방 변경 · {메모}" 구분 행 (D4-b)
+- [x] D. `CycleRules`가 `intervalDays` 대신 7일 고정, `PrescriptionSnapshot`에서 간격 필드 제거 (동작 동일, D4-c)
+- [x] E. `Rules/ExportCodec.swift` + 가져오기(교체/추가, 2단계 확인) + `UTExportedTypeDeclarations`(`.masense.json`) — 지금의 JSON 내보내기를 `EXPORT_FORMAT.md` 형식으로. E-1 형식·규칙·서비스·fixture 테스트, E-2 설정 > 데이터 가져오기 시트(S6-1)·내보내기 전 안내. 실기기에서 AirDrop·파일 앱 왕복은 사람 확인
+- [x] (사양 대조 중 발견) S6 설정 > 처방 "이전 처방" 접힌 목록 — 시작일~종료일, 메모, 투약 기록·처방 회차 수 (`PrescriptionHistory` + 테스트)
+
+## D5 — 사람 요청 (2026-10-22)
+
+- [x] 앱 버전 0.2
+- [x] a. BMI 숫자 (설정 > 신체 정보에서 키 입력, 홈 체중 카드·기록 탭·리포트에 숫자만, 구간 이름 없음, R14). `UserSettings.heightCm` 추가로 SchemaV2 경량 이전 (`SchemaTests`), 내보내기 `settings.heightCm`, 금지선 점검에 구간 이름 추가
+- [x] b. 투약 기록 화면 위 "지난 투약" 한 줄(사실만) + 바디맵 구역별 마지막 사용일·부위별 표 (R6 `lastUseBySite`·`lastDoseNote`, 이전 처방 기록 포함)
+- [x] c. 시작 전환 화면 1초 (`SplashView`, M 마크 `SplashMark`, 시스템 시작 화면 바탕 midnight)
+- [x] d. 앱 아이콘 확정안 "네이비 유리 M" — 다크 네이비 바탕, 1차안 M 그대로(굵기 비율 136) 1.28배, 유리 테두리 약간·조금 더 맑게·굴절 조금 (옵션 R1~R3 중 사람이 R2 선택). 하이라이트 그림 요소 없음. 중간에 굵기 155 `glass`·끝 반사 `clear`안을 거침 (`make_app_icon.py navy`, `SplashMark`도 같이)
+
+## D6 — 쓸모·후킹 (2026-10-23 사람 결정)
+
+게임식 장치(연속 기록·배지·랭킹·축하)는 COMPLIANCE 2.1-4로 쓰지 않는다. "필요한 순간에 한 번에 끝나게"와 "기록이 진료에 바로 쓰이게"로 붙잡는다.
+
+- [x] a1. 알림에서 바로 기록·1시간 뒤 다시 (R4-1, `NotificationActions`, `NotificationResponder`, `AppRouter`)
+- [x] a2. 지난 투약 한꺼번에 입력 + 부위 모름 (사람 결정: 부위 모름 허용) — R3-1 `BackfillRules`, `BackfillSheet`(S2-1), 오늘 1-1a 안내 카드, 기록 탭 버튼·부위 고치기(`SiteEditSheet`), `siteRaw "unknown"`
+- [x] a3. 진료 때 물어볼 것 메모 — `ClinicQuestion` 모델, SchemaV3(1.2.0) 경량 이전 (사람 결정), R15, 리포트 G 위 섹션, 리포트 탭 카드·오늘 진료 카드·`ClinicQuestionsSheet`(S5-1), 내보내기 `clinicQuestions`
+- [x] b1. 홈·잠금화면 위젯 — 위젯 확장 타깃 `MasenseWidgets`(`com.masense.app.widgets`, App Group 같은 ID), `Shared/WidgetSnapshot` JSON, `WidgetRules`·`WidgetService`, SCREENS 위젯. 실기기 확인은 사람 (사람 확인 대기 13번)
+- [x] b2. 투약일 Live Activity — `NSSupportsLiveActivities` (사람 결정). 서버가 없어 투약일에 앱을 열었을 때만 시작, 기록하면 끝 (`Shared/DoseDayActivity`, `LiveActivityRules`, `LiveActivityService`, `DoseDayLiveActivity`, SCREENS Live Activity)
+
+## D7 — 사람 요청 (2026-10-23)
+
+약 이름(상표명)은 쓰지 않고 "펜"으로 (COMPLIANCE.md 2.1-2). 용량(mL) 표시는 넣지 않기로 결정.
+
+- [x] a. 오늘 화면 "남은 펜" 카드 — 펜 그림(남은 회차 채움), 남은 펜·회차·소진 예상, 처방 메모 그대로. 설정 > 처방에도 (R13-1 `penStatus`)
+- [x] a-2 (2026-10-24 사람 설명: 펜은 한 번에 한 방, 패키지 하나에 펜 4개 = 한 달치) — 처방 입력을 "1회용 펜(기본) · 패키지 수"로, 그림은 패키지(펜 4개)마다 상자, 투약 기록 회차 "패키지 m의 k번째 펜". 저장 구조는 그대로(펜당 회차 1)
+- [x] b. 체중 추이 확대 그래프 — 오늘 체중 카드 "추이 보기" → S10, 4주·12주·6개월·전체, 측정값 점 + 주 평균 선, 투약일 눈금, 시작 대비 변화 숫자 (목표선 없음, R7 `trend`)
+- [x] c. 주 1회 체중 기록 알림 — 요일·시각 선택(기본 투약 요일 아침 8시), 그날 기록했으면 보내지 않음, 알림에서 체중 입력 시트. `UserSettings` 필드 4개, SchemaV4(1.3.0) 경량 이전 (사람 결정), R4-2, 내보내기 `settings.weightReminder*`
+- [x] d. 처방 구간 색 (2026-10-24 사람 결정) — 용량 단계별 색은 COMPLIANCE 2.1-1로 거절, 대신 처방이 바뀐 구간을 4색으로 돌려 구분 (R13-2 `colorSlots`). 남은 펜·기록 탭·설정 이전 처방·리포트 C
+
+## D8 — 콘텐츠 (2026-10-24 사람 결정)
+
+기록에서 나오는 콘텐츠부터. 칭찬·응원·용량·경쟁·커뮤니티 없이 사실과 숫자만.
+
+- [x] a. 주간 정리 — 오늘 1-1c 카드(닫기), 기록 탭·카드에서 S11 목록 (R16)
+- [x] b. 오늘 화면 사실 한 줄 — 투약일·남은 펜·체중 기록 없음 중 하나, 하루 닫기 (R17)
+- [x] 다음 후보 → D9로 진행 (2026-10-24 사람 "풀푸시")
+
+## D9 — 콘텐츠 2 (2026-10-24 사람 결정 "풀푸시")
+
+- [x] a. 체중 그래프 끝 날짜 라벨·마지막 점이 가장자리에서 잘리던 것 (x축 오른쪽 여백, y축 위아래 여백)
+- [x] b. 패키지 정리 — 4회를 다 쓴 묶음마다 R16과 같은 숫자 (R18). 오늘 1-1c 자리 7일, S11 "주 / 패키지" 세그먼트
+- [x] c. 증상 흐름 + 물어볼 것에 넣기 — S12 (R19). 기록 탭 컨디션·리포트 탭·진료 준비에서 연다. S5-1에 사실 문장을 채워 연다
+- [x] d. 알아 두기 S13 — 단백질 식품 예시, 맨몸 근력 예시(WHO 2020 한 줄), 진료 준비 목록. 오늘 맨 아래 한 줄·진료 카드 "진료 준비"·설정 정보. 문구는 사람 검토 대기 (사람 확인 14)
 
 ## M3 — 출시 준비 (1주)
 
@@ -162,7 +207,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 
 | # | 항목 | 바꿀 곳 | 정하기 전 동작 |
 |---|---|---|---|
-| 1 | ~~번들 ID~~ — **결정: `com.masense.app` (2026-10-22)**. 남은 것: 서명 팀 선택 | Xcode Signing & Capabilities | 시뮬레이터·CI는 서명 없이 동작 |
+| 1 | ~~번들 ID~~ — **결정: `com.masense.app` (2026-10-22)**. 서명 팀도 지정됨 (2026-10-22) | Xcode Signing & Capabilities | 시뮬레이터·CI는 서명 없이 동작 |
 | 2 | ~~인앱 구매 상품 ID~~ — **결정: `com.masense.pro` 유지 (2026-10-22)**. App Store Connect에 같은 ID로 비소모성 상품 생성 필요 | `StoreService.productID` | 상품을 못 불러오면 구매 버튼이 안 보임, 복원 버튼만 |
 | 3 | ~~HealthKit 사용~~ — **결정: 사용 (2026-10-22), D3-a 반영** | `Config/Masense.entitlements`, `INFOPLIST_KEY_NSHealthShareUsageDescription`, `InfoPlist.xcstrings` | — |
 | 4 | ~~처리방침 게시~~ — **결정: https://masense-privacy.vercel.app/ (Vercel), 시행 2026-10-30, 문의 이메일 기재 (2026-10-22)** | `AppConfig.privacyPolicyURL`, `docs/privacy/index.html` | — |
@@ -170,9 +215,12 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 | 6 | ~~감량 속도 출처~~ — **결정: CDC 주 0.5~1 kg 기준으로 표시 (2026-10-22), D3-c 반영** | `pace.notice`, `pace.source`, `PaceRules.weeklyChangeThresholdKg` | — |
 | 7 | 맨몸 예시 루틴 문구 검토 | `Localizable.xcstrings`의 `exercise.routine.*` | 초안 그대로 표시 (일반 건강관리 정보 고지와 함께) |
 | 8 | ~~리포트 기본 기간 저장~~ — **결정: 저장 (2026-10-22), D3-b 반영** | `UserSettings.reportDefaultPeriod`, SchemaV3 | — |
-| 9 | ~~앱 이름~~ — **결정: 마선생 (2026-10-22)**. 아이콘 1차안 "겹친 유리 M"(굵기 136) 사람 선택. 남은 것: 부제 | 스토어 문구(부제), `INFOPLIST_KEY_CFBundleDisplayName`(이미 "마선생"), `scripts/make_app_icon.py` | 부제 없이 이름만 |
-| 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장 | — | — |
-| 11 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
+| 9 | ~~앱 이름~~ — **결정: 마선생 (2026-10-22)**. 아이콘 확정안 "네이비 유리 M"(2026-10-23). 남은 것: 부제 | 스토어 문구(부제), `INFOPLIST_KEY_CFBundleDisplayName`(이미 "마선생"), `scripts/make_app_icon.py` | 부제 없이 이름만 |
+| 10 | 실기기 확인: VoiceOver, 최대 글자 크기, 12주 리포트 A4 한 장, 내보내기 → AirDrop·파일 앱 → 가져오기 왕복 | — | — |
+| 11 | App Group 실기기 확인: Xcode Signing & Capabilities에서 App Groups `group.com.puertpoyo.masense`가 체크되어 있는지(빨간 표시면 새로고침), 업데이트 설치 후 이전 기록이 그대로 보이는지 | `Config/Masense.entitlements` | 그룹을 못 얻으면 앱 기본 경로를 그대로 써서 기록은 유지 |
+| 12 | COMPLIANCE.md 6 출시 전 확인 (상표·명칭·가이드라인) | — | — |
+| 13 | 위젯 실기기 확인 (D6): Signing & Capabilities에서 `MasenseWidgets` 타깃의 팀·App Groups `group.com.puertpoyo.masense` 체크, 홈·잠금화면에 위젯을 놓고 투약 기록 뒤 바로 바뀌는지, 예정일에 눌러 투약 기록 시트가 열리는지. 투약일에 앱을 열면 잠금화면·Dynamic Island에 Live Activity가 뜨고 기록하면 사라지는지 | `Config/MasenseWidgets.entitlements` | 그룹을 못 얻으면 위젯은 "처방을 입력하면…"만 보이고 앱은 그대로 |
+| 14 | 알아 두기 문구 검토 (D9): WHO 근력 활동 한 줄("성인에게 주 2일 이상 주요 근육을 쓰는 근력 활동")과 출처 표기, 식품 g 안내와 식품의약품안전처 데이터베이스 언급, 진료 준비 항목 | `Localizable.xcstrings`의 `info.*` | 초안 그대로 표시 (일반 건강관리 정보 고지와 "의사와 상의하세요"와 함께) |
 
 ## 작업 분해 규칙
 
@@ -196,8 +244,14 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 | 2026-10-22 | 감량 속도 안내 기준을 주 1%에서 주 1 kg(CDC 주 0.5~1 kg 상한)으로 | 사람 결정. % 기준은 확인 가능한 공식 출처가 없음 |
 | 2026-10-22 | 단백질 권고 범위 1.2~1.6 g/kg 표시, 출처 2025 공동 권고문 | 사람 결정. 원문 문장 확인(검색 발췌, AJCN 판) |
 | 2026-10-22 | 앱 아이콘 1차안 "겹친 유리 M"(막대 굵기 136) | 사람 선택. 의약품 상표 연상·주사기·알약 표현 제외 |
+| 2026-10-23 | 앱 아이콘 확정안 "네이비 유리 M"(다크 네이비 바탕, 1차안 M × 1.28배, 유리 테두리 약간·조금 더 맑게·굴절 조금, 옵션 R2) | 사람 확정. 하이라이트 그림 요소는 뺌. 굵기 155안은 "볼륨은 1차안 정도"로 되돌림. 막대는 계속 단색(두 색 나눔·이음선 없음) |
 | 2026-10-22 | 앱 이름 "마선생" 확정 | 사람 결정. 상표 등록 검색은 COMPLIANCE.md 6 출시 전 확인에 남김 |
 | 2026-10-22 | 번들 ID `com.masense.app` (테스트 `com.masense.app.tests`) | 사람 결정. 앱스토어에 올린 뒤에는 바꿀 수 없다 |
+| 2026-10-22 | 출시 전 스키마 재정리: V1~V3 이력을 접고 CloudKit 호환 규칙 + 처방 endDate를 담은 새 SchemaV1 | 사람 결정. 사용자 데이터 없음, 영구히 남을 옛 필드를 만들지 않으려고 |
+| 2026-10-22 | 앱 버전(`MARKETING_VERSION`) 0.2 | 사람 결정. 빌드 번호(`CURRENT_PROJECT_VERSION`)는 1부터, TestFlight 업로드마다 올린다 |
+| 2026-10-22 | BMI는 숫자만 (구간 이름 없음), 키 입력은 설정에서 선택, SchemaV2 경량 이전 | 사람 결정. 판단어 금지(3.1)와 목표 체중 금지(2.1-3)를 지키면서 진료 때 참고할 숫자만 |
+| 2026-10-22 | 투약 시 안내는 지난 부위·날짜 사실만, 바디맵에 부위별 마지막 날짜 | 사람 결정. R6 부위 추천 금지 유지 |
+| 2026-10-22 | 시작 전환 화면 1초 | 사람 요청. 담담한 페이드만 |
 | 2026-10-21 | `Prescription.scheduledTime`은 `scheduledHour`·`scheduledMinute` Int 2개로 저장, `DateComponents`는 계산 속성 | SwiftData Codable 저장 안정성 |
 | 2026-10-21 | Xcode 16 폴더 동기화 그룹 + GitHub Actions macOS CI | Xcode 없는 환경(Claude Code 클라우드)에서도 파일 추가·검증 가능 |
 | 2026-10-21 | 단위 테스트는 Swift Testing | iOS 17+/Xcode 16 기준, 선언적 `#expect` |

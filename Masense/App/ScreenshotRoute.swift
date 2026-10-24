@@ -4,6 +4,8 @@ import Foundation
 /// 육안 확인·스토어 스크린샷용 시작 화면. 실행 인자 `-route <값>` (DEBUG 빌드 전용).
 /// CI `screenshots.yml`이 `-seedSampleData`와 함께 화면마다 앱을 다시 띄워 찍는다.
 enum ScreenshotRoute: String, CaseIterable {
+    /// 시작 전환 화면에 머문다
+    case splash
     case today
     case settings
     case historyDose = "history.dose"
@@ -15,6 +17,17 @@ enum ScreenshotRoute: String, CaseIterable {
     case conditionSheet = "sheet.condition"
     case proteinSheet = "sheet.protein"
     case strengthSheet = "sheet.strength"
+    case backfillSheet = "sheet.backfill"
+    case questionsSheet = "sheet.questions"
+    case weightTrendSheet = "sheet.weightTrend"
+    case importSheet = "sheet.import"
+    case importResult = "sheet.import.result"
+    /// D9: 오늘 화면에서 미는 화면
+    case summaryPackages = "summary.packages"
+    case symptomFlow
+    case infoList = "info"
+    case infoProtein = "info.protein"
+    case infoClinicPrep = "info.clinicPrep"
 
     static let current: ScreenshotRoute? = {
         let arguments = ProcessInfo.processInfo.arguments

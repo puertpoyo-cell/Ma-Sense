@@ -1,11 +1,14 @@
 import SwiftUI
 
 /// 정면 1장 고정 실루엣 위 8구역 (DESIGN_SYSTEM.md 5.3, R6).
-/// 직전 1회는 `accent`로 채우고 아래 "① 마지막" 칩, 이전 2~4회는 은은한 채움·얇은 테두리와 "② 이전" 텍스트.
+/// 직전 1회는 `accent`로 채우고 아래 "① 마지막" 칩, 이전 2~4회는 은은한 채움·얇은 테두리.
+/// 구역마다 그 부위를 마지막으로 쓴 날짜를 적고, 아래에 부위별 마지막 사용 표를 둔다 (D5).
 /// **추천 표시 없음.** 화살표·"다음은" 같은 제안 없이 사용자가 보고 고른다. 실루엣은 성별 표현 없는 중성 아웃라인.
 struct BodyMapView: View {
     @Binding var selection: BodySite?
     let history: [SiteUse]
+    /// 부위별 마지막 사용 시각 (`SiteRules.lastUseBySite`). 쓴 적 없는 부위는 키가 없다
+    var lastUseBySite: [BodySite: Date] = [:]
     var calendar: Calendar = .current
 
     /// 설계 좌표계. 정면이므로 화면 왼쪽이 본인의 오른쪽이다
@@ -40,27 +43,66 @@ struct BodyMapView: View {
 
     // MARK: 이력 행
 
-    private static let previousMarkers = ["②", "③", "④"]
+    /// 그림과 같은 방향으로 두 칸씩: 화면 왼쪽이 본인의 오른쪽
+    private static let siteRows: [(BodySite, BodySite)] = [
+        (.upperArmRight, .upperArmLeft),
+        (.abdomenUpperRight, .abdomenUpperLeft),
+        (.abdomenLowerRight, .abdomenLowerLeft),
+        (.thighRight, .thighLeft),
+    ]
 
     @ViewBuilder
     private var historyRows: some View {
         if let last = history.first {
-            VStack(alignment: .leading, spacing: Spacing.s2) {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
                 Text("bodymap.last \(last.site.localizedName) \(shortDate(last.date))")
                     .font(Typography.label)
                     .foregroundStyle(Color.ink)
                     .padding(.horizontal, Spacing.s3)
                     .padding(.vertical, Spacing.s2)
                     .background(Color.accentSoft, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
-                ForEach(Array(history.dropFirst().prefix(Self.previousMarkers.count).enumerated()), id: \.offset) { index, use in
-                    Text("bodymap.previous \(Self.previousMarkers[index]) \(use.site.localizedName) \(shortDate(use.date))")
-                        .font(Typography.caption)
-                        .foregroundStyle(Color.inkSecondary)
-                        .padding(.horizontal, Spacing.s3)
+                if !lastUseBySite.isEmpty {
+                    siteTable
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    /// 부위별 마지막 사용. 쓴 적 없는 부위는 "—"
+    private var siteTable: some View {
+        VStack(alignment: .leading, spacing: Spacing.s2) {
+            Text("bodymap.bySite")
+                .font(Typography.caption)
+                .foregroundStyle(Color.inkSecondary)
+            Grid(alignment: .leading, horizontalSpacing: Spacing.s4, verticalSpacing: Spacing.s1) {
+                ForEach(Self.siteRows.indices, id: \.self) { index in
+                    GridRow {
+                        siteCell(Self.siteRows[index].0)
+                        siteCell(Self.siteRows[index].1)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, Spacing.s3)
+    }
+
+    private func siteCell(_ site: BodySite) -> some View {
+        HStack(spacing: Spacing.s2) {
+            Text(site.localizedName)
+                .foregroundStyle(Color.inkSecondary)
+            Spacer(minLength: Spacing.s1)
+            if let date = lastUseBySite[site] {
+                Text(verbatim: shortDate(date))
+                    .foregroundStyle(Color.ink)
+            } else {
+                Text(verbatim: "—")
+                    .foregroundStyle(Color.inkTertiary)
+            }
+        }
+        .font(Typography.caption)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: 실루엣
@@ -103,7 +145,7 @@ struct BodyMapView: View {
     private func region(_ site: BodySite) -> some View {
         let rect = Self.frame(for: site)
         let rank = SiteRules.recencyRank(of: site, in: history)
-        let lastUse = rank.map { history[$0] }
+        let lastDate = lastUseBySite[site] ?? rank.map { history[$0].date }
         let isSelected = selection == site
 
         return Button {
@@ -119,6 +161,14 @@ struct BodyMapView: View {
                     Image(systemName: "checkmark")
                         .font(.caption.weight(.bold))
                         .foregroundStyle(Color.midnight)
+                } else if let lastDate {
+                    // 그 부위를 마지막으로 쓴 날. 구역 크기가 고정이라 글자도 고정 크기
+                    Text(verbatim: shortDate(lastDate))
+                        .font(.system(size: 9, weight: .semibold).monospacedDigit())
+                        .foregroundStyle(rank == 0 ? Color.midnight : Color.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .padding(.horizontal, 2)
                 }
             }
             .frame(width: rect.width, height: rect.height)
@@ -126,7 +176,7 @@ struct BodyMapView: View {
         }
         .buttonStyle(.plain)
         .offset(x: rect.minX, y: rect.minY)
-        .accessibilityLabel(accessibilityLabel(site: site, lastUse: lastUse))
+        .accessibilityLabel(accessibilityLabel(site: site, lastDate: lastDate))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
@@ -150,9 +200,9 @@ struct BodyMapView: View {
         return "\(parts.month ?? 0)/\(parts.day ?? 0)"
     }
 
-    private func accessibilityLabel(site: BodySite, lastUse: SiteUse?) -> Text {
-        guard let lastUse else { return Text(site.localizedName) }
-        let date = lastUse.date.formatted(.dateTime.month(.wide).day())
+    private func accessibilityLabel(site: BodySite, lastDate: Date?) -> Text {
+        guard let lastDate else { return Text(site.localizedName) }
+        let date = lastDate.formatted(.dateTime.month(.wide).day())
         return Text("bodymap.usedOn \(site.localizedName) \(date)")
     }
 }
@@ -168,7 +218,11 @@ struct BodyMapView: View {
                 SiteUse(site: .upperArmRight, date: now.addingTimeInterval(-21 * 86_400)),
                 SiteUse(site: .thighRight, date: now.addingTimeInterval(-28 * 86_400)),
             ]
-            BodyMapView(selection: $selection, history: history)
+            BodyMapView(
+                selection: $selection,
+                history: history,
+                lastUseBySite: Dictionary(history.map { ($0.site, $0.date) }, uniquingKeysWith: { max($0, $1) })
+            )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .midnightBackground()
         }

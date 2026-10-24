@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 import UserNotifications
 
 /// S6 설정. 처방 · 알림 · 연동 · 구매 · 데이터 · 정보. 리포트 섹션(테마·기본 기간)은 M1-d.
@@ -30,9 +31,19 @@ struct SettingsView: View {
 private struct SettingsForm: View {
     @Bindable var settings: UserSettings
 
-    private enum Sheet: String, Identifiable {
+    private enum Sheet: Identifiable {
         case editPrescription, newPrescription, roleNotice
-        var id: String { rawValue }
+        /// `result`는 DEBUG 스크린샷용 결과 화면 미리보기
+        case importFile(ExportDocument, result: ExportCodec.ImportResult? = nil)
+
+        var id: String {
+            switch self {
+            case .editPrescription: "editPrescription"
+            case .newPrescription: "newPrescription"
+            case .roleNotice: "roleNotice"
+            case .importFile: "importFile"
+            }
+        }
     }
 
     @Environment(\.modelContext) private var context
@@ -42,6 +53,8 @@ private struct SettingsForm: View {
     @Environment(\.restartOnboarding) private var restartOnboarding
     @Query(filter: #Predicate<Prescription> { $0.isActive })
     private var activePrescriptions: [Prescription]
+    @Query(filter: #Predicate<Prescription> { !$0.isActive })
+    private var pastPrescriptions: [Prescription]
     @Query(sort: \WeightSample.measuredAt, order: .reverse)
     private var weights: [WeightSample]
 
@@ -52,6 +65,8 @@ private struct SettingsForm: View {
     @State private var exportURL: URL?
     @State private var confirmsDelete = false
     @State private var confirmsDeleteAgain = false
+    @State private var importsFile = false
+    @State private var importError: ExportCodec.ImportError?
 
     private var prescription: Prescription? { activePrescriptions.first }
 
@@ -63,6 +78,10 @@ private struct SettingsForm: View {
             settings.conditionCheckEnabled ? 1 : 0,
             settings.clinicReminderDaysBefore,
             settings.exhaustionReminderDosesLeft,
+            settings.weightReminderEnabled ? 1 : 0,
+            settings.weightReminderWeekday ?? 0,
+            settings.weightReminderHour,
+            settings.weightReminderMinute,
         ]
     }
 
@@ -70,6 +89,7 @@ private struct SettingsForm: View {
         Form {
             prescriptionSection
             notificationSection
+            bodySection
             proteinSection
             if services.healthKit.isAvailable {
                 healthSection
@@ -84,19 +104,35 @@ private struct SettingsForm: View {
         .foregroundStyle(Color.ink)
         .onChange(of: notificationSignature) {
             try? context.save()
-            Task { await services.refreshNotifications(context: context) }
+            Task { await services.refreshReminders(context: context) }
         }
         .task {
             notificationStatus = await services.notifications.authorizationStatus()
             product = await services.store.loadProduct()
             settings.hasPurchasedPro = await services.store.refreshEntitlement()
         }
+        #if DEBUG
+        // 스토어 응답을 기다리지 않게 따로 연다. 화면 전환이 끝난 뒤에 띄운다
+        .task {
+            try? await Task.sleep(for: .seconds(1))
+            openImportForScreenshot()
+        }
+        #endif
         .sheet(item: $sheet) { sheet in
             switch sheet {
             case .editPrescription: PrescriptionSheet(editing: prescription)
             case .newPrescription: PrescriptionSheet()
             case .roleNotice: RoleNoticeSheet()
+            case let .importFile(document, result): ImportSheet(document: document, result: result)
             }
+        }
+        .fileImporter(isPresented: $importsFile, allowedContentTypes: [.masenseExport, .json]) { selection in
+            readImportFile(selection)
+        }
+        .alert("import.error.title", isPresented: showsImportError) {
+            Button("action.ok") {}
+        } message: {
+            Text(importErrorMessage)
         }
         .confirmationDialog("settings.data.deleteAll.confirm1", isPresented: $confirmsDelete, titleVisibility: .visible) {
             Button("settings.data.deleteAll.continue") { confirmsDeleteAgain = true }
@@ -122,6 +158,12 @@ private struct SettingsForm: View {
                     Text("today.remaining \(prescription.remainingDoses) \(prescription.totalDoses)")
                         .monospacedDigit()
                 }
+                // 펜 그림 (R13-1, D7)
+                PenGauge(
+                    status: PrescriptionRules.penStatus(p: prescription.snapshot, doses: prescription.doseSnapshots),
+                    tint: Color.prescription(slot: (activePrescriptions + pastPrescriptions).colorSlots[prescription.id] ?? 0)
+                )
+                .padding(.vertical, Spacing.s2)
                 if let clinic = prescription.nextClinicDate {
                     LabeledContent("prescription.nextClinic") {
                         Text(clinic.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated)))
@@ -139,6 +181,14 @@ private struct SettingsForm: View {
                     .foregroundStyle(Color.inkSecondary)
             }
             Button("settings.prescription.new") { sheet = .newPrescription }
+            let history = PrescriptionHistory.rows(activePrescriptions + pastPrescriptions)
+            if !history.isEmpty {
+                DisclosureGroup("settings.prescription.history") {
+                    ForEach(history) { row in
+                        PrescriptionHistoryRowView(row: row)
+                    }
+                }
+            }
         } header: {
             SectionHeaderText("settings.section.prescription")
         }
@@ -166,7 +216,7 @@ private struct SettingsForm: View {
                     Task {
                         _ = await services.notifications.requestAuthorization()
                         notificationStatus = await services.notifications.authorizationStatus()
-                        await services.refreshNotifications(context: context)
+                        await services.refreshReminders(context: context)
                     }
                 }
             default:
@@ -196,15 +246,67 @@ private struct SettingsForm: View {
                 }
             }
             .disabled(!settings.reminderEnabled)
+
+            // D7 주 1회 체중 기록 알림 (R4-2)
+            Toggle("settings.notifications.weight", isOn: $settings.weightReminderEnabled)
+            Picker("settings.notifications.weight.weekday", selection: $settings.weightReminderWeekday) {
+                Text("settings.notifications.weight.sameAsDose").tag(Int?.none)
+                ForEach(1...7, id: \.self) { weekday in
+                    Text(verbatim: calendar.weekdaySymbols[safe: weekday - 1] ?? "").tag(Int?.some(weekday))
+                }
+            }
+            .disabled(!settings.weightReminderEnabled)
+            DatePicker("settings.notifications.weight.time", selection: weightReminderTime, displayedComponents: .hourAndMinute)
+                .disabled(!settings.weightReminderEnabled)
         } header: {
             SectionHeaderText("settings.section.notifications")
         }
         .frostRow()
     }
 
+    /// 체중 알림 시각을 오늘 날짜의 시각으로 바꿔 DatePicker에 넘긴다 (저장은 시·분만)
+    private var weightReminderTime: Binding<Date> {
+        Binding(
+            get: {
+                calendar.date(
+                    bySettingHour: settings.weightReminderHour,
+                    minute: settings.weightReminderMinute,
+                    second: 0,
+                    of: calendar.startOfDay(for: .now)
+                ) ?? .now
+            },
+            set: { date in
+                let parts = calendar.dateComponents([.hour, .minute], from: date)
+                settings.weightReminderHour = parts.hour ?? 8
+                settings.weightReminderMinute = parts.minute ?? 0
+            }
+        )
+    }
+
     private func hourText(_ hour: Int) -> String {
         let date = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: calendar.startOfDay(for: .now)) ?? .now
         return date.formatted(date: .omitted, time: .shortened)
+    }
+
+    // MARK: 신체 정보 (D5, R14)
+
+    private var bodySection: some View {
+        Section {
+            LabeledContent("settings.body.height") {
+                HStack(spacing: Spacing.s1) {
+                    TextField("settings.body.height.placeholder", value: $settings.heightCm, format: .number.precision(.fractionLength(0...1)))
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .monospacedDigit()
+                    Text(verbatim: "cm").foregroundStyle(Color.inkSecondary)
+                }
+            }
+        } header: {
+            SectionHeaderText("settings.section.body")
+        } footer: {
+            Text("settings.body.height.footer")
+        }
+        .frostRow()
     }
 
     // MARK: 단백질 (M2, R9)
@@ -392,21 +494,61 @@ private struct SettingsForm: View {
                 }
             } else {
                 Button("settings.data.export") {
-                    exportURL = try? DataExportService.writeExportFile(context: context)
+                    exportURL = try? ExportService.writeExportFile(context: context)
                 }
             }
+            Button("settings.data.import") { importsFile = true }
             // 빨강 금지: destructive 역할 대신 일반 버튼 + 2단계 확인
             Button("settings.data.deleteAll") { confirmsDelete = true }
         } header: {
             SectionHeaderText("settings.section.data")
         } footer: {
-            Text("data.local")
+            // 내보내기 전 한 줄 안내 (EXPORT_FORMAT.md 보안·프라이버시)
+            VStack(alignment: .leading, spacing: Spacing.s2) {
+                Text("settings.data.export.notice")
+                Text("data.local")
+            }
         }
         .frostRow()
     }
 
+    /// 형식·버전을 먼저 확인하고(규칙 1~3), 맞으면 방식을 고르는 시트를 연다
+    private func readImportFile(_ selection: Result<URL, Error>) {
+        do {
+            let document = try ExportService.readFile(at: selection.get())
+            sheet = .importFile(document)
+        } catch let error as ExportCodec.ImportError {
+            importError = error
+        } catch {
+            importError = .unreadable
+        }
+    }
+
+    #if DEBUG
+    /// 실행 인자 `-route sheet.import`, `sheet.import.result` (ScreenshotRoute). 표본 데이터를 내보낸 문서로 시트를 연다
+    private func openImportForScreenshot() {
+        guard let route = ScreenshotRoute.current, route == .importSheet || route == .importResult,
+              let document = try? ExportService.makeDocument(context: context, now: Date())
+        else { return }
+        let result = route == .importResult ? ExportCodec.importPlan(document, mode: .replace, existingIDs: []).result : nil
+        sheet = .importFile(document, result: result)
+    }
+    #endif
+
+    private var showsImportError: Binding<Bool> {
+        Binding(get: { importError != nil }, set: { if !$0 { importError = nil } })
+    }
+
+    private var importErrorMessage: LocalizedStringKey {
+        switch importError {
+        case .notMasenseExport?: "import.error.notMasense"
+        case .needsAppUpdate?: "import.error.needsUpdate"
+        case .unreadable?, nil: "import.error.unreadable"
+        }
+    }
+
     private func deleteAll() {
-        guard (try? DataExportService.deleteAll(context: context)) != nil else { return }
+        guard (try? ExportService.deleteAll(context: context)) != nil else { return }
         Task {
             await services.notifications.replaceAll(with: [])
             restartOnboarding()
@@ -418,12 +560,14 @@ private struct SettingsForm: View {
     private var infoSection: some View {
         Section {
             LabeledContent("settings.info.version") {
-                Text(verbatim: DataExportService.appVersion)
+                Text(verbatim: AppConfig.appVersion)
             }
             if let url = AppConfig.privacyPolicyURL {
                 Link("settings.info.privacy", destination: url)
             }
             Button("settings.info.roleNotice") { sheet = .roleNotice }
+            // 출처 있는 일반 정보 카드 (D9)
+            NavigationLink("info.title") { InfoListView() }
             LabeledContent("settings.info.openSource") {
                 Text("settings.info.none")
             }

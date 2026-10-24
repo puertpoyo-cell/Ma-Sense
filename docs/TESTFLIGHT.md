@@ -15,7 +15,7 @@
    3. 프로덕션 배포는 기본 브랜치(main)에서 나간다. 작업 브랜치를 main에 머지하거나, Settings > Git > Production Branch를 작업 브랜치로 바꾼다
    4. `docs/privacy/vercel.json`: 확장자 없는 주소(`cleanUrls`), 처리방침 폴더가 바뀐 커밋만 배포(`ignoreCommand`)
    5. 배포 주소(`https://<프로젝트 이름>.vercel.app`)를 `Masense/App/AppConfig.swift`의 `privacyPolicyURL`과 App Store Connect에 입력. 넣으면 설정 > 정보에 처리방침 링크가 보인다
-6. **앱 아이콘** — 1차안 "겹친 유리 M"(굵기 136)이 `AppIcon.appiconset/AppIcon.png`에 들어가 있다 (`python3 scripts/make_app_icon.py`로 다시 생성, DESIGN_SYSTEM.md 6). 앱 이름은 "마선생"으로 확정 (2026-10-22)
+6. **앱 아이콘** — 확정안 "네이비 유리 M"(다크 네이비 바탕, 1차안 볼륨 × 1.28배)이 `AppIcon.appiconset/AppIcon.png`에 들어가 있다 (`python3 scripts/make_app_icon.py`로 다시 생성, DESIGN_SYSTEM.md 6). 앱 이름은 "마선생"으로 확정 (2026-10-22)
 
 ## 2. 빌드 올리기
 
@@ -25,6 +25,12 @@ xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' 
 ```
 
 Xcode > Product > Archive → Distribute App → App Store Connect → Upload. 업로드 뒤 App Store Connect > TestFlight에서 수출 규정 질문(암호화: 표준 암호화만 사용 → 면제 해당 여부 확인)에 답한다.
+
+### 실기기에서 화면 좌우에 검은 띠가 보이면
+
+앱이 기기의 화면 크기를 모르는 오래된 SDK로 빌드되어 호환 모드로 도는 경우다. 앱 설정(Info.plist)으로는 끌 수 없고, 기기의 iOS와 같은 세대의 Xcode로 다시 빌드하면 사라진다 ([Apple 개발자 포럼 DTS 답변](https://developer.apple.com/forums/thread/847856)).
+- 기기: 설정 > 일반 > 정보 > iOS 버전, Mac: Xcode > About Xcode 버전을 비교한다 (예: iOS 27 기기면 Xcode 27)
+- 2026-10-23 확인: Xcode 26.3 + iOS 26 시뮬레이터(iPhone 17 Pro)에서는 띠 없이 화면을 다 채운다. CI 스크린샷 워크플로를 수동 실행하며 `xcode` 입력(예: `26`)을 주면 그 Xcode로 찍어 볼 수 있다
 
 ## 3. 베타 테스트 정보 (App Store Connect에 붙여 넣을 문구)
 

@@ -22,14 +22,39 @@ struct PrescriptionFormModelTests {
         #expect(model.startDate == TestCalendar.date(2026, 10, 22))
         #expect(model.scheduledWeekday == 5)
         #expect(calendar.component(.hour, from: model.scheduledTime) == 20)
+        // 기본은 1회용 펜 패키지 1개 = 펜 4개 = 4회 (D7)
+        #expect(model.penType == .singleUse)
+        #expect(model.packageCount == 1)
+        #expect(model.penCount == 4)
         #expect(model.totalDoses == 4)
         #expect(!model.hasNextClinicDate)
         #expect(model.isValid)
     }
 
+    /// 패키지 수를 바꾸면 펜 수 = 패키지 × 4. 펜 종류를 바꿔도 총 회차는 그대로
+    @Test func packagesAndPenTypeKeepTotalDoses() throws {
+        let model = PrescriptionFormModel(now: now, calendar: calendar)
+        model.packageCount = 3
+        #expect(model.penCount == 12)
+        #expect(model.totalDoses == 12)
+
+        model.penType = .multiDose
+        #expect(model.dosesPerPen == 4)
+        #expect(model.penCount == 3)
+        #expect(model.totalDoses == 12)
+
+        model.penType = .singleUse
+        #expect(model.dosesPerPen == 1)
+        #expect(model.penCount == 12)
+
+        let saved = try model.save(in: container.mainContext)
+        #expect(saved.penCount == 12)
+        #expect(saved.dosesPerPen == 1)
+    }
+
     @Test func saveCreatesActivePrescriptionAndTrimsMemo() throws {
         let model = PrescriptionFormModel(now: now, calendar: calendar)
-        model.penCount = 3
+        model.packageCount = 3
         model.scheduledTime = TestCalendar.date(2026, 10, 22, 8, 30)
         model.doseLabel = "  두 번째 단계  "
 
@@ -63,8 +88,8 @@ struct PrescriptionFormModelTests {
 
         let edit = PrescriptionFormModel(editing: original, now: now, calendar: calendar)
         #expect(edit.isEditing)
-        #expect(edit.penCount == 1)
-        edit.penCount = 2
+        #expect(edit.packageCount == 1)
+        edit.packageCount = 2
         edit.hasNextClinicDate = true
         edit.nextClinicDate = TestCalendar.date(2026, 11, 19)
         let saved = try edit.save(in: context)

@@ -16,21 +16,38 @@ struct ClinicReport: Equatable {
         let checksExpected: Int
         let remainingDoses: Int
         let exhaustionDate: Date?
+        /// 기간 안 처방 전환 횟수 (R13). 0이면 표시하지 않는다
+        var prescriptionTransitions: Int = 0
+        /// 기간 첫·마지막 체중의 BMI (R14). 키가 없으면 nil. 숫자만, 구간 이름 없음
+        var bmiStartText: String?
+        var bmiEndText: String?
     }
 
     /// C. 투약 타임라인 한 칸 (마디)
     struct CycleCell: Equatable, Identifiable {
         enum State: Equatable {
             /// `offsetText`: 예정일과 실제일이 2일 이상 차이 나면 "+2d" / "-2d"
-            case recorded(date: Date, site: BodySite, sequence: Int, offsetText: String?)
+            /// `site` nil = 부위 기록 없음 (D6)
+            case recorded(date: Date, site: BodySite?, sequence: Int, offsetText: String?)
             case missed
             /// 진행 중인 마디, 아직 기록 없음
             case pending
         }
 
+        /// 처방 전환 표시 (R13, REPORT_SPEC C). 기간 안에 전환이 있을 때만 붙는다
+        enum Marker: Equatable {
+            /// 첫 칸: 기간 시작 시점의 처방
+            case periodStart(label: String?)
+            /// 이 칸부터 새 처방
+            case change(label: String?, date: Date)
+        }
+
         let id: String
         let scheduledDate: Date
         let state: State
+        var marker: Marker?
+        /// 처방 구간 색 자리 (R13-2, D7). 처방 시작 순서대로, 용량·단계 의미 없음
+        var colorSlot: Int = 0
     }
 
     enum WeightSourceNote: Equatable {
@@ -64,6 +81,12 @@ struct ClinicReport: Equatable {
         let text: String
     }
 
+    /// G. 진료 때 물어볼 것 한 줄 (D6, R15). 사용자가 적은 문장 그대로
+    struct QuestionLine: Equatable, Identifiable {
+        let id: UUID
+        let text: String
+    }
+
     /// F. 감량의 질 (M2). 기간 안에 단백질·운동·제지방량 기록이 하나도 없으면 nil이라 섹션을 그리지 않는다.
     /// "충분", "부족" 같은 평가어 없이 사실만
     struct QualitySection: Equatable {
@@ -94,6 +117,8 @@ struct ClinicReport: Equatable {
     let notes: [NoteLine]
     let generatedAt: Date
     let appVersion: String
+    /// G 위 "진료 때 물어볼 것" (D6). 비어 있으면 그리지 않는다
+    var questions: [QuestionLine] = []
 }
 
 /// R12 리포트 기간 선택지
@@ -134,6 +159,9 @@ enum ReportBuilder {
     /// G 메모 최대 줄 수와 줄당 글자 수
     static let maxNotes = 5
     static let noteLength = 60
+    /// G 진료 때 물어볼 것 최대 줄 수 (D6). 물어볼 것과 메모를 합쳐 `maxQuestionAndNoteLines`줄까지라 질문이 많으면 메모가 줄어든다
+    static let maxQuestions = 5
+    static let maxQuestionAndNoteLines = 8
     /// 예정일과 실제일 차이 표시 기준 (일)
     static let offsetThresholdDays = 2
 
@@ -199,6 +227,8 @@ enum ReportBuilder {
         proteins: [ProteinEntrySnapshot] = [],
         sessions: [StrengthSessionSnapshot] = [],
         proteinTarget: Int? = nil,
+        heightCm: Double? = nil,
+        questions: [ClinicQuestionSnapshot] = [],
         now: Date,
         calendar: Calendar,
         appVersion: String
@@ -211,6 +241,7 @@ enum ReportBuilder {
 
         // C. 마디 칸
         var cells: [ClinicReport.CycleCell] = []
+        let slots = PrescriptionRules.colorSlots(startDates: ordered.map(\.prescription.startDate))
         for (offset, data) in ordered.enumerated() {
             let nextStart = offset + 1 < ordered.count ? ordered[offset + 1].prescription.startDate : nil
             let cycles = CycleRules.pastCycles(for: data.prescription, doses: data.doses, nextStart: nextStart, now: now, calendar: calendar)
@@ -228,12 +259,31 @@ enum ReportBuilder {
                 } else {
                     state = .pending
                 }
-                cells.append(ClinicReport.CycleCell(id: "\(offset).\(cycle.index)", scheduledDate: cycle.scheduledDate, state: state))
+                cells.append(ClinicReport.CycleCell(
+                    id: "\(offset).\(cycle.index)",
+                    scheduledDate: cycle.scheduledDate,
+                    state: state,
+                    colorSlot: slots[offset]
+                ))
             }
         }
         cells.sort { $0.scheduledDate < $1.scheduledDate }
         let missedCount = cells.filter { $0.state == .missed }.count
-        let shownCells = Array(cells.suffix(maxCells))
+        var shownCells = Array(cells.suffix(maxCells))
+
+        // C. 처방 전환 (R13): 기간 안에 전환이 있을 때만 칸에 표시한다. 처방이 하나뿐이면 아무것도 붙이지 않는다
+        let markers = PrescriptionRules.prescriptionTimeline(all: ordered.map(\.prescription), in: period, calendar: calendar)
+        let transitions = PrescriptionRules.transitionCount(markers)
+        if transitions > 0, let firstDate = shownCells.first?.scheduledDate {
+            // 첫 칸에는 그 시점에 쓰던 처방. 보이는 칸(최근 12칸) 앞에서 바뀐 처방은 첫 칸의 표시가 대신한다
+            let current = markers.last { $0.startDate <= firstDate } ?? markers[0]
+            shownCells[0].marker = .periodStart(label: current.label)
+            for marker in markers where marker.startDate > firstDate {
+                // 새 처방이 시작된 뒤 첫 칸
+                guard let index = shownCells.firstIndex(where: { $0.scheduledDate >= marker.startDate }) else { continue }
+                shownCells[index].marker = .change(label: marker.label, date: marker.startDate)
+            }
+        }
 
         // B. 컨디션 체크 응답: 기간 안 투약 중 창이 열린 것만 분모
         let periodDoseIDs = Set(periodDoses.map(\.id))
@@ -271,6 +321,7 @@ enum ReportBuilder {
             PrescriptionRules.exhaustionEstimate(p: $0.prescription, doses: $0.doses, now: now, calendar: calendar)
         }
 
+        let questionRows = Self.questionLines(questions, now: now)
         return ClinicReport(
             period: period,
             weeks: weeks,
@@ -284,7 +335,10 @@ enum ReportBuilder {
                 checksAnswered: answered,
                 checksExpected: expected,
                 remainingDoses: remaining,
-                exhaustionDate: exhaustion
+                exhaustionDate: exhaustion,
+                prescriptionTransitions: transitions,
+                bmiStartText: first.flatMap { WeightRules.bmi(kilograms: $0.kilograms, heightCm: heightCm) }.map { kilograms($0) },
+                bmiEndText: last.flatMap { WeightRules.bmi(kilograms: $0.kilograms, heightCm: heightCm) }.map { kilograms($0) }
             ),
             cycles: shownCells,
             weight: series,
@@ -303,10 +357,25 @@ enum ReportBuilder {
                 proteinTarget: proteinTarget,
                 calendar: calendar
             ),
-            notes: noteLines(doses: periodDoses, checks: periodChecks.filter { inPeriod($0.checkedAt) }),
+            notes: noteLines(
+                doses: periodDoses,
+                checks: periodChecks.filter { inPeriod($0.checkedAt) },
+                limit: min(maxNotes, maxQuestionAndNoteLines - questionRows.count)
+            ),
             generatedAt: now,
-            appVersion: appVersion
+            appVersion: appVersion,
+            questions: questionRows
         )
+    }
+
+    /// 아직 묻지 않은 것을 적은 순으로 5개까지, 60자에서 자른다 (R15). 기간과 무관하다 (다음 진료를 위한 것)
+    static func questionLines(_ questions: [ClinicQuestionSnapshot], now: Date) -> [ClinicReport.QuestionLine] {
+        ClinicQuestionRules.pending(questions)
+            .filter { $0.createdAt <= now }
+            .prefix(maxQuestions)
+            .compactMap { question in
+                trimmed(question.text).map { ClinicReport.QuestionLine(id: question.id, text: truncated($0)) }
+            }
     }
 
     // MARK: 세부
@@ -373,8 +442,8 @@ enum ReportBuilder {
         }
     }
 
-    /// 비어 있지 않은 투약·컨디션 메모 최근 5개, 60자에서 자른다
-    static func noteLines(doses: [DoseSnapshot], checks: [ConditionCheckSnapshot]) -> [ClinicReport.NoteLine] {
+    /// 비어 있지 않은 투약·컨디션 메모 최근 `limit`개(기본 5), 60자에서 자른다
+    static func noteLines(doses: [DoseSnapshot], checks: [ConditionCheckSnapshot], limit: Int = maxNotes) -> [ClinicReport.NoteLine] {
         let doseNotes = doses.compactMap { dose -> ClinicReport.NoteLine? in
             guard let text = trimmed(dose.note) else { return nil }
             return ClinicReport.NoteLine(id: "dose.\(dose.id.uuidString)", date: dose.administeredAt, text: truncated(text))
@@ -387,7 +456,7 @@ enum ReportBuilder {
                 text: truncated(text)
             )
         }
-        return Array((doseNotes + checkNotes).sorted { $0.date > $1.date }.prefix(maxNotes))
+        return Array((doseNotes + checkNotes).sorted { $0.date > $1.date }.prefix(max(limit, 0)))
     }
 
     static func offsetText(scheduled: Date, actual: Date, calendar: Calendar) -> String? {

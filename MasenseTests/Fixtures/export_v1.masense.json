@@ -1,0 +1,180 @@
+{
+  "appVersion": "1.0.0 (12)",
+  "conditionChecks": [
+    {
+      "appetite": "reduced",
+      "checkedAt": "2026-10-16T21:00:00.000+09:00",
+      "createdAt": "2026-10-16T21:00:00.000+09:00",
+      "doseId": "B2000000-0000-4000-8000-000000000003",
+      "id": "C3000000-0000-4000-8000-000000000001",
+      "note": null,
+      "symptoms": [
+        {
+          "severity": 2,
+          "symptom": "nausea"
+        },
+        {
+          "severity": 1,
+          "symptom": "fatigue"
+        }
+      ],
+      "window": "h24"
+    }
+  ],
+  "device": {
+    "model": "iPhone16,2",
+    "systemVersion": "18.1"
+  },
+  "doses": [
+    {
+      "administeredAt": "2026-08-13T20:05:00.000+09:00",
+      "createdAt": "2026-08-13T20:06:00.000+09:00",
+      "id": "B2000000-0000-4000-8000-000000000001",
+      "isCancelled": false,
+      "note": null,
+      "prescriptionId": "A1000000-0000-4000-8000-000000000001",
+      "scheduledFor": "2026-08-13T20:00:00.000+09:00",
+      "sequence": 1,
+      "site": "abdomenUpperLeft"
+    },
+    {
+      "administeredAt": "2026-10-08T20:05:00.000+09:00",
+      "createdAt": "2026-10-08T20:06:00.000+09:00",
+      "id": "B2000000-0000-4000-8000-000000000002",
+      "isCancelled": false,
+      "note": "왼쪽 배는 멍이 남아 허벅지로",
+      "prescriptionId": "A1000000-0000-4000-8000-000000000002",
+      "scheduledFor": "2026-10-08T20:00:00.000+09:00",
+      "sequence": 6,
+      "site": "thighRight"
+    },
+    {
+      "administeredAt": "2026-10-15T20:05:00.000+09:00",
+      "createdAt": "2026-10-15T20:06:00.000+09:00",
+      "id": "B2000000-0000-4000-8000-000000000003",
+      "isCancelled": false,
+      "note": null,
+      "prescriptionId": "A1000000-0000-4000-8000-000000000002",
+      "scheduledFor": "2026-10-15T20:00:00.000+09:00",
+      "sequence": 7,
+      "site": "thighLeft"
+    }
+  ],
+  "exportedAt": "2026-10-21T08:30:00.000+09:00",
+  "format": "masense-export",
+  "formatVersion": 1,
+  "habitChecks": [
+    {
+      "createdAt": "2026-10-15T22:00:00.000+09:00",
+      "date": "2026-10-15T00:00:00.000+09:00",
+      "fiber": false,
+      "id": "B8000000-0000-4000-8000-000000000001",
+      "sleep": true,
+      "water": true
+    }
+  ],
+  "prescriptions": [
+    {
+      "createdAt": "2026-08-07T10:12:00.000+09:00",
+      "doseLabel": "첫 처방",
+      "dosesPerPen": 4,
+      "endDate": "2026-09-03T00:00:00.000+09:00",
+      "id": "A1000000-0000-4000-8000-000000000001",
+      "intervalDays": 7,
+      "isActive": false,
+      "nextClinicDate": null,
+      "penCount": 1,
+      "scheduledHour": 20,
+      "scheduledMinute": 0,
+      "scheduledWeekday": 5,
+      "startDate": "2026-08-07T00:00:00.000+09:00"
+    },
+    {
+      "createdAt": "2026-09-04T10:12:00.000+09:00",
+      "doseLabel": "두 번째 처방",
+      "dosesPerPen": 4,
+      "endDate": null,
+      "id": "A1000000-0000-4000-8000-000000000002",
+      "intervalDays": 7,
+      "isActive": true,
+      "nextClinicDate": "2026-10-28T00:00:00.000+09:00",
+      "penCount": 2,
+      "scheduledHour": 20,
+      "scheduledMinute": 0,
+      "scheduledWeekday": 5,
+      "startDate": "2026-09-04T00:00:00.000+09:00"
+    }
+  ],
+  "proteinEntries": [
+    {
+      "createdAt": "2026-10-15T08:10:00.000+09:00",
+      "date": "2026-10-15T00:00:00.000+09:00",
+      "estimatedGrams": 19,
+      "foods": [
+        "egg",
+        "egg",
+        "milk"
+      ],
+      "id": "F6000000-0000-4000-8000-000000000001",
+      "meal": "breakfast"
+    }
+  ],
+  "schemaVersion": "1.0.0",
+  "settings": {
+    "bodyWeightForGuideKg": null,
+    "clinicReminderDaysBefore": 1,
+    "conditionCheckEnabled": true,
+    "eveningReminderHour": 20,
+    "exhaustionReminderDosesLeft": 2,
+    "hasAcceptedRoleNotice": true,
+    "hasConfirmedAdult": true,
+    "proteinTargetGrams": 110,
+    "reminderEnabled": true,
+    "reportDefaultPeriod": null,
+    "reportTheme": "midnight"
+  },
+  "strengthSessions": [
+    {
+      "createdAt": "2026-10-14T19:40:00.000+09:00",
+      "durationMinutes": 30,
+      "healthKitUUID": null,
+      "id": "A7000000-0000-4000-8000-000000000001",
+      "intensity": "moderate",
+      "kind": "strength",
+      "note": null,
+      "source": "manual",
+      "startedAt": "2026-10-14T19:00:00.000+09:00"
+    },
+    {
+      "createdAt": "2026-10-16T08:00:00.000+09:00",
+      "durationMinutes": 40,
+      "healthKitUUID": "E5000000-0000-4000-8000-000000000002",
+      "id": "A7000000-0000-4000-8000-000000000002",
+      "intensity": "light",
+      "kind": "walk",
+      "note": null,
+      "source": "healthKit",
+      "startedAt": "2026-10-16T07:00:00.000+09:00"
+    }
+  ],
+  "weightSamples": [
+    {
+      "createdAt": "2026-10-10T07:01:00.000+09:00",
+      "healthKitUUID": null,
+      "id": "D4000000-0000-4000-8000-000000000001",
+      "kilograms": 79.1,
+      "leanBodyMassKg": null,
+      "measuredAt": "2026-10-10T07:00:00.000+09:00",
+      "source": "manual"
+    },
+    {
+      "createdAt": "2026-10-17T08:00:00.000+09:00",
+      "healthKitUUID": "E5000000-0000-4000-8000-000000000001",
+      "id": "D4000000-0000-4000-8000-000000000002",
+      "kilograms": 78.4,
+      "leanBodyMassKg": 55.2,
+      "measuredAt": "2026-10-17T07:10:00.000+09:00",
+      "source": "healthKit"
+    }
+  ]
+}

@@ -58,4 +58,49 @@ struct WeightRulesTests {
         #expect(WeightRules.doseTicks(doses: doses, series: series, now: now) == [TestCalendar.date(2026, 10, 15, 20)])
         #expect(WeightRules.doseTicks(doses: doses, series: [], now: now).isEmpty)
     }
+
+    // MARK: R14 BMI
+
+    @Test func bmiIsKilogramsOverMetersSquaredRoundedToOneDecimal() {
+        #expect(WeightRules.bmi(kilograms: 78.4, heightCm: 170) == 27.1)
+        #expect(WeightRules.bmi(kilograms: 60, heightCm: 160) == 23.4)
+        #expect(WeightRules.bmi(kilograms: 95.25, heightCm: 182.5) == 28.6)
+    }
+
+    @Test func bmiNeedsHeightInRangeAndPositiveWeight() {
+        #expect(WeightRules.bmi(kilograms: 78.4, heightCm: nil) == nil)
+        #expect(WeightRules.bmi(kilograms: 78.4, heightCm: 99) == nil)
+        #expect(WeightRules.bmi(kilograms: 78.4, heightCm: 251) == nil)
+        #expect(WeightRules.bmi(kilograms: 0, heightCm: 170) == nil)
+        #expect(WeightRules.bmi(kilograms: 50, heightCm: 100) == 50.0)
+        #expect(WeightRules.bmi(kilograms: 50, heightCm: 250) == 8.0)
+    }
+
+    /// D7 체중 추이 확대: 기간별 주 수, 하루 평균 점, 시작 대비 변화
+    @Test func trendRangesDailyPointsAndChange() {
+        let samples = [
+            sample(8, 3, 84.0),
+            sample(10, 5, 80.0), sample(10, 5, 82.0, hour: 20),
+            sample(10, 20, 79.5),
+        ]
+        let recent = WeightRules.trend(samples: samples, range: .weeks4, now: now, calendar: calendar)
+        #expect(recent.weeks.count == 4)
+        #expect(recent.daily == [
+            DailyWeight(day: TestCalendar.date(2026, 10, 5), kilograms: 81.0),
+            DailyWeight(day: TestCalendar.date(2026, 10, 20), kilograms: 79.5),
+        ])
+        #expect(recent.changeText == "-1.5")
+
+        // 전체: 8-3(월)의 주(8-2)부터 이번 주(10-18)까지 12주
+        let all = WeightRules.trend(samples: samples, range: .all, now: now, calendar: calendar)
+        #expect(all.weeks.first?.weekStart == TestCalendar.date(2026, 8, 2))
+        #expect(all.weeks.count == 12)
+        #expect(all.first?.kilograms == 84.0)
+        #expect(all.changeText == "-4.5")
+
+        #expect(WeightRules.trend(samples: samples, range: .months6, now: now, calendar: calendar).weeks.count == 26)
+        // 측정일이 하루뿐이면 변화 없음, 기록이 없으면 전체도 4주
+        #expect(WeightRules.trend(samples: [sample(10, 20, 79.5)], range: .weeks4, now: now, calendar: calendar).changeText == nil)
+        #expect(WeightRules.trend(samples: [], range: .all, now: now, calendar: calendar).weeks.count == 4)
+    }
 }

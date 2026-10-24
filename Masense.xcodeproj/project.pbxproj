@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4D4153454E53450000000021 /* MasenseWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4D4153454E5345000000001A /* MasenseWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		4D4153454E53450000000001 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -14,11 +18,33 @@
 			remoteGlobalIDString = 4D4153454E53450000000003;
 			remoteInfo = Masense;
 		};
+		4D4153454E53450000000023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4D4153454E53450000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D4153454E53450000000020;
+			remoteInfo = MasenseWidgets;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4D4153454E53450000000022 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4D4153454E53450000000021 /* MasenseWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		4D4153454E5345000000000B /* Masense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Masense.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D4153454E5345000000000C /* MasenseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MasenseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D4153454E5345000000001A /* MasenseWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MasenseWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -40,6 +66,24 @@
 			path = MasenseTests;
 			sourceTree = "<group>";
 		};
+		4D4153454E5345000000001B /* MasenseWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = MasenseWidgets;
+			sourceTree = "<group>";
+		};
+		4D4153454E5345000000001C /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +101,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D4153454E5345000000001D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -65,6 +116,8 @@
 			children = (
 				4D4153454E53450000000005 /* Masense */,
 				4D4153454E53450000000006 /* MasenseTests */,
+				4D4153454E5345000000001B /* MasenseWidgets */,
+				4D4153454E5345000000001C /* Shared */,
 				4D4153454E5345000000000A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -74,6 +127,7 @@
 			children = (
 				4D4153454E5345000000000B /* Masense.app */,
 				4D4153454E5345000000000C /* MasenseTests.xctest */,
+				4D4153454E5345000000001A /* MasenseWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -88,13 +142,16 @@
 				4D4153454E5345000000000F /* Sources */,
 				4D4153454E53450000000007 /* Frameworks */,
 				4D4153454E5345000000000D /* Resources */,
+				4D4153454E53450000000022 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4D4153454E53450000000024 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				4D4153454E53450000000005 /* Masense */,
+				4D4153454E5345000000001C /* Shared */,
 			);
 			name = Masense;
 			packageProductDependencies = (
@@ -126,6 +183,29 @@
 			productReference = 4D4153454E5345000000000C /* MasenseTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		4D4153454E53450000000020 /* MasenseWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D4153454E53450000000027 /* Build configuration list for PBXNativeTarget "MasenseWidgets" */;
+			buildPhases = (
+				4D4153454E5345000000001F /* Sources */,
+				4D4153454E5345000000001D /* Frameworks */,
+				4D4153454E5345000000001E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4D4153454E5345000000001B /* MasenseWidgets */,
+				4D4153454E5345000000001C /* Shared */,
+			);
+			name = MasenseWidgets;
+			packageProductDependencies = (
+			);
+			productName = MasenseWidgets;
+			productReference = 4D4153454E5345000000001A /* MasenseWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -142,6 +222,9 @@
 					4D4153454E53450000000004 = {
 						CreatedOnToolsVersion = 16.0;
 						TestTargetID = 4D4153454E53450000000003;
+					};
+					4D4153454E53450000000020 = {
+						CreatedOnToolsVersion = 16.0;
 					};
 				};
 			};
@@ -162,6 +245,7 @@
 			targets = (
 				4D4153454E53450000000003 /* Masense */,
 				4D4153454E53450000000004 /* MasenseTests */,
+				4D4153454E53450000000020 /* MasenseWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -175,6 +259,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4D4153454E5345000000000E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4D4153454E5345000000001E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -198,6 +289,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D4153454E5345000000001F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -205,6 +303,11 @@
 			isa = PBXTargetDependency;
 			target = 4D4153454E53450000000003 /* Masense */;
 			targetProxy = 4D4153454E53450000000001 /* PBXContainerItemProxy */;
+		};
+		4D4153454E53450000000024 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D4153454E53450000000020 /* MasenseWidgets */;
+			targetProxy = 4D4153454E53450000000023 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -338,14 +441,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Config/Masense.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 24F957FFAD;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Masense-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your weight, lean body mass, and workouts from Apple Health to show them in your records and pre-visit report. Nothing is written to Apple Health, and the data stays on this device.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
@@ -353,7 +458,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -370,14 +475,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Config/Masense.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 24F957FFAD;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Masense-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your weight, lean body mass, and workouts from Apple Health to show them in your records and pre-visit report. Nothing is written to Apple Health, and the data stays on this device.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
@@ -385,7 +492,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -401,9 +508,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 24F957FFAD;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -419,9 +527,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 24F957FFAD;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -429,6 +538,60 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Masense.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Masense";
+			};
+			name = Release;
+		};
+		4D4153454E53450000000025 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/MasenseWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 24F957FFAD;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/MasenseWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		4D4153454E53450000000026 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/MasenseWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 24F957FFAD;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/MasenseWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -458,6 +621,15 @@
 			buildConfigurations = (
 				4D4153454E53450000000018 /* Debug */,
 				4D4153454E53450000000019 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4D4153454E53450000000027 /* Build configuration list for PBXNativeTarget "MasenseWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D4153454E53450000000025 /* Debug */,
+				4D4153454E53450000000026 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

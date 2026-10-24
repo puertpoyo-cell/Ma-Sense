@@ -4,13 +4,13 @@ import SwiftData
 /// 기본 습관: 수분·식이섬유·수면 가벼운 체크 (DATA_MODEL.md, M2 P2). 점수화하지 않는다.
 @Model
 final class HabitCheck {
-    @Attribute(.unique) var id: UUID
+    var id: UUID = UUID()
     /// 그 날 00:00
-    var date: Date
-    var water: Bool
-    var fiber: Bool
-    var sleep: Bool
-    var createdAt: Date
+    var date: Date = Date.now
+    var water: Bool = false
+    var fiber: Bool = false
+    var sleep: Bool = false
+    var createdAt: Date = Date.now
 
     init(
         id: UUID = UUID(),

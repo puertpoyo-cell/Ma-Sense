@@ -5,8 +5,6 @@ import Foundation
 
 struct PrescriptionSnapshot: Equatable {
     let startDate: Date
-    /// 투약 간격(일). 3 미만이면 마디 구간을 만들 수 없어 규칙이 빈 결과를 돌려준다
-    let intervalDays: Int
     /// 1(일)~7(토), `Calendar` weekday
     let scheduledWeekday: Int
     let scheduledHour: Int
@@ -16,25 +14,31 @@ struct PrescriptionSnapshot: Equatable {
     /// `penCount * dosesPerPen`
     let totalDoses: Int
     let nextClinicDate: Date?
+    /// 처방 종료일 (그날까지 유효). 활성 처방은 nil
+    let endDate: Date?
+    /// 사용자 메모. 처방 전환 표시에만 쓰고 해석하지 않는다
+    let doseLabel: String?
 
     init(
         startDate: Date,
-        intervalDays: Int = 7,
         scheduledWeekday: Int,
         scheduledHour: Int,
         scheduledMinute: Int = 0,
         dosesPerPen: Int = 4,
         totalDoses: Int,
-        nextClinicDate: Date? = nil
+        nextClinicDate: Date? = nil,
+        endDate: Date? = nil,
+        doseLabel: String? = nil
     ) {
         self.startDate = startDate
-        self.intervalDays = intervalDays
         self.scheduledWeekday = scheduledWeekday
         self.scheduledHour = scheduledHour
         self.scheduledMinute = scheduledMinute
         self.dosesPerPen = dosesPerPen
         self.totalDoses = totalDoses
         self.nextClinicDate = nextClinicDate
+        self.endDate = endDate
+        self.doseLabel = doseLabel
     }
 }
 
@@ -42,20 +46,24 @@ struct DoseSnapshot: Equatable, Identifiable {
     let id: UUID
     let administeredAt: Date
     let scheduledFor: Date
-    let site: BodySite
+    /// nil = 부위 기록 없음 (D6 지난 투약 한꺼번에 입력). 바디맵 이력에서 빠진다
+    let site: BodySite?
     let sequence: Int
     let isCancelled: Bool
     /// 자유 메모. 기록 탭 메모 표시, 리포트 G 섹션
     let note: String?
+    /// 기록을 만든 시각. 컨디션 창이 닫힌 뒤 늦게 기록한 투약을 가린다 (HistoryModel). 모르면 nil
+    let createdAt: Date?
 
     init(
         id: UUID = UUID(),
         administeredAt: Date,
         scheduledFor: Date,
-        site: BodySite,
+        site: BodySite?,
         sequence: Int,
         isCancelled: Bool = false,
-        note: String? = nil
+        note: String? = nil,
+        createdAt: Date? = nil
     ) {
         self.id = id
         self.administeredAt = administeredAt
@@ -64,6 +72,7 @@ struct DoseSnapshot: Equatable, Identifiable {
         self.sequence = sequence
         self.isCancelled = isCancelled
         self.note = note
+        self.createdAt = createdAt
     }
 }
 
@@ -98,19 +107,32 @@ struct SettingsSnapshot: Equatable {
     let conditionCheckEnabled: Bool
     let clinicReminderDaysBefore: Int
     let exhaustionReminderDosesLeft: Int
+    /// D7 주 1회 체중 기록 알림. 요일 nil이면 투약 요일
+    let weightReminderEnabled: Bool
+    let weightReminderWeekday: Int?
+    let weightReminderHour: Int
+    let weightReminderMinute: Int
 
     init(
         reminderEnabled: Bool = true,
         eveningReminderHour: Int = 20,
         conditionCheckEnabled: Bool = true,
         clinicReminderDaysBefore: Int = 1,
-        exhaustionReminderDosesLeft: Int = 2
+        exhaustionReminderDosesLeft: Int = 2,
+        weightReminderEnabled: Bool = true,
+        weightReminderWeekday: Int? = nil,
+        weightReminderHour: Int = 8,
+        weightReminderMinute: Int = 0
     ) {
         self.reminderEnabled = reminderEnabled
         self.eveningReminderHour = eveningReminderHour
         self.conditionCheckEnabled = conditionCheckEnabled
         self.clinicReminderDaysBefore = clinicReminderDaysBefore
         self.exhaustionReminderDosesLeft = exhaustionReminderDosesLeft
+        self.weightReminderEnabled = weightReminderEnabled
+        self.weightReminderWeekday = weightReminderWeekday
+        self.weightReminderHour = weightReminderHour
+        self.weightReminderMinute = weightReminderMinute
     }
 }
 
@@ -158,4 +180,21 @@ struct HabitCheckSnapshot: Equatable {
     let water: Bool
     let fiber: Bool
     let sleep: Bool
+}
+
+// MARK: D6
+
+struct ClinicQuestionSnapshot: Equatable, Identifiable {
+    let id: UUID
+    let text: String
+    /// nil이면 아직 묻지 않음
+    let askedAt: Date?
+    let createdAt: Date
+
+    init(id: UUID = UUID(), text: String, askedAt: Date? = nil, createdAt: Date) {
+        self.id = id
+        self.text = text
+        self.askedAt = askedAt
+        self.createdAt = createdAt
+    }
 }

@@ -11,9 +11,12 @@ struct HistoryModelTests {
         PrescriptionSnapshot(startDate: start, scheduledWeekday: 5, scheduledHour: 20, totalDoses: totalDoses)
     }
 
-    private func dose(_ month: Int, _ day: Int, note: String? = nil, isCancelled: Bool = false) -> DoseSnapshot {
+    private func dose(_ month: Int, _ day: Int, note: String? = nil, isCancelled: Bool = false, createdAt: Date? = nil) -> DoseSnapshot {
         let date = TestCalendar.date(2026, month, day, 20)
-        return DoseSnapshot(administeredAt: date, scheduledFor: date, site: .thighLeft, sequence: 1, isCancelled: isCancelled, note: note)
+        return DoseSnapshot(
+            administeredAt: date, scheduledFor: date, site: .thighLeft, sequence: 1,
+            isCancelled: isCancelled, note: note, createdAt: createdAt
+        )
     }
 
     @Test func monthsAreNewestFirstWithMissedRows() {
@@ -55,6 +58,30 @@ struct HistoryModelTests {
         // 새 처방의 11-05, 11-12만 누락 (11-19 마디는 아직 진행 중)
         #expect(missed.map(\.date) == [TestCalendar.date(2026, 11, 12, 20), TestCalendar.date(2026, 11, 5, 20)])
         #expect(missed.allSatisfy { $0.kind == .missed(scheduled: $0.date, canAddDose: true) })
+    }
+
+    /// R13: 두 번째 처방부터 시작일에 "처방 변경" 구분 행. 라벨은 메모 그대로
+    @Test func prescriptionChangeRowAtEachLaterStart() {
+        let old = HistoryModel.PrescriptionHistory(
+            prescription: PrescriptionSnapshot(startDate: TestCalendar.date(2026, 10, 16, 9), scheduledWeekday: 5, scheduledHour: 20,
+                                               totalDoses: 12, endDate: TestCalendar.date(2026, 10, 26), doseLabel: "첫 처방"),
+            doses: [dose(10, 22)],
+            isActive: false
+        )
+        let new = HistoryModel.PrescriptionHistory(
+            prescription: PrescriptionSnapshot(startDate: TestCalendar.date(2026, 10, 27, 9), scheduledWeekday: 5, scheduledHour: 20,
+                                               totalDoses: 12, doseLabel: " 두 번째 "),
+            doses: [dose(10, 29)],
+            isActive: true
+        )
+        let rows = HistoryModel.doseMonths([new, old], now: TestCalendar.date(2026, 10, 30, 9), calendar: calendar).flatMap(\.rows)
+        let changes = rows.filter { if case .prescriptionChange = $0.kind { return true } else { return false } }
+        #expect(changes.map(\.date) == [TestCalendar.date(2026, 10, 27, 9)])
+        #expect(changes.first?.kind == .prescriptionChange(label: "두 번째"))
+        // 최근 순: 새 처방의 투약 → 처방 변경 → 이전 처방의 투약
+        #expect(rows.map(\.date) == [TestCalendar.date(2026, 10, 29, 20), TestCalendar.date(2026, 10, 27, 9), TestCalendar.date(2026, 10, 22, 20)])
+        // 처방 구간 색 (R13-2): 시작 순서대로 0, 1. 변경 행은 새 처방의 색
+        #expect(rows.map(\.colorSlot) == [1, 1, 0])
     }
 
     @Test func cancelledDoseStaysVisibleAndLeavesCycleMissed() {
@@ -99,5 +126,16 @@ struct HistoryModelTests {
         let recent = dose(10, 29)
         let groups = HistoryModel.conditionGroups(doses: [cancelled, recent], checks: [], now: TestCalendar.date(2026, 10, 29, 21))
         #expect(groups.isEmpty)
+    }
+
+    /// D6: 컨디션 창(투약 후 96시간)이 닫힌 뒤에 만든 기록은 체크가 없으면 빈칸을 만들지 않는다 (지난 투약 한꺼번에 입력)
+    @Test func conditionGroupsSkipDosesRecordedAfterTheWindows() {
+        let now = TestCalendar.date(2026, 10, 30, 10)
+        let backfilled = dose(10, 8, createdAt: now)
+        let backfilledChecked = dose(10, 15, createdAt: now)
+        let onTime = dose(10, 22, createdAt: TestCalendar.date(2026, 10, 22, 20, 5))
+        let check = ConditionCheckSnapshot(doseID: backfilledChecked.id, window: .h24, checkedAt: now)
+        let groups = HistoryModel.conditionGroups(doses: [backfilled, backfilledChecked, onTime], checks: [check], now: now)
+        #expect(groups.map(\.doseID) == [onTime.id, backfilledChecked.id])
     }
 }

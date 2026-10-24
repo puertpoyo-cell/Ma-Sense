@@ -43,6 +43,7 @@ struct WeightEntrySheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @Environment(\.services) private var services
     @State private var model = WeightEntryModel()
     @FocusState private var fieldFocused: Bool
 
@@ -89,6 +90,8 @@ struct WeightEntrySheet: View {
 
     private func save() {
         guard (try? model.save(in: context)) != nil else { return }
+        // 오늘 체중을 기록했으면 오늘의 체중 알림은 필요 없다 (R4-2)
+        Task { await services.refreshReminders(context: context) }
         dismiss()
         onSaved()
     }

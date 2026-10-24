@@ -41,6 +41,12 @@ struct SampleDataTests {
 
         let cycles = CycleRules.cycles(for: prescription.snapshot, doses: prescription.doseSnapshots, now: now, until: now, calendar: calendar)
         #expect(CycleRules.missedCycles(cycles: cycles, doses: prescription.doseSnapshots, now: now).count == 1)
+        // 첫 기록은 부위 기록 없음 (D6 예시). 누락은 첫 기록 뒤라 오늘 화면 안내 카드는 없다
+        #expect(prescription.doses.filter { $0.site == nil }.count == 1)
+        #expect(today.backfillCount == 0)
+        // 진료 때 물어볼 것: 약물명·용량 없이 아직 묻지 않은 것 2개
+        let questions = try container.mainContext.fetch(FetchDescriptor<ClinicQuestion>()).map(\.snapshot)
+        #expect(ClinicQuestionRules.pending(questions).count == 2)
     }
 
     @Test func settingsMarkOnboardingDone() throws {

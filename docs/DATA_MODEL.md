@@ -19,8 +19,12 @@ let config = ModelConfiguration("Masense", schema: schema, url: url,
                                 cloudKitDatabase: .none)
 ```
 
-- Xcode: 앱 타깃에 App Groups capability 추가, 위젯·Watch 타깃이 생기면 같은 그룹 ID 추가
+- 구현 (D4-A): `App/StoreLocation.swift`가 위치를 정하고 `ModelContainer.masense()`가 쓴다
+  - 그룹 컨테이너를 얻지 못하면(App Group 서명이 없는 빌드) 앱 기본 경로 `Application Support/Masense.store`를 그대로 쓴다. `!` 강제 언래핑 대신 이 폴백
+  - D4-A 이전 빌드가 앱 기본 경로에 만든 스토어가 있고 그룹 쪽에 스토어가 없으면 첫 실행에 옮긴다. 본 파일과 `-wal`·`-shm`을 모두 복사한 뒤에만 이전 파일을 지우고, 하나라도 실패하면 복사본을 지우고 이전 경로를 쓴다 (`StoreLocationTests`)
+- Xcode: 앱 타깃에 App Groups capability 추가 (`Config/Masense.entitlements`의 `com.apple.security.application-groups`), 위젯·Watch 타깃이 생기면 같은 그룹 ID 추가. 개발자 계정에 그룹이 등록되어 있어야 실기기 서명이 된다 (자동 서명이면 Xcode가 등록)
 - 쓰기는 앱 타깃만. 위젯 등 익스텐션은 읽기 전용으로 쓰고, 기록 액션은 딥링크로 앱을 연다 (동시 쓰기 회피)
+- D6 위젯 구현 (2026-10-23): 위젯 확장은 SwiftData 스토어를 **열지 않고**, 앱이 같은 App Group 컨테이너에 써 두는 요약 `WidgetSnapshot.json`(`Shared/WidgetSnapshot.swift`, 다음 예정·마지막 투약과 부위 표시명·남은 회차)만 읽는다. 위젯 프로세스가 스토어를 열면 스키마 이전과 파일 잠금을 두 프로세스가 다뤄야 하고, 위젯에 필요한 값은 몇 개뿐이라서. 요약은 기록·처방·설정이 바뀔 때와 앱이 앞으로 올 때 `AppServices.refreshReminders`가 다시 쓴다 (`WidgetRules`, `WidgetService`). 스토어를 App Group에 둔 이유(나중에 Watch 등이 읽을 수 있게)는 그대로
 - 테스트·미리보기는 `isStoredInMemoryOnly: true`로 App Group을 쓰지 않는다
 
 ### CloudKit 호환 규칙 (v1부터 적용, 동기화는 꺼 둠)
@@ -55,6 +59,7 @@ Prescription 1 ─── * Dose 1 ─── * ConditionCheck
 ProteinEntry        (날짜 기준 독립)
 StrengthSession     (날짜 기준 독립)
 HabitCheck          (날짜 기준 독립)
+ClinicQuestion      (독립, D6)
 WeightSample        (HealthKit 캐시 + 수동 입력)
 UserSettings        (단일 레코드)
 ```
@@ -67,8 +72,8 @@ UserSettings        (단일 레코드)
 |---|---|---|---|
 | id | UUID | `UUID()` |  |
 | startDate | Date | `.now` | 처방 시작일 |
-| penCount | Int | `1` | 처방받은 펜 수 |
-| dosesPerPen | Int | `4` | 펜당 회차 |
+| penCount | Int | `1` | 처방받은 펜 수. 1회용 펜이면 패키지 × 4 (D7, 입력은 패키지 수) |
+| dosesPerPen | Int | `4` | 펜당 회차. 1이면 1회용 펜 (D7부터 새 처방 기본, 저장 기본값은 그대로라 스키마 변경 없음) |
 | intervalDays | Int | `7` | **v1은 항상 7.** UI·Rules는 주 1회를 전제로 하며 이 값을 읽지 않는다. 필드만 미리 두어 나중에 다른 주기를 열 때 스키마 변경을 피함 |
 | scheduledWeekday | Int | `5` | 1(일)~7(토), `Calendar` weekday |
 | scheduledHour | Int | `20` | 투약 시각 (시) |
@@ -100,7 +105,7 @@ UserSettings        (단일 레코드)
 | id | UUID | `UUID()` |  |
 | administeredAt | Date | `.now` | 실제 투약 시각 |
 | scheduledFor | Date | `.now` | 예정일 (마디 기준점) |
-| siteRaw | String | `"abdomenUpperLeft"` | `BodySite` rawValue. 계산 프로퍼티 `site: BodySite`로 접근 |
+| siteRaw | String | `"abdomenUpperLeft"` | `BodySite` rawValue. 계산 프로퍼티 `site: BodySite?`로 접근. 부위 기록 없음은 `"unknown"` (`Dose.unknownSiteRaw`, D6 지난 투약 한꺼번에 입력). 모르는 값도 nil(부위 기록 없음)로 읽는다 |
 | sequence | Int | `1` | 처방 내 회차 (1부터) |
 | note | String? |  | 자유 메모 |
 | isCancelled | Bool | `false` | 잘못 기록 취소용. 리포트에서는 제외 |
@@ -119,7 +124,7 @@ enum BodySite: String, Codable, CaseIterable {
 }
 ```
 
-표시명은 `Localizable.xcstrings`에서. 그룹: `abdomen`, `thigh`, `upperArm`. 저장은 `siteRaw: String`이며 모델에 `var site: BodySite { get set }` 계산 프로퍼티를 둔다. 다른 enum(`ConditionWindow`, `AppetiteLevel`, `WeightSource`, `MealSlot`, `SessionKind`, `Intensity`, `SessionSource`)도 같은 패턴(`xxxRaw` 저장 + 계산 프로퍼티).
+표시명은 `Localizable.xcstrings`에서. 그룹: `abdomen`, `thigh`, `upperArm`. 저장은 `siteRaw: String`이며 모델에 `var site: BodySite? { get set }` 계산 프로퍼티를 둔다 (nil = 부위 기록 없음, 저장값 `"unknown"`. 필드 타입·기본값은 그대로라 스키마 변경 아님). 다른 enum(`ConditionWindow`, `AppetiteLevel`, `WeightSource`, `MealSlot`, `SessionKind`, `Intensity`, `SessionSource`)도 같은 패턴(`xxxRaw` 저장 + 계산 프로퍼티).
 
 ### ConditionCheck — 컨디션 체크
 
@@ -216,6 +221,17 @@ enum ProteinFood: String, Codable, CaseIterable {
 | sleep | Bool | `false` |  |
 | createdAt | Date | `.now` |  |
 
+### ClinicQuestion — 진료 때 물어볼 것 (D6, SchemaV3)
+
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| text | String | `""` | 사용자가 적은 문장 그대로 (앞뒤 공백·줄바꿈 정리, 200자까지, R15). 앱은 해석·분류하지 않는다 |
+| askedAt | Date? |  | 진료에서 물어봤다고 표시한 시각. nil이면 아직 묻지 않음 → 리포트에 실림 |
+| createdAt | Date | `.now` | 적은 순 정렬 |
+
+관계 없음. 지우기는 실제 삭제 (투약 기록과 달리 리포트 무결성과 무관한 메모).
+
 ### UserSettings — 단일 레코드
 
 | 필드 | 타입 | 기본값 | 설명 |
@@ -230,10 +246,15 @@ enum ProteinFood: String, Codable, CaseIterable {
 | exhaustionReminderDosesLeft | Int | `2` | 남은 회차가 이 값일 때 진료 예약 알림 |
 | proteinTargetGrams | Int? |  | 사용자/의료진 입력. nil이면 안내만 |
 | bodyWeightForGuideKg | Double? |  | 1.2~1.6 g/kg 안내 계산용. 최근 체중 자동 사용 가능 |
+| heightCm | Double? |  | 키(cm). BMI 숫자 계산에만 쓴다(R14). nil이면 BMI를 보이지 않는다. **SchemaV2(1.1.0)에서 추가** (D5, 2026-10-22 사람 결정) |
 | healthKitAuthorized | Bool | `false` |  |
 | hasPurchasedPro | Bool | `false` | StoreKit 검증 결과 캐시. 진실 원천은 StoreKit |
 | reportTheme | String | `"midnight"` |  |
-| reportDefaultPeriod | String? |  | V3. 리포트 기본 기간 `ReportPeriod.storageValue` (`sinceClinic`, `weeks4`·`weeks8`·`weeks12`). nil이면 자동(R12) |
+| reportDefaultPeriod | String? |  | 리포트 기본 기간 `ReportPeriod.storageValue` (`sinceClinic`, `weeks4`·`weeks8`·`weeks12`). nil이면 자동(R12) |
+| weightReminderEnabled | Bool | `true` | 주 1회 체중 기록 알림 (R4-2). **SchemaV4(1.3.0)에서 추가** (D7, 2026-10-23 사람 결정) |
+| weightReminderWeekday | Int? |  | 1(일)~7(토). nil이면 처방의 투약 요일 (V4) |
+| weightReminderHour | Int | `8` | (V4) |
+| weightReminderMinute | Int | `0` | (V4) |
 | createdAt | Date | `.now` |  |
 
 단일 레코드는 CloudKit에서 기기마다 하나씩 생겨 충돌할 수 있다. 동기화를 켤 때는 `createdAt`이 가장 이른 레코드를 정본으로 삼고 나머지를 병합·삭제하는 규칙을 `Rules/SettingsMerge.swift`에 둔다 (v1은 해당 없음).
@@ -254,31 +275,39 @@ Info.plist: `NSHealthShareUsageDescription` 필수 (빌드 설정 `INFOPLIST_KEY
 ## 스키마 버전
 
 ```swift
-enum SchemaV1: VersionedSchema {
-    static var versionIdentifier = Schema.Version(1, 0, 0)
-    static var models: [any PersistentModel.Type] = [
-        Prescription.self, Dose.self, ConditionCheck.self,
-        WeightSample.self, UserSettings.self
-    ]
+enum SchemaV1: VersionedSchema {   // 출시 스키마 (2026-10-22 재정리)
+    static let versionIdentifier = Schema.Version(1, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        [Prescription.self, Dose.self, ConditionCheck.self, WeightSample.self,
+         SchemaV1.UserSettings.self, ProteinEntry.self, StrengthSession.self, HabitCheck.self]
+    }
+    @Model final class UserSettings { ... }   // 1.0.0 고정 사본 (heightCm 없음)
 }
-enum SchemaV2: VersionedSchema {   // M2
-    static var versionIdentifier = Schema.Version(2, 0, 0)
-    // + ProteinEntry, StrengthSession, HabitCheck
+enum SchemaV2: VersionedSchema {   // D5: UserSettings.heightCm 추가
+    static let versionIdentifier = Schema.Version(1, 1, 0)
+    // 나머지 모델은 V1과 같은 타입, UserSettings만 지금 모델
 }
-enum SchemaV3: VersionedSchema {   // 2026-10-22, 리포트 기본 기간 저장
-    static var versionIdentifier = Schema.Version(3, 0, 0)
-    // UserSettings + reportDefaultPeriod: String?
+enum SchemaV3: VersionedSchema {   // D6: ClinicQuestion 모델 추가
+    static let versionIdentifier = Schema.Version(1, 2, 0)
+    static var models: [any PersistentModel.Type] { SchemaV2.models + [ClinicQuestion.self] }
 }
+enum SchemaV4: VersionedSchema {   // D7: UserSettings 체중 알림 필드 4개 추가
+    static let versionIdentifier = Schema.Version(1, 3, 0)
+    // 지금 모델 전부. V2·V3는 `SchemaV2.UserSettings` 고정 사본(heightCm까지)을 쓴다
+}
+typealias CurrentSchema = SchemaV4
 enum MasenseMigrationPlan: SchemaMigrationPlan {
-    // [SchemaV1, SchemaV2, SchemaV3], 단계: .lightweight(V1 → V2), .lightweight(V2 → V3)
+    // [SchemaV1, SchemaV2, SchemaV3, SchemaV4], .lightweight(V1 → V2), (V2 → V3), (V3 → V4)
 }
 ```
 
-- 바뀐 모델은 이전 버전 쪽에 **고정 사본**을 둔다. V1·V2의 `UserSettings`는 `SchemaV1.UserSettings`(V3 이전 저장 속성 그대로)이고, 바뀌지 않은 모델은 현재 타입을 같이 쓴다. 고정 사본의 저장 속성을 고치면 기존 저장소의 버전을 알아보지 못한다
-- `MigrationTests`: V1 → V3, V2 → V3 디스크 저장소 마이그레이션
-
-```swift
-```
+- **2026-10-22 출시 전 재정리 (사람 결정)**: 개발 중 쌓인 V1(M1)·V2(M2 습관)·V3(리포트 기본 기간) 이력을 접고, CloudKit 호환 규칙(B)과 처방 `endDate`(C)를 담은 새 `SchemaV1` 하나로 시작한다. 출시 전이라 사용자 데이터가 없다
+- 개발 빌드(`DEBUG`)는 이전 구조의 저장소를 열지 못하면 지우고 새로 만든다 (`ModelContainer.masense`). 릴리스 빌드는 그러지 않는다
+- 출시 뒤 스키마를 바꿀 때: 바뀌는 모델의 **고정 사본**을 이전 버전(`SchemaV1.Xxx`)에 두고 `SchemaV2`와 마이그레이션 단계를 더한다. 고정 사본의 저장 속성은 고치지 않는다(기존 저장소의 버전을 알아보는 기준). CloudKit 규칙 5에 따라 변경은 추가만
+- V2 (D5, 2026-10-22 사람 결정): `UserSettings.heightCm` 옵셔널 추가 → 경량 이전. 개발 중 기기에 있는 V1 저장소의 기록을 지우지 않으려고 고정 사본 방식으로 올렸다
+- V3 (D6, 2026-10-23 사람 결정): 관계 없는 `ClinicQuestion` 모델 추가 → 경량 이전. 기존 모델은 바뀌지 않아 고정 사본이 없다
+- V4 (D7, 2026-10-23 사람 결정): `UserSettings` 체중 알림 필드(기본값 있음·옵셔널) 추가 → 경량 이전. V2·V3의 `UserSettings`는 `SchemaV2.UserSettings` 고정 사본으로 바꿨다 (저장 속성은 그때와 같음)
+- `SchemaTests`: unique 없음, 열거형 rawValue 디스크 왕복, 모르는 rawValue 기본값, 설정 기본값, V1 저장소 → 지금 스키마 이전, V2 저장소 → V3 이전, V3 저장소 → V4 이전
 
 M1 출시 전에는 마이그레이션 없이 스키마 자유 변경. 베타 배포 후부터 `SchemaMigrationPlan` 필수.
 

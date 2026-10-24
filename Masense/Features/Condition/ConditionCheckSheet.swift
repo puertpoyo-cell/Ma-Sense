@@ -103,7 +103,7 @@ struct ConditionCheckSheet: View {
 
     private func save() {
         guard (try? model.save(in: context)) != nil else { return }
-        Task { await services.refreshNotifications(context: context) }
+        Task { await services.refreshReminders(context: context) }
         dismiss()
         onSaved()
     }

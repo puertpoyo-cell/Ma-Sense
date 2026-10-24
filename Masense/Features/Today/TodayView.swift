@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-2 컨디션, 1-3 체중, 1-4 오늘의 마디, 1-5 진료.
+/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-1a 지난 투약 안내, 1-2 컨디션, 1-1c 지난 정리, 1-1b 남은 펜, 1-3 체중, 1-4 오늘의 마디, 1-5 진료, 1-6 알아 두기.
 struct TodayView: View {
     var openReport: () -> Void = {}
 
@@ -12,9 +12,15 @@ struct TodayView: View {
         case weight
         case protein(preselected: ProteinFood?)
         case strength
+        case backfill
+        case questions
+        case weightTrend
 
         var id: String {
             switch self {
+            case .weightTrend: return "weightTrend"
+            case .backfill: return "backfill"
+            case .questions: return "questions"
             case .prescription: return "prescription"
             case .dose: return "dose"
             case let .condition(doseID, window): return "condition.\(doseID.uuidString).\(window.rawValue)"
@@ -28,8 +34,11 @@ struct TodayView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.services) private var services
     @Environment(\.calendar) private var calendar
+    @Environment(\.router) private var router
     @Query(filter: #Predicate<Prescription> { $0.isActive })
     private var activePrescriptions: [Prescription]
+    /// 처방 구간 색 자리 계산용 (R13-2)
+    @Query(sort: \Prescription.startDate) private var allPrescriptions: [Prescription]
     @Query(sort: \ConditionCheck.checkedAt)
     private var checks: [ConditionCheck]
     @Query(sort: \WeightSample.measuredAt)
@@ -38,11 +47,23 @@ struct TodayView: View {
     @Query(sort: \ProteinEntry.date) private var proteins: [ProteinEntry]
     @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
     @Query(sort: \HabitCheck.date) private var habits: [HabitCheck]
+    @Query(filter: #Predicate<ClinicQuestion> { $0.askedAt == nil }) private var pendingQuestions: [ClinicQuestion]
     @State private var sheet: Sheet?
     #if DEBUG
-    @State private var opensSettingsForScreenshot = ScreenshotRoute.current == .settings
+    @State private var opensSettingsForScreenshot = ScreenshotRoute.current.map { [.settings, .importSheet, .importResult].contains($0) } ?? false
+    @State private var screenshotDestination: ScreenshotRoute? = ScreenshotRoute.current.flatMap { [.symptomFlow, .infoList].contains($0) ? $0 : nil }
     #endif
     @State private var showsToast = false
+    /// 지난 투약 안내 카드를 닫은 처방 id (D6). 기기 화면 상태라 SwiftData 대신 UserDefaults
+    @AppStorage("backfill.dismissedPrescription") private var dismissedBackfill = ""
+    /// 닫은 사실 한 줄 "종류|날짜", 닫은 주간 정리 구간 시작 (D8). 기기 화면 상태
+    @AppStorage("dailyLine.dismissed") private var dismissedDailyLine = ""
+    @AppStorage("weeklySummary.dismissedStart") private var dismissedWeeklyStart: Double = 0
+    /// 닫은 패키지 정리 구간 시작 (D9)
+    @AppStorage("packageSummary.dismissedStart") private var dismissedPackageStart: Double = 0
+    @State private var weeklyListDestination: WeeklySummaryListView.Segment?
+    /// 진료 카드의 "진료 준비" (D9)
+    @State private var infoDestination: InfoTopic?
 
     private var prescription: Prescription? { activePrescriptions.first }
 
@@ -52,11 +73,45 @@ struct TodayView: View {
             let model = makeModel(now: timeline.date)
             ScrollView {
                 VStack(spacing: Spacing.cardGap) {
+                    if let line = model.dailyLine, dismissedDailyLine != dailyLineKey(line, now: timeline.date) {
+                        dailyLineView(line, now: timeline.date)
+                    }
                     countdownCard(model)
                     // 처방이 없으면 1-1만 보인다 (SCREENS.md 빈 상태)
-                    if prescription != nil {
+                    if let prescription {
+                        if model.backfillCount > 0, dismissedBackfill != prescription.id.uuidString {
+                            backfillCard(count: model.backfillCount, prescriptionID: prescription.id)
+                        }
                         if let prompt = model.conditionPrompt {
                             conditionCard(prompt)
+                        }
+                        if let package = model.packageSummary, package.package.period.start.timeIntervalSinceReferenceDate != dismissedPackageStart {
+                            // 패키지 정리가 보이는 동안은 주간 정리 카드를 함께 띄우지 않는다 (D9)
+                            PackageSummaryCard(
+                                summary: package,
+                                isSingleUsePen: prescription.dosesPerPen == 1,
+                                onShowAll: { weeklyListDestination = .packages },
+                                onDismiss: {
+                                    dismissedPackageStart = package.package.period.start.timeIntervalSinceReferenceDate
+                                    if let weekly = model.weeklySummary {
+                                        dismissedWeeklyStart = weekly.period.start.timeIntervalSinceReferenceDate
+                                    }
+                                }
+                            )
+                        } else if let summary = model.weeklySummary, summary.period.start.timeIntervalSinceReferenceDate != dismissedWeeklyStart {
+                            WeeklySummaryCard(
+                                summary: summary,
+                                onShowAll: { weeklyListDestination = .weeks },
+                                onDismiss: { dismissedWeeklyStart = summary.period.start.timeIntervalSinceReferenceDate }
+                            )
+                        }
+                        if let pens = model.pens {
+                            PenStatusCard(
+                                status: pens,
+                                exhaustionDate: model.exhaustionDate,
+                                memo: prescription.doseLabel,
+                                tint: Color.prescription(slot: allPrescriptions.colorSlots[prescription.id] ?? 0)
+                            )
                         }
                         weightCard(model)
                         dailyCycleCard(model.daily, now: timeline.date)
@@ -64,6 +119,7 @@ struct TodayView: View {
                             clinicCard(clinic)
                         }
                     }
+                    infoRow
                 }
                 .padding(.horizontal, Spacing.screenHorizontal)
                 .padding(.vertical, Spacing.s4)
@@ -71,6 +127,12 @@ struct TodayView: View {
         }
         .midnightBackground()
         .navigationTitle("tab.today")
+        .navigationDestination(item: $weeklyListDestination) { segment in
+            WeeklySummaryListView(initialSegment: segment)
+        }
+        .navigationDestination(item: $infoDestination) { topic in
+            InfoTopicView(topic: topic, openReport: openReport)
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
@@ -83,10 +145,20 @@ struct TodayView: View {
         }
         #if DEBUG
         .navigationDestination(isPresented: $opensSettingsForScreenshot) { SettingsView() }
+        .navigationDestination(item: $screenshotDestination) { route in
+            if route == .symptomFlow {
+                SymptomFlowView()
+            } else {
+                InfoListView(openReport: openReport)
+            }
+        }
         .task { openSheetForScreenshot() }
         #endif
         .sheet(item: $sheet) { sheet in
             sheetContent(sheet)
+        }
+        .onChange(of: router.pending, initial: true) { _, route in
+            if let route { open(route) }
         }
         .recordedToast(isPresented: $showsToast)
         .task { await syncHealthIfAuthorized() }
@@ -102,9 +174,54 @@ struct TodayView: View {
             sessions: sessions.map(\.snapshot),
             habits: habits.map(\.snapshot),
             proteinTarget: settingsList.first?.proteinTargetGrams,
+            heightCm: settingsList.first?.heightCm,
+            allDoses: allPrescriptions.flatMap(\.doses).map(\.snapshot),
             now: now,
             calendar: calendar
         )
+    }
+
+    // MARK: 맨 위 사실 한 줄 (R17, D8)
+
+    /// 하루에 한 번 닫는다: 같은 종류·같은 날이면 숨김
+    private func dailyLineKey(_ line: DailyLine, now: Date) -> String {
+        let day = calendar.dateComponents([.year, .month, .day], from: now)
+        return "\(line.kind)|\(day.year ?? 0)-\(day.month ?? 0)-\(day.day ?? 0)"
+    }
+
+    private func dailyLineView(_ line: DailyLine, now: Date) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.s2) {
+            Group {
+                switch line {
+                case let .doseDay(site?):
+                    Text("daily.line.doseDay \(site.localizedName)")
+                case .doseDay(nil):
+                    Text("daily.line.doseDay.noSite")
+                case let .lowSupply(remaining, true):
+                    Text("daily.line.lowPens \(remaining)")
+                case let .lowSupply(remaining, false):
+                    Text("daily.line.lowDoses \(remaining)")
+                case .noRecentWeight:
+                    Text("daily.line.noWeight")
+                }
+            }
+            .font(Typography.body)
+            .foregroundStyle(Color.ink)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Button {
+                dismissedDailyLine = dailyLineKey(line, now: now)
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.inkSecondary)
+                    .frame(minWidth: 32, minHeight: 32)
+            }
+            .accessibilityLabel(Text("daily.line.dismiss"))
+        }
+        .padding(.leading, Spacing.s4)
+        .padding(.trailing, Spacing.s2)
+        .padding(.vertical, Spacing.s1)
+        .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
     }
 
     // MARK: 1-1 카운트다운 (CountdownHero, DESIGN_SYSTEM.md 5.2)
@@ -118,6 +235,27 @@ struct TodayView: View {
             onLogDose: { sheet = .dose },
             onEnterPrescription: { sheet = .prescription }
         )
+    }
+
+    // MARK: 1-1a 지난 투약 안내 (D6)
+
+    /// 처방 시작일 이후 첫 기록 전에 빈 주가 있을 때. 사실만 알리고 한꺼번에 기록할 수 있게 한다
+    private func backfillCard(count: Int, prescriptionID: UUID) -> some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
+                Text("backfill.title")
+                    .font(Typography.sectionHeader)
+                    .foregroundStyle(Color.ink)
+                Text("backfill.card.message \(count)")
+                    .font(Typography.body)
+                    .foregroundStyle(Color.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                AdaptiveStack(spacing: Spacing.s2) {
+                    GhostButton("backfill.card.action") { sheet = .backfill }
+                    GhostButton("backfill.card.dismiss") { dismissedBackfill = prescriptionID.uuidString }
+                }
+            }
+        }
     }
 
     // MARK: 1-2 컨디션 체크
@@ -144,7 +282,15 @@ struct TodayView: View {
                 VStack(spacing: 0) {
                     BlueprintSplit {
                         BlueprintCell("weight.title") {
-                            DimensionValue(latest.kilograms.formatted(.number.precision(.fractionLength(1))), unit: "unit.kg")
+                            VStack(alignment: .leading, spacing: Spacing.s1) {
+                                DimensionValue(latest.kilograms.formatted(.number.precision(.fractionLength(1))), unit: "unit.kg")
+                                // R14: 키를 입력했을 때만 숫자로. 구간 이름 없음
+                                if let bmi = model.latestBMI {
+                                    Text("weight.bmi \(bmi.formatted(.number.precision(.fractionLength(1))))")
+                                        .font(Typography.caption)
+                                        .foregroundStyle(Color.inkSecondary)
+                                }
+                            }
                         }
                     } trailing: {
                         BlueprintCell("weight.measured") {
@@ -167,11 +313,15 @@ struct TodayView: View {
                     }
                     .padding(Spacing.cellPadding)
                     BlueprintDivider()
-                    Button("weight.manualEntry") { sheet = .weight }
-                        .font(Typography.label)
-                        .foregroundStyle(Color.accent)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                        .padding(Spacing.cellPadding)
+                    HStack {
+                        // D7: 큰 그래프와 기간 선택
+                        Button("weight.trend.open") { sheet = .weightTrend }
+                        Spacer()
+                        Button("weight.manualEntry") { sheet = .weight }
+                    }
+                    .font(Typography.label)
+                    .foregroundStyle(Color.accent)
+                    .padding(Spacing.cellPadding)
                 }
             }
         } else {
@@ -196,18 +346,77 @@ struct TodayView: View {
 
     // MARK: 1-5 진료
 
+    /// 진료 7일 전부터. 물어볼 것(D6)을 적거나 진료에서 물어봤다고 표시하고, 리포트를 준비한다
     private func clinicCard(_ date: Date) -> some View {
         FrostCard {
             VStack(alignment: .leading, spacing: Spacing.s4) {
-                Text("clinic.card \(date.formatted(.dateTime.month(.defaultDigits).day()))")
-                    .font(Typography.title)
-                    .foregroundStyle(Color.ink)
-                GhostButton("clinic.prepareReport", action: openReport)
+                VStack(alignment: .leading, spacing: Spacing.s1) {
+                    Text("clinic.card \(date.formatted(.dateTime.month(.defaultDigits).day()))")
+                        .font(Typography.title)
+                        .foregroundStyle(Color.ink)
+                    if !pendingQuestions.isEmpty {
+                        Text("clinic.card.questions \(pendingQuestions.count)")
+                            .font(Typography.caption)
+                            .foregroundStyle(Color.inkSecondary)
+                    }
+                }
+                AdaptiveStack(spacing: Spacing.s2) {
+                    GhostButton("clinic.questions.title") { sheet = .questions }
+                    GhostButton("clinic.prepareReport", action: openReport)
+                }
+                GhostButton("info.clinicPrep.title") { infoDestination = .clinicPrep }
             }
         }
     }
 
+    // MARK: 알아 두기 (D9, S13)
+
+    /// 맨 아래 한 줄. 출처 있는 일반 정보와 진료 준비 목록
+    private var infoRow: some View {
+        NavigationLink {
+            InfoListView(openReport: openReport)
+        } label: {
+            HStack(spacing: Spacing.s3) {
+                Image(systemName: "book.closed")
+                    .foregroundStyle(Color.accent)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: Spacing.s1) {
+                    Text("info.title")
+                        .font(Typography.label)
+                        .foregroundStyle(Color.ink)
+                    Text("info.row.summary")
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.inkSecondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.inkTertiary)
+                    .accessibilityHidden(true)
+            }
+            .padding(Spacing.cellPadding)
+            .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: 시트
+
+    /// 알림의 "기록하기"·위젯 링크 (D6). 처방이 없거나 열 컨디션 체크가 없으면 오늘 화면만 보여 준다
+    private func open(_ route: AppRoute) {
+        defer { router.finish(route) }
+        switch route {
+        case .logDose:
+            if prescription != nil { sheet = .dose }
+        case .conditionCheck:
+            // 알림에서 들어온 순간이 now 주입 지점
+            if let prompt = makeModel(now: Date()).conditionPrompt {
+                sheet = .condition(doseID: prompt.doseID, window: prompt.window)
+            }
+        case .logWeight:
+            sheet = .weight
+        }
+    }
 
     #if DEBUG
     /// 실행 인자 `-route sheet.*`로 시작할 때 해당 시트를 연다 (ScreenshotRoute)
@@ -216,6 +425,12 @@ struct TodayView: View {
         case .doseSheet?: sheet = .dose
         case .proteinSheet?: sheet = .protein(preselected: nil)
         case .strengthSheet?: sheet = .strength
+        case .backfillSheet?: sheet = .backfill
+        case .questionsSheet?: sheet = .questions
+        case .weightTrendSheet?: sheet = .weightTrend
+        case .summaryPackages?: weeklyListDestination = .packages
+        case .infoProtein?: infoDestination = .proteinFoods
+        case .infoClinicPrep?: infoDestination = .clinicPrep
         case .conditionSheet?:
             if let dose = prescription?.doses.filter({ !$0.isCancelled }).max(by: { $0.administeredAt < $1.administeredAt }) {
                 sheet = .condition(doseID: dose.id, window: .h24)
@@ -252,6 +467,14 @@ struct TodayView: View {
             ) { showsToast = true }
         case .strength:
             StrengthSheet(isLowCondition: makeModel(now: .now).daily.isLowCondition) { showsToast = true }
+        case .backfill:
+            if let prescription {
+                BackfillSheet(prescription: prescription) { showsToast = true }
+            }
+        case .questions:
+            ClinicQuestionsSheet()
+        case .weightTrend:
+            WeightTrendSheet()
         }
     }
 

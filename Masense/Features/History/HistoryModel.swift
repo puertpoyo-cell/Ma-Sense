@@ -6,14 +6,19 @@ enum HistoryModel {
 
     struct DoseRow: Identifiable, Equatable {
         enum Kind: Equatable {
-            case dose(id: UUID, site: BodySite, sequence: Int, hasNote: Bool, isCancelled: Bool)
+            /// `site` nil = 부위 기록 없음 (D6). 눌러서 나중에 부위를 고칠 수 있다
+            case dose(id: UUID, site: BodySite?, sequence: Int, hasNote: Bool, isCancelled: Bool)
             /// 구간이 끝났는데 기록이 없는 마디 (R3). `canAddDose`는 현재 처방의 마디라 과거 기록을 더할 수 있는지
             case missed(scheduled: Date, canAddDose: Bool)
+            /// 두 번째 처방부터 시작일에 놓는 구분 행 "처방 변경 · {doseLabel}" (R13). 라벨은 해석하지 않는다
+            case prescriptionChange(label: String?)
         }
 
         let id: String
         let date: Date
         let kind: Kind
+        /// 처방 구간 색 자리 (R13-2, D7). 처방 시작 순서대로
+        var colorSlot: Int = 0
     }
 
     struct Month: Identifiable, Equatable {
@@ -32,7 +37,23 @@ enum HistoryModel {
     /// 보관된 처방은 다음 처방 시작 전까지의 마디만 본다 (그 뒤의 누락을 만들지 않기 위해).
     static func doseMonths(_ histories: [PrescriptionHistory], now: Date, calendar: Calendar) -> [Month] {
         let ordered = histories.sorted { $0.prescription.startDate < $1.prescription.startDate }
+        let slots = PrescriptionRules.colorSlots(startDates: ordered.map(\.prescription.startDate))
         var rows: [DoseRow] = []
+
+        let markers = PrescriptionRules.prescriptionTimeline(
+            all: ordered.map(\.prescription),
+            in: DateInterval(start: .distantPast, end: .distantFuture),
+            calendar: calendar
+        )
+        // 첫 처방은 전환이 아니다
+        rows += markers.dropFirst().enumerated().map { index, marker in
+            DoseRow(
+                id: "change.\(index)",
+                date: marker.startDate,
+                kind: .prescriptionChange(label: marker.label),
+                colorSlot: slots.indices.contains(index + 1) ? slots[index + 1] : 0
+            )
+        }
 
         for (offset, history) in ordered.enumerated() {
             let nextStart = offset + 1 < ordered.count ? ordered[offset + 1].prescription.startDate : nil
@@ -48,7 +69,8 @@ enum HistoryModel {
                 DoseRow(
                     id: "missed.\(offset).\(cycle.index)",
                     date: cycle.scheduledDate,
-                    kind: .missed(scheduled: cycle.scheduledDate, canAddDose: history.isActive)
+                    kind: .missed(scheduled: cycle.scheduledDate, canAddDose: history.isActive),
+                    colorSlot: slots[offset]
                 )
             }
             rows += history.doses.map { dose in
@@ -61,7 +83,8 @@ enum HistoryModel {
                         sequence: dose.sequence,
                         hasNote: !(dose.note ?? "").isEmpty,
                         isCancelled: dose.isCancelled
-                    )
+                    ),
+                    colorSlot: slots[offset]
                 )
             }
         }
@@ -101,6 +124,7 @@ enum HistoryModel {
     }
 
     /// 투약별 24h·48h 요약, 최근 투약 순. 취소된 투약은 제외.
+    /// 컨디션 창이 닫힌 뒤에 만든 기록은 체크가 하나도 없으면 넣지 않는다 (D6)
     static func conditionGroups(doses: [DoseSnapshot], checks: [ConditionCheckSnapshot], now: Date) -> [ConditionGroup] {
         doses
             .filter { !$0.isCancelled }
@@ -123,6 +147,11 @@ enum HistoryModel {
                     }
                     return now >= opensAt ? ConditionSlot(window: window, state: .missing) : nil
                 }
+                // 창이 다 닫힌 뒤에 만든 기록(지난 투약 한꺼번에 입력 등)은 체크가 없으면 빈칸을 만들지 않는다 (D6)
+                let recordedLate = dose.createdAt.map {
+                    $0.timeIntervalSince(dose.administeredAt) >= ConditionRules.h48Window.upperBound
+                } ?? false
+                if recordedLate, slots.allSatisfy({ $0.state == .missing }) { return nil }
                 return slots.isEmpty ? nil : ConditionGroup(doseID: dose.id, administeredAt: dose.administeredAt, slots: slots)
             }
     }

@@ -46,10 +46,63 @@ struct ServiceTests {
         #expect(fake.pending.contains { $0.kind == .conditionH24 })
     }
 
-    @Test func notificationCoordinatorWithoutPrescriptionRegistersNothing() async throws {
+    /// D6: 기록이 바뀌면 알림과 함께 위젯 요약을 다시 쓰고 투약일 Live Activity를 맞춘다
+    @Test func refreshRemindersPublishesWidgetAndLiveActivity() async throws {
+        let context = makeContext()
+        let prescription = Prescription(startDate: TestCalendar.date(2026, 10, 16, 9), penCount: 1, scheduledWeekday: 5, scheduledHour: 20)
+        try Prescription.activate(prescription, in: context)
+        let widgets = FakeWidgetService()
+        let activities = FakeLiveActivityService()
+        let services = AppServices(
+            notifications: FakeNotificationService(), healthKit: FakeHealthKitService(), store: FakeStoreService(),
+            widgets: widgets, liveActivities: activities, calendar: TestCalendar.seoul
+        )
+
+        await services.refreshReminders(context: context, now: TestCalendar.date(2026, 10, 20, 9))
+        #expect(widgets.published.last?.phase == .upcoming)
+        #expect(widgets.published.last?.scheduledDate == TestCalendar.date(2026, 10, 22, 20))
+        #expect(activities.scheduled == nil)
+
+        // 투약일에 앱을 열면 Live Activity, 기록하면 끝난다
+        let scheduled = TestCalendar.date(2026, 10, 22, 20)
+        await services.refreshReminders(context: context, now: TestCalendar.date(2026, 10, 22, 9))
+        #expect(activities.scheduled == scheduled)
+
+        prescription.doses.append(Dose(administeredAt: scheduled, scheduledFor: scheduled, site: nil, sequence: 1))
+        try context.save()
+        await services.refreshReminders(context: context, now: TestCalendar.date(2026, 10, 22, 21))
+        #expect(widgets.published.last?.phase == .done)
+        #expect(widgets.published.last?.lastDoseDate == scheduled)
+        #expect(widgets.published.last?.lastSiteName == nil)
+        #expect(widgets.published.last?.remainingDoses == 3)
+        #expect(activities.scheduled == nil)
+        #expect(activities.syncCount == 3)
+    }
+
+    /// R4-1: 미룬 알림은 재등록에도 남고, 투약을 기록하면 지운다
+    @Test func snoozeSurvivesRefreshUntilCancelled() async throws {
+        let fake = FakeNotificationService()
+        let snoozed = NotificationActions.snoozed(kind: .doseDue, now: TestCalendar.date(2026, 10, 22, 20))
+        await fake.schedule(snoozed)
+        await fake.replaceAll(with: [PlannedNotification(id: "dose.due.1", kind: .doseDue, fireDate: TestCalendar.date(2026, 10, 29, 20))])
+        let afterRefresh = await fake.pendingIdentifiers()
+        #expect(Set(afterRefresh) == ["dose.due.1", NotificationActions.snoozeIdentifier])
+        await fake.cancelSnooze()
+        let afterCancel = await fake.pendingIdentifiers()
+        #expect(afterCancel == ["dose.due.1"])
+    }
+
+    /// 처방이 없으면 투약 알림은 없고 체중 기록 알림(D7, 월요일 8시)만. 끄면 아무것도 없다
+    @Test func notificationCoordinatorWithoutPrescriptionRegistersOnlyWeightReminders() async throws {
         let context = makeContext()
         let fake = FakeNotificationService()
-        await NotificationCoordinator(service: fake, calendar: TestCalendar.seoul).refresh(context: context, now: .now)
+        let coordinator = NotificationCoordinator(service: fake, calendar: TestCalendar.seoul)
+        await coordinator.refresh(context: context, now: TestCalendar.date(2026, 10, 22, 9))
+        #expect(fake.pending.map(\.kind) == Array(repeating: .weightDue, count: 4))
+        #expect(fake.pending.first?.fireDate == TestCalendar.date(2026, 10, 26, 8))
+
+        try UserSettings.current(in: context).weightReminderEnabled = false
+        await coordinator.refresh(context: context, now: TestCalendar.date(2026, 10, 22, 9))
         #expect(fake.pending.isEmpty)
     }
 
@@ -57,11 +110,14 @@ struct ServiceTests {
         let context = makeContext()
         let first = Prescription(startDate: TestCalendar.date(2026, 9, 1), penCount: 1, scheduledWeekday: 5, scheduledHour: 20)
         let second = Prescription(startDate: TestCalendar.date(2026, 10, 16), penCount: 2, scheduledWeekday: 5, scheduledHour: 20)
-        try Prescription.activate(first, in: context)
-        try Prescription.activate(second, in: context)
+        try Prescription.activate(first, in: context, calendar: TestCalendar.seoul)
+        try Prescription.activate(second, in: context, calendar: TestCalendar.seoul)
         #expect(first.isActive == false)
         #expect(second.isActive == true)
         #expect(try Prescription.active(in: context)?.penCount == 2)
+        // 처방 이력 체인 (DATA_MODEL.md, R13): 이전 처방은 새 처방 시작 전날로 끝난다
+        #expect(first.endDate == TestCalendar.date(2026, 10, 15))
+        #expect(second.endDate == nil)
     }
 
     @Test func userSettingsIsSingleRecord() throws {

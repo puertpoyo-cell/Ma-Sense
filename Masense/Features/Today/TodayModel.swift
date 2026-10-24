@@ -52,6 +52,8 @@ struct TodayModel: Equatable {
     let scheduleDate: Date?
     let conditionPrompt: ConditionPrompt?
     let latestWeight: WeightSampleSnapshot?
+    /// R14. 최근 체중과 설정의 키로 계산한 BMI 숫자. 키가 없으면 nil
+    let latestBMI: Double?
     let weightSeries: [WeekPoint]
     /// 스파크라인 투약일 눈금
     let doseDatesInSeries: [Date]
@@ -59,6 +61,17 @@ struct TodayModel: Equatable {
     let daily: DailyCycle
     /// R8. 표시는 출처가 정해졌을 때만 (AppConfig.paceGuideSource)
     let paceNotice: PaceNotice?
+    /// 맨 위 사실 한 줄 (R17, D8)
+    let dailyLine: DailyLine?
+    /// 1-1c 지난 마디 정리 (R16, D8). 끝난 구간 중 가장 최근, 기록이 하나도 없으면 nil
+    let weeklySummary: WeeklySummary?
+    /// 1-1c 패키지 정리 (R18, D9). 4회를 다 쓴 패키지 기간이 끝난 뒤 7일 동안. 보이면 주간 정리 대신
+    let packageSummary: PackageSummary?
+    /// 1-1b 펜 현황 (R13-1, D7)과 소진 예상일 (R13)
+    let pens: PenStatus?
+    let exhaustionDate: Date?
+    /// R3-1 (D6). 처방의 첫 기록보다 앞선 누락 마디 수 = 이 앱을 쓰기 전에 맞았을 수 있는 주. 남은 회차가 없으면 0
+    let backfillCount: Int
 
     init(
         prescription: PrescriptionSnapshot?,
@@ -69,9 +82,49 @@ struct TodayModel: Equatable {
         sessions: [StrengthSessionSnapshot] = [],
         habits: [HabitCheckSnapshot] = [],
         proteinTarget: Int? = nil,
+        heightCm: Double? = nil,
+        allDoses: [DoseSnapshot]? = nil,
         now: Date,
         calendar: Calendar
     ) {
+        // 부위·체중은 처방과 무관하게 본다 (모든 처방의 기록)
+        dailyLine = DailyLineRules.line(
+            prescription: prescription,
+            doses: doses,
+            allDoses: allDoses ?? doses,
+            weights: weights,
+            now: now,
+            calendar: calendar
+        )
+        weeklySummary = prescription
+            .flatMap { WeeklySummaryRules.finishedPeriods(prescription: $0, now: now, calendar: calendar, limit: 1).first }
+            .map { period in
+                WeeklySummaryRules.summary(
+                    period: period,
+                    doses: allDoses ?? doses,
+                    checks: checks,
+                    weights: weights,
+                    proteins: proteins,
+                    sessions: sessions,
+                    proteinTarget: proteinTarget,
+                    calendar: calendar
+                )
+            }
+            .flatMap { $0.isEmpty ? nil : $0 }
+        // 처방의 기록만으로 패키지를 센다
+        packageSummary = PackageSummaryRules.recentlyFinished(doses: doses, now: now, calendar: calendar).map { package in
+            PackageSummaryRules.summary(
+                package: package,
+                doses: doses,
+                checks: checks,
+                weights: weights,
+                proteins: proteins,
+                sessions: sessions,
+                proteinTarget: proteinTarget,
+                calendar: calendar
+            )
+        }
+
         let todayProteins = ProteinRules.entries(on: now, from: proteins, calendar: calendar)
         daily = DailyCycle(
             filledMeals: Set(todayProteins.map(\.meal)),
@@ -83,6 +136,7 @@ struct TodayModel: Equatable {
         )
 
         latestWeight = WeightRules.latestSample(weights)
+        latestBMI = latestWeight.flatMap { WeightRules.bmi(kilograms: $0.kilograms, heightCm: heightCm) }
         let series = WeightRules.weeklyWeightSeries(samples: weights, weeks: Self.weightWeeks, now: now, calendar: calendar)
         weightSeries = series
         paceNotice = PaceRules.paceNotice(series: series)
@@ -96,11 +150,20 @@ struct TodayModel: Equatable {
             scheduleDate = nil
             conditionPrompt = nil
             clinicDate = nil
+            backfillCount = 0
+            pens = nil
+            exhaustionDate = nil
             return
         }
 
-        remainingDoses = PrescriptionRules.remainingDoses(p: p, doses: doses)
+        let remaining = PrescriptionRules.remainingDoses(p: p, doses: doses)
+        remainingDoses = remaining
         totalDoses = p.totalDoses
+        pens = PrescriptionRules.penStatus(p: p, doses: doses)
+        exhaustionDate = PrescriptionRules.exhaustionEstimate(p: p, doses: doses, now: now, calendar: calendar)
+        backfillCount = remaining > 0
+            ? BackfillRules.leadingCount(candidates: BackfillRules.candidates(prescription: p, doses: doses, now: now, calendar: calendar), doses: doses)
+            : 0
         usedDoses = PrescriptionRules.usedDoses(doses)
         conditionPrompt = ConditionRules.openConditionWindows(doses: doses, checks: checks, now: now)
             .first

@@ -13,9 +13,9 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-# 화면 문구(Localizable)와 권한 요청 문구(InfoPlist) 카탈로그
-CATALOGS = sorted((ROOT / "Masense" / "Resources").glob("*.xcstrings"))
-CODE_DIRS = [ROOT / "Masense", ROOT / "MasenseTests"]
+# 화면 문구(Localizable)와 권한 요청 문구(InfoPlist) 카탈로그, 위젯 확장 문구 (D6)
+CATALOGS = sorted((ROOT / "Masense" / "Resources").glob("*.xcstrings")) + sorted((ROOT / "MasenseWidgets").glob("*.xcstrings"))
+CODE_DIRS = [ROOT / "Masense", ROOT / "MasenseTests", ROOT / "MasenseWidgets", ROOT / "Shared"]
 DOC_DIRS = [ROOT / "docs"]
 
 # 2.1-2 특정 약물명·상표명·성분명 (코드 식별자·주석·문구·문서 전부)
@@ -42,6 +42,10 @@ FORBIDDEN_KO = {
     "좋음": "3.1 판단어", "나쁨": "3.1 판단어", "잘함": "3.1 판단어", "잘했": "3.1 판단어",
     "부족": "3.1 판단어", "충분": "3.1 판단어", "성공": "3.1 판단어", "실패": "3.1 판단어",
     "달성": "3.1 판단어", "축하": "6. 축하 없음",
+    # 2.2 BMI는 숫자만. 구간 이름으로 판단하지 않는다 (D5)
+    "저체중": "2.2 BMI 구간 이름", "과체중": "2.2 BMI 구간 이름", "정상 체중": "2.2 BMI 구간 이름",
+    "비만 전단계": "2.2 BMI 구간 이름", "비만 1단계": "2.2 BMI 구간 이름", "비만 2단계": "2.2 BMI 구간 이름",
+    "비만 3단계": "2.2 BMI 구간 이름", "고도비만": "2.2 BMI 구간 이름", "고도 비만": "2.2 BMI 구간 이름",
 }
 
 # 알림 문구(잠금화면 노출)에 쓰지 않는 단어 (3.3)
@@ -82,7 +86,8 @@ def main() -> int:
             for word, reason in FORBIDDEN_KO.items():
                 if word in value:
                     problems.append(f"[문구] {key} '{word}' — {reason}: {value}")
-            if key.startswith("notif."):
+            # 알림과 위젯(잠금화면에도 놓인다)
+            if key.startswith(("notif.", "widget.", "activity.")):
                 for word in NOTIFICATION_FORBIDDEN:
                     if word in value:
                         problems.append(f"[알림] {key} '{word}' — 3.3 잠금화면 민감어: {value}")

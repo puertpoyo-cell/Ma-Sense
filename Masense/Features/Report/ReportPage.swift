@@ -50,6 +50,9 @@ struct ReportPage: View {
             if let quality = report.quality {
                 qualityRow(quality)
             }
+            if !report.questions.isEmpty {
+                questions
+            }
             if !report.notes.isEmpty {
                 notes
             }
@@ -99,10 +102,15 @@ struct ReportPage: View {
             summaryCell("report.summary.doses") {
                 Text("report.summary.doses.value \(s.dosesTaken) \(s.dosesScheduled)")
             } detail: {
-                if s.missedCount == 0 {
-                    Text("report.summary.noMissed")
-                } else {
-                    Text("report.summary.missed \(s.missedCount)")
+                VStack(alignment: .leading, spacing: 1) {
+                    if s.missedCount == 0 {
+                        Text("report.summary.noMissed")
+                    } else {
+                        Text("report.summary.missed \(s.missedCount)")
+                    }
+                    if s.prescriptionTransitions > 0 {
+                        Text("report.summary.transitions \(s.prescriptionTransitions)")
+                    }
                 }
             }
             summaryCell("report.summary.weight") {
@@ -112,8 +120,14 @@ struct ReportPage: View {
                     Text("report.summary.weight.none")
                 }
             } detail: {
-                if let start = s.weightStartText, let end = s.weightEndText {
-                    Text("report.summary.weight.range \(start) \(end)")
+                VStack(alignment: .leading, spacing: 1) {
+                    if let start = s.weightStartText, let end = s.weightEndText {
+                        Text("report.summary.weight.range \(start) \(end)")
+                    }
+                    // R14: 키를 입력했을 때만 숫자로. 구간 이름 없음
+                    if let start = s.bmiStartText, let end = s.bmiEndText {
+                        Text("report.summary.bmi.range \(start) \(end)")
+                    }
                 }
             }
             summaryCell("report.summary.condition") {
@@ -159,18 +173,60 @@ struct ReportPage: View {
     private var timeline: some View {
         VStack(alignment: .leading, spacing: 2 * Self.mm) {
             sectionTitle("report.section.timeline")
-            HStack(alignment: .top, spacing: 1.5 * Self.mm) {
-                ForEach(report.cycles) { cell in
-                    cycleCell(cell)
+            VStack(alignment: .leading, spacing: 1) {
+                if report.cycles.contains(where: { $0.marker != nil }) {
+                    // 처방 전환 라벨 줄 (R13): 표시된 칸 위에 메모 그대로. 길면 오른쪽 칸 위로 이어진다
+                    cellRow { cell in markerLabel(cell) }
                 }
-                // 칸 수가 적어도 폭은 12칸 기준으로 고정
-                ForEach(0..<max(0, ReportBuilder.maxCells - report.cycles.count), id: \.self) { _ in
-                    Color.clear.frame(maxWidth: .infinity)
-                }
+                cellRow { cell in cycleCell(cell) }
             }
             .frame(maxHeight: .infinity, alignment: .top)
         }
         .frame(height: 34 * Self.mm, alignment: .top)
+    }
+
+    /// 마디 칸 폭에 맞춘 한 줄. 칸 수가 적어도 폭은 12칸 기준으로 고정
+    private func cellRow<Content: View>(@ViewBuilder _ content: @escaping (ClinicReport.CycleCell) -> Content) -> some View {
+        HStack(alignment: .top, spacing: 1.5 * Self.mm) {
+            ForEach(report.cycles) { cell in
+                content(cell).frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+            ForEach(0..<max(0, ReportBuilder.maxCells - report.cycles.count), id: \.self) { _ in
+                Color.clear.frame(maxWidth: .infinity, maxHeight: 0)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func markerLabel(_ cell: ClinicReport.CycleCell) -> some View {
+        Group {
+            switch cell.marker {
+            case let .periodStart(label)?:
+                HStack(spacing: 2) {
+                    Circle().fill(Color.paperPrescription(slot: cell.colorSlot)).frame(width: 4, height: 4)
+                    if let label {
+                        Text("report.marker.periodStart \(label)")
+                    } else {
+                        Text("report.marker.periodStart.noLabel")
+                    }
+                }
+            case let .change(label, date)?:
+                HStack(spacing: 2) {
+                    Circle().fill(Color.paperPrescription(slot: cell.colorSlot)).frame(width: 4, height: 4)
+                    if let label {
+                        Text(verbatim: label)
+                    } else {
+                        Text("report.marker.change")
+                    }
+                    Text(verbatim: shortDate(date)).monospacedDigit()
+                }
+            case nil:
+                Color.clear.frame(height: 0)
+            }
+        }
+        .font(.system(size: 6.5, weight: .semibold))
+        .lineLimit(1)
+        .fixedSize()
     }
 
     private func cycleCell(_ cell: ClinicReport.CycleCell) -> some View {
@@ -183,7 +239,7 @@ struct ReportPage: View {
                         Text(verbatim: "(\(offsetText))").font(.system(size: 6))
                     }
                 }
-                Text(L10n.string("site.short." + site.rawValue)).font(.system(size: 7.5))
+                Text(L10n.string("site.short." + (site?.rawValue ?? "unknown"))).font(.system(size: 7.5))
                 Text("report.cell.sequence \(sequence)").font(.system(size: 7)).foregroundStyle(gray)
             case .missed:
                 Text(verbatim: shortDate(cell.scheduledDate)).font(.system(size: 8, weight: .semibold))
@@ -203,6 +259,26 @@ struct ReportPage: View {
             RoundedRectangle(cornerRadius: 3)
                 .strokeBorder(cell.state == .missed ? gray : rule, style: StrokeStyle(lineWidth: 0.75, dash: cell.state == .missed ? [2, 2] : []))
         }
+        .overlay(alignment: .top) {
+            // 처방이 바뀐 기간이면 칸 위에 처방 구간 색 띠 (R13-2, D7). 흑백 인쇄에서는 세로선·라벨로 구분된다
+            if showsPrescriptionColors {
+                Rectangle()
+                    .fill(Color.paperPrescription(slot: cell.colorSlot))
+                    .frame(height: 2)
+                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 3, topTrailingRadius: 3))
+            }
+        }
+        .overlay(alignment: .leading) {
+            if cell.marker != nil {
+                // 처방 전환 세로 실선 1px, 칸 사이 간격 가운데 (REPORT_SPEC C)
+                Rectangle().fill(ink).frame(width: 1).offset(x: -0.75 * Self.mm)
+            }
+        }
+    }
+
+    /// 기간 안에 처방 전환이 있을 때만 색 띠를 그린다 (처방이 하나면 색이 뜻하는 바가 없다)
+    private var showsPrescriptionColors: Bool {
+        report.cycles.contains { $0.marker != nil }
     }
 
     // MARK: D. 체중 추이
@@ -323,6 +399,26 @@ struct ReportPage: View {
             }
         }
         .frame(height: 36 * Self.mm, alignment: .top)
+    }
+
+    // MARK: G. 진료 때 물어볼 것 (D6)
+
+    private var questions: some View {
+        VStack(alignment: .leading, spacing: 1.5 * Self.mm) {
+            sectionTitle("report.section.questions")
+            ForEach(Array(report.questions.enumerated()), id: \.element.id) { index, line in
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(verbatim: "\(index + 1).")
+                        .font(.system(size: 7.5, weight: .medium))
+                        .monospacedDigit()
+                        .foregroundStyle(gray)
+                        .frame(width: 30, alignment: .leading)
+                    Text(verbatim: line.text)
+                        .font(.system(size: 8))
+                        .lineLimit(1)
+                }
+            }
+        }
     }
 
     // MARK: G. 메모 발췌

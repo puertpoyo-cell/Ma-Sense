@@ -3,8 +3,14 @@ import Observation
 import SwiftData
 
 /// S9 처방 입력 폼의 상태와 저장. 온보딩 0-3과 PrescriptionSheet가 함께 쓴다.
+/// 펜은 두 가지 (D7, 2026-10-24): 한 번 쓰는 1회용 펜(패키지 하나 = 펜 4개 = 약 한 달)과 여러 회 쓰는 펜.
+/// 저장은 그대로 `penCount`·`dosesPerPen` (1회용 = 펜당 회차 1)
 @Observable
 final class PrescriptionFormModel {
+    enum PenType: String, CaseIterable, Hashable {
+        case singleUse, multiDose
+    }
+
     var startDate: Date
     /// 1(일)~7(토)
     var scheduledWeekday: Int
@@ -20,8 +26,11 @@ final class PrescriptionFormModel {
     let calendar: Calendar
     private let editing: Prescription?
 
-    static let penCountRange = 1...20
+    /// 1회용 펜은 패키지 24개(펜 96개, 약 2년)까지
+    static let penCountRange = 1...96
+    static let multiDosePenCountRange = 1...20
     static let dosesPerPenRange = 1...8
+    static let packageRange = 1...24
     static let defaultHour = 20
 
     /// `editing`이 없으면 새 처방. 새 처방을 저장하면 이전 활성 처방은 보관된다.
@@ -44,8 +53,9 @@ final class PrescriptionFormModel {
             startDate = today
             scheduledWeekday = calendar.component(.weekday, from: now)
             scheduledTime = calendar.date(bySettingHour: Self.defaultHour, minute: 0, second: 0, of: today) ?? today
-            penCount = 1
-            dosesPerPen = 4
+            // 기본은 1회용 펜 패키지 1개 (펜 4개, 약 한 달)
+            penCount = PrescriptionRules.dosesPerPackage
+            dosesPerPen = 1
             hasNextClinicDate = false
             nextClinicDate = fourWeeksLater
             doseLabel = ""
@@ -56,8 +66,33 @@ final class PrescriptionFormModel {
 
     var totalDoses: Int { penCount * dosesPerPen }
 
+    /// 펜당 회차가 1이면 1회용 펜
+    var penType: PenType {
+        get { dosesPerPen == 1 ? .singleUse : .multiDose }
+        set {
+            guard newValue != penType else { return }
+            switch newValue {
+            case .singleUse:
+                // 총 회차를 유지해 펜 수로 바꾼다
+                penCount = min(max(totalDoses, 1), Self.penCountRange.upperBound)
+                dosesPerPen = 1
+            case .multiDose:
+                // 펜 하나에 4회 (패키지 하나 = 펜 하나)
+                dosesPerPen = PrescriptionRules.dosesPerPackage
+                penCount = min(max(Int((Double(penCount) / Double(dosesPerPen)).rounded(.up)), 1), Self.multiDosePenCountRange.upperBound)
+            }
+        }
+    }
+
+    /// 1회용 펜의 패키지 수 (펜 4개씩, 남는 펜도 한 패키지로 센다). 바꾸면 펜 수 = 패키지 × 4
+    var packageCount: Int {
+        get { max(Int((Double(penCount) / Double(PrescriptionRules.dosesPerPackage)).rounded(.up)), 1) }
+        set { penCount = newValue * PrescriptionRules.dosesPerPackage }
+    }
+
     var isValid: Bool {
-        Self.penCountRange.contains(penCount) && Self.dosesPerPenRange.contains(dosesPerPen)
+        let pens = penType == .singleUse ? Self.penCountRange : Self.multiDosePenCountRange
+        return pens.contains(penCount) && Self.dosesPerPenRange.contains(dosesPerPen)
     }
 
     func weekdayName(_ weekday: Int) -> String {

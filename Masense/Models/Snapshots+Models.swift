@@ -7,13 +7,14 @@ extension Prescription {
     var snapshot: PrescriptionSnapshot {
         PrescriptionSnapshot(
             startDate: startDate,
-            intervalDays: intervalDays,
             scheduledWeekday: scheduledWeekday,
             scheduledHour: scheduledHour,
             scheduledMinute: scheduledMinute,
             dosesPerPen: dosesPerPen,
             totalDoses: totalDoses,
-            nextClinicDate: nextClinicDate
+            nextClinicDate: nextClinicDate,
+            endDate: endDate,
+            doseLabel: doseLabel
         )
     }
 
@@ -31,7 +32,8 @@ extension Dose {
             site: site,
             sequence: sequence,
             isCancelled: isCancelled,
-            note: note
+            note: note,
+            createdAt: createdAt
         )
     }
 }
@@ -58,7 +60,11 @@ extension UserSettings {
             eveningReminderHour: eveningReminderHour,
             conditionCheckEnabled: conditionCheckEnabled,
             clinicReminderDaysBefore: clinicReminderDaysBefore,
-            exhaustionReminderDosesLeft: exhaustionReminderDosesLeft
+            exhaustionReminderDosesLeft: exhaustionReminderDosesLeft,
+            weightReminderEnabled: weightReminderEnabled,
+            weightReminderWeekday: weightReminderWeekday,
+            weightReminderHour: weightReminderHour,
+            weightReminderMinute: weightReminderMinute
         )
     }
 }
@@ -84,5 +90,11 @@ extension StrengthSession {
 extension HabitCheck {
     var snapshot: HabitCheckSnapshot {
         HabitCheckSnapshot(date: date, water: water, fiber: fiber, sleep: sleep)
+    }
+}
+
+extension ClinicQuestion {
+    var snapshot: ClinicQuestionSnapshot {
+        ClinicQuestionSnapshot(id: id, text: text, askedAt: askedAt, createdAt: createdAt)
     }
 }

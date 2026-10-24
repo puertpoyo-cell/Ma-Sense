@@ -19,19 +19,34 @@ struct PrescriptionForm: View {
             .frostRow()
 
             Section {
-                Stepper(value: $model.penCount, in: PrescriptionFormModel.penCountRange) {
-                    LabeledContent("prescription.penCount") {
-                        Text(model.penCount, format: .number).monospacedDigit()
-                    }
+                Picker("prescription.penType", selection: $model.penType) {
+                    Text("prescription.penType.singleUse").tag(PrescriptionFormModel.PenType.singleUse)
+                    Text("prescription.penType.multiDose").tag(PrescriptionFormModel.PenType.multiDose)
                 }
-                Stepper(value: $model.dosesPerPen, in: PrescriptionFormModel.dosesPerPenRange) {
-                    LabeledContent("prescription.dosesPerPen") {
-                        Text(model.dosesPerPen, format: .number).monospacedDigit()
+                if model.penType == .singleUse {
+                    // 패키지 하나 = 펜 4개 = 약 한 달 (D7)
+                    Stepper(value: $model.packageCount, in: PrescriptionFormModel.packageRange) {
+                        LabeledContent("prescription.packageCount") {
+                            Text("prescription.packageValue \(model.packageCount) \(model.penCount)").monospacedDigit()
+                        }
+                    }
+                } else {
+                    Stepper(value: $model.penCount, in: PrescriptionFormModel.multiDosePenCountRange) {
+                        LabeledContent("prescription.penCount") {
+                            Text(model.penCount, format: .number).monospacedDigit()
+                        }
+                    }
+                    Stepper(value: $model.dosesPerPen, in: 2...PrescriptionFormModel.dosesPerPenRange.upperBound) {
+                        LabeledContent("prescription.dosesPerPen") {
+                            Text(model.dosesPerPen, format: .number).monospacedDigit()
+                        }
                     }
                 }
                 LabeledContent("prescription.total") {
                     Text("prescription.totalValue \(model.totalDoses)").monospacedDigit()
                 }
+            } footer: {
+                Text(LocalizedStringKey(model.penType == .singleUse ? "prescription.penType.singleUse.footer" : "prescription.penType.multiDose.footer"))
             }
             .frostRow()
 
@@ -94,7 +109,7 @@ struct PrescriptionSheet: View {
 
     private func save() {
         guard (try? model.save(in: context)) != nil else { return }
-        Task { await services.refreshNotifications(context: context) }
+        Task { await services.refreshReminders(context: context) }
         dismiss()
     }
 }

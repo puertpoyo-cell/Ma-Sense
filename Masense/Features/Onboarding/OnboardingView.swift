@@ -133,7 +133,7 @@ struct OnboardingView: View {
         } footer: {
             PrimaryButton("onboarding.start") {
                 Task {
-                    await services.refreshNotifications(context: context)
+                    await services.refreshReminders(context: context)
                     onFinish()
                 }
             }

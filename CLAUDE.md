@@ -59,6 +59,8 @@ Masense/
   Rules/            RULES.md의 순수 함수들 (테스트 대상)
   DesignSystem/     토큰, 글래스 카드, 공용 컴포넌트
   Resources/        Assets, Localizable.xcstrings
+Shared/             앱과 위젯 확장이 함께 쓰는 코드 (WidgetSnapshot·App Group ID는 Foundation, Live Activity 속성은 ActivityKit)
+MasenseWidgets/     위젯 확장 (WidgetKit). App Group의 요약 JSON만 읽고 SwiftData는 열지 않음
 MasenseTests/       Rules·Services 단위 테스트
 ```
 
@@ -93,7 +95,7 @@ xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' 
 - 미리보기(`#Preview`)에는 항상 in-memory `ModelContainer` 사용 (`ModelContainer.preview`)
 - 단위 테스트는 Swift Testing (`import Testing`, `@Test`, `#expect`)
 - GitHub Actions(`.github/workflows/ci.yml`)가 푸시마다 macOS 러너에서 `xcodebuild test`를 돌린다. Xcode 없는 환경에서 작업할 때는 이 결과로 검증한다
-- 프로젝트 파일은 Xcode 16 폴더 동기화 그룹을 쓴다. `Masense/`, `MasenseTests/` 아래에 파일을 추가하면 자동으로 타깃에 포함되므로 `project.pbxproj`를 손대지 않는다
+- 프로젝트 파일은 Xcode 16 폴더 동기화 그룹을 쓴다. `Masense/`, `MasenseTests/`, `MasenseWidgets/`, `Shared/`(앱·위젯 두 타깃) 아래에 파일을 추가하면 자동으로 타깃에 포함되므로 `project.pbxproj`를 손대지 않는다. 각 타깃의 Info.plist는 동기화 폴더 밖 `Config/`에 둔다
 
 ## 커밋
 

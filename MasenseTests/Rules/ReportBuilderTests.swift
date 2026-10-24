@@ -21,12 +21,16 @@ struct ReportBuilderTests {
         _ data: [ReportBuilder.PrescriptionData],
         checks: [ConditionCheckSnapshot] = [],
         weights: [WeightSampleSnapshot] = [],
+        heightCm: Double? = nil,
         now: Date,
         period: DateInterval? = nil
     ) -> ClinicReport {
         let active = data.last { $0.isActive }?.prescription.startDate
         let interval = period ?? ReportBuilder.interval(for: .sinceClinic, activePrescriptionStart: active, now: now, calendar: calendar)
-        return ReportBuilder.build(period: interval, prescriptions: data, checks: checks, weights: weights, now: now, calendar: calendar, appVersion: "1.0")
+        return ReportBuilder.build(
+            period: interval, prescriptions: data, checks: checks, weights: weights, heightCm: heightCm,
+            now: now, calendar: calendar, appVersion: "1.0"
+        )
     }
 
     // MARK: R12 기간
@@ -137,6 +141,21 @@ struct ReportBuilderTests {
         #expect(report.summary.weightChangeText == "-3.2")
         #expect(report.weightSource == .mixed)
         #expect(report.weight.count == report.weeks)
+        // 키를 입력하지 않았으면 BMI 없음
+        #expect(report.summary.bmiStartText == nil)
+        #expect(report.summary.bmiEndText == nil)
+    }
+
+    /// R14: 키가 있으면 기간 첫·마지막 체중의 BMI 숫자
+    @Test func bmiRangeFollowsFirstAndLastWeight() {
+        let weights = [
+            WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 10, 17, 8), kilograms: 82.4, source: .manual),
+            WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 11, 10, 8), kilograms: 79.2, source: .manual),
+        ]
+        let data = ReportBuilder.PrescriptionData(prescription: prescription(), doses: [], isActive: true)
+        let report = build([data], weights: weights, heightCm: 170, now: TestCalendar.date(2026, 11, 12, 9))
+        #expect(report.summary.bmiStartText == "28.5")
+        #expect(report.summary.bmiEndText == "27.4")
     }
 
     @Test func kilogramFormatting() {
@@ -193,6 +212,34 @@ struct ReportBuilderTests {
         #expect(report.notes.last?.text == "메모 1")
     }
 
+    /// D6 R15: 아직 묻지 않은 것만 적은 순으로 5개. 물어볼 것과 메모는 합쳐 8줄이라 질문이 많으면 메모가 줄어든다
+    @Test func questionsArePendingInWrittenOrderAndShareLinesWithNotes() {
+        let now = TestCalendar.date(2026, 11, 2, 9)
+        let doses = (0..<6).map { dose(10, 22 + $0, note: "메모 \($0)") }
+        let data = ReportBuilder.PrescriptionData(prescription: prescription(), doses: doses, isActive: true)
+        let written = (0..<6).map { index in
+            ClinicQuestionSnapshot(text: "질문 \(index)", createdAt: TestCalendar.date(2026, 10, 20 + index, 9))
+        }
+        let asked = ClinicQuestionSnapshot(text: "물어본 질문", askedAt: TestCalendar.date(2026, 10, 30, 10), createdAt: TestCalendar.date(2026, 10, 1, 9))
+        let later = ClinicQuestionSnapshot(text: "나중 질문", createdAt: TestCalendar.date(2026, 11, 3, 9))
+        let report = ReportBuilder.build(
+            period: ReportBuilder.interval(for: .sinceClinic, activePrescriptionStart: start, now: now, calendar: calendar),
+            prescriptions: [data], checks: [], weights: [],
+            questions: written.reversed() + [asked, later],
+            now: now, calendar: calendar, appVersion: "1.0"
+        )
+        #expect(report.questions.map(\.text) == ["질문 0", "질문 1", "질문 2", "질문 3", "질문 4"])
+        #expect(report.notes.count == ReportBuilder.maxQuestionAndNoteLines - ReportBuilder.maxQuestions)
+
+        let two = ReportBuilder.build(
+            period: report.period, prescriptions: [data], checks: [], weights: [],
+            questions: Array(written.prefix(2)), now: now, calendar: calendar, appVersion: "1.0"
+        )
+        #expect(two.questions.count == 2)
+        #expect(two.notes.count == ReportBuilder.maxNotes)
+        #expect(build([data], now: now).questions.isEmpty)
+    }
+
     @Test func archivedPrescriptionDoesNotAddMissedCells() {
         let old = ReportBuilder.PrescriptionData(prescription: prescription(), doses: [dose(10, 22)], isActive: false)
         let new = ReportBuilder.PrescriptionData(
@@ -205,5 +252,32 @@ struct ReportBuilderTests {
         #expect(report.summary.missedCount == 0)
         #expect(report.summary.dosesTaken == 3)
         #expect(report.cycles.count == 3)
+    }
+
+    /// REPORT_SPEC C·R13: 전환이 있을 때만 첫 칸에 "기간 시작 시 처방", 새 처방 첫 칸에 전환 표시
+    @Test func prescriptionTransitionMarkers() {
+        let old = ReportBuilder.PrescriptionData(
+            prescription: PrescriptionSnapshot(startDate: start, scheduledWeekday: 5, scheduledHour: 20, totalDoses: 12,
+                                               endDate: TestCalendar.date(2026, 10, 26), doseLabel: "첫 처방"),
+            doses: [dose(10, 22)],
+            isActive: false
+        )
+        let newStart = TestCalendar.date(2026, 10, 27, 9)
+        let new = ReportBuilder.PrescriptionData(
+            prescription: PrescriptionSnapshot(startDate: newStart, scheduledWeekday: 5, scheduledHour: 20, totalDoses: 12),
+            doses: [dose(10, 29), dose(11, 5)],
+            isActive: true
+        )
+        let now = TestCalendar.date(2026, 11, 6, 9)
+        let report = build([old, new], now: now, period: DateInterval(start: start, end: now))
+        #expect(report.summary.prescriptionTransitions == 1)
+        #expect(report.cycles.map(\.marker) == [.periodStart(label: "첫 처방"), .change(label: nil, date: newStart), nil])
+        // 처방 구간 색 (R13-2): 처방 시작 순서대로
+        #expect(report.cycles.map(\.colorSlot) == [0, 1, 1])
+
+        // 처방이 하나뿐이면 아무 표시도 없다
+        let single = build([new], now: now, period: DateInterval(start: start, end: now))
+        #expect(single.summary.prescriptionTransitions == 0)
+        #expect(single.cycles.allSatisfy { $0.marker == nil })
     }
 }

@@ -66,3 +66,7 @@ fastlane/test_output
 
 # Xcode build output
 DerivedData/
+
+# Python (scripts/)
+__pycache__/
+*.pyc

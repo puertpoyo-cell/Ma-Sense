@@ -5,15 +5,18 @@ import SwiftData
 /// 리포트의 근력운동 횟수에는 `.strength`만 센다.
 @Model
 final class StrengthSession {
-    @Attribute(.unique) var id: UUID
-    var startedAt: Date
-    var durationMinutes: Int
-    var kind: SessionKind
-    var intensity: Intensity
-    var source: SessionSource
+    var id: UUID = UUID()
+    var startedAt: Date = Date.now
+    var durationMinutes: Int = 0
+    /// `SessionKind` rawValue
+    var kindRaw: String = "strength"
+    /// `Intensity` rawValue
+    var intensityRaw: String = "moderate"
+    /// `SessionSource` rawValue
+    var sourceRaw: String = "manual"
     var healthKitUUID: UUID?
     var note: String?
-    var createdAt: Date
+    var createdAt: Date = Date.now
 
     init(
         id: UUID = UUID(),
@@ -29,11 +32,26 @@ final class StrengthSession {
         self.id = id
         self.startedAt = startedAt
         self.durationMinutes = durationMinutes
-        self.kind = kind
-        self.intensity = intensity
-        self.source = source
+        self.kindRaw = kind.rawValue
+        self.intensityRaw = intensity.rawValue
+        self.sourceRaw = source.rawValue
         self.healthKitUUID = healthKitUUID
         self.note = note
         self.createdAt = createdAt
+    }
+
+    var kind: SessionKind {
+        get { SessionKind(rawValue: kindRaw) ?? .strength }
+        set { kindRaw = newValue.rawValue }
+    }
+
+    var intensity: Intensity {
+        get { Intensity(rawValue: intensityRaw) ?? .moderate }
+        set { intensityRaw = newValue.rawValue }
+    }
+
+    var source: SessionSource {
+        get { SessionSource(rawValue: sourceRaw) ?? .manual }
+        set { sourceRaw = newValue.rawValue }
     }
 }

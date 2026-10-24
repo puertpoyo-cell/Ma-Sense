@@ -19,13 +19,15 @@ enum SampleData {
         settings.hasAcceptedRoleNotice = true
         settings.hasConfirmedAdult = true
         settings.proteinTargetGrams = 90
+        settings.heightCm = 172
 
         // 다음 투약은 내일(D-1, 마디 구간 안이라 미리 기록 버튼도 보임), 진료 5일 뒤, 7주째 처방.
         // 이전 마디에 기록이 있으면 예정 이틀 전까지는 "이번 마디 기록 완료"로 보이므로 D-1로 둔다 (R1·R2)
         let prescription = Prescription(
             startDate: day(-45),
-            penCount: 3,
-            dosesPerPen: 4,
+            // 1회용 펜 패키지 3개 (펜 12개)
+            penCount: 12,
+            dosesPerPen: 1,
             scheduledWeekday: calendar.component(.weekday, from: day(1)),
             scheduledHour: 20,
             nextClinicDate: day(5)
@@ -37,9 +39,10 @@ enum SampleData {
         var sequence = 1
         for cycle in cycles {
             let administered = cycle.scheduledDate.addingTimeInterval(30 * 60)
-            // 세 번째 마디는 기록 없음 (기록 탭·리포트의 누락 표시 예시)
+            // 세 번째 마디는 기록 없음 (기록 탭·리포트의 누락 표시 예시). 첫 마디는 부위 기록 없음 (D6 지난 투약 예시)
             guard cycle.index != 2, administered < now else { continue }
-            let dose = Dose(administeredAt: administered, scheduledFor: cycle.scheduledDate, site: sites[cycle.index % sites.count], sequence: sequence)
+            let site: BodySite? = cycle.index == 0 ? nil : sites[cycle.index % sites.count]
+            let dose = Dose(administeredAt: administered, scheduledFor: cycle.scheduledDate, site: site, sequence: sequence)
             sequence += 1
             context.insert(dose)
             dose.prescription = prescription
@@ -80,6 +83,11 @@ enum SampleData {
         context.insert(StrengthSession(startedAt: at(-4, 7), durationMinutes: 20, kind: .strength))
 
         context.insert(HabitCheck(date: today, water: true, fiber: false, sleep: true))
+
+        // 진료 때 물어볼 것 (D6): 아직 묻지 않은 것 2개, 지난 진료에서 물어본 것 1개
+        context.insert(ClinicQuestion(text: "투약 다음 날 피로가 길어질 때 일상에서 조심할 것", createdAt: at(-3, 21)))
+        context.insert(ClinicQuestion(text: "근력운동을 주 몇 회까지 해도 되는지", createdAt: at(-1, 8)))
+        context.insert(ClinicQuestion(text: "변비가 이어질 때 상담이 필요한 시점", askedAt: at(-30, 11), createdAt: at(-33, 20)))
         try context.save()
     }
 }

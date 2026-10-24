@@ -27,4 +27,9 @@ enum BodySite: String, Codable, CaseIterable, Identifiable {
     var localizedName: String {
         L10n.string("site." + rawValue)
     }
+
+    /// 부위 기록 없음(nil, D6)은 "부위 기록 없음"
+    static func localizedName(_ site: BodySite?) -> String {
+        site?.localizedName ?? L10n.string("site.unknown")
+    }
 }

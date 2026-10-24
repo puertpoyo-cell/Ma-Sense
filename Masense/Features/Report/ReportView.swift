@@ -11,8 +11,10 @@ struct ReportView: View {
     @Query private var settingsList: [UserSettings]
     @Query(sort: \ProteinEntry.date) private var proteins: [ProteinEntry]
     @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
+    @Query(sort: \ClinicQuestion.createdAt) private var questions: [ClinicQuestion]
 
     @State private var period: ReportPeriod?
+    @State private var showsQuestions = false
     @State private var pdfURL: URL?
     @State private var showsPurchase = false
     @State private var overflows = false
@@ -41,6 +43,7 @@ struct ReportView: View {
                             .foregroundStyle(Color.inkSecondary)
                     } else {
                         let report = makeReport(now: timeline.date)
+                        questionsCard
                         periodPicker
                         ReportPreviewView(report: report, accent: accent)
                             .task(id: report) {
@@ -65,6 +68,55 @@ struct ReportView: View {
         .sheet(isPresented: $showsPurchase) {
             if let settings {
                 ReportPurchaseSheet(settings: settings)
+            }
+        }
+        .sheet(isPresented: $showsQuestions) {
+            ClinicQuestionsSheet()
+        }
+    }
+
+    // MARK: 진료 때 물어볼 것 (D6, R15)
+
+    /// 아직 묻지 않은 것 앞 3개와 나머지 수. 적은 내용은 리포트 G 위에 실린다
+    private var questionsCard: some View {
+        let pending = ClinicQuestionRules.pending(questions.map(\.snapshot))
+        return FrostCard {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
+                Text("clinic.questions.title")
+                    .font(Typography.sectionHeader)
+                    .foregroundStyle(Color.ink)
+                if pending.isEmpty {
+                    Text("clinic.questions.empty")
+                        .font(Typography.body)
+                        .foregroundStyle(Color.inkSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    VStack(alignment: .leading, spacing: Spacing.s2) {
+                        ForEach(pending.prefix(3)) { question in
+                            HStack(alignment: .firstTextBaseline, spacing: Spacing.s2) {
+                                Image(systemName: "circle")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color.inkSecondary)
+                                    .accessibilityHidden(true)
+                                Text(verbatim: question.text)
+                                    .font(Typography.body)
+                                    .foregroundStyle(Color.ink)
+                                    .lineLimit(2)
+                            }
+                        }
+                        if pending.count > 3 {
+                            Text("clinic.questions.more \(pending.count - 3)")
+                                .font(Typography.caption)
+                                .foregroundStyle(Color.inkSecondary)
+                        }
+                    }
+                }
+                AdaptiveStack(spacing: Spacing.s2) {
+                    GhostButton("clinic.questions.manage") { showsQuestions = true }
+                    // 증상 기록을 보고 물어볼 것으로 옮긴다 (D9)
+                    NavigationLink("symptom.flow.open") { SymptomFlowView() }
+                        .buttonStyle(.ghost)
+                }
             }
         }
     }
@@ -133,9 +185,11 @@ struct ReportView: View {
             proteins: proteins.map(\.snapshot),
             sessions: sessions.map(\.snapshot),
             proteinTarget: settings?.proteinTargetGrams,
+            heightCm: settings?.heightCm,
+            questions: questions.map(\.snapshot),
             now: now,
             calendar: calendar,
-            appVersion: DataExportService.appVersion
+            appVersion: AppConfig.appVersion
         )
     }
 }

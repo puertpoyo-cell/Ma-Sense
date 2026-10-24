@@ -14,7 +14,7 @@ func cycles(for p: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, until
 ```
 
 - 첫 마디 `scheduledDate` = `startDate` 당일 또는 그 이후 첫 `scheduledWeekday` + `scheduledHour`:`scheduledMinute`. 시작일이 예정 요일과 같은 날이면 그날이 첫 마디
-- 이후 마디 = 첫 마디 + 7일 × index (누적 오차 없음). 주 1회 전용이라 `intervalDays`를 읽지 않는다
+- 이후 마디 = 첫 마디 + 7일 × index (누적 오차 없음). 주 1회 전용이라 `intervalDays`를 읽지 않는다 (`CycleRules.intervalDays = 7`, `PrescriptionSnapshot`에도 간격 필드가 없다)
 - 마디 구간 `interval` = `[scheduledDate - 2일, scheduledDate + 5일)` — 예정일 이틀 전부터 그 마디로 본다 (미리 맞는 경우 수용)
 - 처방이 소진되면 그 이후 마디는 만들지 않음. 소진은 "쓰인 회차"로 센다: 기록이 있는 마디와 현재·미래 마디는 회차를 쓰고, 지나간 누락 마디는 쓰지 않는다. 그래서 누락이 있으면 마디가 그만큼 뒤로 늘어나 `remainingDoses`와 맞는다
 - `until`은 `scheduledDate` 상한. 전체를 원하면 `.distantFuture` (회차 수로 끝난다)
@@ -39,6 +39,25 @@ enum NextDose { case due(Cycle, remaining: TimeInterval), overdue(Cycle, elapsed
 - 누락은 저장하지 않고 항상 계산. 리포트에는 "누락 n회"로 표시만 함
 - 누락 뒤 사용자가 "맞았는데 기록을 안 했다"면 과거 날짜로 Dose 추가 가능 → 누락 해제
 
+### R3-1. 지난 투약 한꺼번에 입력 (D6, 2026-10-23 사람 결정)
+
+이 앱을 쓰기 전에 치료를 시작한 사람이 지난 투약을 한 번에 채우는 기능. 앱은 어느 주를 맞았는지 판단하지 않고, 사용자가 켜 둔 주만 기록한다.
+
+```swift
+func candidates(prescription: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, calendar: Calendar) -> [Cycle]  // 활성 처방의 누락 마디 (R3)
+func leadingCount(candidates: [Cycle], doses: [DoseSnapshot]) -> Int      // 첫 기록(취소 제외)보다 앞선 누락 수, 기록 없으면 전부
+func defaultSelection(candidates: [Cycle], remaining: Int) -> Set<Int>    // 처음에 켜 둘 마디 index: 최근부터 남은 회차까지
+func plan(selected: [Date], doses: [DoseSnapshot]) -> Plan                // 새 기록 회차, 밀리는 기존 기록 회차
+```
+
+- 대상은 **활성 처방**의 누락 마디만. 보관된 처방의 누락은 기록 탭에서 보기만 한다 (기존과 같음)
+- 기록 시각 = 마디 예정 일시 (`administeredAt == scheduledFor`)
+- 켤 수 있는 수는 남은 회차(R13 `remainingDoses`)까지. 처음에는 최근 마디부터 남은 회차만큼 켠다
+- 부위는 고르거나 비워 둔다. 비우면 `siteRaw = "unknown"` (부위 기록 없음, R6)
+- 회차: 새 기록은 취소되지 않은 기존 기록과 합쳐 시간 순으로 센 번호. 새 기록보다 뒤에 맞은 기존 기록은 그 앞에 넣은 새 기록 수만큼 회차가 밀린다. 취소된 기록은 세지도 바꾸지도 않는다
+- 오늘 화면 안내 카드는 `leadingCount > 0`이고 남은 회차가 있을 때만 (첫 기록 뒤의 누락은 "앱을 쓰기 전"이 아니므로 세지 않는다). 기록 탭 버튼은 누락이 2개 이상일 때 (1개는 누락 행을 눌러 기록)
+- 컨디션: 창(투약 후 96시간)이 다 닫힌 뒤에 만든 기록은 체크가 하나도 없으면 기록 탭 컨디션 목록에 빈칸을 만들지 않는다 (`createdAt` 기준). 체크가 있으면 그대로 보인다
+
 ## R4. 알림 스케줄
 
 ```swift
@@ -58,10 +77,40 @@ struct PlannedNotification { let id: String; let kind: NotificationKind; let fir
 | 컨디션 48h | + 48h | 동일 | `notif.condition.h48` |
 | 진료 | `nextClinicDate - clinicReminderDaysBefore` 09:00 | nextClinicDate 있음 | `notif.clinic.soon` "내일 진료입니다. 리포트를 준비해 두세요" |
 | 소진 | 다음 투약 알림과 함께 | `remainingDoses <= exhaustionReminderDosesLeft` | `notif.prescription.low` "남은 회차가 n회입니다. 진료 예약을 확인하세요" |
+| 체중 (D7, R4-2) | 주 1회 정한 요일·시각 | `weightReminderEnabled`, 그날 체중 기록 없음 | `notif.weight.due` "오늘 체중을 기록할 수 있습니다." |
 
 - 로컬 알림은 iOS 제한(64개) 때문에 **앞으로 4주치**만 등록하고, 앱이 포그라운드로 올 때마다 전부 취소 후 재등록
 - Dose를 기록하면 그 마디의 투약·저녁 알림을 즉시 제거
 - 알림 문구에 약 이름·용량 없음
+
+### R4-1. 알림에서 바로 하는 일 (D6, 2026-10-23 사람 결정)
+
+```swift
+enum NotificationActions { static func category(for: NotificationKind) -> String?; static func response(action:category:) -> Response?; static func snoozed(kind:now:) -> PlannedNotification }
+enum AppRoute { case logDose, conditionCheck, logWeight }
+```
+
+| 알림 | 버튼 (알림을 길게 누름) | 본문을 누름 |
+|---|---|---|
+| 투약·저녁 리마인드 | "기록하기"(앱을 열고 투약 기록 시트) · "1시간 뒤 다시 알림"(앱을 열지 않음) | 투약 기록 시트 |
+| 컨디션 24h·48h | "컨디션 기록"(지금 열린 컨디션 체크 시트) | 컨디션 체크 시트 |
+| 체중 (D7) | "체중 기록"(체중 입력 시트) | 체중 입력 시트 |
+| 진료·소진 | 없음 | 앱만 연다 |
+
+- 미루기는 같은 문구를 **한 시간 뒤 한 번** 더 보낸다(`dose.snooze`, 다시 미루면 덮어씀). 앱이 판단하지 않는다
+- 미룬 알림은 포그라운드 재등록(R4)에도 남고, 투약을 기록하면 지운다
+- 처방이 없거나 열린 컨디션 체크가 없으면 오늘 화면만 연다
+
+### R4-2. 체중 기록 알림 (D7, 2026-10-23 사람 결정)
+
+```swift
+func weightReminders(settings: SettingsSnapshot, prescriptionWeekday: Int?, weights: [WeightSampleSnapshot], now: Date, calendar: Calendar) -> [PlannedNotification]
+```
+
+- 주 1회. 요일은 설정값, 없으면 처방의 투약 요일, 처방도 없으면 월요일. 시각 기본 08:00. 기본 켜짐
+- 앞으로 4주치(R4와 같은 범위), id `weight.due.<yyyyMMdd>`. 지난 시각은 만들지 않는다
+- 그날 이미 체중을 기록했으면(직접 입력·건강 앱 모두) 그날 알림은 만들지 않는다. 체중을 저장하면 알림을 다시 계산한다
+- 처방이 없어도 보낸다 (체중은 처방과 따로 기록). 문구는 사실만, 목표·변화량 언급 없음
 
 ## R5. 컨디션 체크 윈도우
 
@@ -84,6 +133,16 @@ func recencyRank(of site: BodySite, in history: [SiteUse]) -> Int?   // 0이 가
 - 최근 4회 사용 부위와 날짜를 돌려줌. UI는 최근 순으로 진하게 표시 (`Color.siteRecent(rank:)`)
 - 표시 (DESIGN_SYSTEM.md 5.3): 직전 1회는 `accent` 채움 + "① 마지막: 부위 (M/d)" 칩, 2~4회는 옅은 채움·얇은 테두리 + "② 이전: 부위 (M/d)" 텍스트
 - **추천하지 않는다.** "다음은 왼쪽 허벅지" 같은 제안 없음. 사용자가 보고 고름
+- D5 (2026-10-22 사람 결정):
+
+```swift
+func lastUseBySite(doses: [DoseSnapshot]) -> [BodySite: Date]            // 부위별 마지막 사용, 취소 제외, 쓴 적 없으면 키 없음
+func lastDoseNote(doses: [DoseSnapshot], now: Date, calendar: Calendar) -> LastDoseNote?   // 직전 투약 부위·시각, 달력 기준 지난 날 수
+```
+
+  - 바디맵 구역 날짜와 "부위별 마지막 사용" 표, 투약 기록 화면 위 "지난 투약" 한 줄에 쓴다. 문구는 사실만 ("지난 투약 / 허벅지 왼쪽 / 10월 15일 (목) · 7일 전")
+  - 입력은 처방과 무관하게 모든 투약 기록 (새 처방을 시작해도 이전 처방의 부위가 보이게)
+- 부위 기록 없음 (D6): `DoseSnapshot.site == nil` (`siteRaw = "unknown"`이나 모르는 값). `siteHistory`·`lastUseBySite`에서 빠진다 (바디맵 이력에 나오지 않음). `lastDoseNote`는 직전 투약이 부위 기록 없음이면 부위 없이 알린다. 기록 탭·리포트에는 "부위 기록 없음"/"—"으로 보이고, 기록 탭에서 눌러 나중에 부위를 고칠 수 있다
 
 ## R7. 체중 추이
 
@@ -96,6 +155,7 @@ struct WeekPoint { let weekStart: Date; let averageKg: Double?; let sampleCount:
 - 같은 날 여러 샘플이면 먼저 하루 평균으로 묶고, 그 하루 평균들의 평균을 주 평균으로 한다
 - 결과는 오래된 주부터 `weeks`개, 마지막이 `now`가 속한 주. 주 시작은 `calendar.firstWeekday`
 - 차트의 투약일 눈금은 `doseTicks(doses:series:now:)`: 시리즈 첫 주 시작부터 `now`까지, 취소한 기록 제외 (홈 스파크라인, 기록 탭 차트)
+- D7 확대 그래프 `trend(samples:range:now:calendar:) -> WeightTrend`: 기간 4주·12주·26주(6개월)·전체(첫 기록이 있는 주부터, 최소 4주). 주 평균(위와 같음)과 하루 평균 점. `changeText` = 기간 마지막 측정일 - 첫 측정일, 소수 1자리 부호 그대로("-3.2", "+0.4"), 측정일 2일 미만이면 없음. 목표선·판단 색·속도 평가 없음
 
 ## R8. 감량 속도 안내 (M2)
 
@@ -172,25 +232,115 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 func exhaustionEstimate(p: PrescriptionSnapshot, doses: [DoseSnapshot], now: Date, calendar: Calendar) -> Date?
 func nextSequence(doses: [DoseSnapshot]) -> Int                        // 취소 제외 기록 수 + 1
 func penPosition(sequence: Int, dosesPerPen: Int) -> (pen: Int, position: Int)
-func prescriptionTimeline(all: [PrescriptionSnapshot], in period: DateInterval) -> [PrescriptionMarker]
+func prescriptionTimeline(all: [PrescriptionSnapshot], in period: DateInterval, calendar: Calendar) -> [PrescriptionMarker]
+func transitionCount(_ markers: [PrescriptionMarker]) -> Int          // 마커 수 - 1
 struct PrescriptionMarker { let startDate: Date; let label: String?; let isFirstInPeriod: Bool }
 ```
 
 - 새 처방 시작(`startNewPrescription`)은 Rules가 아니라 서비스 계층에서: 이전 활성 처방의 `endDate = 새 startDate - 1일`, `isActive = false`, 새 처방 `isActive = true`. 트랜잭션 하나로
 - `prescriptionTimeline`은 기간과 겹치는 처방을 `startDate` 오름차순으로 돌려주고, 기간 시작 전에 이미 시작된 처방은 `isFirstInPeriod = true`로 표시 (리포트에서 "기간 시작 시점의 처방"으로 쓰임)
-- `label`은 사용자 메모 그대로. 비어 있으면 "처방 변경"으로만 표시
+- `label`은 사용자 메모 그대로(앞뒤 공백 제거). 비어 있으면 nil이고 UI는 "처방 변경"으로만 표시
+- `endDate`는 그날 하루 끝까지 유효로 본다. 기간 전에 끝난 처방, 기간 뒤에 시작하는 처방은 빠진다
 - 소진 추정:
   - `remainingDoses == 0` → nil
   - 그 외 남은 회차를 모두 쓰는 마지막 마디의 `scheduledDate` (= R1 `cycles(until: .distantFuture)`의 마지막 마디). 누락이 있으면 그만큼 뒤로 밀린다
+
+### R13-1. 펜 현황 (D7, 2026-10-23 사람 결정)
+
+```swift
+func penStatus(p: PrescriptionSnapshot, doses: [DoseSnapshot]) -> PenStatus
+struct PenStatus { let usedPerPen: [Int]; let dosesPerPen: Int }   // remainingPens, remainingDoses
+```
+
+- 펜 수 = `totalDoses / dosesPerPen`. 쓴 회차(취소 제외, 처방 회차를 넘지 않게)를 앞 펜부터 차례로 채운다
+- "남은 펜"은 한 회차라도 남은 펜 수(쓰는 중인 펜 포함)
+- 1회용 펜 (2026-10-24 사람 설명: 펜 하나에 한 번, 패키지 하나에 펜 4개 = 한 달치): 펜당 회차 1. `PenStatus.packages`가 펜을 4개씩 패키지로 묶는다(`dosesPerPackage = 4`). 여러 회 쓰는 펜은 펜 하나가 묶음 하나
+- R13-2 처방 구간 색 (D7, 2026-10-24 사람 결정): `colorSlots(startDates:) -> [Int]` 처방 시작 순서(같으면 입력 순서)대로 0, 1, 2, 3, 0 … (`colorSlotCount = 4`). 처방을 구분할 뿐 용량·단계와 무관하고 순서·강도 의미가 없다. 남은 펜 그림·처방 메모 점, 기록 탭 투약 행 왼쪽 띠·처방 변경 행 점, 설정 이전 처방 점, 리포트 C 칸 위 띠·라벨 점(기간 안에 처방 전환이 있을 때만)
+- `packagePosition(sequence:)`: 1회용 펜의 n회차 = 패키지 ⌈n/4⌉의 ((n-1) mod 4)+1번째 펜 (투약 기록 화면 회차 표시)
+- 용량(mg·mL) 수치는 다루지 않는다 (2026-10-23 사람 결정: 넣지 않음). 처방 메모는 사용자가 적은 그대로만 함께 보인다
+
+## R14. BMI 숫자 (D5)
+
+```swift
+static let bmiHeightRangeCm: ClosedRange<Double> = 100...250
+func bmi(kilograms: Double, heightCm: Double?) -> Double?   // kg / m², 소수 1자리 반올림
+```
+
+- 2026-10-22 사람 결정: **숫자만** 보여 준다. 저체중·정상·과체중·비만 같은 구간 이름, 색, 화살표로 판단하지 않는다 (COMPLIANCE.md 2.2, 3.1)
+- 키는 설정 > 신체 정보에서 사용자가 입력(선택). 없거나 100~250 cm 밖이면 nil이고 화면은 BMI를 숨긴다. 체중이 0 이하면 nil
+- 표시: 홈 체중 카드(최근 체중의 BMI), 기록 탭 체중 목록(샘플마다), 리포트 B 체중 칸 보조 줄("BMI 28.5 → 27.4", 기간 첫·마지막 체중)
+- BMI 목표 입력·목표 BMI까지 남은 값 같은 표현은 만들지 않는다 (2.1-3 목표 체중과 같은 이유)
+
+## R15. 진료 때 물어볼 것 (D6, 2026-10-23 사람 결정)
+
+```swift
+static let maxLength = 200
+func normalized(_ text: String) -> String?                                  // 앞뒤 공백 제거, 줄바꿈 → 공백, 비면 nil, 200자에서 자름
+func pending(_ questions: [ClinicQuestionSnapshot]) -> [ClinicQuestionSnapshot]  // 아직 묻지 않은 것, 적은 순
+func asked(_ questions: [ClinicQuestionSnapshot]) -> [ClinicQuestionSnapshot]    // 물어본 것, 최근에 물어본 순
+```
+
+- 사용자가 적은 문장을 그대로 둔다. 앱은 질문을 분류하거나 답하거나 "이런 걸 물어보세요" 같은 제안을 하지 않는다 (의료 조언 아님)
+- 리포트 (`ReportBuilder.questionLines`): 아직 묻지 않은 것 중 리포트를 만든 시각까지 적은 것을 적은 순으로 최대 5개, 60자에서 자름. 기간과 무관 (다음 진료를 위한 것)
+- 리포트 G 영역은 물어볼 것과 메모를 합쳐 8줄까지: 메모는 `min(5, 8 - 물어볼 것 수)`줄. A4 한 장 유지 (`ReportRendererTests.fullTwelveWeekReportFitsOnePage`)
+- 진료에서 물어봤으면 눌러서 `askedAt`을 남긴다. 다시 누르면 되돌린다. 지우기는 실제 삭제
+
+## R16. 주간 정리 (D8, 2026-10-24 사람 결정)
+
+```swift
+func finishedPeriods(prescription: PrescriptionSnapshot, now: Date, calendar: Calendar, limit: Int = 12) -> [DateInterval]  // 끝난 구간, 최근 순
+func summary(period:doses:checks:weights:proteins:sessions:proteinTarget:calendar:) -> WeeklySummary
+```
+
+- 구간은 활성 처방의 첫 예정일(R1)이 있는 날 0시부터 7일씩 `[시작, +7일)`. 끝난 구간만
+- 숫자만: 투약 수(취소 제외), 컨디션 체크 수와 강도 1 이상으로 많이 기록된 증상 최대 2개, 체중 측정 수와 구간 첫·마지막 측정 차이(부호 그대로, 2회 이상일 때), 단백질 기록한 날(목표가 있으면 채운 날, R9), 근력운동·가벼운 활동 수
+- 평가어·지난 구간과의 비교·목표 대비 문구 없음. 기록이 하나도 없는 구간은 오늘 카드로 띄우지 않는다
+
+## R17. 오늘 화면 사실 한 줄 (D8, 2026-10-24 사람 결정)
+
+```swift
+func line(prescription: PrescriptionSnapshot?, doses: [DoseSnapshot], allDoses: [DoseSnapshot], weights: [WeightSampleSnapshot], now: Date, calendar: Calendar) -> DailyLine?
+```
+
+- 하나만, 우선순위: 오늘이 예정일이고 기록 전("오늘은 투약일입니다. 지난 부위: …") > 남은 회차 1회 이하("남은 펜이 n개입니다. 다음 진료일을 확인하세요.", 여러 회 쓰는 펜은 회차) > 최근 7일 체중 기록 없음
+- 칭찬·응원·평가 없음 (COMPLIANCE.md 3.1). 닫으면 같은 종류는 그날 다시 보이지 않는다
+
+## R18. 패키지 정리 (D9, 2026-10-24 사람 결정 "풀푸시")
+
+```swift
+func finishedPackages(doses: [DoseSnapshot], now: Date, calendar: Calendar, limit: Int = 12) -> [PackagePeriod]  // 최근 순
+func recentlyFinished(doses:now:calendar:) -> PackagePeriod?   // 오늘 카드: 끝난 지 7일 미만
+func summary(package:doses:checks:weights:proteins:sessions:proteinTarget:calendar:) -> PackageSummary
+```
+
+- 지금 처방의 취소하지 않은 기록을 투약 시각 순으로 4회씩 묶는다 (패키지 = 4회 = 약 한 달, R13-1). 4회가 다 찬 묶음만
+- 기간 `[첫 투약일 0시, 마지막 투약일 + 7일)`. 다음 묶음의 첫 투약일이 더 이르면 그날 0시까지 (겹치지 않게). 끝난 것만
+- 숫자는 R16과 같다. 평가·지난 패키지와의 비교 없음. 제목은 1회용 펜이면 "패키지 n", 아니면 "a–b회차"
+
+## R19. 증상 흐름 (D9, 2026-10-24 사람 결정 "풀푸시")
+
+```swift
+func recentPeriods(prescription: PrescriptionSnapshot, now: Date, calendar: Calendar, count: Int = 8) -> [DateInterval]  // 오래된 순, 마지막은 진행 중
+func flows(periods: [DateInterval], checks: [ConditionCheckSnapshot]) -> [SymptomFlow]
+```
+
+- 구간은 R16과 같은 7일씩, 최근 8개(지금 구간 포함)
+- 증상마다 구간별 가장 강하게 기록한 강도(0~3). 강도 1 이상이 한 번이라도 있는 증상만, 기록된 구간이 많은 순(같으면 증상 목록 순)
+- "물어볼 것에 넣기"는 사실 문장만 채운다. 원인·대처·괜찮은지 판단을 붙이지 않는다 (COMPLIANCE.md 2.1-7)
 
 ## 테스트 체크리스트
 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
 - [x] R2 예정 시각 직전·직후 `.due`/`.overdue` 전환
 - [x] R3 과거 Dose 추가로 누락 해제
+- [x] R3-1 앞선 누락만 세기, 남은 회차까지만 켜기, 시간 순 회차와 뒤 기록 밀기, 취소 기록 제외 (`BackfillRulesTests`, `BackfillModelTests`)
+- [x] R6 부위 기록 없음은 바디맵 이력·부위별 날짜에서 제외 (`SiteRulesTests`)
+- [x] R16 구간 경계·끝난 구간만·숫자 집계, R17 우선순위 (`WeeklySummaryRulesTests`, `DailyLineRulesTests`, `TodayModelTests`)
+- [x] R18 4회째 다음 주까지·덜 찬 묶음 제외·다음 묶음이 일찍 시작하면 자르기·오늘 카드 7일 (`PackageSummaryRulesTests`, `TodayModelTests`), R19 지금 구간까지·구간별 최대 강도·정렬 (`SymptomFlowRulesTests`)
+- [x] R15 입력 정리, 아직 묻지 않은 것 순서, 리포트 5개·메모와 합쳐 8줄 (`ClinicQuestionRulesTests`, `ReportBuilderTests`)
 - [x] R4 4주 제한, 재등록 시 중복 없음
 - [x] R5 창 경계값 (12h, 36h, 96h)
 - [x] R7 샘플 없는 주 nil 처리
 - [x] R8 정확히 -1.0 kg일 때 안내 없음 (초과만), 기준은 % 아닌 kg
 - [x] R9 소수점 반올림
-- [ ] R13 처방 전환 시 이전 처방 endDate·isActive 갱신, 기간 경계에 걸친 처방의 isFirstInPeriod (main C, 코드 미반영)
+- [x] R13 처방 전환 시 이전 처방 endDate·isActive 갱신, 기간 경계에 걸친 처방의 isFirstInPeriod (D4-a·b, `ServiceTests`·`PrescriptionRulesTests`), 가져오기 규칙 7 `resolvingActive` (D4-E1)
