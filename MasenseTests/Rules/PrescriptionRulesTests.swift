@@ -67,6 +67,19 @@ struct PrescriptionRulesTests {
         #expect(PrescriptionRules.packagePosition(sequence: 6) == (package: 2, pen: 2))
     }
 
+    /// R13-2 (D7): 처방 시작 순서대로 색 자리를 돌려 쓴다. 입력 순서와 무관
+    @Test func colorSlotsFollowStartOrderAndWrap() {
+        let dates = [
+            TestCalendar.date(2026, 12, 1),
+            TestCalendar.date(2026, 9, 1),
+            TestCalendar.date(2027, 1, 1),
+            TestCalendar.date(2026, 10, 1),
+            TestCalendar.date(2026, 11, 1),
+        ]
+        #expect(PrescriptionRules.colorSlots(startDates: dates) == [3, 0, 0, 1, 2])
+        #expect(PrescriptionRules.colorSlots(startDates: []).isEmpty)
+    }
+
     @Test func exhaustionEstimateIsLastCycle() {
         let now = TestCalendar.date(2026, 10, 16, 9)
         #expect(PrescriptionRules.exhaustionEstimate(p: prescription(), doses: [], now: now, calendar: calendar) == TestCalendar.date(2027, 1, 7, 20))

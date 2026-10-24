@@ -44,6 +44,7 @@ Deep Midnight Navy 배경 위에 상단 하이라이트 보더가 적용된 Fros
 | `accentSoft` | `accent.opacity(0.18)` | — | 선택된 칩, 강도 1·2, "① 마지막" 칩 배경 |
 | `siteRecent(rank:)` | `accent` × `1.0 / 0.45 / 0.35 / 0.25` | — | 바디맵 최근 사용 이력. 0이 직전 1회 (5.3) |
 | `notice` | `#E8D9A8` | — | 건강 관련 중립 안내 (`NoticeLine`, 경고 아님) |
+| `prescription(slot:)` | `#7FB3FF` · `#E9BE6C` · `#B9A3FF` · `#C3CEDD` | `paperPrescription(slot:)` `#2F6FD6` · `#A86B12` · `#6B4FC9` · `#56657D` | 처방 구간 색 (D7, R13-2). 처방 시작 순서대로 돌려 쓴다. 순서·강도 의미 없음, 빨강·초록 없음. 용량 단계 표시에 쓰지 않는다 |
 
 - **유료 테마 (`UserSettings.reportTheme`)**: 비소모성 구매 시 `accent` 1종만 바꿉니다 — `midnight`(기본 `#7FB3FF`, 리포트 `#2563EB`), `sand`(`#E8C9A0`), `sage`(`#A8D5BA`). 리포트에서 강조색은 헤더 2pt 선에만 쓰므로 sand·sage는 같은 값을 씁니다.
 

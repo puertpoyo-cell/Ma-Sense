@@ -80,6 +80,8 @@ struct HistoryModelTests {
         #expect(changes.first?.kind == .prescriptionChange(label: "두 번째"))
         // 최근 순: 새 처방의 투약 → 처방 변경 → 이전 처방의 투약
         #expect(rows.map(\.date) == [TestCalendar.date(2026, 10, 29, 20), TestCalendar.date(2026, 10, 27, 9), TestCalendar.date(2026, 10, 22, 20)])
+        // 처방 구간 색 (R13-2): 시작 순서대로 0, 1. 변경 행은 새 처방의 색
+        #expect(rows.map(\.colorSlot) == [1, 1, 0])
     }
 
     @Test func cancelledDoseStaysVisibleAndLeavesCycleMissed() {

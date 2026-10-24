@@ -41,6 +41,8 @@ struct PrescriptionHistoryTests {
         #expect(rows[1].endDate == TestCalendar.date(2026, 8, 6))
         #expect(rows[1].memo == nil)
         #expect(rows[1].recordedDoses == 0)
+        // 처방 구간 색 (R13-2): 시작 순서대로 첫 처방 0, 두 번째 1 (현재 처방이 2)
+        #expect(rows.map(\.colorSlot) == [1, 0])
     }
 
     @Test func emptyWithOnlyActivePrescription() throws {

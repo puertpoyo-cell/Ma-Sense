@@ -46,6 +46,29 @@ extension Color {
     /// 기본 테마의 리포트 강조색
     static let paperAccent = Color(hex: 0x2563EB)
 
+    /// 처방 구간 색 (D7, R13-2). 처방 시작 순서대로 돌려 쓰고 순서·강도 의미가 없다. 빨강·초록 없음
+    static let prescriptionPalette: [Color] = [
+        Color(hex: 0x7FB3FF), // 파랑 (accent와 같음)
+        Color(hex: 0xE9BE6C), // 호박
+        Color(hex: 0xB9A3FF), // 보라
+        Color(hex: 0xC3CEDD), // 은회색
+    ]
+    /// 리포트(흰 종이)용 같은 순서의 진한 색
+    static let paperPrescriptionPalette: [Color] = [
+        Color(hex: 0x2F6FD6),
+        Color(hex: 0xA86B12),
+        Color(hex: 0x6B4FC9),
+        Color(hex: 0x56657D),
+    ]
+
+    static func prescription(slot: Int) -> Color {
+        prescriptionPalette[((slot % prescriptionPalette.count) + prescriptionPalette.count) % prescriptionPalette.count]
+    }
+
+    static func paperPrescription(slot: Int) -> Color {
+        paperPrescriptionPalette[((slot % paperPrescriptionPalette.count) + paperPrescriptionPalette.count) % paperPrescriptionPalette.count]
+    }
+
     /// 바디맵 최근 사용 부위 농도. `rank` 0이 직전 1회(선명), 1~3은 은은하게 (DESIGN_SYSTEM.md 5.3)
     static func siteRecent(rank: Int) -> Color {
         let opacities: [Double] = [1.0, 0.45, 0.35, 0.25]

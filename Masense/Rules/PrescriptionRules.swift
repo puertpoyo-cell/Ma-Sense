@@ -55,6 +55,22 @@ enum PrescriptionRules {
         return PenStatus(usedPerPen: pens, dosesPerPen: perPen)
     }
 
+    // MARK: 처방 구간 색 (D7, R13-2)
+
+    /// 처방 구간 색 개수. 처방 시작 순서대로 돌려 쓴다
+    static let colorSlotCount = 4
+
+    /// 처방마다 색 자리(0..<4). 시작일 순서(같으면 입력 순서)대로 0, 1, 2, 3, 0 …
+    /// 처방을 구분할 뿐 용량·단계와 무관하고 순서·강도 의미가 없다 (COMPLIANCE.md 2.1-1, 2.2). 입력 순서대로 돌려준다
+    static func colorSlots(startDates: [Date]) -> [Int] {
+        let order = startDates.indices.sorted { (startDates[$0], $0) < (startDates[$1], $1) }
+        var slots = Array(repeating: 0, count: startDates.count)
+        for (rank, index) in order.enumerated() {
+            slots[index] = rank % colorSlotCount
+        }
+        return slots
+    }
+
     // MARK: 처방 전환 타임라인 (main C)
 
     /// 기간과 겹치는 처방을 시작일 오름차순으로. 기간 시작 전에 시작한 처방은 `isFirstInPeriod`.

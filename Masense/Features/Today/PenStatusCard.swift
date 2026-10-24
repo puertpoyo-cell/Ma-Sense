@@ -6,6 +6,8 @@ import SwiftUI
 /// 주사기 모양을 그리지 않는다 (DESIGN_SYSTEM.md 7). 용량 수치 없음
 struct PenGauge: View {
     let status: PenStatus
+    /// 처방 구간 색 (R13-2, D7)
+    var tint: Color = .accent
 
     var body: some View {
         Group {
@@ -34,10 +36,10 @@ struct PenGauge: View {
             HStack(spacing: 6) {
                 ForEach(Array(pens.enumerated()), id: \.offset) { _, used in
                     RoundedRectangle(cornerRadius: 5, style: .continuous)
-                        .fill(used > 0 ? Color.clear : Color.accent)
+                        .fill(used > 0 ? Color.clear : tint)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5, style: .continuous)
-                                .strokeBorder(used > 0 ? Color.inkTertiary : Color.accent, lineWidth: 1)
+                                .strokeBorder(used > 0 ? Color.inkTertiary : tint, lineWidth: 1)
                         )
                         .frame(width: 16, height: 52)
                 }
@@ -61,10 +63,10 @@ struct PenGauge: View {
                 // 위에서부터 쓴 칸, 아래에 남은 칸 (남은 양이 바닥에 고인 모양)
                 ForEach(0..<status.dosesPerPen, id: \.self) { slot in
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(slot < used ? Color.clear : Color.accent)
+                        .fill(slot < used ? Color.clear : tint)
                         .overlay(
                             RoundedRectangle(cornerRadius: 3, style: .continuous)
-                                .strokeBorder(slot < used ? Color.inkTertiary : Color.accent, lineWidth: 1)
+                                .strokeBorder(slot < used ? Color.inkTertiary : tint, lineWidth: 1)
                         )
                         .frame(height: max(48 / CGFloat(status.dosesPerPen), 6))
                 }
@@ -88,6 +90,8 @@ struct PenStatusCard: View {
     let status: PenStatus
     let exhaustionDate: Date?
     let memo: String?
+    /// 지금 처방의 구간 색 (R13-2)
+    var tint: Color = .accent
 
     var body: some View {
         FrostCard {
@@ -95,7 +99,7 @@ struct PenStatusCard: View {
                 Text("pen.title")
                     .font(Typography.sectionHeader)
                     .foregroundStyle(Color.ink)
-                PenGauge(status: status)
+                PenGauge(status: status, tint: tint)
                 VStack(alignment: .leading, spacing: Spacing.s1) {
                     Text("pen.summary \(status.penCount) \(status.remainingPens)")
                         .font(Typography.body.weight(.semibold))
@@ -116,10 +120,14 @@ struct PenStatusCard: View {
                     .font(Typography.caption)
                     .foregroundStyle(Color.inkSecondary)
                     if let memo = memo?.trimmingCharacters(in: .whitespacesAndNewlines), !memo.isEmpty {
-                        Text("pen.memo \(memo)")
-                            .font(Typography.caption)
-                            .foregroundStyle(Color.inkSecondary)
-                            .lineLimit(2)
+                        HStack(alignment: .firstTextBaseline, spacing: Spacing.s1) {
+                            // 처방 구간 색 점 + 메모 그대로 (색은 처방 구분일 뿐)
+                            Circle().fill(tint).frame(width: 6, height: 6).accessibilityHidden(true)
+                            Text("pen.memo \(memo)")
+                                .font(Typography.caption)
+                                .foregroundStyle(Color.inkSecondary)
+                                .lineLimit(2)
+                        }
                     }
                 }
             }

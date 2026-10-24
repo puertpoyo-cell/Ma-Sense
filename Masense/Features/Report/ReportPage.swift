@@ -176,7 +176,7 @@ struct ReportPage: View {
             VStack(alignment: .leading, spacing: 1) {
                 if report.cycles.contains(where: { $0.marker != nil }) {
                     // 처방 전환 라벨 줄 (R13): 표시된 칸 위에 메모 그대로. 길면 오른쪽 칸 위로 이어진다
-                    cellRow { cell in markerLabel(cell.marker) }
+                    cellRow { cell in markerLabel(cell) }
                 }
                 cellRow { cell in cycleCell(cell) }
             }
@@ -198,17 +198,21 @@ struct ReportPage: View {
     }
 
     @ViewBuilder
-    private func markerLabel(_ marker: ClinicReport.CycleCell.Marker?) -> some View {
+    private func markerLabel(_ cell: ClinicReport.CycleCell) -> some View {
         Group {
-            switch marker {
+            switch cell.marker {
             case let .periodStart(label)?:
-                if let label {
-                    Text("report.marker.periodStart \(label)")
-                } else {
-                    Text("report.marker.periodStart.noLabel")
+                HStack(spacing: 2) {
+                    Circle().fill(Color.paperPrescription(slot: cell.colorSlot)).frame(width: 4, height: 4)
+                    if let label {
+                        Text("report.marker.periodStart \(label)")
+                    } else {
+                        Text("report.marker.periodStart.noLabel")
+                    }
                 }
             case let .change(label, date)?:
                 HStack(spacing: 2) {
+                    Circle().fill(Color.paperPrescription(slot: cell.colorSlot)).frame(width: 4, height: 4)
                     if let label {
                         Text(verbatim: label)
                     } else {
@@ -255,12 +259,26 @@ struct ReportPage: View {
             RoundedRectangle(cornerRadius: 3)
                 .strokeBorder(cell.state == .missed ? gray : rule, style: StrokeStyle(lineWidth: 0.75, dash: cell.state == .missed ? [2, 2] : []))
         }
+        .overlay(alignment: .top) {
+            // 처방이 바뀐 기간이면 칸 위에 처방 구간 색 띠 (R13-2, D7). 흑백 인쇄에서는 세로선·라벨로 구분된다
+            if showsPrescriptionColors {
+                Rectangle()
+                    .fill(Color.paperPrescription(slot: cell.colorSlot))
+                    .frame(height: 2)
+                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 3, topTrailingRadius: 3))
+            }
+        }
         .overlay(alignment: .leading) {
             if cell.marker != nil {
                 // 처방 전환 세로 실선 1px, 칸 사이 간격 가운데 (REPORT_SPEC C)
                 Rectangle().fill(ink).frame(width: 1).offset(x: -0.75 * Self.mm)
             }
         }
+    }
+
+    /// 기간 안에 처방 전환이 있을 때만 색 띠를 그린다 (처방이 하나면 색이 뜻하는 바가 없다)
+    private var showsPrescriptionColors: Bool {
+        report.cycles.contains { $0.marker != nil }
     }
 
     // MARK: D. 체중 추이

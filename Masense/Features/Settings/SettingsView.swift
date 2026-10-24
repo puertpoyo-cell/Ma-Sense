@@ -159,8 +159,11 @@ private struct SettingsForm: View {
                         .monospacedDigit()
                 }
                 // 펜 그림 (R13-1, D7)
-                PenGauge(status: PrescriptionRules.penStatus(p: prescription.snapshot, doses: prescription.doseSnapshots))
-                    .padding(.vertical, Spacing.s2)
+                PenGauge(
+                    status: PrescriptionRules.penStatus(p: prescription.snapshot, doses: prescription.doseSnapshots),
+                    tint: Color.prescription(slot: (activePrescriptions + pastPrescriptions).colorSlots[prescription.id] ?? 0)
+                )
+                .padding(.vertical, Spacing.s2)
                 if let clinic = prescription.nextClinicDate {
                     LabeledContent("prescription.nextClinic") {
                         Text(clinic.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated)))
@@ -178,7 +181,7 @@ private struct SettingsForm: View {
                     .foregroundStyle(Color.inkSecondary)
             }
             Button("settings.prescription.new") { sheet = .newPrescription }
-            let history = PrescriptionHistory.rows(pastPrescriptions)
+            let history = PrescriptionHistory.rows(activePrescriptions + pastPrescriptions)
             if !history.isEmpty {
                 DisclosureGroup("settings.prescription.history") {
                     ForEach(history) { row in

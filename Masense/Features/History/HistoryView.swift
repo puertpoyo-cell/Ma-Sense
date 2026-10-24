@@ -166,6 +166,15 @@ struct HistoryView: View {
                 }
             }
             .foregroundStyle(isCancelled ? Color.inkTertiary : Color.ink)
+            // 처방 구간 색 (R13-2, D7). 처방을 구분할 뿐 용량·단계 의미 없음
+            .padding(.leading, Spacing.s2)
+            .overlay(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 1.5)
+                    .fill(Color.prescription(slot: row.colorSlot).opacity(isCancelled ? 0.35 : 1))
+                    .frame(width: 3)
+                    .padding(.vertical, 2)
+                    .accessibilityHidden(true)
+            }
             .contentShape(Rectangle())
             .onTapGesture {
                 if editsSite { sheet = .site(doseID: id) }
@@ -208,6 +217,7 @@ struct HistoryView: View {
             // 처방 전환 구분 행 (R13). 라벨은 사용자 메모 그대로 표시만 한다
             HStack(spacing: Spacing.s2) {
                 Rectangle().fill(Color.gridHairline).frame(height: 1)
+                Circle().fill(Color.prescription(slot: row.colorSlot)).frame(width: 6, height: 6).accessibilityHidden(true)
                 Group {
                     if let label {
                         Text("history.prescriptionChange \(label)")

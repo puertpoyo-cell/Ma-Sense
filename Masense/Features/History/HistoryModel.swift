@@ -17,6 +17,8 @@ enum HistoryModel {
         let id: String
         let date: Date
         let kind: Kind
+        /// 처방 구간 색 자리 (R13-2, D7). 처방 시작 순서대로
+        var colorSlot: Int = 0
     }
 
     struct Month: Identifiable, Equatable {
@@ -35,6 +37,7 @@ enum HistoryModel {
     /// 보관된 처방은 다음 처방 시작 전까지의 마디만 본다 (그 뒤의 누락을 만들지 않기 위해).
     static func doseMonths(_ histories: [PrescriptionHistory], now: Date, calendar: Calendar) -> [Month] {
         let ordered = histories.sorted { $0.prescription.startDate < $1.prescription.startDate }
+        let slots = PrescriptionRules.colorSlots(startDates: ordered.map(\.prescription.startDate))
         var rows: [DoseRow] = []
 
         let markers = PrescriptionRules.prescriptionTimeline(
@@ -44,7 +47,12 @@ enum HistoryModel {
         )
         // 첫 처방은 전환이 아니다
         rows += markers.dropFirst().enumerated().map { index, marker in
-            DoseRow(id: "change.\(index)", date: marker.startDate, kind: .prescriptionChange(label: marker.label))
+            DoseRow(
+                id: "change.\(index)",
+                date: marker.startDate,
+                kind: .prescriptionChange(label: marker.label),
+                colorSlot: slots.indices.contains(index + 1) ? slots[index + 1] : 0
+            )
         }
 
         for (offset, history) in ordered.enumerated() {
@@ -61,7 +69,8 @@ enum HistoryModel {
                 DoseRow(
                     id: "missed.\(offset).\(cycle.index)",
                     date: cycle.scheduledDate,
-                    kind: .missed(scheduled: cycle.scheduledDate, canAddDose: history.isActive)
+                    kind: .missed(scheduled: cycle.scheduledDate, canAddDose: history.isActive),
+                    colorSlot: slots[offset]
                 )
             }
             rows += history.doses.map { dose in
@@ -74,7 +83,8 @@ enum HistoryModel {
                         sequence: dose.sequence,
                         hasNote: !(dose.note ?? "").isEmpty,
                         isCancelled: dose.isCancelled
-                    )
+                    ),
+                    colorSlot: slots[offset]
                 )
             }
         }

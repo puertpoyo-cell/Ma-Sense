@@ -272,6 +272,8 @@ struct ReportBuilderTests {
         let report = build([old, new], now: now, period: DateInterval(start: start, end: now))
         #expect(report.summary.prescriptionTransitions == 1)
         #expect(report.cycles.map(\.marker) == [.periodStart(label: "첫 처방"), .change(label: nil, date: newStart), nil])
+        // 처방 구간 색 (R13-2): 처방 시작 순서대로
+        #expect(report.cycles.map(\.colorSlot) == [0, 1, 1])
 
         // 처방이 하나뿐이면 아무 표시도 없다
         let single = build([new], now: now, period: DateInterval(start: start, end: now))

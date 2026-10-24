@@ -37,6 +37,8 @@ struct TodayView: View {
     @Environment(\.router) private var router
     @Query(filter: #Predicate<Prescription> { $0.isActive })
     private var activePrescriptions: [Prescription]
+    /// 처방 구간 색 자리 계산용 (R13-2)
+    @Query(sort: \Prescription.startDate) private var allPrescriptions: [Prescription]
     @Query(sort: \ConditionCheck.checkedAt)
     private var checks: [ConditionCheck]
     @Query(sort: \WeightSample.measuredAt)
@@ -72,7 +74,12 @@ struct TodayView: View {
                             conditionCard(prompt)
                         }
                         if let pens = model.pens {
-                            PenStatusCard(status: pens, exhaustionDate: model.exhaustionDate, memo: prescription.doseLabel)
+                            PenStatusCard(
+                                status: pens,
+                                exhaustionDate: model.exhaustionDate,
+                                memo: prescription.doseLabel,
+                                tint: Color.prescription(slot: allPrescriptions.colorSlots[prescription.id] ?? 0)
+                            )
                         }
                         weightCard(model)
                         dailyCycleCard(model.daily, now: timeline.date)

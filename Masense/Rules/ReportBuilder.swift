@@ -46,6 +46,8 @@ struct ClinicReport: Equatable {
         let scheduledDate: Date
         let state: State
         var marker: Marker?
+        /// 처방 구간 색 자리 (R13-2, D7). 처방 시작 순서대로, 용량·단계 의미 없음
+        var colorSlot: Int = 0
     }
 
     enum WeightSourceNote: Equatable {
@@ -239,6 +241,7 @@ enum ReportBuilder {
 
         // C. 마디 칸
         var cells: [ClinicReport.CycleCell] = []
+        let slots = PrescriptionRules.colorSlots(startDates: ordered.map(\.prescription.startDate))
         for (offset, data) in ordered.enumerated() {
             let nextStart = offset + 1 < ordered.count ? ordered[offset + 1].prescription.startDate : nil
             let cycles = CycleRules.pastCycles(for: data.prescription, doses: data.doses, nextStart: nextStart, now: now, calendar: calendar)
@@ -256,7 +259,12 @@ enum ReportBuilder {
                 } else {
                     state = .pending
                 }
-                cells.append(ClinicReport.CycleCell(id: "\(offset).\(cycle.index)", scheduledDate: cycle.scheduledDate, state: state))
+                cells.append(ClinicReport.CycleCell(
+                    id: "\(offset).\(cycle.index)",
+                    scheduledDate: cycle.scheduledDate,
+                    state: state,
+                    colorSlot: slots[offset]
+                ))
             }
         }
         cells.sort { $0.scheduledDate < $1.scheduledDate }

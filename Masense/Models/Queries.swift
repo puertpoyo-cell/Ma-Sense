@@ -58,3 +58,13 @@ extension WeightSample {
         try context.fetch(FetchDescriptor<WeightSample>(sortBy: [SortDescriptor(\.measuredAt)]))
     }
 }
+
+extension Array where Element == Prescription {
+    /// 처방 구간 색 자리 (R13-2). 처방 id → 0..<4
+    var colorSlots: [UUID: Int] {
+        Dictionary(
+            zip(map(\.id), PrescriptionRules.colorSlots(startDates: map(\.startDate))),
+            uniquingKeysWith: { first, _ in first }
+        )
+    }
+}

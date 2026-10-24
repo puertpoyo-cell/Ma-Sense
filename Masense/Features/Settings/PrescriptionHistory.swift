@@ -13,11 +13,14 @@ enum PrescriptionHistory {
         /// 취소하지 않은 투약 기록 수
         let recordedDoses: Int
         let totalDoses: Int
+        /// 처방 구간 색 자리 (R13-2). 활성 처방까지 넘겨야 순서가 맞는다
+        var colorSlot: Int = 0
     }
 
-    /// 활성이 아닌 처방을 최근 시작 순으로
+    /// 활성이 아닌 처방을 최근 시작 순으로. 색 자리는 넘긴 처방 전체(활성 포함)의 시작 순서로 센다
     static func rows(_ prescriptions: [Prescription]) -> [Row] {
-        prescriptions
+        let slots = prescriptions.colorSlots
+        return prescriptions
             .filter { !$0.isActive }
             .sorted { $0.startDate > $1.startDate }
             .map { p in
@@ -28,7 +31,8 @@ enum PrescriptionHistory {
                     endDate: p.endDate,
                     memo: memo?.isEmpty == false ? memo : nil,
                     recordedDoses: p.usedDoses,
-                    totalDoses: p.totalDoses
+                    totalDoses: p.totalDoses,
+                    colorSlot: slots[p.id] ?? 0
                 )
             }
     }
@@ -49,8 +53,11 @@ struct PrescriptionHistoryRowView: View {
             }
             .monospacedDigit()
             if let memo = row.memo {
-                Text(verbatim: memo)
-                    .foregroundStyle(Color.inkSecondary)
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.s1) {
+                    Circle().fill(Color.prescription(slot: row.colorSlot)).frame(width: 6, height: 6).accessibilityHidden(true)
+                    Text(verbatim: memo)
+                        .foregroundStyle(Color.inkSecondary)
+                }
             }
             Text("settings.prescription.history.doses \(row.recordedDoses) \(row.totalDoses)")
                 .monospacedDigit()
