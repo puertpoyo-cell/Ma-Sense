@@ -566,6 +566,8 @@ private struct SettingsForm: View {
                 Link("settings.info.privacy", destination: url)
             }
             Button("settings.info.roleNotice") { sheet = .roleNotice }
+            // 출처 있는 일반 정보 카드 (D9)
+            NavigationLink("info.title") { InfoListView() }
             LabeledContent("settings.info.openSource") {
                 Text("settings.info.none")
             }

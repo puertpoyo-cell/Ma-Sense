@@ -2132,13 +2132,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Weekly summaries"
+            "value": "Past summaries"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "주간 정리"
+            "value": "지난 정리"
           }
         }
       }
@@ -2789,6 +2789,448 @@
         }
       }
     },
+    "info.clinicPrep.consult": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decisions about your prescription and treatment are for you and your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방과 치료에 관한 결정은 의사와 상의하세요."
+          }
+        }
+      }
+    },
+    "info.clinicPrep.otherMeds": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other medicines and supplements"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "함께 쓰는 약·영양제"
+          }
+        }
+      }
+    },
+    "info.clinicPrep.otherMeds.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you take other medicines or supplements, bring their names."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다른 약이나 영양제를 쓰고 있다면 이름을 적어 가세요."
+          }
+        }
+      }
+    },
+    "info.clinicPrep.pens": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pens left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 펜"
+          }
+        }
+      }
+    },
+    "info.clinicPrep.pens.doses %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld doses left. You can check at the visit whether you need a new prescription."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 회차 %lld회. 다음 처방이 필요한지 진료 때 확인할 수 있습니다."
+          }
+        }
+      }
+    },
+    "info.clinicPrep.pens.single %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pens left. You can check at the visit whether you need a new prescription."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 펜 %lld개. 다음 처방이 필요한지 진료 때 확인할 수 있습니다."
+          }
+        }
+      }
+    },
+    "info.clinicPrep.questions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questions"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것"
+          }
+        }
+      }
+    },
+    "info.clinicPrep.questions.count %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld not asked yet"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 묻지 않은 것 %lld개"
+          }
+        }
+      }
+    },
+    "info.clinicPrep.questions.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing written yet. You can also add from the symptom timeline."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 적어 둔 것이 없습니다. 증상 흐름에서 옮겨 적을 수도 있습니다."
+          }
+        }
+      }
+    },
+    "info.clinicPrep.report": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One-page report"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리포트 한 장"
+          }
+        }
+      }
+    },
+    "info.clinicPrep.report.detail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See your dose, condition, and weight records for the period before the visit on one page."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 전 기간의 투약·컨디션·체중 기록을 한 장으로 볼 수 있습니다."
+          }
+        }
+      }
+    },
+    "info.clinicPrep.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What to bring to your visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 전에 챙겨 갈 것 목록"
+          }
+        }
+      }
+    },
+    "info.clinicPrep.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit prep"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 준비"
+          }
+        }
+      }
+    },
+    "info.general": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General wellness information, not personal advice. For your situation, consult your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일반 건강관리 정보이며 개인 맞춤 안내가 아닙니다. 개인 상황은 의사와 상의하세요."
+          }
+        }
+      }
+    },
+    "info.proteinFoods.estimate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These are average estimates and vary by product. Use the nutrition label when there is one. Nutrient values for individual foods are listed in the Korean Ministry of Food and Drug Safety nutrient database."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일반 식품 평균 추정치이며 제품마다 다릅니다. 포장의 영양성분표가 있으면 그 값을 따르세요. 식품별 성분은 식품의약품안전처 식품영양성분 데이터베이스에서 찾아볼 수 있습니다."
+          }
+        }
+      }
+    },
+    "info.proteinFoods.grams %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About %lld g"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "약 %lld g"
+          }
+        }
+      }
+    },
+    "info.proteinFoods.intro": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approximate protein per serving. These are the same values used when you log protein."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1회 기준 대략의 단백질 양입니다. 단백질을 기록할 때 쓰는 값과 같습니다."
+          }
+        }
+      }
+    },
+    "info.proteinFoods.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approximate protein per serving and the general guide"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1회 기준 대략의 단백질 양과 일반 권고 범위"
+          }
+        }
+      }
+    },
+    "info.proteinFoods.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protein foods"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단백질 식품 예시"
+          }
+        }
+      }
+    },
+    "info.row.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protein foods · Bodyweight examples · Visit prep"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단백질 식품 · 맨몸 근력 예시 · 진료 준비"
+          }
+        }
+      }
+    },
+    "info.strengthExamples.consult": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consult your doctor about the type and intensity of exercise that suits you."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "몸 상태에 맞는 운동 종류와 강도는 의사와 상의하세요."
+          }
+        }
+      }
+    },
+    "info.strengthExamples.guideline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The World Health Organization recommends muscle-strengthening activities that work the major muscle groups on 2 or more days a week for adults."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "세계보건기구는 성인에게 주 2일 이상 주요 근육을 쓰는 근력 활동을 권합니다."
+          }
+        }
+      }
+    },
+    "info.strengthExamples.source": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source: WHO guidelines on physical activity and sedentary behaviour (2020)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출처: 세계보건기구(WHO) 신체활동·좌식행동 지침 (2020)"
+          }
+        }
+      }
+    },
+    "info.strengthExamples.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A 15–20 minute home example and the general guideline"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "집에서 할 수 있는 15~20분 예시와 일반 지침"
+          }
+        }
+      }
+    },
+    "info.strengthExamples.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bodyweight strength examples"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "맨몸 근력 예시"
+          }
+        }
+      }
+    },
+    "info.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good to know"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알아 두기"
+          }
+        }
+      }
+    },
     "intensity.light": {
       "extractionState": "manual",
       "localizations": {
@@ -3397,6 +3839,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "출처: 미국 질병통제예방센터(CDC) 체중 감량 안내, 주 1~2파운드(약 0.5~1 kg)"
+          }
+        }
+      }
+    },
+    "package.list.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A summary appears a week after you finish a package of 4 pens."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패키지 하나(펜 4개)를 다 쓰고 일주일이 지나면 정리가 생깁니다."
+          }
+        }
+      }
+    },
+    "package.list.empty.doses": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A summary appears a week after every 4 doses."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "4회를 다 쓰고 일주일이 지나면 정리가 생깁니다."
+          }
+        }
+      }
+    },
+    "package.title %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Package %lld summary"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패키지 %lld 정리"
+          }
+        }
+      }
+    },
+    "package.title.doses %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doses %1$lld–%2$lld summary"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld–%2$lld회차 정리"
           }
         }
       }
@@ -6852,6 +7362,74 @@
         }
       }
     },
+    "summary.segment": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary unit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "정리 단위"
+          }
+        }
+      }
+    },
+    "summary.segment.doses": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every 4 doses"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "4회씩"
+          }
+        }
+      }
+    },
+    "summary.segment.packages": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Packages"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패키지"
+          }
+        }
+      }
+    },
+    "summary.segment.weeks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weeks"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "주"
+          }
+        }
+      }
+    },
     "symptom.bloating": {
       "extractionState": "manual",
       "localizations": {
@@ -6933,6 +7511,142 @@
           "stringUnit": {
             "state": "translated",
             "value": "피로"
+          }
+        }
+      }
+    },
+    "symptom.flow.addQuestion": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to questions"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것에 넣기"
+          }
+        }
+      }
+    },
+    "symptom.flow.caption %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last %lld weeks, showing the strongest level you recorded each week. One block is mild, three is severe."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 %lld주, 주마다 가장 강하게 기록한 정도입니다. 막대 한 칸이 약함, 세 칸이 심함입니다."
+          }
+        }
+      }
+    },
+    "symptom.flow.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No symptoms recorded at level 1 or above in the last 8 weeks."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 8주 동안 강도 1 이상으로 기록된 증상이 없습니다."
+          }
+        }
+      }
+    },
+    "symptom.flow.open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Symptom timeline"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "증상 흐름 보기"
+          }
+        }
+      }
+    },
+    "symptom.flow.question %@ %lld %lld %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: recorded in %3$lld of the last %2$lld weeks, strongest level %4$@. "
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: 최근 %2$lld주 중 %3$lld주에 기록, 가장 강하게 기록한 정도 %4$@. "
+          }
+        }
+      }
+    },
+    "symptom.flow.summary %lld %lld %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorded in %2$lld of %1$lld weeks · strongest level %3$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld주 중 %2$lld주 기록 · 가장 강하게 기록한 정도 %3$@"
+          }
+        }
+      }
+    },
+    "symptom.flow.thisWeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This week"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이번 주"
+          }
+        }
+      }
+    },
+    "symptom.flow.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Symptom timeline"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "증상 흐름"
           }
         }
       }
@@ -7674,7 +8388,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Past weeks"
+            "value": "Past summaries"
           }
         },
         "ko": {
@@ -7691,13 +8405,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Weekly summaries"
+            "value": "Past summaries"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "주간 정리"
+            "value": "지난 정리"
           }
         }
       }

@@ -111,7 +111,12 @@ struct ReportView: View {
                         }
                     }
                 }
-                GhostButton("clinic.questions.manage") { showsQuestions = true }
+                AdaptiveStack(spacing: Spacing.s2) {
+                    GhostButton("clinic.questions.manage") { showsQuestions = true }
+                    // 증상 기록을 보고 물어볼 것으로 옮긴다 (D9)
+                    NavigationLink("symptom.flow.open") { SymptomFlowView() }
+                        .buttonStyle(.ghost)
+                }
             }
         }
     }

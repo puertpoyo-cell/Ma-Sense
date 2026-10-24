@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-1a 지난 투약 안내, 1-2 컨디션, 1-1b 남은 펜, 1-3 체중, 1-4 오늘의 마디, 1-5 진료.
+/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-1a 지난 투약 안내, 1-2 컨디션, 1-1c 지난 정리, 1-1b 남은 펜, 1-3 체중, 1-4 오늘의 마디, 1-5 진료, 1-6 알아 두기.
 struct TodayView: View {
     var openReport: () -> Void = {}
 
@@ -51,6 +51,7 @@ struct TodayView: View {
     @State private var sheet: Sheet?
     #if DEBUG
     @State private var opensSettingsForScreenshot = ScreenshotRoute.current.map { [.settings, .importSheet, .importResult].contains($0) } ?? false
+    @State private var screenshotDestination: ScreenshotRoute? = ScreenshotRoute.current.flatMap { [.symptomFlow, .infoList].contains($0) ? $0 : nil }
     #endif
     @State private var showsToast = false
     /// 지난 투약 안내 카드를 닫은 처방 id (D6). 기기 화면 상태라 SwiftData 대신 UserDefaults
@@ -58,7 +59,11 @@ struct TodayView: View {
     /// 닫은 사실 한 줄 "종류|날짜", 닫은 주간 정리 구간 시작 (D8). 기기 화면 상태
     @AppStorage("dailyLine.dismissed") private var dismissedDailyLine = ""
     @AppStorage("weeklySummary.dismissedStart") private var dismissedWeeklyStart: Double = 0
-    @State private var showsWeeklyList = false
+    /// 닫은 패키지 정리 구간 시작 (D9)
+    @AppStorage("packageSummary.dismissedStart") private var dismissedPackageStart: Double = 0
+    @State private var weeklyListDestination: WeeklySummaryListView.Segment?
+    /// 진료 카드의 "진료 준비" (D9)
+    @State private var infoDestination: InfoTopic?
 
     private var prescription: Prescription? { activePrescriptions.first }
 
@@ -80,10 +85,23 @@ struct TodayView: View {
                         if let prompt = model.conditionPrompt {
                             conditionCard(prompt)
                         }
-                        if let summary = model.weeklySummary, summary.period.start.timeIntervalSinceReferenceDate != dismissedWeeklyStart {
+                        if let package = model.packageSummary, package.package.period.start.timeIntervalSinceReferenceDate != dismissedPackageStart {
+                            // 패키지 정리가 보이는 동안은 주간 정리 카드를 함께 띄우지 않는다 (D9)
+                            PackageSummaryCard(
+                                summary: package,
+                                isSingleUsePen: prescription.dosesPerPen == 1,
+                                onShowAll: { weeklyListDestination = .packages },
+                                onDismiss: {
+                                    dismissedPackageStart = package.package.period.start.timeIntervalSinceReferenceDate
+                                    if let weekly = model.weeklySummary {
+                                        dismissedWeeklyStart = weekly.period.start.timeIntervalSinceReferenceDate
+                                    }
+                                }
+                            )
+                        } else if let summary = model.weeklySummary, summary.period.start.timeIntervalSinceReferenceDate != dismissedWeeklyStart {
                             WeeklySummaryCard(
                                 summary: summary,
-                                onShowAll: { showsWeeklyList = true },
+                                onShowAll: { weeklyListDestination = .weeks },
                                 onDismiss: { dismissedWeeklyStart = summary.period.start.timeIntervalSinceReferenceDate }
                             )
                         }
@@ -101,6 +119,7 @@ struct TodayView: View {
                             clinicCard(clinic)
                         }
                     }
+                    infoRow
                 }
                 .padding(.horizontal, Spacing.screenHorizontal)
                 .padding(.vertical, Spacing.s4)
@@ -108,7 +127,12 @@ struct TodayView: View {
         }
         .midnightBackground()
         .navigationTitle("tab.today")
-        .navigationDestination(isPresented: $showsWeeklyList) { WeeklySummaryListView() }
+        .navigationDestination(item: $weeklyListDestination) { segment in
+            WeeklySummaryListView(initialSegment: segment)
+        }
+        .navigationDestination(item: $infoDestination) { topic in
+            InfoTopicView(topic: topic, openReport: openReport)
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
@@ -121,6 +145,13 @@ struct TodayView: View {
         }
         #if DEBUG
         .navigationDestination(isPresented: $opensSettingsForScreenshot) { SettingsView() }
+        .navigationDestination(item: $screenshotDestination) { route in
+            if route == .symptomFlow {
+                SymptomFlowView()
+            } else {
+                InfoListView(openReport: openReport)
+            }
+        }
         .task { openSheetForScreenshot() }
         #endif
         .sheet(item: $sheet) { sheet in
@@ -333,8 +364,40 @@ struct TodayView: View {
                     GhostButton("clinic.questions.title") { sheet = .questions }
                     GhostButton("clinic.prepareReport", action: openReport)
                 }
+                GhostButton("info.clinicPrep.title") { infoDestination = .clinicPrep }
             }
         }
+    }
+
+    // MARK: 알아 두기 (D9, S13)
+
+    /// 맨 아래 한 줄. 출처 있는 일반 정보와 진료 준비 목록
+    private var infoRow: some View {
+        NavigationLink {
+            InfoListView(openReport: openReport)
+        } label: {
+            HStack(spacing: Spacing.s3) {
+                Image(systemName: "book.closed")
+                    .foregroundStyle(Color.accent)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: Spacing.s1) {
+                    Text("info.title")
+                        .font(Typography.label)
+                        .foregroundStyle(Color.ink)
+                    Text("info.row.summary")
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.inkSecondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.inkTertiary)
+                    .accessibilityHidden(true)
+            }
+            .padding(Spacing.cellPadding)
+            .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: 시트
@@ -365,6 +428,9 @@ struct TodayView: View {
         case .backfillSheet?: sheet = .backfill
         case .questionsSheet?: sheet = .questions
         case .weightTrendSheet?: sheet = .weightTrend
+        case .summaryPackages?: weeklyListDestination = .packages
+        case .infoProtein?: infoDestination = .proteinFoods
+        case .infoClinicPrep?: infoDestination = .clinicPrep
         case .conditionSheet?:
             if let dose = prescription?.doses.filter({ !$0.isCancelled }).max(by: { $0.administeredAt < $1.administeredAt }) {
                 sheet = .condition(doseID: dose.id, window: .h24)

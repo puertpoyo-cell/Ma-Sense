@@ -65,6 +65,8 @@ struct TodayModel: Equatable {
     let dailyLine: DailyLine?
     /// 1-1c 지난 마디 정리 (R16, D8). 끝난 구간 중 가장 최근, 기록이 하나도 없으면 nil
     let weeklySummary: WeeklySummary?
+    /// 1-1c 패키지 정리 (R18, D9). 4회를 다 쓴 패키지 기간이 끝난 뒤 7일 동안. 보이면 주간 정리 대신
+    let packageSummary: PackageSummary?
     /// 1-1b 펜 현황 (R13-1, D7)과 소진 예상일 (R13)
     let pens: PenStatus?
     let exhaustionDate: Date?
@@ -109,6 +111,19 @@ struct TodayModel: Equatable {
                 )
             }
             .flatMap { $0.isEmpty ? nil : $0 }
+        // 처방의 기록만으로 패키지를 센다
+        packageSummary = PackageSummaryRules.recentlyFinished(doses: doses, now: now, calendar: calendar).map { package in
+            PackageSummaryRules.summary(
+                package: package,
+                doses: doses,
+                checks: checks,
+                weights: weights,
+                proteins: proteins,
+                sessions: sessions,
+                proteinTarget: proteinTarget,
+                calendar: calendar
+            )
+        }
 
         let todayProteins = ProteinRules.entries(on: now, from: proteins, calendar: calendar)
         daily = DailyCycle(

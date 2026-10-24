@@ -305,6 +305,29 @@ func line(prescription: PrescriptionSnapshot?, doses: [DoseSnapshot], allDoses: 
 - 하나만, 우선순위: 오늘이 예정일이고 기록 전("오늘은 투약일입니다. 지난 부위: …") > 남은 회차 1회 이하("남은 펜이 n개입니다. 다음 진료일을 확인하세요.", 여러 회 쓰는 펜은 회차) > 최근 7일 체중 기록 없음
 - 칭찬·응원·평가 없음 (COMPLIANCE.md 3.1). 닫으면 같은 종류는 그날 다시 보이지 않는다
 
+## R18. 패키지 정리 (D9, 2026-10-24 사람 결정 "풀푸시")
+
+```swift
+func finishedPackages(doses: [DoseSnapshot], now: Date, calendar: Calendar, limit: Int = 12) -> [PackagePeriod]  // 최근 순
+func recentlyFinished(doses:now:calendar:) -> PackagePeriod?   // 오늘 카드: 끝난 지 7일 미만
+func summary(package:doses:checks:weights:proteins:sessions:proteinTarget:calendar:) -> PackageSummary
+```
+
+- 지금 처방의 취소하지 않은 기록을 투약 시각 순으로 4회씩 묶는다 (패키지 = 4회 = 약 한 달, R13-1). 4회가 다 찬 묶음만
+- 기간 `[첫 투약일 0시, 마지막 투약일 + 7일)`. 다음 묶음의 첫 투약일이 더 이르면 그날 0시까지 (겹치지 않게). 끝난 것만
+- 숫자는 R16과 같다. 평가·지난 패키지와의 비교 없음. 제목은 1회용 펜이면 "패키지 n", 아니면 "a–b회차"
+
+## R19. 증상 흐름 (D9, 2026-10-24 사람 결정 "풀푸시")
+
+```swift
+func recentPeriods(prescription: PrescriptionSnapshot, now: Date, calendar: Calendar, count: Int = 8) -> [DateInterval]  // 오래된 순, 마지막은 진행 중
+func flows(periods: [DateInterval], checks: [ConditionCheckSnapshot]) -> [SymptomFlow]
+```
+
+- 구간은 R16과 같은 7일씩, 최근 8개(지금 구간 포함)
+- 증상마다 구간별 가장 강하게 기록한 강도(0~3). 강도 1 이상이 한 번이라도 있는 증상만, 기록된 구간이 많은 순(같으면 증상 목록 순)
+- "물어볼 것에 넣기"는 사실 문장만 채운다. 원인·대처·괜찮은지 판단을 붙이지 않는다 (COMPLIANCE.md 2.1-7)
+
 ## 테스트 체크리스트
 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
@@ -313,6 +336,7 @@ func line(prescription: PrescriptionSnapshot?, doses: [DoseSnapshot], allDoses: 
 - [x] R3-1 앞선 누락만 세기, 남은 회차까지만 켜기, 시간 순 회차와 뒤 기록 밀기, 취소 기록 제외 (`BackfillRulesTests`, `BackfillModelTests`)
 - [x] R6 부위 기록 없음은 바디맵 이력·부위별 날짜에서 제외 (`SiteRulesTests`)
 - [x] R16 구간 경계·끝난 구간만·숫자 집계, R17 우선순위 (`WeeklySummaryRulesTests`, `DailyLineRulesTests`, `TodayModelTests`)
+- [x] R18 4회째 다음 주까지·덜 찬 묶음 제외·다음 묶음이 일찍 시작하면 자르기·오늘 카드 7일 (`PackageSummaryRulesTests`, `TodayModelTests`), R19 지금 구간까지·구간별 최대 강도·정렬 (`SymptomFlowRulesTests`)
 - [x] R15 입력 정리, 아직 묻지 않은 것 순서, 리포트 5개·메모와 합쳐 8줄 (`ClinicQuestionRulesTests`, `ReportBuilderTests`)
 - [x] R4 4주 제한, 재등록 시 중복 없음
 - [x] R5 창 경계값 (12h, 36h, 96h)

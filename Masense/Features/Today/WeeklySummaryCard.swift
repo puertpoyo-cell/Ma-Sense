@@ -73,6 +73,47 @@ struct WeeklySummaryPeriodText: View {
     }
 }
 
+/// "패키지 2 정리" (1회용 펜) 또는 "5–8회차 정리" (여러 회 쓰는 펜). R18, D9
+struct PackageSummaryTitle: View {
+    let package: PackagePeriod
+    let isSingleUsePen: Bool
+
+    var body: some View {
+        if isSingleUsePen {
+            Text("package.title \(package.number)")
+        } else {
+            Text("package.title.doses \(package.firstSequence) \(package.lastSequence)")
+        }
+    }
+}
+
+/// 오늘 1-1c "패키지 정리" 카드 (SCREENS.md, D9). 주간 정리 카드 자리에, 패키지 기간이 끝난 뒤 7일 동안
+struct PackageSummaryCard: View {
+    let summary: PackageSummary
+    let isSingleUsePen: Bool
+    var onShowAll: () -> Void = {}
+    var onDismiss: () -> Void = {}
+
+    var body: some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
+                HStack(alignment: .firstTextBaseline) {
+                    PackageSummaryTitle(package: summary.package, isSingleUsePen: isSingleUsePen)
+                        .font(Typography.sectionHeader)
+                        .foregroundStyle(Color.ink)
+                    Spacer()
+                    WeeklySummaryPeriodText(period: summary.package.period)
+                }
+                WeeklySummaryRows(summary: summary.summary)
+                AdaptiveStack(spacing: Spacing.s2) {
+                    GhostButton("weekly.list.open", action: onShowAll)
+                    GhostButton("weekly.dismiss", action: onDismiss)
+                }
+            }
+        }
+    }
+}
+
 /// 오늘 1-1c "지난 마디 정리" 카드 (SCREENS.md, D8). 닫으면 그 구간은 다시 보이지 않는다
 struct WeeklySummaryCard: View {
     let summary: WeeklySummary

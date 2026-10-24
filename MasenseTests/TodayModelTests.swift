@@ -138,4 +138,16 @@ struct TodayModelTests {
         // 기록이 하나도 없는 구간은 카드가 없다
         #expect(model(prescription(), now: TestCalendar.date(2026, 10, 30, 9)).weeklySummary == nil)
     }
+
+    @Test func packageSummaryForAWeekAfterFourDoses() {
+        let doses = [dose(10, 22, 20), dose(10, 29, 20), dose(11, 5, 20), dose(11, 12, 20)]
+        // 4회째 다음 주가 끝나기 전에는 없다
+        #expect(model(prescription(), doses: doses, now: TestCalendar.date(2026, 11, 18, 9)).packageSummary == nil)
+        let finished = model(prescription(), doses: doses, now: TestCalendar.date(2026, 11, 19, 9))
+        #expect(finished.packageSummary?.package.number == 1)
+        #expect(finished.packageSummary?.summary.doseCount == 4)
+        #expect(finished.packageSummary?.package.period == DateInterval(start: TestCalendar.date(2026, 10, 22), end: TestCalendar.date(2026, 11, 19)))
+        // 끝난 지 7일이 지나면 오늘 카드에서 내려간다
+        #expect(model(prescription(), doses: doses, now: TestCalendar.date(2026, 11, 26, 9)).packageSummary == nil)
+    }
 }

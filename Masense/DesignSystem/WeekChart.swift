@@ -74,7 +74,9 @@ struct WeekChart: View {
                 .symbolSize(24)
             }
         }
-        .chartYScale(domain: .automatic(includesZero: false))
+        .chartYScale(domain: .automatic(includesZero: false), range: .plotDimension(padding: 6))
+        // 끝 날짜 라벨과 마지막 점이 플롯 가장자리에서 잘리지 않게 오른쪽에 여백
+        .chartXScale(range: .plotDimension(startPadding: 6, endPadding: 22))
         .chartXAxis {
             if labelsMonthly {
                 AxisMarks(values: .stride(by: .month, count: points.count > 60 ? 3 : 1)) { _ in

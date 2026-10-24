@@ -7,8 +7,13 @@ struct ClinicQuestionsSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query(sort: \ClinicQuestion.createdAt) private var questions: [ClinicQuestion]
-    @State private var draft = ""
+    @State private var draft: String
     @FocusState private var isEditing: Bool
+
+    /// `draft`: 증상 흐름(D9)에서 넘긴 사실 문장. 사용자가 고쳐서 추가한다
+    init(draft: String = "") {
+        _draft = State(initialValue: draft)
+    }
 
     var body: some View {
         let snapshots = questions.map(\.snapshot)
@@ -17,10 +22,16 @@ struct ClinicQuestionsSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("clinic.questions.placeholder", text: $draft)
+                    // 넘겨받은 긴 문장도 보이게 여러 줄. 리턴은 줄바꿈 대신 추가로 받는다
+                    TextField("clinic.questions.placeholder", text: $draft, axis: .vertical)
+                        .lineLimit(1...4)
                         .focused($isEditing)
                         .submitLabel(.done)
-                        .onSubmit(add)
+                        .onChange(of: draft) { _, text in
+                            guard text.contains("\n") else { return }
+                            draft = text.replacingOccurrences(of: "\n", with: "")
+                            add()
+                        }
                     Button("clinic.questions.add", action: add)
                         .disabled(ClinicQuestionRules.normalized(draft) == nil)
                 } footer: {

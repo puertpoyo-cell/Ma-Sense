@@ -275,6 +275,17 @@ struct HistoryView: View {
         if groups.isEmpty {
             emptyRow("history.empty")
         }
+        // 증상 흐름 (R19, D9)
+        if activePrescription != nil, !groups.isEmpty {
+            NavigationLink {
+                SymptomFlowView()
+            } label: {
+                Label("symptom.flow.title", systemImage: "chart.bar.xaxis")
+                    .font(Typography.label)
+                    .foregroundStyle(Color.ink)
+            }
+            .frostRow()
+        }
         ForEach(groups) { group in
             Section {
                 ForEach(group.slots, id: \.window) { slot in
