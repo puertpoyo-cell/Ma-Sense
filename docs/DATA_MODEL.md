@@ -72,8 +72,8 @@ UserSettings        (단일 레코드)
 |---|---|---|---|
 | id | UUID | `UUID()` |  |
 | startDate | Date | `.now` | 처방 시작일 |
-| penCount | Int | `1` | 처방받은 펜 수 |
-| dosesPerPen | Int | `4` | 펜당 회차 |
+| penCount | Int | `1` | 처방받은 펜 수. 1회용 펜이면 패키지 × 4 (D7, 입력은 패키지 수) |
+| dosesPerPen | Int | `4` | 펜당 회차. 1이면 1회용 펜 (D7부터 새 처방 기본, 저장 기본값은 그대로라 스키마 변경 없음) |
 | intervalDays | Int | `7` | **v1은 항상 7.** UI·Rules는 주 1회를 전제로 하며 이 값을 읽지 않는다. 필드만 미리 두어 나중에 다른 주기를 열 때 스키마 변경을 피함 |
 | scheduledWeekday | Int | `5` | 1(일)~7(토), `Calendar` weekday |
 | scheduledHour | Int | `20` | 투약 시각 (시) |

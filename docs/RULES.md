@@ -253,7 +253,9 @@ struct PenStatus { let usedPerPen: [Int]; let dosesPerPen: Int }   // remainingP
 ```
 
 - 펜 수 = `totalDoses / dosesPerPen`. 쓴 회차(취소 제외, 처방 회차를 넘지 않게)를 앞 펜부터 차례로 채운다
-- "남은 펜"은 한 회차라도 남은 펜 수(쓰는 중인 펜 포함). 한 번 쓰는 키트는 펜당 회차 1로 입력하면 같은 그림이 된다
+- "남은 펜"은 한 회차라도 남은 펜 수(쓰는 중인 펜 포함)
+- 1회용 펜 (2026-10-24 사람 설명: 펜 하나에 한 번, 패키지 하나에 펜 4개 = 한 달치): 펜당 회차 1. `PenStatus.packages`가 펜을 4개씩 패키지로 묶는다(`dosesPerPackage = 4`). 여러 회 쓰는 펜은 펜 하나가 묶음 하나
+- `packagePosition(sequence:)`: 1회용 펜의 n회차 = 패키지 ⌈n/4⌉의 ((n-1) mod 4)+1번째 펜 (투약 기록 화면 회차 표시)
 - 용량(mg·mL) 수치는 다루지 않는다 (2026-10-23 사람 결정: 넣지 않음). 처방 메모는 사용자가 적은 그대로만 함께 보인다
 
 ## R14. BMI 숫자 (D5)

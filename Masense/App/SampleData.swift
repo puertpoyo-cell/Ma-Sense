@@ -25,8 +25,9 @@ enum SampleData {
         // 이전 마디에 기록이 있으면 예정 이틀 전까지는 "이번 마디 기록 완료"로 보이므로 D-1로 둔다 (R1·R2)
         let prescription = Prescription(
             startDate: day(-45),
-            penCount: 3,
-            dosesPerPen: 4,
+            // 1회용 펜 패키지 3개 (펜 12개)
+            penCount: 12,
+            dosesPerPen: 1,
             scheduledWeekday: calendar.component(.weekday, from: day(1)),
             scheduledHour: 20,
             nextClinicDate: day(5)

@@ -49,9 +49,17 @@ struct DoseLogSheet: View {
                 Section {
                     Stepper(value: $model.sequence, in: 1...max(model.totalDoses, model.sequence)) {
                         LabeledContent("dose.sequence.label") {
-                            let position = model.penPosition
-                            Text("dose.sequence \(model.sequence) \(position.pen) \(position.position)")
-                                .monospacedDigit()
+                            Group {
+                                if model.dosesPerPen == 1 {
+                                    // 1회용 펜: n회차 (패키지 m의 k번째 펜) (D7)
+                                    let position = PrescriptionRules.packagePosition(sequence: model.sequence)
+                                    Text("dose.sequence.package \(model.sequence) \(position.package) \(position.pen)")
+                                } else {
+                                    let position = model.penPosition
+                                    Text("dose.sequence \(model.sequence) \(position.pen) \(position.position)")
+                                }
+                            }
+                            .monospacedDigit()
                         }
                     }
                 }

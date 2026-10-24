@@ -37,6 +37,15 @@ enum PrescriptionRules {
 
     // MARK: 펜 현황 (D7)
 
+    /// 패키지 하나 = 4회 = 약 한 달 (주 1회). 1회용 펜이면 펜 4개, 여러 회 쓰는 펜이면 펜 1개 (2026-10-24 사람 설명)
+    static let dosesPerPackage = 4
+
+    /// 1회용 펜(펜당 회차 1)의 회차 위치: n번째 패키지의 k번째 펜. `penPosition`과 같은 셈을 패키지 단위로
+    static func packagePosition(sequence: Int) -> (package: Int, pen: Int) {
+        let position = penPosition(sequence: sequence, dosesPerPen: dosesPerPackage)
+        return (package: position.pen, pen: position.position)
+    }
+
     /// R13-1. 펜마다 쓴 회차 수. 쓴 회차(취소 제외)를 앞 펜부터 차례로 채운다. 사실만 보이고 판단하지 않는다
     static func penStatus(p: PrescriptionSnapshot, doses: [DoseSnapshot]) -> PenStatus {
         let perPen = max(p.dosesPerPen, 1)
@@ -111,6 +120,17 @@ struct PenStatus: Equatable {
     /// 한 회차라도 남은 펜 (쓰는 중인 펜 포함)
     var remainingPens: Int { usedPerPen.filter { $0 < dosesPerPen }.count }
     var remainingDoses: Int { usedPerPen.reduce(0) { $0 + dosesPerPen - $1 } }
+
+    /// 펜 하나에 한 번씩 쓰는 1회용 펜
+    var isSingleUse: Bool { dosesPerPen == 1 }
+
+    /// 그림의 패키지 묶음. 1회용 펜은 4개씩, 여러 회 쓰는 펜은 1개씩 (마지막 묶음은 모자랄 수 있다)
+    var packages: [[Int]] {
+        let size = isSingleUse ? PrescriptionRules.dosesPerPackage : 1
+        return stride(from: 0, to: usedPerPen.count, by: size).map { start in
+            Array(usedPerPen[start..<min(start + size, usedPerPen.count)])
+        }
+    }
 }
 
 /// 처방 이력 체인에서 활성·종료일만 다루는 값 (규칙 7)

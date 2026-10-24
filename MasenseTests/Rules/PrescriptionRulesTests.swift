@@ -51,6 +51,22 @@ struct PrescriptionRulesTests {
         #expect(PrescriptionRules.penStatus(p: kits, doses: doses).remainingPens == 0)
     }
 
+    /// 1회용 펜은 패키지(펜 4개, 약 한 달)로 묶고, 여러 회 쓰는 펜은 펜 하나가 묶음 하나
+    @Test func packagesGroupSingleUsePensByFour() {
+        let twoPackages = PrescriptionSnapshot(startDate: TestCalendar.date(2026, 10, 16, 9), scheduledWeekday: 5, scheduledHour: 20, dosesPerPen: 1, totalDoses: 8)
+        let status = PrescriptionRules.penStatus(p: twoPackages, doses: [dose(10, 22), dose(10, 29), dose(11, 5), dose(11, 12), dose(11, 19)])
+        #expect(status.isSingleUse)
+        #expect(status.packages == [[1, 1, 1, 1], [1, 0, 0, 0]])
+        #expect(status.remainingPens == 3)
+
+        let multi = PrescriptionSnapshot(startDate: TestCalendar.date(2026, 10, 16, 9), scheduledWeekday: 5, scheduledHour: 20, dosesPerPen: 4, totalDoses: 8)
+        #expect(PrescriptionRules.penStatus(p: multi, doses: [dose(10, 22)]).packages == [[1], [0]])
+
+        #expect(PrescriptionRules.packagePosition(sequence: 1) == (package: 1, pen: 1))
+        #expect(PrescriptionRules.packagePosition(sequence: 4) == (package: 1, pen: 4))
+        #expect(PrescriptionRules.packagePosition(sequence: 6) == (package: 2, pen: 2))
+    }
+
     @Test func exhaustionEstimateIsLastCycle() {
         let now = TestCalendar.date(2026, 10, 16, 9)
         #expect(PrescriptionRules.exhaustionEstimate(p: prescription(), doses: [], now: now, calendar: calendar) == TestCalendar.date(2027, 1, 7, 20))

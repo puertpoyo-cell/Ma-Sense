@@ -1106,6 +1106,23 @@
         }
       }
     },
+    "dose.sequence.package %lld %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dose %1$lld (pack %2$lld, pen %3$lld)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld회차 (패키지 %2$lld의 %3$lld번째 펜)"
+          }
+        }
+      }
+    },
     "dose.site": {
       "extractionState": "manual",
       "localizations": {
@@ -3316,6 +3333,40 @@
         }
       }
     },
+    "pen.detail.packages %lld %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld packs · Runs out around %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패키지 %1$lld개 · 소진 예상 %2$@"
+          }
+        }
+      }
+    },
+    "pen.detail.packages.noEstimate %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld packs"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패키지 %lld개"
+          }
+        }
+      }
+    },
     "pen.memo %@": {
       "extractionState": "manual",
       "localizations": {
@@ -3329,6 +3380,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "처방 메모 · %@"
+          }
+        }
+      }
+    },
+    "pen.package %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pack %1$lld · %2$lld left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패키지 %1$lld · %2$lld개 남음"
           }
         }
       }
@@ -3452,6 +3520,40 @@
         }
       }
     },
+    "prescription.packageCount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Packs"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패키지 수"
+          }
+        }
+      }
+    },
+    "prescription.packageValue %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld (%2$lld pens)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld개 (펜 %2$lld개)"
+          }
+        }
+      }
+    },
     "prescription.penCount": {
       "extractionState": "manual",
       "localizations": {
@@ -3465,6 +3567,91 @@
           "stringUnit": {
             "state": "translated",
             "value": "펜 수"
+          }
+        }
+      }
+    },
+    "prescription.penType": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pen"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펜"
+          }
+        }
+      }
+    },
+    "prescription.penType.multiDose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Multi-dose pen"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여러 회 쓰는 펜"
+          }
+        }
+      }
+    },
+    "prescription.penType.multiDose.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One pen is used several times. Enter the number of pens and doses per pen."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펜 1개를 여러 번 나눠 씁니다. 펜 수와 펜당 회차를 입력하세요."
+          }
+        }
+      }
+    },
+    "prescription.penType.singleUse": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single-use pens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1회용 펜"
+          }
+        }
+      }
+    },
+    "prescription.penType.singleUse.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each pen is used once. One pack has 4 pens, about a month at once a week."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펜 1개를 한 번 씁니다. 패키지 1개에 펜 4개, 주 1회로 약 한 달치입니다."
           }
         }
       }
