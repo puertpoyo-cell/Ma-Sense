@@ -7,8 +7,9 @@ enum InfoTopic: String, CaseIterable, Identifiable, Hashable {
     case proteinFoods, strengthExamples, clinicPrep
 
     var id: String { rawValue }
-    var titleKey: LocalizedStringKey { LocalizedStringKey("info.\(rawValue).title") }
-    var summaryKey: LocalizedStringKey { LocalizedStringKey("info.\(rawValue).summary") }
+    // 보간을 쓰면 키가 "info.%@.title"이 되므로 이어 붙인 String으로 만든다
+    var titleKey: LocalizedStringKey { LocalizedStringKey("info." + rawValue + ".title") }
+    var summaryKey: LocalizedStringKey { LocalizedStringKey("info." + rawValue + ".summary") }
     var systemImage: String {
         switch self {
         case .proteinFoods: return "fork.knife"

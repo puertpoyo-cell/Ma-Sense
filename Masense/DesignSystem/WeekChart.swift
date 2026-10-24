@@ -75,20 +75,20 @@ struct WeekChart: View {
             }
         }
         .chartYScale(domain: .automatic(includesZero: false), range: .plotDimension(padding: 6))
-        // 끝 날짜 라벨과 마지막 점이 플롯 가장자리에서 잘리지 않게 오른쪽에 여백
-        .chartXScale(range: .plotDimension(startPadding: 6, endPadding: 22))
+        // 끝 날짜 라벨과 마지막 점이 플롯 가장자리에서 잘리지 않게 오른쪽에 여백 (라벨은 눈금 가운데)
+        .chartXScale(range: .plotDimension(startPadding: 6, endPadding: 28))
         .chartXAxis {
             if labelsMonthly {
                 AxisMarks(values: .stride(by: .month, count: points.count > 60 ? 3 : 1)) { _ in
                     AxisGridLine().foregroundStyle(gridColor.opacity(0.5))
-                    AxisValueLabel(format: .dateTime.month(.abbreviated))
+                    AxisValueLabel(format: .dateTime.month(.abbreviated), anchor: .top)
                         .font(labelFont)
                         .foregroundStyle(labelColor)
                 }
             } else {
                 AxisMarks(values: .stride(by: .weekOfYear, count: 2)) { _ in
                     AxisGridLine().foregroundStyle(gridColor.opacity(0.5))
-                    AxisValueLabel(format: .dateTime.month(.defaultDigits).day())
+                    AxisValueLabel(format: .dateTime.month(.defaultDigits).day(), anchor: .top)
                         .font(labelFont)
                         .foregroundStyle(labelColor)
                 }
