@@ -18,6 +18,8 @@ enum CoachLine: Equatable {
     case tip(Int)
     /// 자리에 붙은 고정 한마디 (펜·기록·리포트)
     case place(CoachSpot)
+    /// 말 걸기를 눌렀을 때 첫 인사 (D18)
+    case greeting
 
     /// 하루에 같은 한마디를 두 번 띄우지 않는 데 쓰는 키
     var key: String {
@@ -29,6 +31,7 @@ enum CoachLine: Equatable {
         case .strengthNotYet: return "strengthNotYet"
         case let .tip(index): return "tip." + String(index)
         case let .place(spot): return "place." + spot.rawValue
+        case .greeting: return "greeting"
         }
     }
 
@@ -55,6 +58,15 @@ enum CoachSpot: String, CaseIterable {
     case report
 }
 
+/// D18 말 걸기에서 고르는 주제
+enum CoachTopic: String, CaseIterable {
+    case today
+    case protein
+    case movement
+    case clinic
+    case more
+}
+
 /// 자리별 한마디를 고르는 데 필요한 오늘의 사실
 struct CoachContext: Equatable {
     var dailyLine: DailyLine?
@@ -66,6 +78,8 @@ struct CoachContext: Equatable {
 
 enum CoachRules {
     static let tipCount = 8
+    /// 한 줄마다 같은 뜻의 다른 말투 수 (D18). 화면이 그중 하나를 고른다
+    static let variantCount = 3
     /// 일반 한마디 중 건강관리 정보인 것 (단백질·물·근력·수면)
     static let healthTipIndices: Set<Int> = [2, 3, 5, 6]
     /// 이 시각 이후에만 단백질 기록을 권한다
@@ -149,5 +163,35 @@ enum CoachRules {
     /// 오늘 이미 띄운 키를 빼고 첫 줄
     static func next(for spot: CoachSpot, context: CoachContext, shownKeys: Set<String>, now: Date, calendar: Calendar) -> CoachLine? {
         lines(for: spot, context: context, now: now, calendar: calendar).first { !shownKeys.contains($0.key) }
+    }
+
+    /// D18 말 걸기 주제에 대한 대답. 지금 상황에 맞는 줄을 먼저, 없으면 일반 한마디.
+    /// `shownKeys`는 이번 대화에서 이미 한 줄 (같은 주제를 다시 물으면 다른 줄로)
+    static func reply(to topic: CoachTopic, context c: CoachContext, shownKeys: Set<String>, now: Date, calendar: Calendar) -> CoachLine {
+        let isAfternoon = calendar.component(.hour, from: now) >= proteinNudgeHour
+        let candidates: [CoachLine]
+        switch topic {
+        case .today:
+            candidates = lines(for: .todayTop, context: c, now: now, calendar: calendar) + [.tip(0), .tip(3)]
+        case .protein:
+            var result: [CoachLine] = []
+            if c.isLowAppetite { result.append(.lowAppetite) }
+            if c.proteinEntriesToday == 0, isAfternoon { result.append(.proteinNotYet) }
+            candidates = result + [.tip(2), .tip(3)]
+        case .movement:
+            var result: [CoachLine] = []
+            if c.isLowCondition { result.append(.lowCondition) }
+            if c.strengthThisWeek == 0 { result.append(.strengthNotYet) }
+            candidates = result + [.tip(5), .tip(6)]
+        case .clinic:
+            var result: [CoachLine] = []
+            if let fact = c.dailyLine, case .lowSupply = fact { result.append(.fact(fact)) }
+            candidates = result + [.tip(4), .place(.report), .place(.history)]
+        case .more:
+            // 오늘 날짜에서 시작해 일반 한마디를 차례로
+            let day = calendar.ordinality(of: .day, in: .year, for: now) ?? 0
+            candidates = (0..<tipCount).map { .tip((day + $0) % tipCount) }
+        }
+        return candidates.first { !shownKeys.contains($0.key) } ?? candidates[0]
     }
 }

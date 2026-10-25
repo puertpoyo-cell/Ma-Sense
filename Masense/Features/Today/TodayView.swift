@@ -35,6 +35,7 @@ struct TodayView: View {
     @Environment(\.services) private var services
     @Environment(\.calendar) private var calendar
     @Environment(\.router) private var router
+    @Environment(\.coach) private var coach
     @Query(filter: #Predicate<Prescription> { $0.isActive })
     private var activePrescriptions: [Prescription]
     /// 처방 구간 색 자리 계산용 (R13-2)
@@ -152,6 +153,15 @@ struct TodayView: View {
             InfoTopicView(topic: topic, openReport: openReport)
         }
         .toolbar {
+            // D18 마선생에게 말 걸기
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    coach.talk(context: makeModel(now: .now).coachContext)
+                } label: {
+                    CoachFace(size: 30)
+                }
+                .accessibilityLabel(Text("coach.talk.button"))
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
                     SettingsView()
@@ -487,6 +497,7 @@ struct TodayView: View {
         case .summaryPackages?: weeklyListDestination = .packages
         case .infoProtein?: infoDestination = .proteinFoods
         case .infoClinicPrep?: infoDestination = .clinicPrep
+        case .coachTalk?: coach.talk(context: makeModel(now: .now).coachContext)
         case .conditionSheet?:
             if let dose = prescription?.doses.filter({ !$0.isCancelled }).max(by: { $0.administeredAt < $1.administeredAt }) {
                 sheet = .condition(doseID: dose.id, window: .h24)

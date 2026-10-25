@@ -86,4 +86,21 @@ struct CoachRulesTests {
         let all = Set(CoachRules.lines(for: .info, context: context, now: now, calendar: calendar).map(\.key))
         #expect(CoachRules.next(for: .info, context: context, shownKeys: all, now: now, calendar: calendar) == nil)
     }
+
+    // D18 말 걸기
+    @Test func replyFollowsTheSituationThenMovesOn() {
+        let now = TestCalendar.date(2026, 10, 22, 15)
+        let context = CoachContext(isLowCondition: true, proteinEntriesToday: 0, strengthThisWeek: 0)
+        #expect(CoachRules.reply(to: .protein, context: context, shownKeys: [], now: now, calendar: calendar) == .proteinNotYet)
+        #expect(CoachRules.reply(to: .movement, context: context, shownKeys: [], now: now, calendar: calendar) == .lowCondition)
+        // 같은 주제를 다시 물으면 다음 줄
+        #expect(CoachRules.reply(to: .movement, context: context, shownKeys: ["lowCondition"], now: now, calendar: calendar) == .strengthNotYet)
+        // 다 했으면 처음 줄로 돌아간다 (빈 대답은 없다)
+        let all: Set<String> = ["lowCondition", "strengthNotYet", "tip.5", "tip.6"]
+        #expect(CoachRules.reply(to: .movement, context: context, shownKeys: all, now: now, calendar: calendar) == .lowCondition)
+        guard case .tip = CoachRules.reply(to: .more, context: context, shownKeys: [], now: now, calendar: calendar) else {
+            Issue.record("more should be a tip")
+            return
+        }
+    }
 }
