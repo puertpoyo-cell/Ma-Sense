@@ -66,6 +66,8 @@ struct TodayView: View {
     @AppStorage("strengthRoutine.dismissedDay") private var dismissedRoutineDay = ""
     /// 건강 앱의 성별 (D13). 바디맵 그림을 고르는 데만 쓴다
     @AppStorage("health.bodyFigure") private var healthFigureRaw = ""
+    /// 설정의 바디맵 그림 (D13). 한눈에 카드 그림도 같은 것을 쓴다
+    @AppStorage("bodyMap.figure") private var bodyFigureRaw = BodyFigurePreference.automatic.rawValue
     /// 진료 카드의 "진료 준비" (D9)
     @State private var infoDestination: InfoTopic?
 
@@ -83,6 +85,19 @@ struct TodayView: View {
                     countdownCard(model)
                     // 처방이 없으면 1-1만 보인다 (SCREENS.md 빈 상태)
                     if let prescription {
+                        // D14: 체중·남은 펜·지난 부위를 먼저 한눈에
+                        GlanceCard(
+                            figure: BodyFigureRules.figure(
+                                preference: BodyFigurePreference(rawValue: bodyFigureRaw) ?? .automatic,
+                                healthFigure: BodyFigure(rawValue: healthFigureRaw)
+                            ),
+                            latestWeight: model.latestWeight,
+                            latestBodyFat: model.latestBodyFat,
+                            pens: model.pens,
+                            exhaustionDate: model.exhaustionDate,
+                            lastSite: model.lastSite,
+                            onOpenWeight: { sheet = .weightTrend }
+                        )
                         if model.backfillCount > 0, dismissedBackfill != prescription.id.uuidString {
                             backfillCard(count: model.backfillCount, prescriptionID: prescription.id)
                         }
