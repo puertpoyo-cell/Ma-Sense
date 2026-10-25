@@ -96,14 +96,12 @@ struct PenStatusCard: View {
     var body: some View {
         FrostCard {
             VStack(alignment: .leading, spacing: Spacing.s3) {
-                Text("pen.title")
-                    .font(Typography.sectionHeader)
-                    .foregroundStyle(Color.ink)
-                PenGauge(status: status, tint: tint)
-                VStack(alignment: .leading, spacing: Spacing.s1) {
-                    Text("pen.summary \(status.penCount) \(status.remainingPens)")
-                        .font(Typography.body.weight(.semibold))
+                // D15: 남은 수는 카운트다운 카드 "한눈에"에 있으므로 여기는 그림과 패키지·소진 예상 한 줄만
+                HStack(alignment: .firstTextBaseline) {
+                    Text("pen.title")
+                        .font(Typography.sectionHeader)
                         .foregroundStyle(Color.ink)
+                    Spacer(minLength: Spacing.s2)
                     Group {
                         let date = exhaustionDate?.formatted(.dateTime.month(.defaultDigits).day())
                         switch (status.isSingleUse, date) {
@@ -119,6 +117,11 @@ struct PenStatusCard: View {
                     }
                     .font(Typography.caption)
                     .foregroundStyle(Color.inkSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                }
+                PenGauge(status: status, tint: tint)
+                VStack(alignment: .leading, spacing: Spacing.s1) {
                     if let memo = memo?.trimmingCharacters(in: .whitespacesAndNewlines), !memo.isEmpty {
                         HStack(alignment: .firstTextBaseline, spacing: Spacing.s1) {
                             // 처방 구간 색 점 + 메모 그대로 (색은 처방 구분일 뿐)

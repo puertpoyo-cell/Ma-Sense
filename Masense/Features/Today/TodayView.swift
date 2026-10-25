@@ -85,19 +85,6 @@ struct TodayView: View {
                     countdownCard(model)
                     // 처방이 없으면 1-1만 보인다 (SCREENS.md 빈 상태)
                     if let prescription {
-                        // D14: 체중·남은 펜·지난 부위를 먼저 한눈에
-                        GlanceCard(
-                            figure: BodyFigureRules.figure(
-                                preference: BodyFigurePreference(rawValue: bodyFigureRaw) ?? .automatic,
-                                healthFigure: BodyFigure(rawValue: healthFigureRaw)
-                            ),
-                            latestWeight: model.latestWeight,
-                            latestBodyFat: model.latestBodyFat,
-                            pens: model.pens,
-                            exhaustionDate: model.exhaustionDate,
-                            lastSite: model.lastSite,
-                            onOpenWeight: { sheet = .weightTrend }
-                        )
                         if model.backfillCount > 0, dismissedBackfill != prescription.id.uuidString {
                             backfillCard(count: model.backfillCount, prescriptionID: prescription.id)
                         }
@@ -299,7 +286,24 @@ struct TodayView: View {
             usedDoses: model.usedDoses,
             totalDoses: model.totalDoses,
             onLogDose: { sheet = .dose },
-            onEnterPrescription: { sheet = .prescription }
+            onEnterPrescription: { sheet = .prescription },
+            // D15: 체중·남은 펜·지난 부위를 카운트다운 카드 안에서 한눈에
+            glance: prescription == nil ? nil : AnyView(
+                GlanceStrip(
+                    figure: BodyFigureRules.figure(
+                        preference: BodyFigurePreference(rawValue: bodyFigureRaw) ?? .automatic,
+                        healthFigure: BodyFigure(rawValue: healthFigureRaw)
+                    ),
+                    latestWeight: model.latestWeight,
+                    latestBodyFat: model.latestBodyFat,
+                    pens: model.pens,
+                    usedDoses: model.usedDoses,
+                    totalDoses: model.totalDoses,
+                    exhaustionDate: model.exhaustionDate,
+                    lastSite: model.lastSite,
+                    onOpenWeight: { sheet = .weightTrend }
+                )
+            )
         )
     }
 
@@ -343,61 +347,40 @@ struct TodayView: View {
 
     @ViewBuilder
     private func weightCard(_ model: TodayModel) -> some View {
-        if let latest = model.latestWeight {
+        if model.latestWeight != nil {
+            // D15: 최근 체중 숫자는 카운트다운 카드 "한눈에"에 있으므로 여기는 추이와 체성분만 촘촘하게
             FrostCard(padding: 0) {
-                VStack(spacing: 0) {
-                    BlueprintSplit {
-                        BlueprintCell("weight.title") {
-                            VStack(alignment: .leading, spacing: Spacing.s1) {
-                                DimensionValue(latest.kilograms.formatted(.number.precision(.fractionLength(1))), unit: "unit.kg")
-                                // R14: 키를 입력했을 때만 숫자로. 구간 이름 없음
-                                if let bmi = model.latestBMI {
-                                    Text("weight.bmi \(bmi.formatted(.number.precision(.fractionLength(1))))")
-                                        .font(Typography.caption)
-                                        .foregroundStyle(Color.inkSecondary)
-                                }
-                            }
-                        }
-                    } trailing: {
-                        BlueprintCell("weight.measured") {
-                            Text(latest.measuredAt.formatted(.dateTime.month(.defaultDigits).day()))
-                                .font(Typography.label)
-                                .foregroundStyle(Color.ink)
-                        }
-                    }
-                    // D11: Apple Health 체지방률·제지방량. 숫자만, 판단 라벨·색 없음 (COMPLIANCE.md 2.2)
-                    if model.latestBodyFat != nil || model.latestLeanMass != nil {
-                        BlueprintDivider()
-                        BlueprintSplit {
-                            BlueprintCell("weight.bodyFat") {
-                                compositionValue(model.latestBodyFat, unit: "unit.percent", weightDate: latest.measuredAt)
-                            }
-                        } trailing: {
-                            BlueprintCell("weight.leanMass") {
-                                compositionValue(model.latestLeanMass, unit: "unit.kg", weightDate: latest.measuredAt)
-                            }
-                        }
-                    }
-                    BlueprintDivider()
-                    VStack(alignment: .leading, spacing: Spacing.s3) {
-                        WeekSparkline(points: model.weightSeries, tickDates: model.doseDatesInSeries)
-                            .frame(height: 48)
-                        // D11: 최근 8주 기록이 없으면 마지막 기록 구간을 보이고 그 끝을 적는다
-                        if let shifted = model.weightSeriesShiftedTo {
-                            Text("weight.sparkline.until \(shifted.formatted(.dateTime.month(.defaultDigits).day()))")
+                VStack(alignment: .leading, spacing: Spacing.s3) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("weight.trend.title")
+                            .font(Typography.sectionHeader)
+                            .foregroundStyle(Color.ink)
+                        Spacer(minLength: Spacing.s2)
+                        // D11·R14: 체지방률·제지방량·BMI 숫자만 한 줄로, 판단 라벨·색 없음 (COMPLIANCE.md 2.2)
+                        if let composition = compositionLine(model) {
+                            composition
                                 .font(Typography.caption)
-                                .foregroundStyle(Color.inkTertiary)
-                        }
-                        // R8: 빠른 경우에만, 색 강조 없이 한 줄. 출처가 정해진 뒤에만 보인다 (COMPLIANCE.md 2.2)
-                        if model.paceNotice != nil, let source = AppConfig.paceGuideSource {
-                            NoticeLine("pace.notice")
-                            Text(LocalizedStringKey(source))
-                                .font(Typography.caption)
-                                .foregroundStyle(Color.inkTertiary)
+                                .monospacedDigit()
+                                .foregroundStyle(Color.inkSecondary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
                         }
                     }
-                    .padding(Spacing.cellPadding)
-                    BlueprintDivider()
+                    WeekSparkline(points: model.weightSeries, tickDates: model.doseDatesInSeries)
+                        .frame(height: 56)
+                    // D11: 최근 8주 기록이 없으면 마지막 기록 구간을 보이고 그 끝을 적는다
+                    if let shifted = model.weightSeriesShiftedTo {
+                        Text("weight.sparkline.until \(shifted.formatted(.dateTime.month(.defaultDigits).day()))")
+                            .font(Typography.caption)
+                            .foregroundStyle(Color.inkTertiary)
+                    }
+                    // R8: 빠른 경우에만, 색 강조 없이 한 줄. 출처가 정해진 뒤에만 보인다 (COMPLIANCE.md 2.2)
+                    if model.paceNotice != nil, let source = AppConfig.paceGuideSource {
+                        NoticeLine("pace.notice")
+                        Text(LocalizedStringKey(source))
+                            .font(Typography.caption)
+                            .foregroundStyle(Color.inkTertiary)
+                    }
                     HStack {
                         // D7: 큰 그래프와 기간 선택
                         Button("weight.trend.open") { sheet = .weightTrend }
@@ -406,8 +389,8 @@ struct TodayView: View {
                     }
                     .font(Typography.label)
                     .foregroundStyle(Color.accent)
-                    .padding(Spacing.cellPadding)
                 }
+                .padding(Spacing.cellPadding)
             }
         } else {
             FrostCard {
@@ -429,28 +412,20 @@ struct TodayView: View {
         }
     }
 
-    /// 체성분 셀 값. 체중과 다른 날 측정이면 그 날짜를 아래에 적는다. 값이 없으면 "—"
-    @ViewBuilder
-    private func compositionValue(_ reading: MetricReading?, unit: LocalizedStringKey, weightDate: Date) -> some View {
-        if let reading {
-            VStack(alignment: .trailing, spacing: Spacing.s1) {
-                DimensionValue(
-                    reading.value.formatted(.number.precision(.fractionLength(1))),
-                    unit: unit,
-                    valueFont: Typography.title.monospacedDigit(),
-                    unitFont: Typography.caption
-                )
-                if !calendar.isDate(reading.measuredAt, inSameDayAs: weightDate) {
-                    Text("weight.composition.on \(reading.measuredAt.formatted(.dateTime.month(.defaultDigits).day()))")
-                        .font(Typography.caption)
-                        .foregroundStyle(Color.inkSecondary)
-                }
-            }
-        } else {
-            Text(verbatim: "—")
-                .font(Typography.label)
-                .foregroundStyle(Color.inkSecondary)
+    /// "체지방률 25.0% · 제지방량 58.8 kg · BMI 26.4" 중 있는 것만
+    private func compositionLine(_ model: TodayModel) -> Text? {
+        var parts: [Text] = []
+        if let fat = model.latestBodyFat {
+            parts.append(Text("history.weight.fat \(fat.value.formatted(.number.precision(.fractionLength(1))))"))
         }
+        if let lean = model.latestLeanMass {
+            parts.append(Text("history.weight.lean \(lean.value.formatted(.number.precision(.fractionLength(1))))"))
+        }
+        if let bmi = model.latestBMI {
+            parts.append(Text("weight.bmi \(bmi.formatted(.number.precision(.fractionLength(1))))"))
+        }
+        guard let first = parts.first else { return nil }
+        return parts.dropFirst().reduce(first) { $0 + Text(verbatim: " · ") + $1 }
     }
 
     // MARK: 1-5 진료

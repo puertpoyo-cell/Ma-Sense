@@ -1922,6 +1922,23 @@
         }
       }
     },
+    "glance.sequence %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dose %1$lld of %2$lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld/%2$lld회"
+          }
+        }
+      }
+    },
     "glance.unit.pens": {
       "extractionState": "manual",
       "localizations": {
