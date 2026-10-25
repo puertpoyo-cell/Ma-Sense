@@ -20,7 +20,7 @@ struct WeeklySummary: Equatable, Identifiable {
     /// 단백질 목표가 있을 때만 채운 날 수 (R9)
     let proteinMetDays: Int?
     let strengthCount: Int
-    /// 걷기 + 스트레칭
+    /// 걷기 + 유산소 + 스트레칭 (`StrengthRules.lightKinds`)
     let lightActivityCount: Int
 
     var id: Date { period.start }
@@ -100,7 +100,7 @@ enum WeeklySummaryRules {
             proteinDays: proteinByDay.count,
             proteinMetDays: metDays,
             strengthCount: periodSessions.filter { $0.kind == .strength }.count,
-            lightActivityCount: periodSessions.filter { $0.kind == .walk || $0.kind == .stretch }.count
+            lightActivityCount: periodSessions.filter { StrengthRules.lightKinds.contains($0.kind) }.count
         )
     }
 }
