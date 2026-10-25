@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 정면 1장 고정 실루엣 위 8구역 (DESIGN_SYSTEM.md 5.3, R6).
+/// 정면 1장 고정 실루엣 위 8구역 (DESIGN_SYSTEM.md 5.3, R6). 거울 보기, 유리 실루엣 (D10).
 /// 직전 1회는 `accent`로 채우고 아래 "① 마지막" 칩, 이전 2~4회는 은은한 채움·얇은 테두리.
 /// 구역마다 그 부위를 마지막으로 쓴 날짜를 적고, 아래에 부위별 마지막 사용 표를 둔다 (D5).
 /// **추천 표시 없음.** 화살표·"다음은" 같은 제안 없이 사용자가 보고 고른다. 실루엣은 성별 표현 없는 중성 아웃라인.
@@ -107,39 +107,34 @@ struct BodyMapView: View {
 
     // MARK: 실루엣
 
+    /// 유리 실루엣 (D10): 반투명 채움 + 위가 밝은 테두리. FrostCard와 같은 계열
     private var silhouette: some View {
-        ZStack(alignment: .topLeading) {
-            outline(Circle(), CGRect(x: 98, y: 8, width: 44, height: 44))
-            outline(RoundedRectangle(cornerRadius: 18), CGRect(x: 78, y: 58, width: 84, height: 136))
-            outline(RoundedRectangle(cornerRadius: 12), CGRect(x: 40, y: 62, width: 34, height: 140))
-            outline(RoundedRectangle(cornerRadius: 12), CGRect(x: 166, y: 62, width: 34, height: 140))
-            outline(RoundedRectangle(cornerRadius: 14), CGRect(x: 80, y: 196, width: 38, height: 140))
-            outline(RoundedRectangle(cornerRadius: 14), CGRect(x: 122, y: 196, width: 38, height: 140))
-        }
-        .frame(width: Self.canvas.width, height: Self.canvas.height, alignment: .topLeading)
-        .accessibilityHidden(true)
-    }
-
-    private func outline<S: Shape>(_ shape: S, _ rect: CGRect) -> some View {
-        shape
-            .stroke(Color.inkTertiary, lineWidth: 1)
-            .frame(width: rect.width, height: rect.height)
-            .offset(x: rect.minX, y: rect.minY)
+        BodySilhouette()
+            .fill(LinearGradient(colors: [Color.frostHighlightBottom, Color.frost.opacity(0.5)], startPoint: .top, endPoint: .bottom))
+            .overlay(
+                BodySilhouette()
+                    .stroke(
+                        LinearGradient(colors: [Color.frostHighlightTop, Color.frostHighlightBottom], startPoint: .top, endPoint: .bottom),
+                        style: StrokeStyle(lineWidth: 1, lineJoin: .round)
+                    )
+            )
+            .frame(width: Self.canvas.width, height: Self.canvas.height)
+            .accessibilityHidden(true)
     }
 
     // MARK: 구역
 
     static func frame(for site: BodySite) -> CGRect {
         switch site {
-        // 거울 보기: 본인의 왼쪽 부위가 화면 왼쪽
-        case .upperArmLeft: return CGRect(x: 43, y: 70, width: 28, height: 56)
-        case .upperArmRight: return CGRect(x: 169, y: 70, width: 28, height: 56)
-        case .abdomenUpperLeft: return CGRect(x: 84, y: 112, width: 34, height: 36)
-        case .abdomenUpperRight: return CGRect(x: 122, y: 112, width: 34, height: 36)
-        case .abdomenLowerLeft: return CGRect(x: 84, y: 152, width: 34, height: 36)
-        case .abdomenLowerRight: return CGRect(x: 122, y: 152, width: 34, height: 36)
-        case .thighLeft: return CGRect(x: 83, y: 202, width: 32, height: 64)
-        case .thighRight: return CGRect(x: 125, y: 202, width: 32, height: 64)
+        // 거울 보기: 본인의 왼쪽 부위가 화면 왼쪽. 실루엣(BodySilhouette) 안쪽에 들어가게 맞춘 값
+        case .upperArmLeft: return CGRect(x: 48, y: 104, width: 22, height: 48)
+        case .upperArmRight: return CGRect(x: 170, y: 104, width: 22, height: 48)
+        case .abdomenUpperLeft: return CGRect(x: 90, y: 112, width: 28, height: 32)
+        case .abdomenUpperRight: return CGRect(x: 122, y: 112, width: 28, height: 32)
+        case .abdomenLowerLeft: return CGRect(x: 90, y: 148, width: 28, height: 32)
+        case .abdomenLowerRight: return CGRect(x: 122, y: 148, width: 28, height: 32)
+        case .thighLeft: return CGRect(x: 85, y: 212, width: 27, height: 62)
+        case .thighRight: return CGRect(x: 128, y: 212, width: 27, height: 62)
         }
     }
 
@@ -229,4 +224,58 @@ struct BodyMapView: View {
         }
     }
     return Demo().preferredColorScheme(.dark)
+}
+
+/// 성별 표현 없는 중성 실루엣 한 줄 윤곽 (D10). 설계 좌표 240×340, 좌우 대칭이라 오른쪽 절반을 그리고 거꾸로 거울
+struct BodySilhouette: Shape {
+    func path(in rect: CGRect) -> Path {
+        let scaleX = rect.width / 240
+        let scaleY = rect.height / 340
+        func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(x: rect.minX + x * scaleX, y: rect.minY + y * scaleY)
+        }
+        var path = Path()
+        path.move(to: p(120, 8))
+        path.addCurve(to: p(142, 31), control1: p(133, 8), control2: p(142, 18))
+        path.addCurve(to: p(127, 54), control1: p(142, 43), control2: p(135, 51))
+        path.addLine(to: p(127, 60))
+        path.addCurve(to: p(164, 69), control1: p(131, 64), control2: p(151, 65))
+        path.addCurve(to: p(193, 101), control1: p(182, 73), control2: p(193, 84))
+        path.addCurve(to: p(197, 161), control1: p(194, 121), control2: p(196, 141))
+        path.addCurve(to: p(197, 212), control1: p(198, 181), control2: p(198, 197))
+        path.addCurve(to: p(185, 234), control1: p(197, 226), control2: p(191, 234))
+        path.addCurve(to: p(174, 218), control1: p(179, 234), control2: p(174, 228))
+        path.addCurve(to: p(169, 166), control1: p(173, 200), control2: p(171, 182))
+        path.addCurve(to: p(162, 106), control1: p(167, 142), control2: p(165, 120))
+        path.addCurve(to: p(156, 105), control1: p(161, 100), control2: p(157, 99))
+        path.addCurve(to: p(155, 162), control1: p(154, 124), control2: p(155, 146))
+        path.addCurve(to: p(161, 206), control1: p(155, 178), control2: p(161, 190))
+        path.addCurve(to: p(154, 330), control1: p(161, 240), control2: p(157, 290))
+        path.addCurve(to: p(141, 338), control1: p(154, 336), control2: p(148, 338))
+        path.addCurve(to: p(129, 330), control1: p(134, 338), control2: p(129, 336))
+        path.addCurve(to: p(123, 226), control1: p(128, 290), control2: p(125, 250))
+        path.addCurve(to: p(120, 215), control1: p(122, 219), control2: p(121, 216))
+        // 왼쪽 절반: 같은 선을 거꾸로 거울
+        path.addCurve(to: p(117, 226), control1: p(119, 216), control2: p(118, 219))
+        path.addCurve(to: p(111, 330), control1: p(115, 250), control2: p(112, 290))
+        path.addCurve(to: p(99, 338), control1: p(111, 336), control2: p(106, 338))
+        path.addCurve(to: p(86, 330), control1: p(92, 338), control2: p(86, 336))
+        path.addCurve(to: p(79, 206), control1: p(83, 290), control2: p(79, 240))
+        path.addCurve(to: p(85, 162), control1: p(79, 190), control2: p(85, 178))
+        path.addCurve(to: p(84, 105), control1: p(85, 146), control2: p(86, 124))
+        path.addCurve(to: p(78, 106), control1: p(83, 99), control2: p(79, 100))
+        path.addCurve(to: p(71, 166), control1: p(75, 120), control2: p(73, 142))
+        path.addCurve(to: p(66, 218), control1: p(69, 182), control2: p(67, 200))
+        path.addCurve(to: p(55, 234), control1: p(66, 228), control2: p(61, 234))
+        path.addCurve(to: p(43, 212), control1: p(49, 234), control2: p(43, 226))
+        path.addCurve(to: p(43, 161), control1: p(42, 197), control2: p(42, 181))
+        path.addCurve(to: p(47, 101), control1: p(44, 141), control2: p(46, 121))
+        path.addCurve(to: p(76, 69), control1: p(47, 84), control2: p(58, 73))
+        path.addCurve(to: p(113, 60), control1: p(89, 65), control2: p(109, 64))
+        path.addLine(to: p(113, 54))
+        path.addCurve(to: p(98, 31), control1: p(105, 51), control2: p(98, 43))
+        path.addCurve(to: p(120, 8), control1: p(98, 18), control2: p(107, 8))
+        path.closeSubpath()
+        return path
+    }
 }
