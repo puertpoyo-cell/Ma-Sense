@@ -12,6 +12,8 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var phase: Phase = .loading
     @State private var showsSplash = RootView.startsWithSplash
+    /// 마선생 한마디 팝업 (D18). 세 탭이 함께 쓴다 (같은 한 줄을 하루 두 번 띄우지 않게)
+    @State private var coach = CoachPopupCenter()
 
     var body: some View {
         Group {
@@ -32,6 +34,9 @@ struct RootView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .environment(\.coach, coach)
+        // 시작 전환 화면이 덮고 있는 동안에는 팝업을 띄우지 않는다 (걷힌 뒤 닿아 있는 자리에서 뜬다)
+        .onChange(of: showsSplash, initial: true) { _, shows in coach.isPaused = shows }
         .task {
             // 시작 전환 화면: 1초 머문 뒤 흐려지며 사라진다. 그동안 아래에서 온보딩·홈을 준비한다
             guard showsSplash else { return }
@@ -93,18 +98,21 @@ struct MainTabView: View {
             NavigationStack {
                 // 1-5 진료 카드 "리포트 준비" → 리포트 탭
                 TodayView(openReport: { selection = .report })
+                    .coachPopupOverlay()
             }
             .tabItem { Label("tab.today", systemImage: "house") }
             .tag(Tab.today)
 
             NavigationStack {
                 HistoryView()
+                    .coachPopupOverlay(appearSpot: .history)
             }
             .tabItem { Label("tab.history", systemImage: "calendar") }
             .tag(Tab.history)
 
             NavigationStack {
                 ReportView()
+                    .coachPopupOverlay(appearSpot: .report)
             }
             .tabItem { Label("tab.report", systemImage: "doc.text") }
             .tag(Tab.report)

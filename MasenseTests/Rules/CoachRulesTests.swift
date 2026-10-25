@@ -59,4 +59,48 @@ struct CoachRulesTests {
         #expect(CoachLine.strengthNotYet.isHealthTip)
         #expect(!CoachLine.fact(.noRecentWeight).isHealthTip)
     }
+
+    // D18 자리별 팝업
+    @Test func spotsPreferFactsThenFallBackToTips() {
+        let now = TestCalendar.date(2026, 10, 22, 15)
+        let low = CoachContext(dailyLine: .lowSupply(remaining: 1, isSingleUsePen: true), proteinEntriesToday: 1, strengthThisWeek: 1)
+        #expect(CoachRules.lines(for: .pens, context: low, now: now, calendar: calendar).first == .fact(.lowSupply(remaining: 1, isSingleUsePen: true)))
+        #expect(CoachRules.lines(for: .pens, context: CoachContext(), now: now, calendar: calendar) == [.place(.pens)])
+        #expect(CoachRules.lines(for: .weight, context: CoachContext(dailyLine: .noRecentWeight), now: now, calendar: calendar).first == .fact(.noRecentWeight))
+        #expect(CoachRules.lines(for: .daily, context: CoachContext(isLowAppetite: true), now: now, calendar: calendar).first == .lowAppetite)
+        #expect(CoachRules.lines(for: .daily, context: CoachContext(proteinEntriesToday: 0), now: now, calendar: calendar).first == .proteinNotYet)
+        #expect(CoachRules.lines(for: .routine, context: CoachContext(strengthThisWeek: 0), now: now, calendar: calendar).first == .strengthNotYet)
+        #expect(CoachRules.lines(for: .history, context: CoachContext(), now: now, calendar: calendar).first == .place(.history))
+    }
+
+    @Test func nextSkipsLinesAlreadyShownToday() {
+        let now = TestCalendar.date(2026, 10, 22, 15)
+        let context = CoachContext(proteinEntriesToday: 0, strengthThisWeek: 1)
+        // 맨 위에서 단백질 한마디를 이미 띄웠으면 오늘의 마디 자리에서는 일반 한마디로
+        let top = CoachRules.next(for: .todayTop, context: context, shownKeys: [], now: now, calendar: calendar)
+        #expect(top == .proteinNotYet)
+        let daily = CoachRules.next(for: .daily, context: context, shownKeys: [top!.key], now: now, calendar: calendar)
+        #expect(daily != .proteinNotYet)
+        #expect(daily != nil)
+        // 후보를 다 띄웠으면 조용히
+        let all = Set(CoachRules.lines(for: .info, context: context, now: now, calendar: calendar).map(\.key))
+        #expect(CoachRules.next(for: .info, context: context, shownKeys: all, now: now, calendar: calendar) == nil)
+    }
+
+    // D18 말 걸기
+    @Test func replyFollowsTheSituationThenMovesOn() {
+        let now = TestCalendar.date(2026, 10, 22, 15)
+        let context = CoachContext(isLowCondition: true, proteinEntriesToday: 0, strengthThisWeek: 0)
+        #expect(CoachRules.reply(to: .protein, context: context, shownKeys: [], now: now, calendar: calendar) == .proteinNotYet)
+        #expect(CoachRules.reply(to: .movement, context: context, shownKeys: [], now: now, calendar: calendar) == .lowCondition)
+        // 같은 주제를 다시 물으면 다음 줄
+        #expect(CoachRules.reply(to: .movement, context: context, shownKeys: ["lowCondition"], now: now, calendar: calendar) == .strengthNotYet)
+        // 다 했으면 처음 줄로 돌아간다 (빈 대답은 없다)
+        let all: Set<String> = ["lowCondition", "strengthNotYet", "tip.5", "tip.6"]
+        #expect(CoachRules.reply(to: .movement, context: context, shownKeys: all, now: now, calendar: calendar) == .lowCondition)
+        guard case .tip = CoachRules.reply(to: .more, context: context, shownKeys: [], now: now, calendar: calendar) else {
+            Issue.record("more should be a tip")
+            return
+        }
+    }
 }
