@@ -71,10 +71,13 @@ struct M2ReportAndHealthTests {
             HealthWeightSample(uuid: UUID(), measuredAt: TestCalendar.date(2026, 10, 22, 7), kilograms: 80.5),
         ]
         reader.leanSamples = [HealthWeightSample(uuid: UUID(), measuredAt: TestCalendar.date(2026, 10, 20, 7, 1), kilograms: 54.8)]
+        // D11: 체지방률도 같은 날에 붙는다 (0~100)
+        reader.fatSamples = [HealthPercentSample(uuid: UUID(), measuredAt: TestCalendar.date(2026, 10, 22, 7, 1), percent: 22.0)]
 
         try await HealthSyncService.syncAll(reader: reader, context: context, now: now, calendar: calendar)
         let samples = try WeightSample.all(in: context)
         #expect(samples.map(\.leanBodyMassKg) == [54.8, nil])
+        #expect(samples.map(\.bodyFatPercent) == [nil, 22.0])
     }
 
     @Test func workoutsBecomeSessionsAndFollowHealthKit() async throws {

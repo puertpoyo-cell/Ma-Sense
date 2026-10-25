@@ -2177,6 +2177,40 @@
         }
       }
     },
+    "history.weight.fat %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body fat %@%%"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체지방률 %@%%"
+          }
+        }
+      }
+    },
+    "history.weight.lean %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lean mass %@ kg"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제지방량 %@ kg"
+          }
+        }
+      }
+    },
     "history.weight.sourceHealth": {
       "extractionState": "manual",
       "localizations": {
@@ -8348,6 +8382,40 @@
         }
       }
     },
+    "unit.percent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%"
+          }
+        }
+      }
+    },
+    "unit.percentPoint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pts"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%p"
+          }
+        }
+      }
+    },
     "unit.times": {
       "extractionState": "manual",
       "localizations": {
@@ -8705,6 +8773,40 @@
         }
       }
     },
+    "weight.bodyFat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body fat"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체지방률"
+          }
+        }
+      }
+    },
+    "weight.composition.on %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Measured %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 측정"
+          }
+        }
+      }
+    },
     "weight.empty": {
       "extractionState": "manual",
       "localizations": {
@@ -8773,6 +8875,23 @@
         }
       }
     },
+    "weight.leanMass": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lean mass"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제지방량"
+          }
+        }
+      }
+    },
     "weight.manualEntry": {
       "extractionState": "manual",
       "localizations": {
@@ -8803,6 +8922,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "측정일"
+          }
+        }
+      }
+    },
+    "weight.sparkline.until %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorded through %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@까지 기록"
           }
         }
       }
@@ -8909,6 +9045,23 @@
         }
       }
     },
+    "weight.trend.empty.metric": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No values recorded in this range."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 기간에 기록된 값이 없습니다."
+          }
+        }
+      }
+    },
     "weight.trend.firstLast": {
       "extractionState": "manual",
       "localizations": {
@@ -8939,6 +9092,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "점은 측정값, 선은 주 평균, 아래 짧은 눈금은 투약일입니다."
+          }
+        }
+      }
+    },
+    "weight.trend.metric": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Value"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "값"
+          }
+        }
+      }
+    },
+    "weight.trend.metric.bodyFat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body fat"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체지방률"
+          }
+        }
+      }
+    },
+    "weight.trend.metric.leanMass": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lean mass"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제지방량"
+          }
+        }
+      }
+    },
+    "weight.trend.metric.weight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중"
           }
         }
       }
@@ -9024,6 +9245,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ → %2$@ kg"
+          }
+        }
+      }
+    },
+    "weight.trend.range.valueUnit %@ %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ → %2$@ %3$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ → %2$@ %3$@"
           }
         }
       }

@@ -107,6 +107,8 @@ struct ExportDocument: Equatable {
         var source: String
         var healthKitUUID: UUID?
         var leanBodyMassKg: Double?
+        /// D11 (SchemaV5) 체지방률 0~100. 키가 없는 파일은 null로 읽는다
+        var bodyFatPercent: Double? = nil
         var createdAt: Date
     }
 
@@ -278,6 +280,7 @@ extension ExportDocument.WeightSampleRecord {
         try c.encode(source, forKey: .source)
         try c.encodeNullable(healthKitUUID, forKey: .healthKitUUID)
         try c.encodeNullable(leanBodyMassKg, forKey: .leanBodyMassKg)
+        try c.encodeNullable(bodyFatPercent, forKey: .bodyFatPercent)
         try c.encode(createdAt, forKey: .createdAt)
     }
 }

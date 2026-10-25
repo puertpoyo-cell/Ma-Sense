@@ -310,10 +310,29 @@ struct TodayView: View {
                                 .foregroundStyle(Color.ink)
                         }
                     }
+                    // D11: Apple Health 체지방률·제지방량. 숫자만, 판단 라벨·색 없음 (COMPLIANCE.md 2.2)
+                    if model.latestBodyFat != nil || model.latestLeanMass != nil {
+                        BlueprintDivider()
+                        BlueprintSplit {
+                            BlueprintCell("weight.bodyFat") {
+                                compositionValue(model.latestBodyFat, unit: "unit.percent", weightDate: latest.measuredAt)
+                            }
+                        } trailing: {
+                            BlueprintCell("weight.leanMass") {
+                                compositionValue(model.latestLeanMass, unit: "unit.kg", weightDate: latest.measuredAt)
+                            }
+                        }
+                    }
                     BlueprintDivider()
                     VStack(alignment: .leading, spacing: Spacing.s3) {
                         WeekSparkline(points: model.weightSeries, tickDates: model.doseDatesInSeries)
                             .frame(height: 48)
+                        // D11: 최근 8주 기록이 없으면 마지막 기록 구간을 보이고 그 끝을 적는다
+                        if let shifted = model.weightSeriesShiftedTo {
+                            Text("weight.sparkline.until \(shifted.formatted(.dateTime.month(.defaultDigits).day()))")
+                                .font(Typography.caption)
+                                .foregroundStyle(Color.inkTertiary)
+                        }
                         // R8: 빠른 경우에만, 색 강조 없이 한 줄. 출처가 정해진 뒤에만 보인다 (COMPLIANCE.md 2.2)
                         if model.paceNotice != nil, let source = AppConfig.paceGuideSource {
                             NoticeLine("pace.notice")
@@ -352,6 +371,30 @@ struct TodayView: View {
                     GhostButton("weight.manualEntry") { sheet = .weight }
                 }
             }
+        }
+    }
+
+    /// 체성분 셀 값. 체중과 다른 날 측정이면 그 날짜를 아래에 적는다. 값이 없으면 "—"
+    @ViewBuilder
+    private func compositionValue(_ reading: MetricReading?, unit: LocalizedStringKey, weightDate: Date) -> some View {
+        if let reading {
+            VStack(alignment: .trailing, spacing: Spacing.s1) {
+                DimensionValue(
+                    reading.value.formatted(.number.precision(.fractionLength(1))),
+                    unit: unit,
+                    valueFont: Typography.title.monospacedDigit(),
+                    unitFont: Typography.caption
+                )
+                if !calendar.isDate(reading.measuredAt, inSameDayAs: weightDate) {
+                    Text("weight.composition.on \(reading.measuredAt.formatted(.dateTime.month(.defaultDigits).day()))")
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.inkSecondary)
+                }
+            }
+        } else {
+            Text(verbatim: "—")
+                .font(Typography.label)
+                .foregroundStyle(Color.inkSecondary)
         }
     }
 
@@ -662,6 +705,8 @@ struct TodayView: View {
 
     private func syncHealthIfAuthorized() async {
         guard settingsList.first?.healthKitAuthorized == true, services.healthKit.isAvailable else { return }
+        // D11: 나중에 더한 읽기 종류(체지방률)는 아직 묻지 않았을 때만 시스템 시트가 한 번 뜬다. 이미 답했으면 바로 끝난다
+        _ = try? await services.healthKit.requestReadAuthorization()
         try? await HealthSyncService.syncAll(reader: services.healthKit, context: context)
         try? context.save()
     }

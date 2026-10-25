@@ -8,13 +8,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This app reads your weight, lean body mass, and workouts from Apple Health to show them in your records and pre-visit report. Nothing is written to Apple Health, and the data stays on this device."
+            "value": "This app reads your weight, body fat percentage, lean body mass, and workouts from Apple Health to show them in your records and pre-visit report. Nothing is written to Apple Health, and the data stays on this device."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apple 건강 앱의 체중, 제지방량, 운동 기록을 읽어 앱의 기록과 진료 전 리포트에 함께 보여 줍니다. 건강 앱에는 아무것도 쓰지 않으며, 데이터는 이 기기에만 저장합니다."
+            "value": "Apple 건강 앱의 체중, 체지방률, 제지방량, 운동 기록을 읽어 앱의 기록과 진료 전 리포트에 함께 보여 줍니다. 건강 앱에는 아무것도 쓰지 않으며, 데이터는 이 기기에만 저장합니다."
           }
         }
       }

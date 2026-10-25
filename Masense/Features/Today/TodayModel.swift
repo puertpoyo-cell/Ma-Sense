@@ -55,6 +55,11 @@ struct TodayModel: Equatable {
     /// R14. 최근 체중과 설정의 키로 계산한 BMI 숫자. 키가 없으면 nil
     let latestBMI: Double?
     let weightSeries: [WeekPoint]
+    /// D11. 최근 8주에 기록이 없어 그래프를 마지막 측정까지로 옮겼을 때 그 시각 ("n. n.까지 기록"). 지금까지면 nil
+    let weightSeriesShiftedTo: Date?
+    /// D11. 가장 최근 체지방률(%)·제지방량(kg). 숫자만
+    let latestBodyFat: MetricReading?
+    let latestLeanMass: MetricReading?
     /// 스파크라인 투약일 눈금
     let doseDatesInSeries: [Date]
     let clinicDate: Date?
@@ -137,10 +142,15 @@ struct TodayModel: Equatable {
 
         latestWeight = WeightRules.latestSample(weights)
         latestBMI = latestWeight.flatMap { WeightRules.bmi(kilograms: $0.kilograms, heightCm: heightCm) }
-        let series = WeightRules.weeklyWeightSeries(samples: weights, weeks: Self.weightWeeks, now: now, calendar: calendar)
+        latestBodyFat = WeightRules.latestReading(weights, metric: .bodyFat)
+        latestLeanMass = WeightRules.latestReading(weights, metric: .leanMass)
+        let seriesEnd = WeightRules.seriesEnd(samples: weights, weeks: Self.weightWeeks, now: now, calendar: calendar)
+        let series = WeightRules.weeklyWeightSeries(samples: weights, weeks: Self.weightWeeks, now: seriesEnd, calendar: calendar)
         weightSeries = series
-        paceNotice = PaceRules.paceNotice(series: series)
-        doseDatesInSeries = WeightRules.doseTicks(doses: doses, series: series, now: now)
+        weightSeriesShiftedTo = seriesEnd < now ? seriesEnd : nil
+        // 옮긴 그래프(지난 기록)로는 속도 안내를 하지 않는다
+        paceNotice = seriesEnd < now ? nil : PaceRules.paceNotice(series: series)
+        doseDatesInSeries = WeightRules.doseTicks(doses: doses, series: series, now: seriesEnd)
 
         guard let p = prescription else {
             countdown = .noPrescription

@@ -62,10 +62,18 @@ enum SampleData {
             h48.dose = dose
         }
 
-        // 체중: 3일 간격, 주 0.5kg 안팎의 완만한 변화 (감량 속도 안내가 뜨지 않는 범위)
+        // 체중: 3일 간격, 주 0.5kg 안팎의 완만한 변화 (감량 속도 안내가 뜨지 않는 범위).
+        // 주 1회는 체성분계 측정처럼 체지방률·제지방량도 붙인다 (D11)
         for offset in stride(from: -42, through: 0, by: 3) {
-            let kilograms = 81.0 - Double(offset + 42) * 0.07
-            context.insert(WeightSample(measuredAt: at(offset, 7, 30), kilograms: (kilograms * 10).rounded() / 10, source: .manual))
+            let kilograms = (81.0 - Double(offset + 42) * 0.07) * 10
+            let hasComposition = (offset + 42) % 6 == 0
+            context.insert(WeightSample(
+                measuredAt: at(offset, 7, 30),
+                kilograms: kilograms.rounded() / 10,
+                source: .manual,
+                leanBodyMassKg: hasComposition ? ((58.6 + Double(offset + 42) * 0.005) * 10).rounded() / 10 : nil,
+                bodyFatPercent: hasComposition ? ((27.5 - Double(offset + 42) * 0.06) * 10).rounded() / 10 : nil
+            ))
         }
 
         // 단백질: 최근 3일

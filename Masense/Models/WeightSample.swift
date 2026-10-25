@@ -18,6 +18,8 @@ final class WeightSample {
     var healthKitUUID: UUID?
     /// M2. HealthKit `leanBodyMass` 또는 수동
     var leanBodyMassKg: Double?
+    /// D11 (SchemaV5). HealthKit `bodyFatPercentage`, 0~100 퍼센트 값. 같은 날 측정을 붙인다
+    var bodyFatPercent: Double?
     var createdAt: Date = Date.now
 
     init(
@@ -27,6 +29,7 @@ final class WeightSample {
         source: WeightSource,
         healthKitUUID: UUID? = nil,
         leanBodyMassKg: Double? = nil,
+        bodyFatPercent: Double? = nil,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -35,6 +38,7 @@ final class WeightSample {
         self.sourceRaw = source.rawValue
         self.healthKitUUID = healthKitUUID
         self.leanBodyMassKg = leanBodyMassKg
+        self.bodyFatPercent = bodyFatPercent
         self.createdAt = createdAt
     }
 
