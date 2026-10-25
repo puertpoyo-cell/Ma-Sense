@@ -56,8 +56,7 @@ struct TodayView: View {
     @State private var showsToast = false
     /// 지난 투약 안내 카드를 닫은 처방 id (D6). 기기 화면 상태라 SwiftData 대신 UserDefaults
     @AppStorage("backfill.dismissedPrescription") private var dismissedBackfill = ""
-    /// 하루 닫은 마선생 한마디의 날짜 "y-m-d" (D12), 닫은 주간 정리 구간 시작 (D8). 기기 화면 상태
-    @AppStorage("coach.dismissedDay") private var dismissedCoachDay = ""
+    /// 닫은 주간 정리 구간 시작 (D8). 기기 화면 상태
     @AppStorage("weeklySummary.dismissedStart") private var dismissedWeeklyStart: Double = 0
     /// 닫은 패키지 정리 구간 시작 (D9)
     @AppStorage("packageSummary.dismissedStart") private var dismissedPackageStart: Double = 0
@@ -70,6 +69,8 @@ struct TodayView: View {
     @AppStorage("bodyMap.figure") private var bodyFigureRaw = BodyFigurePreference.automatic.rawValue
     /// 진료 카드의 "진료 준비" (D9)
     @State private var infoDestination: InfoTopic?
+    /// 마선생 팝업 자리 판단용 스크롤 화면 영역 (D18)
+    @State private var viewport: CGRect = .zero
 
     private var prescription: Prescription? { activePrescriptions.first }
 
@@ -79,10 +80,9 @@ struct TodayView: View {
             let model = makeModel(now: timeline.date)
             ScrollView {
                 VStack(spacing: Spacing.cardGap) {
-                    if dismissedCoachDay != dayKey(timeline.date) {
-                        coachCard(model.coachLine, now: timeline.date)
-                    }
+                    // D18: 마선생 한마디는 카드 자리에 닿을 때 팝업으로
                     countdownCard(model)
+                        .coachSpot(.todayTop, viewport: viewport, context: model.coachContext)
                     // 처방이 없으면 1-1만 보인다 (SCREENS.md 빈 상태)
                     if let prescription {
                         if model.backfillCount > 0, dismissedBackfill != prescription.id.uuidString {
@@ -118,22 +118,30 @@ struct TodayView: View {
                                 memo: prescription.doseLabel,
                                 tint: Color.prescription(slot: allPrescriptions.colorSlots[prescription.id] ?? 0)
                             )
+                            .coachSpot(.pens, viewport: viewport, context: model.coachContext)
                         }
                         weightCard(model)
+                            .coachSpot(.weight, viewport: viewport, context: model.coachContext)
                         dailyCycleCard(model.daily, now: timeline.date)
+                            .coachSpot(.daily, viewport: viewport, context: model.coachContext)
                         if let clinic = model.clinicDate {
                             clinicCard(clinic)
                         }
                         // 저컨디션 날(R11)에는 근력 예시를 띄우지 않는다
                         if !model.daily.isLowCondition, dismissedRoutineDay != dayKey(timeline.date) {
                             routineCard(now: timeline.date)
+                                .coachSpot(.routine, viewport: viewport, context: model.coachContext)
                         }
                     }
                     infoRow
+                        .coachSpot(.info, viewport: viewport, context: model.coachContext)
                 }
                 .padding(.horizontal, Spacing.screenHorizontal)
                 .padding(.vertical, Spacing.s4)
+                // 팝업이 마지막 카드를 가리지 않게 아래 여유
+                .padding(.bottom, Spacing.s6)
             }
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { viewport = $0 }
         }
         .midnightBackground()
         .navigationTitle("tab.today")
@@ -191,90 +199,12 @@ struct TodayView: View {
         )
     }
 
-    // MARK: 맨 위 마선생 한마디 (R20, D12)
+    // MARK: 하루 단위 카드 닫기
 
     /// 하루 단위로 닫는 카드의 키 "y-m-d"
     private func dayKey(_ date: Date) -> String {
         let day = calendar.dateComponents([.year, .month, .day], from: date)
         return "\(day.year ?? 0)-\(day.month ?? 0)-\(day.day ?? 0)"
-    }
-
-    /// 캐릭터 얼굴 + 말풍선. 과정만 다정하게 권하고 결과를 평가하지 않는다. 건강관리 한마디에는 고지를 붙인다
-    private func coachCard(_ line: CoachLine, now: Date) -> some View {
-        HStack(alignment: .top, spacing: Spacing.s3) {
-            Image("MasenseCoach")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 52, height: 52)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: Spacing.s1) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("coach.name")
-                        .font(Typography.caption.weight(.semibold))
-                        .foregroundStyle(Color.accent)
-                    Spacer(minLength: 0)
-                    Button {
-                        dismissedCoachDay = dayKey(now)
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(Color.inkSecondary)
-                            .frame(minWidth: 28, minHeight: 28)
-                    }
-                    .accessibilityLabel(Text("today.routine.dismiss"))
-                }
-                coachText(line)
-                    .font(Typography.body)
-                    .foregroundStyle(Color.ink)
-                    .fixedSize(horizontal: false, vertical: true)
-                if line.isHealthTip {
-                    Text("coach.notice")
-                        .font(Typography.caption)
-                        .foregroundStyle(Color.inkTertiary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            .padding(.leading, Spacing.s3)
-            .padding(.trailing, Spacing.s2)
-            .padding(.bottom, Spacing.s3)
-            .padding(.top, Spacing.s1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            // 말풍선: 얼굴 쪽 위 모서리만 덜 둥글게
-            .background(
-                UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 16, bottomTrailingRadius: 16, topTrailingRadius: 16, style: .continuous)
-                    .fill(Color.frost)
-            )
-            .overlay(
-                UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 16, bottomTrailingRadius: 16, topTrailingRadius: 16, style: .continuous)
-                    .strokeBorder(Color.frostBorder, lineWidth: 1)
-            )
-        }
-    }
-
-    private func coachText(_ line: CoachLine) -> Text {
-        switch line {
-        case let .fact(.doseDay(site?)):
-            return Text("coach.doseDay \(site.localizedName)")
-        case .fact(.doseDay(nil)):
-            return Text("coach.doseDay.noSite")
-        case let .fact(.lowSupply(remaining, true)):
-            return Text("coach.lowPens \(remaining)")
-        case let .fact(.lowSupply(remaining, false)):
-            return Text("coach.lowDoses \(remaining)")
-        case .fact(.noRecentWeight):
-            return Text("coach.noWeight")
-        case .lowCondition:
-            return Text("coach.lowCondition")
-        case .lowAppetite:
-            return Text("coach.lowAppetite")
-        case .proteinNotYet:
-            return Text("coach.proteinNotYet")
-        case .strengthNotYet:
-            return Text("coach.strengthNotYet")
-        case let .tip(index):
-            // 보간하면 키가 "coach.tip.%lld"가 되므로 이어 붙인 String으로
-            return Text(LocalizedStringKey("coach.tip." + String(index)))
-        }
     }
 
     // MARK: 1-1 카운트다운 (CountdownHero, DESIGN_SYSTEM.md 5.2)

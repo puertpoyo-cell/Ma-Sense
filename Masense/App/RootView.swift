@@ -75,6 +75,8 @@ struct MainTabView: View {
     }
 
     @State private var selection: Tab = MainTabView.initialTab
+    /// 마선생 한마디 팝업 (D18). 세 탭이 함께 쓴다 (같은 한 줄을 하루 두 번 띄우지 않게)
+    @State private var coach = CoachPopupCenter()
     @Environment(\.router) private var router
 
     private static var initialTab: Tab {
@@ -93,23 +95,27 @@ struct MainTabView: View {
             NavigationStack {
                 // 1-5 진료 카드 "리포트 준비" → 리포트 탭
                 TodayView(openReport: { selection = .report })
+                    .coachPopupOverlay()
             }
             .tabItem { Label("tab.today", systemImage: "house") }
             .tag(Tab.today)
 
             NavigationStack {
                 HistoryView()
+                    .coachPopupOverlay(appearSpot: .history)
             }
             .tabItem { Label("tab.history", systemImage: "calendar") }
             .tag(Tab.history)
 
             NavigationStack {
                 ReportView()
+                    .coachPopupOverlay(appearSpot: .report)
             }
             .tabItem { Label("tab.report", systemImage: "doc.text") }
             .tag(Tab.report)
         }
         .tint(Color.accent)
+        .environment(\.coach, coach)
         // 알림·위젯에서 들어오면 오늘 탭으로. 시트는 오늘 화면이 연다
         .onChange(of: router.pending, initial: true) { _, route in
             if route != nil {

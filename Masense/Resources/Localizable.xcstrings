@@ -919,6 +919,74 @@
         }
       }
     },
+    "coach.place.history": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Past records are handy to look at with your doctor. Gaps are okay."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 기록은 진료 때 의사와 함께 보기 좋아요. 빈 날이 있어도 괜찮아요."
+          }
+        }
+      }
+    },
+    "coach.place.pens": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quick look at your remaining pens before a visit makes the prescription talk easier."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 펜 수를 진료 전에 한 번 보아 두면 처방 이야기가 한결 편해요."
+          }
+        }
+      }
+    },
+    "coach.place.report": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Making the report a few days before a visit gives you time to prepare."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 며칠 전에 리포트를 미리 만들어 두면 여유 있게 챙길 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.popup.dismissHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to close"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "누르면 닫힙니다"
+          }
+        }
+      }
+    },
     "coach.proteinNotYet": {
       "extractionState": "manual",
       "localizations": {

@@ -350,6 +350,22 @@ func line(dailyLine: DailyLine?, isLowCondition: Bool, isLowAppetite: Bool, prot
 - 과정만 권한다. 체중 숫자·감량을 평가하거나 칭찬하지 않는다 (COMPLIANCE.md 3.1). 다음 부위를 권하지 않는다 (R6)
 - 식욕 저하·근력, 일반 한마디 중 단백질·물·근력·수면은 건강관리 정보로 보고 "의사와 상의하세요" 고지를 붙인다 (`isHealthTip`)
 
+### R20-1. 자리별 한마디 (D18)
+
+```swift
+func lines(for spot: CoachSpot, context: CoachContext, now: Date, calendar: Calendar) -> [CoachLine]
+func next(for spot: CoachSpot, context: CoachContext, shownKeys: Set<String>, now: Date, calendar: Calendar) -> CoachLine?
+```
+
+- 오늘 맨 위(`todayTop`): 위 R20 한 줄
+- 남은 펜: 남은 회차 사실(R17) > "남은 펜 수를 진료 전에 한 번 보아 두면…"
+- 체중: 체중 기록 없음(R17) > 같은 조건에서 재기·오르내림은 자연스럽다 (날짜로 순서 바꿈). 체중 숫자를 평가하지 않는다
+- 오늘의 마디: 식욕 저하 > 저컨디션 > 오후 단백질 기록 전 > 단백질·물·수면 일반 한마디
+- 맨몸 근력: 이번 주 근력 기록 없음 > 작은 동작부터
+- 알아 두기: 물어볼 것 적기 > 기록은 짧아도 괜찮다
+- 기록 탭: "지난 기록은 진료 때 의사와 함께 보기 좋아요", 리포트 탭: "진료 며칠 전에 리포트를 미리…"
+- `next`는 오늘 이미 띄운 키(`CoachLine.key`)를 빼고 첫 줄. 없으면 nil
+
 ## 테스트 체크리스트
 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
@@ -359,7 +375,7 @@ func line(dailyLine: DailyLine?, isLowCondition: Bool, isLowAppetite: Bool, prot
 - [x] R6 부위 기록 없음은 바디맵 이력·부위별 날짜에서 제외 (`SiteRulesTests`)
 - [x] R16 구간 경계·끝난 구간만·숫자 집계, R17 우선순위 (`WeeklySummaryRulesTests`, `DailyLineRulesTests`, `TodayModelTests`)
 - [x] R7-1 마지막 기록 구간으로 옮기기·체성분 값 고르기·가장 최근 값 (`WeightRulesTests`, `TodayModelTests`), 체지방률 같은 날 붙이기 (`M2ReportAndHealthTests`)
-- [x] R20 우선순위·정오 기준·주 후반 기준·날짜로 돌리기·건강관리 고지 표시 (`CoachRulesTests`)
+- [x] R20 우선순위·정오 기준·주 후반 기준·날짜로 돌리기·건강관리 고지 표시, R20-1 자리별 후보·이미 띄운 줄 건너뛰기 (`CoachRulesTests`)
 - [x] R18 4회째 다음 주까지·덜 찬 묶음 제외·다음 묶음이 일찍 시작하면 자르기·오늘 카드 7일 (`PackageSummaryRulesTests`, `TodayModelTests`), R19 지금 구간까지·구간별 최대 강도·정렬 (`SymptomFlowRulesTests`)
 - [x] R15 입력 정리, 아직 묻지 않은 것 순서, 리포트 5개·메모와 합쳐 8줄 (`ClinicQuestionRulesTests`, `ReportBuilderTests`)
 - [x] R4 4주 제한, 재등록 시 중복 없음

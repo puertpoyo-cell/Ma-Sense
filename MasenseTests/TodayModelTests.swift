@@ -145,7 +145,7 @@ struct TodayModelTests {
         let doseDay = model(prescription(), now: TestCalendar.date(2026, 10, 22, 9))
         #expect(doseDay.dailyLine == .doseDay(lastSite: nil))
         // R20: 사실 한 줄이 있으면 마선생 한마디가 그것을 말한다
-        #expect(doseDay.coachLine == .fact(.doseDay(lastSite: nil)))
+        #expect(doseDay.coachContext.dailyLine == .doseDay(lastSite: nil))
         #expect(doseDay.weeklySummary == nil)
 
         // 10-29 09:00: 10-22 ~ 10-28 구간이 끝났고 그 안에 투약 1회

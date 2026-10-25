@@ -68,8 +68,8 @@ struct TodayModel: Equatable {
     let paceNotice: PaceNotice?
     /// 맨 위 사실 한 줄 (R17, D8)
     let dailyLine: DailyLine?
-    /// 맨 위 마선생 한마디 (R20, D12). 사실 한 줄이 있으면 그것을 말한다
-    let coachLine: CoachLine
+    /// 마선생 한마디 팝업의 재료 (R20, D18). 자리마다 `CoachRules.next`로 한 줄을 고른다
+    let coachContext: CoachContext
     /// 1-1c 지난 마디 정리 (R16, D8). 끝난 구간 중 가장 최근, 기록이 하나도 없으면 nil
     let weeklySummary: WeeklySummary?
     /// 1-1c 패키지 정리 (R18, D9). 4회를 다 쓴 패키지 기간이 끝난 뒤 7일 동안. 보이면 주간 정리 대신
@@ -144,14 +144,12 @@ struct TodayModel: Equatable {
             isLowCondition: ConditionRules.isLowConditionDay(checks: checks, now: now),
             habit: habits.first { calendar.isDate($0.date, inSameDayAs: now) }
         )
-        coachLine = CoachRules.line(
+        coachContext = CoachContext(
             dailyLine: dailyLine,
             isLowCondition: daily.isLowCondition,
             isLowAppetite: daily.isLowAppetite,
             proteinEntriesToday: todayProteins.count,
-            strengthThisWeek: daily.week.strengthCount,
-            now: now,
-            calendar: calendar
+            strengthThisWeek: daily.week.strengthCount
         )
 
         latestWeight = WeightRules.latestSample(weights)
