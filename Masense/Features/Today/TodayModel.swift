@@ -74,6 +74,8 @@ struct TodayModel: Equatable {
     let weeklySummary: WeeklySummary?
     /// 1-1c 패키지 정리 (R18, D9). 4회를 다 쓴 패키지 기간이 끝난 뒤 7일 동안. 보이면 주간 정리 대신
     let packageSummary: PackageSummary?
+    /// D14 한눈에 카드: 가장 최근에 기록한 부위 (모든 처방, 부위 기록 없음 제외)
+    let lastSite: SiteUse?
     /// 1-1b 펜 현황 (R13-1, D7)과 소진 예상일 (R13)
     let pens: PenStatus?
     let exhaustionDate: Date?
@@ -118,6 +120,7 @@ struct TodayModel: Equatable {
                 )
             }
             .flatMap { $0.isEmpty ? nil : $0 }
+        lastSite = SiteRules.siteHistory(doses: allDoses ?? doses, limit: 1).first
         // 처방의 기록만으로 패키지를 센다
         packageSummary = PackageSummaryRules.recentlyFinished(doses: doses, now: now, calendar: calendar).map { package in
             PackageSummaryRules.summary(
