@@ -267,6 +267,7 @@ enum ProteinFood: String, Codable, CaseIterable {
 | WeightSample.kilograms | `bodyMass` | 읽기 (쓰기는 v1.1) |
 | WeightSample.leanBodyMassKg | `leanBodyMass` | 읽기 |
 | WeightSample.bodyFatPercent (D11) | `bodyFatPercentage` (0~1 비율 → ×100) | 읽기 |
+| 바디맵 그림 (D13) | `HKCharacteristicType.biologicalSex` (여·남만, 그 밖은 없음으로) | 읽기. SwiftData에 두지 않고 UserDefaults `health.bodyFigure`에만, 내보내지 않음 |
 | StrengthSession (M2, P2) | `HKWorkoutType` activityType `.traditionalStrengthTraining`, `.functionalStrengthTraining`, `.walking`, `.flexibility` | 읽기 |
 
 Info.plist: `NSHealthShareUsageDescription` 필수 (빌드 설정 `INFOPLIST_KEY_NSHealthShareUsageDescription`, 번역 `InfoPlist.xcstrings`, entitlement `Config/Masense.entitlements`). 쓰기 전까지 `NSHealthUpdateUsageDescription`은 넣지 않음.

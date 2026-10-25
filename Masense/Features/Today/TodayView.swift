@@ -64,6 +64,8 @@ struct TodayView: View {
     @State private var weeklyListDestination: WeeklySummaryListView.Segment?
     /// 하루 닫은 맨몸 근력 예시 카드의 날짜 "y-m-d" (D10). 기기 화면 상태
     @AppStorage("strengthRoutine.dismissedDay") private var dismissedRoutineDay = ""
+    /// 건강 앱의 성별 (D13). 바디맵 그림을 고르는 데만 쓴다
+    @AppStorage("health.bodyFigure") private var healthFigureRaw = ""
     /// 진료 카드의 "진료 준비" (D9)
     @State private var infoDestination: InfoTopic?
 
@@ -556,7 +558,7 @@ struct TodayView: View {
     /// 실행 인자 `-route sheet.*`로 시작할 때 해당 시트를 연다 (ScreenshotRoute)
     private func openSheetForScreenshot() {
         switch ScreenshotRoute.current {
-        case .doseSheet?: sheet = .dose
+        case .doseSheet?, .doseSheetFemale?: sheet = .dose
         case .proteinSheet?: sheet = .protein(preselected: nil)
         case .strengthSheet?: sheet = .strength
         case .backfillSheet?: sheet = .backfill
@@ -745,6 +747,7 @@ struct TodayView: View {
         guard settingsList.first?.healthKitAuthorized == true, services.healthKit.isAvailable else { return }
         // D11: 나중에 더한 읽기 종류(체지방률)는 아직 묻지 않았을 때만 시스템 시트가 한 번 뜬다. 이미 답했으면 바로 끝난다
         _ = try? await services.healthKit.requestReadAuthorization()
+        healthFigureRaw = services.healthKit.bodyFigure()?.rawValue ?? ""
         try? await HealthSyncService.syncAll(reader: services.healthKit, context: context)
         try? context.save()
     }
@@ -755,6 +758,7 @@ struct TodayView: View {
             settings.healthKitAuthorized = granted
         }
         if granted {
+            healthFigureRaw = services.healthKit.bodyFigure()?.rawValue ?? ""
             try? await HealthSyncService.syncAll(reader: services.healthKit, context: context)
         }
         try? context.save()

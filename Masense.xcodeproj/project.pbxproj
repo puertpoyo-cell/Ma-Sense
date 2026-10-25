@@ -447,7 +447,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/Masense-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your weight, body fat percentage, lean body mass, and workouts from Apple Health to show them in your records and pre-visit report. Nothing is written to Apple Health, and the data stays on this device.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your weight, body fat percentage, lean body mass, and workouts from Apple Health to show them in your records and pre-visit report, and your sex to choose the body map figure. Nothing is written to Apple Health, and the data stays on this device.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -481,7 +481,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/Masense-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your weight, body fat percentage, lean body mass, and workouts from Apple Health to show them in your records and pre-visit report. Nothing is written to Apple Health, and the data stays on this device.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your weight, body fat percentage, lean body mass, and workouts from Apple Health to show them in your records and pre-visit report, and your sex to choose the body map figure. Nothing is written to Apple Health, and the data stays on this device.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

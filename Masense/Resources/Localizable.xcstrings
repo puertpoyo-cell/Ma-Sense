@@ -5934,6 +5934,91 @@
         }
       }
     },
+    "settings.body.figure": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body map figure"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "바디맵 그림"
+          }
+        }
+      }
+    },
+    "settings.body.figure.automatic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Follow Health"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "건강 앱 따라"
+          }
+        }
+      }
+    },
+    "settings.body.figure.female": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Female"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여성"
+          }
+        }
+      }
+    },
+    "settings.body.figure.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uses the figure that matches the sex in Health, or the male figure if none is set. Sex is used only to choose the figure and never leaves this device."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "건강 앱에 성별이 있으면 그에 맞는 그림을, 없으면 남성 그림을 보입니다. 성별은 그림을 고르는 데만 쓰고 기기 밖으로 내보내지 않습니다."
+          }
+        }
+      }
+    },
+    "settings.body.figure.male": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Male"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남성"
+          }
+        }
+      }
+    },
     "settings.body.height": {
       "extractionState": "manual",
       "localizations": {

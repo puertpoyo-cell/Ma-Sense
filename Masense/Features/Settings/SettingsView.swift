@@ -67,6 +67,8 @@ private struct SettingsForm: View {
     @State private var confirmsDeleteAgain = false
     @State private var importsFile = false
     @State private var importError: ExportCodec.ImportError?
+    /// 바디맵 그림 (D13). 기기 화면 상태라 UserDefaults
+    @AppStorage("bodyMap.figure") private var bodyFigureRaw = BodyFigurePreference.automatic.rawValue
 
     private var prescription: Prescription? { activePrescriptions.first }
 
@@ -301,10 +303,19 @@ private struct SettingsForm: View {
                     Text(verbatim: "cm").foregroundStyle(Color.inkSecondary)
                 }
             }
+            // D13: 건강 앱의 성별을 따르고, 없으면 남성 그림
+            Picker("settings.body.figure", selection: $bodyFigureRaw) {
+                ForEach(BodyFigurePreference.allCases, id: \.self) { item in
+                    Text(LocalizedStringKey("settings.body.figure." + item.rawValue)).tag(item.rawValue)
+                }
+            }
         } header: {
             SectionHeaderText("settings.section.body")
         } footer: {
-            Text("settings.body.height.footer")
+            VStack(alignment: .leading, spacing: Spacing.s1) {
+                Text("settings.body.height.footer")
+                Text("settings.body.figure.footer")
+            }
         }
         .frostRow()
     }
