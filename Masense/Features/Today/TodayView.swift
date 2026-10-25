@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-1a 지난 투약 안내, 1-2 컨디션, 1-1c 지난 정리, 1-1b 남은 펜, 1-3 체중, 1-4 오늘의 마디, 1-5 진료, 1-6 알아 두기.
+/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-1a 지난 투약 안내, 1-2 컨디션, 1-1c 지난 정리, 1-1b 남은 펜, 1-3 체중, 1-4 오늘의 마디, 1-5 진료, 1-7 맨몸 근력 예시, 1-6 알아 두기.
 struct TodayView: View {
     var openReport: () -> Void = {}
 
@@ -56,12 +56,16 @@ struct TodayView: View {
     @State private var showsToast = false
     /// 지난 투약 안내 카드를 닫은 처방 id (D6). 기기 화면 상태라 SwiftData 대신 UserDefaults
     @AppStorage("backfill.dismissedPrescription") private var dismissedBackfill = ""
-    /// 닫은 사실 한 줄 "종류|날짜", 닫은 주간 정리 구간 시작 (D8). 기기 화면 상태
-    @AppStorage("dailyLine.dismissed") private var dismissedDailyLine = ""
+    /// 하루 닫은 마선생 한마디의 날짜 "y-m-d" (D12), 닫은 주간 정리 구간 시작 (D8). 기기 화면 상태
+    @AppStorage("coach.dismissedDay") private var dismissedCoachDay = ""
     @AppStorage("weeklySummary.dismissedStart") private var dismissedWeeklyStart: Double = 0
     /// 닫은 패키지 정리 구간 시작 (D9)
     @AppStorage("packageSummary.dismissedStart") private var dismissedPackageStart: Double = 0
     @State private var weeklyListDestination: WeeklySummaryListView.Segment?
+    /// 하루 닫은 맨몸 근력 예시 카드의 날짜 "y-m-d" (D10). 기기 화면 상태
+    @AppStorage("strengthRoutine.dismissedDay") private var dismissedRoutineDay = ""
+    /// 건강 앱의 성별 (D13). 바디맵 그림을 고르는 데만 쓴다
+    @AppStorage("health.bodyFigure") private var healthFigureRaw = ""
     /// 진료 카드의 "진료 준비" (D9)
     @State private var infoDestination: InfoTopic?
 
@@ -73,8 +77,8 @@ struct TodayView: View {
             let model = makeModel(now: timeline.date)
             ScrollView {
                 VStack(spacing: Spacing.cardGap) {
-                    if let line = model.dailyLine, dismissedDailyLine != dailyLineKey(line, now: timeline.date) {
-                        dailyLineView(line, now: timeline.date)
+                    if dismissedCoachDay != dayKey(timeline.date) {
+                        coachCard(model.coachLine, now: timeline.date)
                     }
                     countdownCard(model)
                     // 처방이 없으면 1-1만 보인다 (SCREENS.md 빈 상태)
@@ -117,6 +121,10 @@ struct TodayView: View {
                         dailyCycleCard(model.daily, now: timeline.date)
                         if let clinic = model.clinicDate {
                             clinicCard(clinic)
+                        }
+                        // 저컨디션 날(R11)에는 근력 예시를 띄우지 않는다
+                        if !model.daily.isLowCondition, dismissedRoutineDay != dayKey(timeline.date) {
+                            routineCard(now: timeline.date)
                         }
                     }
                     infoRow
@@ -181,47 +189,90 @@ struct TodayView: View {
         )
     }
 
-    // MARK: 맨 위 사실 한 줄 (R17, D8)
+    // MARK: 맨 위 마선생 한마디 (R20, D12)
 
-    /// 하루에 한 번 닫는다: 같은 종류·같은 날이면 숨김
-    private func dailyLineKey(_ line: DailyLine, now: Date) -> String {
-        let day = calendar.dateComponents([.year, .month, .day], from: now)
-        return "\(line.kind)|\(day.year ?? 0)-\(day.month ?? 0)-\(day.day ?? 0)"
+    /// 하루 단위로 닫는 카드의 키 "y-m-d"
+    private func dayKey(_ date: Date) -> String {
+        let day = calendar.dateComponents([.year, .month, .day], from: date)
+        return "\(day.year ?? 0)-\(day.month ?? 0)-\(day.day ?? 0)"
     }
 
-    private func dailyLineView(_ line: DailyLine, now: Date) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: Spacing.s2) {
-            Group {
-                switch line {
-                case let .doseDay(site?):
-                    Text("daily.line.doseDay \(site.localizedName)")
-                case .doseDay(nil):
-                    Text("daily.line.doseDay.noSite")
-                case let .lowSupply(remaining, true):
-                    Text("daily.line.lowPens \(remaining)")
-                case let .lowSupply(remaining, false):
-                    Text("daily.line.lowDoses \(remaining)")
-                case .noRecentWeight:
-                    Text("daily.line.noWeight")
+    /// 캐릭터 얼굴 + 말풍선. 과정만 다정하게 권하고 결과를 평가하지 않는다. 건강관리 한마디에는 고지를 붙인다
+    private func coachCard(_ line: CoachLine, now: Date) -> some View {
+        HStack(alignment: .top, spacing: Spacing.s3) {
+            Image("MasenseCoach")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 52, height: 52)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: Spacing.s1) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("coach.name")
+                        .font(Typography.caption.weight(.semibold))
+                        .foregroundStyle(Color.accent)
+                    Spacer(minLength: 0)
+                    Button {
+                        dismissedCoachDay = dayKey(now)
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Color.inkSecondary)
+                            .frame(minWidth: 28, minHeight: 28)
+                    }
+                    .accessibilityLabel(Text("today.routine.dismiss"))
+                }
+                coachText(line)
+                    .font(Typography.body)
+                    .foregroundStyle(Color.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                if line.isHealthTip {
+                    Text("coach.notice")
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.inkTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .font(Typography.body)
-            .foregroundStyle(Color.ink)
+            .padding(.leading, Spacing.s3)
+            .padding(.trailing, Spacing.s2)
+            .padding(.bottom, Spacing.s3)
+            .padding(.top, Spacing.s1)
             .frame(maxWidth: .infinity, alignment: .leading)
-            Button {
-                dismissedDailyLine = dailyLineKey(line, now: now)
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color.inkSecondary)
-                    .frame(minWidth: 32, minHeight: 32)
-            }
-            .accessibilityLabel(Text("daily.line.dismiss"))
+            // 말풍선: 얼굴 쪽 위 모서리만 덜 둥글게
+            .background(
+                UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 16, bottomTrailingRadius: 16, topTrailingRadius: 16, style: .continuous)
+                    .fill(Color.frost)
+            )
+            .overlay(
+                UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 16, bottomTrailingRadius: 16, topTrailingRadius: 16, style: .continuous)
+                    .strokeBorder(Color.frostBorder, lineWidth: 1)
+            )
         }
-        .padding(.leading, Spacing.s4)
-        .padding(.trailing, Spacing.s2)
-        .padding(.vertical, Spacing.s1)
-        .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
+    }
+
+    private func coachText(_ line: CoachLine) -> Text {
+        switch line {
+        case let .fact(.doseDay(site?)):
+            return Text("coach.doseDay \(site.localizedName)")
+        case .fact(.doseDay(nil)):
+            return Text("coach.doseDay.noSite")
+        case let .fact(.lowSupply(remaining, true)):
+            return Text("coach.lowPens \(remaining)")
+        case let .fact(.lowSupply(remaining, false)):
+            return Text("coach.lowDoses \(remaining)")
+        case .fact(.noRecentWeight):
+            return Text("coach.noWeight")
+        case .lowCondition:
+            return Text("coach.lowCondition")
+        case .lowAppetite:
+            return Text("coach.lowAppetite")
+        case .proteinNotYet:
+            return Text("coach.proteinNotYet")
+        case .strengthNotYet:
+            return Text("coach.strengthNotYet")
+        case let .tip(index):
+            // 보간하면 키가 "coach.tip.%lld"가 되므로 이어 붙인 String으로
+            return Text(LocalizedStringKey("coach.tip." + String(index)))
+        }
     }
 
     // MARK: 1-1 카운트다운 (CountdownHero, DESIGN_SYSTEM.md 5.2)
@@ -299,10 +350,29 @@ struct TodayView: View {
                                 .foregroundStyle(Color.ink)
                         }
                     }
+                    // D11: Apple Health 체지방률·제지방량. 숫자만, 판단 라벨·색 없음 (COMPLIANCE.md 2.2)
+                    if model.latestBodyFat != nil || model.latestLeanMass != nil {
+                        BlueprintDivider()
+                        BlueprintSplit {
+                            BlueprintCell("weight.bodyFat") {
+                                compositionValue(model.latestBodyFat, unit: "unit.percent", weightDate: latest.measuredAt)
+                            }
+                        } trailing: {
+                            BlueprintCell("weight.leanMass") {
+                                compositionValue(model.latestLeanMass, unit: "unit.kg", weightDate: latest.measuredAt)
+                            }
+                        }
+                    }
                     BlueprintDivider()
                     VStack(alignment: .leading, spacing: Spacing.s3) {
                         WeekSparkline(points: model.weightSeries, tickDates: model.doseDatesInSeries)
                             .frame(height: 48)
+                        // D11: 최근 8주 기록이 없으면 마지막 기록 구간을 보이고 그 끝을 적는다
+                        if let shifted = model.weightSeriesShiftedTo {
+                            Text("weight.sparkline.until \(shifted.formatted(.dateTime.month(.defaultDigits).day()))")
+                                .font(Typography.caption)
+                                .foregroundStyle(Color.inkTertiary)
+                        }
                         // R8: 빠른 경우에만, 색 강조 없이 한 줄. 출처가 정해진 뒤에만 보인다 (COMPLIANCE.md 2.2)
                         if model.paceNotice != nil, let source = AppConfig.paceGuideSource {
                             NoticeLine("pace.notice")
@@ -344,6 +414,30 @@ struct TodayView: View {
         }
     }
 
+    /// 체성분 셀 값. 체중과 다른 날 측정이면 그 날짜를 아래에 적는다. 값이 없으면 "—"
+    @ViewBuilder
+    private func compositionValue(_ reading: MetricReading?, unit: LocalizedStringKey, weightDate: Date) -> some View {
+        if let reading {
+            VStack(alignment: .trailing, spacing: Spacing.s1) {
+                DimensionValue(
+                    reading.value.formatted(.number.precision(.fractionLength(1))),
+                    unit: unit,
+                    valueFont: Typography.title.monospacedDigit(),
+                    unitFont: Typography.caption
+                )
+                if !calendar.isDate(reading.measuredAt, inSameDayAs: weightDate) {
+                    Text("weight.composition.on \(reading.measuredAt.formatted(.dateTime.month(.defaultDigits).day()))")
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.inkSecondary)
+                }
+            }
+        } else {
+            Text(verbatim: "—")
+                .font(Typography.label)
+                .foregroundStyle(Color.inkSecondary)
+        }
+    }
+
     // MARK: 1-5 진료
 
     /// 진료 7일 전부터. 물어볼 것(D6)을 적거나 진료에서 물어봤다고 표시하고, 리포트를 준비한다
@@ -365,6 +459,48 @@ struct TodayView: View {
                     GhostButton("clinic.prepareReport", action: openReport)
                 }
                 GhostButton("info.clinicPrep.title") { infoDestination = .clinicPrep }
+            }
+        }
+    }
+
+    // MARK: 1-7 맨몸 근력 예시 (D10)
+
+    /// 페이지 아래 예시 루틴 (S8과 같은 문구). 일반 건강관리 정보이며 개인 맞춤이 아니다 (COMPLIANCE.md 2.2).
+    /// 횟수·목표·연속일 없이 예시만 두고, 오늘 하루 닫을 수 있다
+    private func routineCard(now: Date) -> some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("exercise.routine.title")
+                        .font(Typography.sectionHeader)
+                        .foregroundStyle(Color.ink)
+                    Spacer()
+                    Button {
+                        dismissedRoutineDay = dayKey(now)
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color.inkSecondary)
+                            .frame(minWidth: 32, minHeight: 32)
+                    }
+                    .accessibilityLabel(Text("today.routine.dismiss"))
+                }
+                VStack(alignment: .leading, spacing: Spacing.s2) {
+                    ForEach(StrengthSheet.routineKeys, id: \.self) { key in
+                        HStack(alignment: .firstTextBaseline, spacing: Spacing.s2) {
+                            Circle().fill(Color.accent).frame(width: 5, height: 5).accessibilityHidden(true)
+                            Text(LocalizedStringKey(key))
+                                .font(Typography.body)
+                                .foregroundStyle(Color.ink)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                Text("exercise.routine.repeat")
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+                NoticeLine("today.routine.notice")
+                GhostButton("daily.logExercise") { sheet = .strength }
             }
         }
     }
@@ -422,7 +558,7 @@ struct TodayView: View {
     /// 실행 인자 `-route sheet.*`로 시작할 때 해당 시트를 연다 (ScreenshotRoute)
     private func openSheetForScreenshot() {
         switch ScreenshotRoute.current {
-        case .doseSheet?: sheet = .dose
+        case .doseSheet?, .doseSheetFemale?: sheet = .dose
         case .proteinSheet?: sheet = .protein(preselected: nil)
         case .strengthSheet?: sheet = .strength
         case .backfillSheet?: sheet = .backfill
@@ -588,7 +724,10 @@ struct TodayView: View {
             HStack(spacing: Spacing.s1) {
                 Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
                     .accessibilityHidden(true)
+                // 좁은 화면에서 "식이섬유"가 두 줄로 꺾이지 않게
                 Text(key)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             }
             .font(Typography.label)
             .foregroundStyle(isOn ? Color.ink : Color.inkSecondary)
@@ -606,6 +745,9 @@ struct TodayView: View {
 
     private func syncHealthIfAuthorized() async {
         guard settingsList.first?.healthKitAuthorized == true, services.healthKit.isAvailable else { return }
+        // D11: 나중에 더한 읽기 종류(체지방률)는 아직 묻지 않았을 때만 시스템 시트가 한 번 뜬다. 이미 답했으면 바로 끝난다
+        _ = try? await services.healthKit.requestReadAuthorization()
+        healthFigureRaw = services.healthKit.bodyFigure()?.rawValue ?? ""
         try? await HealthSyncService.syncAll(reader: services.healthKit, context: context)
         try? context.save()
     }
@@ -616,6 +758,7 @@ struct TodayView: View {
             settings.healthKitAuthorized = granted
         }
         if granted {
+            healthFigureRaw = services.healthKit.bodyFigure()?.rawValue ?? ""
             try? await HealthSyncService.syncAll(reader: services.healthKit, context: context)
         }
         try? context.save()

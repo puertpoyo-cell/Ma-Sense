@@ -10,6 +10,10 @@ protocol HealthKitReading: AnyObject {
     func bodyMassSamples(since: Date) async throws -> [HealthWeightSample]
     /// M2: 제지방량 샘플
     func leanBodyMassSamples(since: Date) async throws -> [HealthWeightSample]
+    /// D11: 체지방률 샘플 (0~100)
+    func bodyFatSamples(since: Date) async throws -> [HealthPercentSample]
+    /// D13: 건강 앱의 생물학적 성별. 바디맵 그림을 고르는 데만 쓴다. 없거나 그 밖의 값이면 nil
+    func bodyFigure() -> BodyFigure?
     /// M2 (P2): 근력·걷기·유연성 운동. 그 밖의 종류는 돌려주지 않는다
     func workouts(since: Date) async throws -> [HealthWorkout]
 }
@@ -18,6 +22,13 @@ struct HealthWeightSample: Equatable {
     let uuid: UUID
     let measuredAt: Date
     let kilograms: Double
+}
+
+struct HealthPercentSample: Equatable {
+    let uuid: UUID
+    let measuredAt: Date
+    /// 0~100 퍼센트 값 (HealthKit은 0~1 비율로 준다)
+    let percent: Double
 }
 
 struct HealthWorkout: Equatable {
@@ -31,6 +42,8 @@ final class HealthKitService: HealthKitReading {
     private let store = HKHealthStore()
     private let bodyMass = HKQuantityType(.bodyMass)
     private let leanBodyMass = HKQuantityType(.leanBodyMass)
+    private let bodyFat = HKQuantityType(.bodyFatPercentage)
+    private let biologicalSex = HKCharacteristicType(.biologicalSex)
 
     /// Info.plist에 `NSHealthShareUsageDescription`이 없으면 권한 요청 순간 앱이 종료된다.
     /// 키는 빌드 설정 `INFOPLIST_KEY_NSHealthShareUsageDescription`(번역은 `InfoPlist.xcstrings`)에 있다. 키가 빠진 빌드에서는 HealthKit을 쓰지 않는다.
@@ -41,7 +54,8 @@ final class HealthKitService: HealthKitReading {
 
     func requestReadAuthorization() async throws -> Bool {
         guard isAvailable else { return false }
-        try await store.requestAuthorization(toShare: [], read: [bodyMass, leanBodyMass, HKObjectType.workoutType()])
+        // 아직 묻지 않은 종류(D11 체지방률 등)가 있을 때만 시스템 시트가 뜬다
+        try await store.requestAuthorization(toShare: [], read: [bodyMass, leanBodyMass, bodyFat, biologicalSex, HKObjectType.workoutType()])
         // 읽기 권한은 조회 결과로만 알 수 있다 (거부해도 .sharingDenied를 돌려주지 않음)
         return true
     }
@@ -52,6 +66,21 @@ final class HealthKitService: HealthKitReading {
 
     func leanBodyMassSamples(since: Date) async throws -> [HealthWeightSample] {
         try await kilogramSamples(of: leanBodyMass, since: since)
+    }
+
+    func bodyFatSamples(since: Date) async throws -> [HealthPercentSample] {
+        try await samples(of: bodyFat, since: since)
+            .compactMap { $0 as? HKQuantitySample }
+            .map { HealthPercentSample(uuid: $0.uuid, measuredAt: $0.startDate, percent: $0.quantity.doubleValue(for: .percent()) * 100) }
+    }
+
+    func bodyFigure() -> BodyFigure? {
+        guard isAvailable, let sex = try? store.biologicalSex().biologicalSex else { return nil }
+        switch sex {
+        case .female: return .female
+        case .male: return .male
+        default: return nil
+        }
     }
 
     func workouts(since: Date) async throws -> [HealthWorkout] {
@@ -106,6 +135,8 @@ final class FakeHealthKitService: HealthKitReading {
     var authorized = true
     var samples: [HealthWeightSample] = []
     var leanSamples: [HealthWeightSample] = []
+    var fatSamples: [HealthPercentSample] = []
+    var figure: BodyFigure?
     var workoutSamples: [HealthWorkout] = []
 
     func requestReadAuthorization() async throws -> Bool { authorized }
@@ -117,6 +148,12 @@ final class FakeHealthKitService: HealthKitReading {
     func leanBodyMassSamples(since: Date) async throws -> [HealthWeightSample] {
         leanSamples.filter { $0.measuredAt >= since }
     }
+
+    func bodyFatSamples(since: Date) async throws -> [HealthPercentSample] {
+        fatSamples.filter { $0.measuredAt >= since }
+    }
+
+    func bodyFigure() -> BodyFigure? { figure }
 
     func workouts(since: Date) async throws -> [HealthWorkout] {
         workoutSamples.filter { $0.startedAt >= since }

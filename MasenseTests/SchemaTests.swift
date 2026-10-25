@@ -185,6 +185,40 @@ struct SchemaTests {
         #expect(try context.fetch(FetchDescriptor<UserSettings>()).first?.weightReminderWeekday == 2)
     }
 
+    /// V4 저장소를 지금 스키마로 열면 체중·제지방량이 남고 체지방률은 비어 있다 (D11, V4 → V5)
+    @Test func schemaV4StoreMigratesToV5() throws {
+        let (directory, url) = try diskStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        try autoreleasepool {
+            let schema = Schema(versionedSchema: SchemaV4.self)
+            let v4 = try ModelContainer(
+                for: schema,
+                configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)]
+            )
+            let context = v4.mainContext
+            let sample = SchemaV1.WeightSample()
+            sample.measuredAt = TestCalendar.date(2026, 6, 26, 8)
+            sample.kilograms = 75.6
+            sample.sourceRaw = "healthKit"
+            sample.leanBodyMassKg = 59.0
+            context.insert(sample)
+            try context.save()
+        }
+
+        let container = try ModelContainer.masense(url: copyStore(url, in: directory))
+        let context = container.mainContext
+        let sample = try #require(try context.fetch(FetchDescriptor<WeightSample>()).first)
+        #expect(sample.kilograms == 75.6)
+        #expect(sample.source == .healthKit)
+        #expect(sample.leanBodyMassKg == 59.0)
+        #expect(sample.bodyFatPercent == nil)
+
+        sample.bodyFatPercent = 22.0
+        try context.save()
+        #expect(try context.fetch(FetchDescriptor<WeightSample>()).first?.bodyFatPercent == 22.0)
+    }
+
     /// 이전 버전 컨테이너가 아직 파일을 붙잡고 있으면 같은 파일의 이전(migration)이 독점 잠금을 기다리다 멈출 수 있다.
     /// 저장한 파일(본 파일·-wal·-shm)을 새 위치로 복사해 그 사본을 연다 (앱에서는 컨테이너가 하나라 해당 없음)
     private func copyStore(_ url: URL, in directory: URL) throws -> URL {

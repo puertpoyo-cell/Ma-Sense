@@ -44,6 +44,25 @@ struct WeightTrend: Equatable {
     }
 }
 
+/// 체중 추이에서 고를 수 있는 값 (D11). 숫자만, 구간 이름·판단 없음 (COMPLIANCE.md 2.2)
+enum BodyMetric: String, CaseIterable, Hashable {
+    case weight, bodyFat, leanMass
+
+    func value(of sample: WeightSampleSnapshot) -> Double? {
+        switch self {
+        case .weight: return sample.kilograms
+        case .bodyFat: return sample.bodyFatPercent
+        case .leanMass: return sample.leanBodyMassKg
+        }
+    }
+}
+
+/// 가장 최근 측정 하나 (D11 체지방률·제지방량 셀)
+struct MetricReading: Equatable {
+    let value: Double
+    let measuredAt: Date
+}
+
 /// R7. 체중 추이.
 enum WeightRules {
     /// 최근 `weeks`주의 주 평균. 오래된 주부터. 같은 날 여러 샘플은 먼저 하루 평균으로 묶은 뒤 주 평균을 낸다.
@@ -122,6 +141,32 @@ enum WeightRules {
             .map { day, items in DailyWeight(day: day, kilograms: items.reduce(0) { $0 + $1.kilograms } / Double(items.count)) }
             .sorted { $0.day < $1.day }
         return WeightTrend(weeks: series, daily: daily)
+    }
+
+    // MARK: D11 체성분·마지막 기록 구간
+
+    /// 그 값이 있는 샘플만, 값을 `kilograms` 자리에 넣은 사본. 주 평균·추이 계산을 체중과 같은 함수로 하기 위해서다
+    static func metricSamples(_ samples: [WeightSampleSnapshot], metric: BodyMetric) -> [WeightSampleSnapshot] {
+        samples.compactMap { sample in
+            metric.value(of: sample).map {
+                WeightSampleSnapshot(measuredAt: sample.measuredAt, kilograms: $0, source: sample.source)
+            }
+        }
+    }
+
+    /// 그 값이 있는 가장 최근 측정
+    static func latestReading(_ samples: [WeightSampleSnapshot], metric: BodyMetric) -> MetricReading? {
+        samples
+            .compactMap { sample in metric.value(of: sample).map { MetricReading(value: $0, measuredAt: sample.measuredAt) } }
+            .max { $0.measuredAt < $1.measuredAt }
+    }
+
+    /// 그래프의 끝. 최근 `weeks`주에 측정이 있으면 `now`, 없으면 마지막 측정 시각.
+    /// 오래 재지 않았을 때 빈 그래프 대신 마지막 기록 구간을 보인다 (D11, 화면에 "n. n.까지 기록")
+    static func seriesEnd(samples: [WeightSampleSnapshot], weeks: Int, now: Date, calendar: Calendar) -> Date {
+        guard let latest = samples.map(\.measuredAt).filter({ $0 <= now }).max() else { return now }
+        let series = weeklyWeightSeries(samples: samples, weeks: weeks, now: now, calendar: calendar)
+        return series.contains { $0.averageKg != nil } ? now : latest
     }
 
     /// 가장 최근 샘플 (홈 1-3 카드)

@@ -4,8 +4,8 @@ import SwiftData
 /// HealthKit 샘플을 `WeightSample` 캐시에 upsert하고, HealthKit에서 사라진 샘플은 캐시에서도 지운다.
 @MainActor
 enum WeightSyncService {
-    /// 동기화 범위. 리포트 최대 기간(12주)보다 넉넉하게
-    static let lookbackWeeks = 26
+    /// 동기화 범위. 리포트 최대 기간(12주)보다 넉넉하게, 체중 추이 "전체"(D7)가 1년을 보이도록 (D11에서 26 → 52주)
+    static let lookbackWeeks = 52
 
     static func sync(
         reader: HealthKitReading,
@@ -41,13 +41,18 @@ enum WeightSyncService {
             ))
         }
 
-        // M2: HealthKit 제지방량을 같은 날 HealthKit 체중 샘플에 붙인다 (체성분계는 둘을 함께 기록한다)
+        // M2·D11: HealthKit 제지방량·체지방률을 같은 날 HealthKit 체중 샘플에 붙인다 (체성분계는 함께 기록한다)
         let lean = try await reader.leanBodyMassSamples(since: since)
+        let fat = try await reader.bodyFatSamples(since: since)
         for sample in try WeightSample.all(in: context) where sample.source == .healthKit {
-            let sameDay = lean
+            sample.leanBodyMassKg = lean
                 .filter { calendar.isDate($0.measuredAt, inSameDayAs: sample.measuredAt) }
-                .max { $0.measuredAt < $1.measuredAt }
-            sample.leanBodyMassKg = sameDay?.kilograms
+                .max { $0.measuredAt < $1.measuredAt }?
+                .kilograms
+            sample.bodyFatPercent = fat
+                .filter { calendar.isDate($0.measuredAt, inSameDayAs: sample.measuredAt) }
+                .max { $0.measuredAt < $1.measuredAt }?
+                .percent
         }
     }
 }
@@ -93,7 +98,7 @@ enum WorkoutSyncService {
     }
 }
 
-/// 체중·제지방량·운동을 한 번에 동기화하고 저장한다
+/// 체중·제지방량·체지방률·운동을 한 번에 동기화하고 저장한다
 @MainActor
 enum HealthSyncService {
     static func syncAll(

@@ -14,6 +14,8 @@ enum ScreenshotRoute: String, CaseIterable {
     case historyHabits = "history.habits"
     case report
     case doseSheet = "sheet.dose"
+    /// D13: 투약 기록 시트를 여성 바디맵으로
+    case doseSheetFemale = "sheet.dose.female"
     case conditionSheet = "sheet.condition"
     case proteinSheet = "sheet.protein"
     case strengthSheet = "sheet.strength"

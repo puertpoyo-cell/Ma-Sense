@@ -169,6 +169,7 @@ enum AppetiteLevel: String, Codable { case normal, reduced, veryReduced }
 | sourceRaw | String | `"manual"` | `WeightSource` rawValue: healthKit / manual |
 | healthKitUUID | UUID? |  | HealthKit 샘플 UUID. unique 제약 없이 조회 후 upsert |
 | leanBodyMassKg | Double? |  | M2, HealthKit `leanBodyMass` 또는 수동 |
+| bodyFatPercent | Double? |  | 0~100. HealthKit `bodyFatPercentage`(같은 날 붙임). **SchemaV5(1.4.0)에서 추가** (D11, 2026-10-25 사람 결정) |
 | createdAt | Date | `.now` |  |
 
 HealthKit에서 읽은 샘플은 캐시로 저장. 동기화 시 `healthKitUUID` 기준 upsert. HealthKit 샘플이 삭제되면 캐시도 삭제.
@@ -265,11 +266,14 @@ enum ProteinFood: String, Codable, CaseIterable {
 |---|---|---|
 | WeightSample.kilograms | `bodyMass` | 읽기 (쓰기는 v1.1) |
 | WeightSample.leanBodyMassKg | `leanBodyMass` | 읽기 |
+| WeightSample.bodyFatPercent (D11) | `bodyFatPercentage` (0~1 비율 → ×100) | 읽기 |
+| 바디맵 그림 (D13) | `HKCharacteristicType.biologicalSex` (여·남만, 그 밖은 없음으로) | 읽기. SwiftData에 두지 않고 UserDefaults `health.bodyFigure`에만, 내보내지 않음 |
 | StrengthSession (M2, P2) | `HKWorkoutType` activityType `.traditionalStrengthTraining`, `.functionalStrengthTraining`, `.walking`, `.flexibility` | 읽기 |
 
 Info.plist: `NSHealthShareUsageDescription` 필수 (빌드 설정 `INFOPLIST_KEY_NSHealthShareUsageDescription`, 번역 `InfoPlist.xcstrings`, entitlement `Config/Masense.entitlements`). 쓰기 전까지 `NSHealthUpdateUsageDescription`은 넣지 않음.
 
-- 제지방량은 별도 샘플로 오므로, 같은 날 HealthKit 체중 샘플의 `leanBodyMassKg`에 붙인다 (그날 가장 늦은 값). 같은 날 체중이 없으면 버린다
+- 제지방량·체지방률은 별도 샘플로 오므로, 같은 날 HealthKit 체중 샘플의 `leanBodyMassKg`·`bodyFatPercent`에 붙인다 (그날 가장 늦은 값). 같은 날 체중이 없으면 버린다
+- 동기화 범위는 최근 52주 (D11에서 26주 → 52주). 체지방률은 나중에 더한 읽기 종류라, 이미 허용한 사용자는 오늘 화면을 열 때 시스템 권한 시트가 한 번 뜬다
 - 운동은 `StrengthSession(source: .healthKit)`으로 `healthKitUUID` 기준 upsert. 근력(traditional·functional) → `.strength`, 걷기 → `.walk`, 유연성 → `.stretch`, 그 밖은 무시. 강도는 알 수 없어 `.moderate`
 
 ## 스키마 버전
@@ -293,11 +297,15 @@ enum SchemaV3: VersionedSchema {   // D6: ClinicQuestion 모델 추가
 }
 enum SchemaV4: VersionedSchema {   // D7: UserSettings 체중 알림 필드 4개 추가
     static let versionIdentifier = Schema.Version(1, 3, 0)
-    // 지금 모델 전부. V2·V3는 `SchemaV2.UserSettings` 고정 사본(heightCm까지)을 쓴다
+    // V2·V3는 `SchemaV2.UserSettings` 고정 사본(heightCm까지)을 쓴다
 }
-typealias CurrentSchema = SchemaV4
+enum SchemaV5: VersionedSchema {   // D11: WeightSample.bodyFatPercent 추가
+    static let versionIdentifier = Schema.Version(1, 4, 0)
+    // 지금 모델 전부. V1~V4는 `SchemaV1.WeightSample` 고정 사본(체지방률 없음)을 쓴다
+}
+typealias CurrentSchema = SchemaV5
 enum MasenseMigrationPlan: SchemaMigrationPlan {
-    // [SchemaV1, SchemaV2, SchemaV3, SchemaV4], .lightweight(V1 → V2), (V2 → V3), (V3 → V4)
+    // [SchemaV1 … SchemaV5], .lightweight(V1 → V2), (V2 → V3), (V3 → V4), (V4 → V5)
 }
 ```
 

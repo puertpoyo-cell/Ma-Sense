@@ -162,6 +162,7 @@ extension WeightSample {
             source: sourceRaw,
             healthKitUUID: healthKitUUID,
             leanBodyMassKg: leanBodyMassKg,
+            bodyFatPercent: bodyFatPercent,
             createdAt: createdAt
         )
     }
@@ -174,6 +175,7 @@ extension WeightSample {
             source: .manual,
             healthKitUUID: record.healthKitUUID,
             leanBodyMassKg: record.leanBodyMassKg,
+            bodyFatPercent: record.bodyFatPercent,
             createdAt: record.createdAt
         )
         sourceRaw = record.source

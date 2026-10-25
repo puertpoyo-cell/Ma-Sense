@@ -55,6 +55,11 @@ struct TodayModel: Equatable {
     /// R14. 최근 체중과 설정의 키로 계산한 BMI 숫자. 키가 없으면 nil
     let latestBMI: Double?
     let weightSeries: [WeekPoint]
+    /// D11. 최근 8주에 기록이 없어 그래프를 마지막 측정까지로 옮겼을 때 그 시각 ("n. n.까지 기록"). 지금까지면 nil
+    let weightSeriesShiftedTo: Date?
+    /// D11. 가장 최근 체지방률(%)·제지방량(kg). 숫자만
+    let latestBodyFat: MetricReading?
+    let latestLeanMass: MetricReading?
     /// 스파크라인 투약일 눈금
     let doseDatesInSeries: [Date]
     let clinicDate: Date?
@@ -63,6 +68,8 @@ struct TodayModel: Equatable {
     let paceNotice: PaceNotice?
     /// 맨 위 사실 한 줄 (R17, D8)
     let dailyLine: DailyLine?
+    /// 맨 위 마선생 한마디 (R20, D12). 사실 한 줄이 있으면 그것을 말한다
+    let coachLine: CoachLine
     /// 1-1c 지난 마디 정리 (R16, D8). 끝난 구간 중 가장 최근, 기록이 하나도 없으면 nil
     let weeklySummary: WeeklySummary?
     /// 1-1c 패키지 정리 (R18, D9). 4회를 다 쓴 패키지 기간이 끝난 뒤 7일 동안. 보이면 주간 정리 대신
@@ -134,13 +141,27 @@ struct TodayModel: Equatable {
             isLowCondition: ConditionRules.isLowConditionDay(checks: checks, now: now),
             habit: habits.first { calendar.isDate($0.date, inSameDayAs: now) }
         )
+        coachLine = CoachRules.line(
+            dailyLine: dailyLine,
+            isLowCondition: daily.isLowCondition,
+            isLowAppetite: daily.isLowAppetite,
+            proteinEntriesToday: todayProteins.count,
+            strengthThisWeek: daily.week.strengthCount,
+            now: now,
+            calendar: calendar
+        )
 
         latestWeight = WeightRules.latestSample(weights)
         latestBMI = latestWeight.flatMap { WeightRules.bmi(kilograms: $0.kilograms, heightCm: heightCm) }
-        let series = WeightRules.weeklyWeightSeries(samples: weights, weeks: Self.weightWeeks, now: now, calendar: calendar)
+        latestBodyFat = WeightRules.latestReading(weights, metric: .bodyFat)
+        latestLeanMass = WeightRules.latestReading(weights, metric: .leanMass)
+        let seriesEnd = WeightRules.seriesEnd(samples: weights, weeks: Self.weightWeeks, now: now, calendar: calendar)
+        let series = WeightRules.weeklyWeightSeries(samples: weights, weeks: Self.weightWeeks, now: seriesEnd, calendar: calendar)
         weightSeries = series
-        paceNotice = PaceRules.paceNotice(series: series)
-        doseDatesInSeries = WeightRules.doseTicks(doses: doses, series: series, now: now)
+        weightSeriesShiftedTo = seriesEnd < now ? seriesEnd : nil
+        // 옮긴 그래프(지난 기록)로는 속도 안내를 하지 않는다
+        paceNotice = seriesEnd < now ? nil : PaceRules.paceNotice(series: series)
+        doseDatesInSeries = WeightRules.doseTicks(doses: doses, series: series, now: seriesEnd)
 
         guard let p = prescription else {
             countdown = .noPrescription

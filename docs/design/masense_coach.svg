@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26396F"/><stop offset="1" stop-color="#101B3A"/></linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FADDC6"/><stop offset="1" stop-color="#F2C7A6"/></linearGradient>
+    <linearGradient id="sweater" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C9BF2"/><stop offset="1" stop-color="#5272D6"/></linearGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A3F5E"/><stop offset="1" stop-color="#262A42"/></linearGradient>
+    <clipPath id="circle"><circle cx="256" cy="256" r="256"/></clipPath>
+  </defs>
+  <g clip-path="url(#circle)">
+    <rect width="512" height="512" fill="url(#bg)"/>
+    <!-- 몸통: 셔츠 + 니트 -->
+    <path d="M70,512 C80,430 150,392 256,392 C362,392 432,430 442,512 Z" fill="url(#sweater)"/>
+    <path d="M214,392 L256,446 L298,392 Z" fill="#EEF3FB"/>
+    <path d="M226,392 L256,430 L286,392" fill="none" stroke="#C9D4E8" stroke-width="4"/>
+    <!-- 목 -->
+    <rect x="228" y="330" width="56" height="70" rx="20" fill="#EFC3A2"/>
+    <!-- 귀 -->
+    <ellipse cx="148" cy="262" rx="20" ry="26" fill="#F4CBAC"/>
+    <ellipse cx="364" cy="262" rx="20" ry="26" fill="#F4CBAC"/>
+    <!-- 얼굴 -->
+    <ellipse cx="256" cy="252" rx="110" ry="114" fill="url(#skin)"/>
+    <!-- 머리 -->
+    <path d="M144,270 C124,168 182,98 262,100 C346,102 394,172 368,268 C364,238 356,220 342,206 C326,224 286,232 252,214 C238,228 210,230 196,214 C172,228 154,246 144,270 Z" fill="url(#hair)"/>
+    <path d="M214,120 C238,112 270,112 296,124" fill="none" stroke="#5A6188" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+    <path d="M252,214 C262,184 290,166 330,170" fill="none" stroke="#454B6E" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+    <!-- 눈썹 -->
+    <path d="M186,222 Q208,212 230,220" fill="none" stroke="#2C3049" stroke-width="6" stroke-linecap="round"/>
+    <path d="M282,220 Q304,212 326,222" fill="none" stroke="#2C3049" stroke-width="6" stroke-linecap="round"/>
+    <!-- 눈 -->
+    <ellipse cx="208" cy="264" rx="10" ry="13" fill="#232842"/>
+    <ellipse cx="304" cy="264" rx="10" ry="13" fill="#232842"/>
+    <circle cx="212" cy="259" r="3.5" fill="#FFFFFF"/>
+    <circle cx="308" cy="259" r="3.5" fill="#FFFFFF"/>
+    <!-- 안경 -->
+    <circle cx="208" cy="264" r="36" fill="#FFFFFF" fill-opacity="0.12" stroke="#2B3456" stroke-width="7"/>
+    <circle cx="304" cy="264" r="36" fill="#FFFFFF" fill-opacity="0.12" stroke="#2B3456" stroke-width="7"/>
+    <path d="M244,262 Q256,252 268,262" fill="none" stroke="#2B3456" stroke-width="6" stroke-linecap="round"/>
+    <path d="M188,246 Q196,236 210,236" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="4" stroke-linecap="round"/>
+    <path d="M284,246 Q292,236 306,236" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="4" stroke-linecap="round"/>
+    <!-- 볼 -->
+    <ellipse cx="174" cy="310" rx="18" ry="10" fill="#F39C9C" opacity="0.45"/>
+    <ellipse cx="338" cy="310" rx="18" ry="10" fill="#F39C9C" opacity="0.45"/>
+    <!-- 입 -->
+    <path d="M234,318 Q256,338 278,318" fill="none" stroke="#9A5644" stroke-width="6" stroke-linecap="round"/>
+    <!-- 소매와 손바닥 (판 뒤) -->
+    <path d="M220,512 C226,476 256,456 296,452 L318,504 C302,510 282,512 268,512 Z" fill="#5272D6"/>
+    <path d="M284,462 C294,452 308,448 318,452" fill="none" stroke="#8FA9F5" stroke-width="6" stroke-linecap="round"/>
+    <ellipse cx="314" cy="466" rx="26" ry="30" fill="#F2C7A6"/>
+    <!-- 체크리스트 판 -->
+    <g transform="translate(10 14) rotate(-9 372 430)">
+      <rect x="292" y="326" width="152" height="196" rx="16" fill="#E2B867"/>
+      <rect x="305" y="345" width="126" height="166" rx="8" fill="#FBFCFE"/>
+      <rect x="340" y="314" width="56" height="26" rx="8" fill="#C3CEDD"/>
+      <rect x="352" y="306" width="32" height="14" rx="6" fill="#9AA7BD"/>
+      <g stroke-linecap="round" stroke-linejoin="round">
+        <rect x="320" y="366" width="22" height="22" rx="5" fill="none" stroke="#5B7FE0" stroke-width="4"/>
+        <path d="M325,377 L331,383 L340,371" fill="none" stroke="#3E6BE0" stroke-width="5"/>
+        <line x1="354" y1="377" x2="416" y2="377" stroke="#C9D2E2" stroke-width="7"/>
+        <rect x="320" y="404" width="22" height="22" rx="5" fill="none" stroke="#5B7FE0" stroke-width="4"/>
+        <path d="M325,415 L331,421 L340,409" fill="none" stroke="#3E6BE0" stroke-width="5"/>
+        <line x1="354" y1="415" x2="406" y2="415" stroke="#C9D2E2" stroke-width="7"/>
+        <rect x="320" y="442" width="22" height="22" rx="5" fill="none" stroke="#5B7FE0" stroke-width="4"/>
+        <line x1="354" y1="453" x2="412" y2="453" stroke="#C9D2E2" stroke-width="7"/>
+      </g>
+    </g>
+    <!-- 엄지 (판 앞) -->
+    <path d="M300,460 C308,446 326,438 338,444 C346,448 344,460 334,464 L314,474 C306,476 296,470 300,460 Z" fill="#F7D3B8" stroke="#E2AE8C" stroke-width="2"/>
+  </g>
+</svg>

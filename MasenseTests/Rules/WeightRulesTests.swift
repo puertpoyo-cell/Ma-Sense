@@ -103,4 +103,31 @@ struct WeightRulesTests {
         #expect(WeightRules.trend(samples: [sample(10, 20, 79.5)], range: .weeks4, now: now, calendar: calendar).changeText == nil)
         #expect(WeightRules.trend(samples: [], range: .all, now: now, calendar: calendar).weeks.count == 4)
     }
+
+    /// D11: 최근 기록이 없으면 그래프 끝을 마지막 측정으로 옮긴다
+    @Test func seriesEndFallsBackToLastMeasurement() {
+        // 6-20(토)은 6-14 주, 6-26(금)은 6-21 주
+        let old = [sample(6, 20, 75.0), sample(6, 26, 76.0)]
+        #expect(WeightRules.seriesEnd(samples: old, weeks: 8, now: now, calendar: calendar) == TestCalendar.date(2026, 6, 26, 8))
+        let shifted = WeightRules.weeklyWeightSeries(samples: old, weeks: 8, now: TestCalendar.date(2026, 6, 26, 8), calendar: calendar)
+        #expect(shifted.suffix(2).map(\.averageKg) == [75.0, 76.0])
+        // 최근 8주 안에 하나라도 있으면 지금, 기록이 없으면 지금
+        #expect(WeightRules.seriesEnd(samples: old + [sample(10, 1, 74.0)], weeks: 8, now: now, calendar: calendar) == now)
+        #expect(WeightRules.seriesEnd(samples: [], weeks: 8, now: now, calendar: calendar) == now)
+    }
+
+    /// D11: 체지방률·제지방량을 같은 계산에 쓰고, 가장 최근 값을 고른다
+    @Test func bodyMetricsUseTheSameSeries() {
+        let samples = [
+            WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 10, 5, 8), kilograms: 80, leanBodyMassKg: 58.0, bodyFatPercent: 23.0),
+            WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 10, 12, 8), kilograms: 79.5, leanBodyMassKg: nil, bodyFatPercent: 22.4),
+            WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 10, 20, 8), kilograms: 79.0),
+        ]
+        #expect(WeightRules.metricSamples(samples, metric: .bodyFat).map(\.kilograms) == [23.0, 22.4])
+        #expect(WeightRules.metricSamples(samples, metric: .weight).count == 3)
+        #expect(WeightRules.latestReading(samples, metric: .bodyFat) == MetricReading(value: 22.4, measuredAt: TestCalendar.date(2026, 10, 12, 8)))
+        #expect(WeightRules.latestReading(samples, metric: .leanMass)?.value == 58.0)
+        let fat = WeightRules.trend(samples: WeightRules.metricSamples(samples, metric: .bodyFat), range: .weeks4, now: now, calendar: calendar)
+        #expect(fat.changeText == "-0.6")
+    }
 }

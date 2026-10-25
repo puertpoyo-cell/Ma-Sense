@@ -132,9 +132,11 @@
   "source": "healthKit",
   "healthKitUUID": "...",
   "leanBodyMassKg": null,
+  "bodyFatPercent": null,
   "createdAt": "..."
 }
 ```
+`bodyFatPercent`(D11, 체지방률 0~100, SchemaV5)는 같은 버전 안의 추가. 키가 없는 파일은 `null`로 읽는다 (formatVersion은 그대로 1).
 `source == "healthKit"`인 샘플은 **가져오기 시 복원하지 않는다.** 새 기기에서 HealthKit을 다시 읽으면 같은 샘플이 들어오므로 중복이 생긴다. 내보내기에는 포함(사람이 읽는 기록으로서), 가져오기는 `manual`만.
 `strengthSessions[]`의 `source == "healthKit"`(Apple Watch 운동)도 같은 이유로 가져오지 않는다 (2026-10-22 구현 결정). 결과 화면에는 건너뜀이 아니라 "건강 앱에서 다시 읽음" 건수로 따로 보인다.
 

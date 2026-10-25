@@ -334,16 +334,23 @@ struct HistoryView: View {
 
     @ViewBuilder
     private func weightSections(now: Date) -> some View {
-        let series = WeightRules.weeklyWeightSeries(samples: weights.map(\.snapshot), weeks: Self.weightWeeks, now: now, calendar: calendar)
+        let snapshots = weights.map(\.snapshot)
+        // D11: 최근 12주 기록이 없으면 마지막 기록까지로
+        let end = WeightRules.seriesEnd(samples: snapshots, weeks: Self.weightWeeks, now: now, calendar: calendar)
+        let series = WeightRules.weeklyWeightSeries(samples: snapshots, weeks: Self.weightWeeks, now: end, calendar: calendar)
         if weights.isEmpty {
             emptyRow("weight.empty")
         } else {
             Section {
-                WeekChart(points: series, tickDates: WeightRules.doseTicks(doses: allDoses.map(\.snapshot), series: series, now: now))
+                WeekChart(points: series, tickDates: WeightRules.doseTicks(doses: allDoses.map(\.snapshot), series: series, now: end))
                     .frame(height: 180)
                     .padding(.vertical, Spacing.s3)
             } header: {
                 SectionHeaderText(Text("history.weight.chartTitle \(Self.weightWeeks)"))
+            } footer: {
+                if end < now {
+                    Text("weight.sparkline.until \(end.formatted(.dateTime.month(.defaultDigits).day()))")
+                }
             }
             .frostRow()
 
@@ -368,6 +375,17 @@ struct HistoryView: View {
                             // R14: 키를 입력했을 때만 숫자로. 구간 이름 없음
                             if let bmi = WeightRules.bmi(kilograms: sample.kilograms, heightCm: settingsList.first?.heightCm) {
                                 Text("weight.bmi \(bmi.formatted(.number.precision(.fractionLength(1))))")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color.inkSecondary)
+                            }
+                            // D11: 같은 날 Apple Health 체성분. 숫자만
+                            if let fat = sample.bodyFatPercent {
+                                Text("history.weight.fat \(fat.formatted(.number.precision(.fractionLength(1))))")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color.inkSecondary)
+                            }
+                            if let lean = sample.leanBodyMassKg {
+                                Text("history.weight.lean \(lean.formatted(.number.precision(.fractionLength(1))))")
                                     .font(Typography.caption)
                                     .foregroundStyle(Color.inkSecondary)
                             }

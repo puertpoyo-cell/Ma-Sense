@@ -305,6 +305,18 @@ func line(prescription: PrescriptionSnapshot?, doses: [DoseSnapshot], allDoses: 
 - 하나만, 우선순위: 오늘이 예정일이고 기록 전("오늘은 투약일입니다. 지난 부위: …") > 남은 회차 1회 이하("남은 펜이 n개입니다. 다음 진료일을 확인하세요.", 여러 회 쓰는 펜은 회차) > 최근 7일 체중 기록 없음
 - 칭찬·응원·평가 없음 (COMPLIANCE.md 3.1). 닫으면 같은 종류는 그날 다시 보이지 않는다
 
+## R7-1. 체성분과 마지막 기록 구간 (D11, 2026-10-25 사람 결정)
+
+```swift
+enum BodyMetric { case weight, bodyFat, leanMass }
+func metricSamples(_ samples: [WeightSampleSnapshot], metric: BodyMetric) -> [WeightSampleSnapshot]  // 값을 kilograms 자리에 넣은 사본
+func latestReading(_ samples: [WeightSampleSnapshot], metric: BodyMetric) -> MetricReading?
+func seriesEnd(samples: [WeightSampleSnapshot], weeks: Int, now: Date, calendar: Calendar) -> Date
+```
+
+- 체지방률(%)·제지방량(kg)은 체중과 같은 주 평균·추이 계산을 쓴다. 숫자만, 구간 이름·판단 색 없음 (COMPLIANCE.md 2.2)
+- `seriesEnd`: 최근 `weeks`주에 측정이 있으면 `now`, 없으면 마지막 측정 시각. 오늘 카드(8주)·기록 탭(12주)·추이 화면(고른 기간, 전체 제외)이 같은 규칙. 옮긴 그래프로는 R8 감량 속도 안내를 하지 않는다
+
 ## R18. 패키지 정리 (D9, 2026-10-24 사람 결정 "풀푸시")
 
 ```swift
@@ -328,6 +340,16 @@ func flows(periods: [DateInterval], checks: [ConditionCheckSnapshot]) -> [Sympto
 - 증상마다 구간별 가장 강하게 기록한 강도(0~3). 강도 1 이상이 한 번이라도 있는 증상만, 기록된 구간이 많은 순(같으면 증상 목록 순)
 - "물어볼 것에 넣기"는 사실 문장만 채운다. 원인·대처·괜찮은지 판단을 붙이지 않는다 (COMPLIANCE.md 2.1-7)
 
+## R20. 마선생 한마디 (D12, 2026-10-25 사람 결정)
+
+```swift
+func line(dailyLine: DailyLine?, isLowCondition: Bool, isLowAppetite: Bool, proteinEntriesToday: Int, strengthThisWeek: Int, now: Date, calendar: Calendar) -> CoachLine
+```
+
+- 하나만, 우선순위: R17 사실 한 줄 > R11 저컨디션 > R10 식욕 저하 > 12시 이후 오늘 단백질 기록 없음 > 주 시작부터 4일 이상 지났고 이번 주 근력 기록 없음 > 일반 한마디(1년 중 날짜 % 8)
+- 과정만 권한다. 체중 숫자·감량을 평가하거나 칭찬하지 않는다 (COMPLIANCE.md 3.1). 다음 부위를 권하지 않는다 (R6)
+- 식욕 저하·근력, 일반 한마디 중 단백질·물·근력·수면은 건강관리 정보로 보고 "의사와 상의하세요" 고지를 붙인다 (`isHealthTip`)
+
 ## 테스트 체크리스트
 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
@@ -336,6 +358,8 @@ func flows(periods: [DateInterval], checks: [ConditionCheckSnapshot]) -> [Sympto
 - [x] R3-1 앞선 누락만 세기, 남은 회차까지만 켜기, 시간 순 회차와 뒤 기록 밀기, 취소 기록 제외 (`BackfillRulesTests`, `BackfillModelTests`)
 - [x] R6 부위 기록 없음은 바디맵 이력·부위별 날짜에서 제외 (`SiteRulesTests`)
 - [x] R16 구간 경계·끝난 구간만·숫자 집계, R17 우선순위 (`WeeklySummaryRulesTests`, `DailyLineRulesTests`, `TodayModelTests`)
+- [x] R7-1 마지막 기록 구간으로 옮기기·체성분 값 고르기·가장 최근 값 (`WeightRulesTests`, `TodayModelTests`), 체지방률 같은 날 붙이기 (`M2ReportAndHealthTests`)
+- [x] R20 우선순위·정오 기준·주 후반 기준·날짜로 돌리기·건강관리 고지 표시 (`CoachRulesTests`)
 - [x] R18 4회째 다음 주까지·덜 찬 묶음 제외·다음 묶음이 일찍 시작하면 자르기·오늘 카드 7일 (`PackageSummaryRulesTests`, `TodayModelTests`), R19 지금 구간까지·구간별 최대 강도·정렬 (`SymptomFlowRulesTests`)
 - [x] R15 입력 정리, 아직 묻지 않은 것 순서, 리포트 5개·메모와 합쳐 8줄 (`ClinicQuestionRulesTests`, `ReportBuilderTests`)
 - [x] R4 4주 제한, 재등록 시 중복 없음

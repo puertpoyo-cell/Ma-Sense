@@ -102,6 +102,21 @@ struct TodayModelTests {
         #expect(today.latestWeight?.kilograms == 80.4)
         #expect(today.weightSeries.count == TodayModel.weightWeeks)
         #expect(today.doseDatesInSeries == [TestCalendar.date(2026, 10, 22, 20)])
+        #expect(today.weightSeriesShiftedTo == nil)
+    }
+
+    /// D11: 최근 8주 기록이 없으면 그래프를 마지막 측정까지로 옮기고 속도 안내는 하지 않는다. 체성분은 가장 최근 값
+    @Test func oldWeightsShiftTheSeriesAndShowComposition() {
+        let weights = [
+            WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 6, 19, 8), kilograms: 77, leanBodyMassKg: 59.0, bodyFatPercent: 23.0),
+            WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 6, 26, 8), kilograms: 75.6, bodyFatPercent: 22.0),
+        ]
+        let today = model(prescription(), weights: weights, now: TestCalendar.date(2026, 10, 25, 9))
+        #expect(today.weightSeriesShiftedTo == TestCalendar.date(2026, 6, 26, 8))
+        #expect(today.weightSeries.last?.averageKg == 75.6)
+        #expect(today.paceNotice == nil)
+        #expect(today.latestBodyFat == MetricReading(value: 22.0, measuredAt: TestCalendar.date(2026, 6, 26, 8)))
+        #expect(today.latestLeanMass?.value == 59.0)
     }
 
     /// R3-1 (D6): 첫 기록 전에 비어 있는 주만 센다. 남은 회차가 없으면 안내하지 않는다
@@ -129,6 +144,8 @@ struct TodayModelTests {
         // 10-22(목) 09:00 투약일, 기록 전
         let doseDay = model(prescription(), now: TestCalendar.date(2026, 10, 22, 9))
         #expect(doseDay.dailyLine == .doseDay(lastSite: nil))
+        // R20: 사실 한 줄이 있으면 마선생 한마디가 그것을 말한다
+        #expect(doseDay.coachLine == .fact(.doseDay(lastSite: nil)))
         #expect(doseDay.weeklySummary == nil)
 
         // 10-29 09:00: 10-22 ~ 10-28 구간이 끝났고 그 안에 투약 1회

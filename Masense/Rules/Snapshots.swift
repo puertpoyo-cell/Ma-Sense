@@ -143,12 +143,15 @@ struct WeightSampleSnapshot: Equatable {
     let source: WeightSource
     /// 제지방량 (M2, 리포트 F)
     let leanBodyMassKg: Double?
+    /// 체지방률 0~100 (D11)
+    let bodyFatPercent: Double?
 
-    init(measuredAt: Date, kilograms: Double, source: WeightSource = .manual, leanBodyMassKg: Double? = nil) {
+    init(measuredAt: Date, kilograms: Double, source: WeightSource = .manual, leanBodyMassKg: Double? = nil, bodyFatPercent: Double? = nil) {
         self.measuredAt = measuredAt
         self.kilograms = kilograms
         self.source = source
         self.leanBodyMassKg = leanBodyMassKg
+        self.bodyFatPercent = bodyFatPercent
     }
 }
 
