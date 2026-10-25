@@ -1,24 +1,69 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "NSHealthShareUsageDescription": {
-      "comment": "HealthKit 읽기 권한 요청 문구. 읽기 전용, 온디바이스 저장 (DATA_MODEL.md HealthKit 매핑)",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This app reads your weight, body fat percentage, lean body mass, and workouts from Apple Health to show them in your records and pre-visit report, and your sex to choose the body map figure. Nothing is written to Apple Health, and the data stays on this device."
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "마선생"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Masense"
+          }
+        }
+      }
+    },
+    "Masense Export" : {
+
+    },
+    "NSHealthShareUsageDescription" : {
+      "comment" : "HealthKit 읽기 권한 요청 문구. 읽기 전용, 온디바이스 저장 (DATA_MODEL.md HealthKit 매핑)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app reads your weight, body fat percentage, lean body mass, and workouts from Apple Health to show them in your records and pre-visit report, and your sex to choose the body map figure. Nothing is written to Apple Health, and the data stays on this device."
           }
         },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple 건강 앱의 체중, 체지방률, 제지방량, 운동 기록을 읽어 앱의 기록과 진료 전 리포트에 함께 보여 주고, 성별은 바디맵 그림을 고르는 데만 씁니다. 건강 앱에는 아무것도 쓰지 않으며, 데이터는 이 기기에만 저장합니다."
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple 건강 앱의 체중, 체지방률, 제지방량, 운동 기록을 읽어 앱의 기록과 진료 전 리포트에 함께 보여 주고, 성별은 바디맵 그림을 고르는 데만 씁니다. 건강 앱에는 아무것도 쓰지 않으며, 데이터는 이 기기에만 저장합니다."
+          }
+        }
+      }
+    },
+    "NSHealthUpdateUsageDescription" : {
+      "comment" : "HealthKit 쓰기 권한 문구. 앱은 쓰기 권한을 요청하지 않지만 HealthKit entitlement가 있으면 App Store 업로드 검사가 이 키를 요구한다 (TESTFLIGHT.md 2)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app does not write anything to Apple Health. It only reads the data you allow, and the data stays on this device."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "마선생은 Apple 건강 앱에 아무것도 쓰지 않습니다. 허용한 데이터를 읽기만 하며, 데이터는 이 기기에만 저장합니다."
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }
