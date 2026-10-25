@@ -12,7 +12,7 @@ struct BodyMapView: View {
     var calendar: Calendar = .current
 
     /// 설계 좌표계. 거울처럼 보이게 화면 왼쪽이 본인의 왼쪽이다 (2026-10-24 사람 결정)
-    private static let canvas = CGSize(width: 240, height: 340)
+    private static let canvas = CGSize(width: 240, height: 420)
 
     var body: some View {
         VStack(spacing: Spacing.s2) {
@@ -118,6 +118,13 @@ struct BodyMapView: View {
                         style: StrokeStyle(lineWidth: 1, lineJoin: .round)
                     )
             )
+            .overlay(alignment: .topLeading) {
+                // 복부 네 구역의 기준점 (배꼽)
+                Circle()
+                    .fill(Color.frostHighlightTop)
+                    .frame(width: 4, height: 4)
+                    .offset(x: 118, y: 169)
+            }
             .frame(width: Self.canvas.width, height: Self.canvas.height)
             .accessibilityHidden(true)
     }
@@ -127,14 +134,14 @@ struct BodyMapView: View {
     static func frame(for site: BodySite) -> CGRect {
         switch site {
         // 거울 보기: 본인의 왼쪽 부위가 화면 왼쪽. 실루엣(BodySilhouette) 안쪽에 들어가게 맞춘 값
-        case .upperArmLeft: return CGRect(x: 48, y: 104, width: 22, height: 48)
-        case .upperArmRight: return CGRect(x: 170, y: 104, width: 22, height: 48)
-        case .abdomenUpperLeft: return CGRect(x: 90, y: 112, width: 28, height: 32)
-        case .abdomenUpperRight: return CGRect(x: 122, y: 112, width: 28, height: 32)
-        case .abdomenLowerLeft: return CGRect(x: 90, y: 148, width: 28, height: 32)
-        case .abdomenLowerRight: return CGRect(x: 122, y: 148, width: 28, height: 32)
-        case .thighLeft: return CGRect(x: 85, y: 212, width: 27, height: 62)
-        case .thighRight: return CGRect(x: 128, y: 212, width: 27, height: 62)
+        case .upperArmLeft: return CGRect(x: 53, y: 124, width: 18, height: 40)
+        case .upperArmRight: return CGRect(x: 169, y: 124, width: 18, height: 40)
+        case .abdomenUpperLeft: return CGRect(x: 92, y: 128, width: 26, height: 30)
+        case .abdomenUpperRight: return CGRect(x: 122, y: 128, width: 26, height: 30)
+        case .abdomenLowerLeft: return CGRect(x: 92, y: 184, width: 26, height: 30)
+        case .abdomenLowerRight: return CGRect(x: 122, y: 184, width: 26, height: 30)
+        case .thighLeft: return CGRect(x: 85, y: 248, width: 26, height: 56)
+        case .thighRight: return CGRect(x: 129, y: 248, width: 26, height: 56)
         }
     }
 
@@ -226,55 +233,70 @@ struct BodyMapView: View {
     return Demo().preferredColorScheme(.dark)
 }
 
-/// 성별 표현 없는 중성 실루엣 한 줄 윤곽 (D10). 설계 좌표 240×340, 좌우 대칭이라 오른쪽 절반을 그리고 거꾸로 거울
+/// 성별 표현 없는 중성 실루엣 한 줄 윤곽 (D10, D12에서 머리부터 발까지 실제 비율로 다시 그림). 설계 좌표 240×420,
+/// 좌우 대칭이라 오른쪽 절반을 그리고 거꾸로 거울. 체형 단계를 바꾸지 않는 한 가지 평균 체형 (COMPLIANCE.md 2.2)
 struct BodySilhouette: Shape {
     func path(in rect: CGRect) -> Path {
         let scaleX = rect.width / 240
-        let scaleY = rect.height / 340
+        let scaleY = rect.height / 420
         func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
             CGPoint(x: rect.minX + x * scaleX, y: rect.minY + y * scaleY)
         }
         var path = Path()
         path.move(to: p(120, 8))
-        path.addCurve(to: p(142, 31), control1: p(133, 8), control2: p(142, 18))
-        path.addCurve(to: p(127, 54), control1: p(142, 43), control2: p(135, 51))
-        path.addLine(to: p(127, 60))
-        path.addCurve(to: p(164, 69), control1: p(131, 64), control2: p(151, 65))
-        path.addCurve(to: p(193, 101), control1: p(182, 73), control2: p(193, 84))
-        path.addCurve(to: p(197, 161), control1: p(194, 121), control2: p(196, 141))
-        path.addCurve(to: p(197, 212), control1: p(198, 181), control2: p(198, 197))
-        path.addCurve(to: p(185, 234), control1: p(197, 226), control2: p(191, 234))
-        path.addCurve(to: p(174, 218), control1: p(179, 234), control2: p(174, 228))
-        path.addCurve(to: p(169, 166), control1: p(173, 200), control2: p(171, 182))
-        path.addCurve(to: p(162, 106), control1: p(167, 142), control2: p(165, 120))
-        path.addCurve(to: p(156, 105), control1: p(161, 100), control2: p(157, 99))
-        path.addCurve(to: p(155, 162), control1: p(154, 124), control2: p(155, 146))
-        path.addCurve(to: p(161, 206), control1: p(155, 178), control2: p(161, 190))
-        path.addCurve(to: p(154, 330), control1: p(161, 240), control2: p(157, 290))
-        path.addCurve(to: p(141, 338), control1: p(154, 336), control2: p(148, 338))
-        path.addCurve(to: p(129, 330), control1: p(134, 338), control2: p(129, 336))
-        path.addCurve(to: p(123, 226), control1: p(128, 290), control2: p(125, 250))
-        path.addCurve(to: p(120, 215), control1: p(122, 219), control2: p(121, 216))
+        path.addCurve(to: p(143, 33), control1: p(134, 8), control2: p(143, 19))
+        path.addCurve(to: p(128, 61), control1: p(143, 47), control2: p(136, 57))
+        path.addLine(to: p(129, 72))
+        path.addCurve(to: p(165, 82), control1: p(138, 77), control2: p(154, 78))
+        path.addCurve(to: p(189, 112), control1: p(180, 86), control2: p(188, 96))
+        path.addCurve(to: p(188, 166), control1: p(189, 126), control2: p(190, 146))
+        path.addCurve(to: p(192, 214), control1: p(188, 180), control2: p(191, 200))
+        path.addCurve(to: p(191, 238), control1: p(193, 224), control2: p(192, 232))
+        path.addCurve(to: p(187, 266), control1: p(193, 250), control2: p(193, 262))
+        path.addCurve(to: p(177, 256), control1: p(182, 269), control2: p(177, 264))
+        path.addCurve(to: p(178, 238), control1: p(177, 248), control2: p(178, 242))
+        path.addCurve(to: p(173, 190), control1: p(177, 222), control2: p(174, 204))
+        path.addCurve(to: p(170, 168), control1: p(172, 182), control2: p(171, 176))
+        path.addCurve(to: p(161, 108), control1: p(168, 148), control2: p(166, 126))
+        path.addCurve(to: p(155, 172), control1: p(158, 124), control2: p(155, 146))
+        path.addCurve(to: p(164, 222), control1: p(155, 190), control2: p(163, 204))
+        path.addCurve(to: p(156, 318), control1: p(165, 250), control2: p(160, 290))
+        path.addCurve(to: p(158, 366), control1: p(155, 330), control2: p(160, 348))
+        path.addCurve(to: p(150, 398), control1: p(157, 380), control2: p(152, 392))
+        path.addCurve(to: p(147, 414), control1: p(152, 405), control2: p(153, 412))
+        path.addLine(to: p(134, 414))
+        path.addCurve(to: p(130, 402), control1: p(129, 414), control2: p(128, 408))
+        path.addCurve(to: p(128, 352), control1: p(129, 390), control2: p(127, 370))
+        path.addCurve(to: p(128, 320), control1: p(129, 340), control2: p(128, 330))
+        path.addCurve(to: p(123, 246), control1: p(127, 296), control2: p(125, 262))
+        path.addCurve(to: p(120, 238), control1: p(122, 240), control2: p(121, 238))
         // 왼쪽 절반: 같은 선을 거꾸로 거울
-        path.addCurve(to: p(117, 226), control1: p(119, 216), control2: p(118, 219))
-        path.addCurve(to: p(111, 330), control1: p(115, 250), control2: p(112, 290))
-        path.addCurve(to: p(99, 338), control1: p(111, 336), control2: p(106, 338))
-        path.addCurve(to: p(86, 330), control1: p(92, 338), control2: p(86, 336))
-        path.addCurve(to: p(79, 206), control1: p(83, 290), control2: p(79, 240))
-        path.addCurve(to: p(85, 162), control1: p(79, 190), control2: p(85, 178))
-        path.addCurve(to: p(84, 105), control1: p(85, 146), control2: p(86, 124))
-        path.addCurve(to: p(78, 106), control1: p(83, 99), control2: p(79, 100))
-        path.addCurve(to: p(71, 166), control1: p(75, 120), control2: p(73, 142))
-        path.addCurve(to: p(66, 218), control1: p(69, 182), control2: p(67, 200))
-        path.addCurve(to: p(55, 234), control1: p(66, 228), control2: p(61, 234))
-        path.addCurve(to: p(43, 212), control1: p(49, 234), control2: p(43, 226))
-        path.addCurve(to: p(43, 161), control1: p(42, 197), control2: p(42, 181))
-        path.addCurve(to: p(47, 101), control1: p(44, 141), control2: p(46, 121))
-        path.addCurve(to: p(76, 69), control1: p(47, 84), control2: p(58, 73))
-        path.addCurve(to: p(113, 60), control1: p(89, 65), control2: p(109, 64))
-        path.addLine(to: p(113, 54))
-        path.addCurve(to: p(98, 31), control1: p(105, 51), control2: p(98, 43))
-        path.addCurve(to: p(120, 8), control1: p(98, 18), control2: p(107, 8))
+        path.addCurve(to: p(117, 246), control1: p(119, 238), control2: p(118, 240))
+        path.addCurve(to: p(112, 320), control1: p(115, 262), control2: p(113, 296))
+        path.addCurve(to: p(112, 352), control1: p(112, 330), control2: p(111, 340))
+        path.addCurve(to: p(110, 402), control1: p(113, 370), control2: p(111, 390))
+        path.addCurve(to: p(106, 414), control1: p(112, 408), control2: p(111, 414))
+        path.addLine(to: p(93, 414))
+        path.addCurve(to: p(90, 398), control1: p(87, 412), control2: p(88, 405))
+        path.addCurve(to: p(82, 366), control1: p(88, 392), control2: p(83, 380))
+        path.addCurve(to: p(84, 318), control1: p(80, 348), control2: p(85, 330))
+        path.addCurve(to: p(76, 222), control1: p(80, 290), control2: p(75, 250))
+        path.addCurve(to: p(85, 172), control1: p(77, 204), control2: p(85, 190))
+        path.addCurve(to: p(79, 108), control1: p(85, 146), control2: p(82, 124))
+        path.addCurve(to: p(70, 168), control1: p(74, 126), control2: p(72, 148))
+        path.addCurve(to: p(67, 190), control1: p(69, 176), control2: p(68, 182))
+        path.addCurve(to: p(62, 238), control1: p(66, 204), control2: p(63, 222))
+        path.addCurve(to: p(63, 256), control1: p(62, 242), control2: p(63, 248))
+        path.addCurve(to: p(53, 266), control1: p(63, 264), control2: p(58, 269))
+        path.addCurve(to: p(49, 238), control1: p(47, 262), control2: p(47, 250))
+        path.addCurve(to: p(48, 214), control1: p(48, 232), control2: p(47, 224))
+        path.addCurve(to: p(52, 166), control1: p(49, 200), control2: p(52, 180))
+        path.addCurve(to: p(51, 112), control1: p(50, 146), control2: p(51, 126))
+        path.addCurve(to: p(75, 82), control1: p(52, 96), control2: p(60, 86))
+        path.addCurve(to: p(111, 72), control1: p(86, 78), control2: p(102, 77))
+        path.addLine(to: p(112, 61))
+        path.addCurve(to: p(97, 33), control1: p(104, 57), control2: p(97, 47))
+        path.addCurve(to: p(120, 8), control1: p(97, 19), control2: p(106, 8))
         path.closeSubpath()
         return path
     }
