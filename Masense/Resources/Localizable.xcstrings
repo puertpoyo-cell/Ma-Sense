@@ -766,6 +766,329 @@
         }
       }
     },
+    "coach.doseDay %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today is a dose day. Last site: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘은 투약일이에요. 지난번 부위: %@"
+          }
+        }
+      }
+    },
+    "coach.doseDay.noSite": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today is a dose day. Noting the site when you log makes it easier to look back."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘은 투약일이에요. 기록할 때 부위도 남겨 두면 나중에 보기 편해요."
+          }
+        }
+      }
+    },
+    "coach.lowAppetite": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your appetite is lower today. Pick whatever feels easiest from the small, frequent foods in Today's rhythm."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "입맛이 줄어든 날이에요. 오늘의 마디에 모아 둔 '작게 자주' 식품에서 편한 것부터 골라 보세요."
+          }
+        }
+      }
+    },
+    "coach.lowCondition": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's a heavy day. Resting or a short walk counts as a record too."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "몸이 무거운 날이에요. 쉬기나 가벼운 걷기도 그대로 기록이 돼요."
+          }
+        }
+      }
+    },
+    "coach.lowDoses %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld doses left. Take a moment to check your next visit date."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 회차가 %lld회예요. 다음 진료일을 한번 확인해 두세요."
+          }
+        }
+      }
+    },
+    "coach.lowPens %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pens left. Take a moment to check your next visit date."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 펜이 %lld개예요. 다음 진료일을 한번 확인해 두세요."
+          }
+        }
+      }
+    },
+    "coach.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masense"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마선생"
+          }
+        }
+      }
+    },
+    "coach.noWeight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No weight logged for over a week. How about weighing in on an easy morning?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중 기록이 일주일 넘게 비어 있어요. 편한 아침에 한 번 재 볼까요."
+          }
+        }
+      }
+    },
+    "coach.notice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General wellness information. For your situation, consult your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일반 건강관리 정보예요. 개인 상황은 의사와 상의하세요."
+          }
+        }
+      }
+    },
+    "coach.proteinNotYet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No protein logged yet today. Even one meal shows how the day is going."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 단백질은 아직 기록 전이에요. 한 끼만 적어 둬도 하루 흐름이 보여요."
+          }
+        }
+      }
+    },
+    "coach.strengthNotYet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No strength sessions logged this week yet. The 15-minute bodyweight example is an easy place to start."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이번 주 근력운동 기록이 아직 없어요. 맨몸 15분 예시부터 가볍게 시작해 볼 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.tip.0": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Short notes are fine. Line by line, they make your visit easier to talk through."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록은 짧아도 괜찮아요. 한 줄씩 쌓이면 진료 때 이야기하기 쉬워져요."
+          }
+        }
+      }
+    },
+    "coach.tip.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weighing at the same time and in the same way makes the trend easier to read."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중은 같은 시간, 같은 조건에서 재면 흐름을 보기 쉬워요."
+          }
+        }
+      }
+    },
+    "coach.tip.2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try spreading protein across your meals rather than all at once."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단백질은 한 번에 몰기보다 끼니마다 조금씩 나눠 챙겨 보세요."
+          }
+        }
+      }
+    },
+    "coach.tip.3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How about starting the day with a glass of water?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물 한 잔으로 하루를 시작해 볼까요."
+          }
+        }
+      }
+    },
+    "coach.tip.4": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When a question comes up, jot it down in Questions for the visit."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "궁금한 점이 떠오르면 '물어볼 것'에 바로 적어 두세요."
+          }
+        }
+      }
+    },
+    "coach.tip.5": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strength work can start small, like standing up from a chair."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근력운동은 의자에서 앉았다 일어나기처럼 작은 동작부터 시작할 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.tip.6": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeping a regular bedtime and wake time makes the day's rhythm easier to keep."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잠드는 시간과 깨는 시간이 일정하면 하루 리듬을 잡기 쉬워요."
+          }
+        }
+      }
+    },
+    "coach.tip.7": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some days the numbers go up and down. Taking care of one thing today is enough."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "숫자가 오르내리는 날도 있어요. 오늘 할 일 하나만 챙겨도 돼요."
+          }
+        }
+      }
+    },
     "condition.appetite": {
       "extractionState": "manual",
       "localizations": {
@@ -915,108 +1238,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "가벼운 활동 %lld회"
-          }
-        }
-      }
-    },
-    "daily.line.dismiss": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dismiss"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "닫기"
-          }
-        }
-      }
-    },
-    "daily.line.doseDay %@": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today is your dose day. Last site: %@"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "오늘은 투약일입니다. 지난 부위: %@"
-          }
-        }
-      }
-    },
-    "daily.line.doseDay.noSite": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today is your dose day."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "오늘은 투약일입니다."
-          }
-        }
-      }
-    },
-    "daily.line.lowDoses %lld": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld dose left. Check your next visit date."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "남은 회차가 %lld회입니다. 다음 진료일을 확인하세요."
-          }
-        }
-      }
-    },
-    "daily.line.lowPens %lld": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld pen left. Check your next visit date."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "남은 펜이 %lld개입니다. 다음 진료일을 확인하세요."
-          }
-        }
-      }
-    },
-    "daily.line.noWeight": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No weight logged in the last 7 days."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "최근 7일 동안 체중 기록이 없습니다."
           }
         }
       }

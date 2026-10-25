@@ -56,8 +56,8 @@ struct TodayView: View {
     @State private var showsToast = false
     /// 지난 투약 안내 카드를 닫은 처방 id (D6). 기기 화면 상태라 SwiftData 대신 UserDefaults
     @AppStorage("backfill.dismissedPrescription") private var dismissedBackfill = ""
-    /// 닫은 사실 한 줄 "종류|날짜", 닫은 주간 정리 구간 시작 (D8). 기기 화면 상태
-    @AppStorage("dailyLine.dismissed") private var dismissedDailyLine = ""
+    /// 하루 닫은 마선생 한마디의 날짜 "y-m-d" (D12), 닫은 주간 정리 구간 시작 (D8). 기기 화면 상태
+    @AppStorage("coach.dismissedDay") private var dismissedCoachDay = ""
     @AppStorage("weeklySummary.dismissedStart") private var dismissedWeeklyStart: Double = 0
     /// 닫은 패키지 정리 구간 시작 (D9)
     @AppStorage("packageSummary.dismissedStart") private var dismissedPackageStart: Double = 0
@@ -75,8 +75,8 @@ struct TodayView: View {
             let model = makeModel(now: timeline.date)
             ScrollView {
                 VStack(spacing: Spacing.cardGap) {
-                    if let line = model.dailyLine, dismissedDailyLine != dailyLineKey(line, now: timeline.date) {
-                        dailyLineView(line, now: timeline.date)
+                    if dismissedCoachDay != dayKey(timeline.date) {
+                        coachCard(model.coachLine, now: timeline.date)
                     }
                     countdownCard(model)
                     // 처방이 없으면 1-1만 보인다 (SCREENS.md 빈 상태)
@@ -187,12 +187,7 @@ struct TodayView: View {
         )
     }
 
-    // MARK: 맨 위 사실 한 줄 (R17, D8)
-
-    /// 하루에 한 번 닫는다: 같은 종류·같은 날이면 숨김
-    private func dailyLineKey(_ line: DailyLine, now: Date) -> String {
-        "\(line.kind)|\(dayKey(now))"
-    }
+    // MARK: 맨 위 마선생 한마디 (R20, D12)
 
     /// 하루 단위로 닫는 카드의 키 "y-m-d"
     private func dayKey(_ date: Date) -> String {
@@ -200,39 +195,82 @@ struct TodayView: View {
         return "\(day.year ?? 0)-\(day.month ?? 0)-\(day.day ?? 0)"
     }
 
-    private func dailyLineView(_ line: DailyLine, now: Date) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: Spacing.s2) {
-            Group {
-                switch line {
-                case let .doseDay(site?):
-                    Text("daily.line.doseDay \(site.localizedName)")
-                case .doseDay(nil):
-                    Text("daily.line.doseDay.noSite")
-                case let .lowSupply(remaining, true):
-                    Text("daily.line.lowPens \(remaining)")
-                case let .lowSupply(remaining, false):
-                    Text("daily.line.lowDoses \(remaining)")
-                case .noRecentWeight:
-                    Text("daily.line.noWeight")
+    /// 캐릭터 얼굴 + 말풍선. 과정만 다정하게 권하고 결과를 평가하지 않는다. 건강관리 한마디에는 고지를 붙인다
+    private func coachCard(_ line: CoachLine, now: Date) -> some View {
+        HStack(alignment: .top, spacing: Spacing.s3) {
+            Image("MasenseCoach")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 52, height: 52)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: Spacing.s1) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("coach.name")
+                        .font(Typography.caption.weight(.semibold))
+                        .foregroundStyle(Color.accent)
+                    Spacer(minLength: 0)
+                    Button {
+                        dismissedCoachDay = dayKey(now)
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Color.inkSecondary)
+                            .frame(minWidth: 28, minHeight: 28)
+                    }
+                    .accessibilityLabel(Text("today.routine.dismiss"))
+                }
+                coachText(line)
+                    .font(Typography.body)
+                    .foregroundStyle(Color.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                if line.isHealthTip {
+                    Text("coach.notice")
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.inkTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .font(Typography.body)
-            .foregroundStyle(Color.ink)
+            .padding(.leading, Spacing.s3)
+            .padding(.trailing, Spacing.s2)
+            .padding(.bottom, Spacing.s3)
+            .padding(.top, Spacing.s1)
             .frame(maxWidth: .infinity, alignment: .leading)
-            Button {
-                dismissedDailyLine = dailyLineKey(line, now: now)
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color.inkSecondary)
-                    .frame(minWidth: 32, minHeight: 32)
-            }
-            .accessibilityLabel(Text("daily.line.dismiss"))
+            // 말풍선: 얼굴 쪽 위 모서리만 덜 둥글게
+            .background(
+                UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 16, bottomTrailingRadius: 16, topTrailingRadius: 16, style: .continuous)
+                    .fill(Color.frost)
+            )
+            .overlay(
+                UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 16, bottomTrailingRadius: 16, topTrailingRadius: 16, style: .continuous)
+                    .strokeBorder(Color.frostBorder, lineWidth: 1)
+            )
         }
-        .padding(.leading, Spacing.s4)
-        .padding(.trailing, Spacing.s2)
-        .padding(.vertical, Spacing.s1)
-        .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
+    }
+
+    private func coachText(_ line: CoachLine) -> Text {
+        switch line {
+        case let .fact(.doseDay(site?)):
+            return Text("coach.doseDay \(site.localizedName)")
+        case .fact(.doseDay(nil)):
+            return Text("coach.doseDay.noSite")
+        case let .fact(.lowSupply(remaining, true)):
+            return Text("coach.lowPens \(remaining)")
+        case let .fact(.lowSupply(remaining, false)):
+            return Text("coach.lowDoses \(remaining)")
+        case .fact(.noRecentWeight):
+            return Text("coach.noWeight")
+        case .lowCondition:
+            return Text("coach.lowCondition")
+        case .lowAppetite:
+            return Text("coach.lowAppetite")
+        case .proteinNotYet:
+            return Text("coach.proteinNotYet")
+        case .strengthNotYet:
+            return Text("coach.strengthNotYet")
+        case let .tip(index):
+            // 보간하면 키가 "coach.tip.%lld"가 되므로 이어 붙인 String으로
+            return Text(LocalizedStringKey("coach.tip." + String(index)))
+        }
     }
 
     // MARK: 1-1 카운트다운 (CountdownHero, DESIGN_SYSTEM.md 5.2)
