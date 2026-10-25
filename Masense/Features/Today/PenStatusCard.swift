@@ -120,20 +120,44 @@ struct PenStatusCard: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 }
-                PenGauge(status: status, tint: tint)
-                VStack(alignment: .leading, spacing: Spacing.s1) {
-                    if let memo = memo?.trimmingCharacters(in: .whitespacesAndNewlines), !memo.isEmpty {
-                        HStack(alignment: .firstTextBaseline, spacing: Spacing.s1) {
-                            // 처방 구간 색 점 + 메모 그대로 (색은 처방 구분일 뿐)
-                            Circle().fill(tint).frame(width: 6, height: 6).accessibilityHidden(true)
-                            Text("pen.memo \(memo)")
-                                .font(Typography.caption)
-                                .foregroundStyle(Color.inkSecondary)
-                                .lineLimit(2)
-                        }
-                    }
+                // 그림 옆에 처방 메모를 가로로 크게. 사용자가 적은 그대로만 (해석·계산 없음)
+                HStack(alignment: .center, spacing: Spacing.s3) {
+                    PenGauge(status: status, tint: tint)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    memoView
                 }
             }
+        }
+    }
+}
+
+extension PenStatusCard {
+    @ViewBuilder
+    private var memoView: some View {
+        if let memo = memo?.trimmingCharacters(in: .whitespacesAndNewlines), !memo.isEmpty {
+            VStack(alignment: .trailing, spacing: Spacing.s1) {
+                HStack(spacing: Spacing.s1) {
+                    // 처방 구간 색 점 (색은 처방 구분일 뿐)
+                    Circle().fill(tint).frame(width: 6, height: 6).accessibilityHidden(true)
+                    Text("pen.memo.label")
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.inkSecondary)
+                }
+                Text(verbatim: memo)
+                    .font(Typography.metricLarge)
+                    .foregroundStyle(Color.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+            }
+            .frame(maxWidth: 160, alignment: .trailing)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("pen.memo \(memo)"))
+        } else {
+            Text("pen.memo.empty")
+                .font(Typography.caption)
+                .foregroundStyle(Color.inkTertiary)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 140, alignment: .trailing)
         }
     }
 }

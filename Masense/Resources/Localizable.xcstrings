@@ -4421,6 +4421,40 @@
         }
       }
     },
+    "pen.memo.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a memo in Settings > Prescription to show it here"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정 > 처방 > 메모에 적으면 여기에 보입니다"
+          }
+        }
+      }
+    },
+    "pen.memo.label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prescription memo"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 메모"
+          }
+        }
+      }
+    },
     "pen.package %lld %lld": {
       "extractionState": "manual",
       "localizations": {
