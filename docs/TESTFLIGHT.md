@@ -24,7 +24,13 @@
 xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' test
 ```
 
-Xcode > Product > Archive → Distribute App → App Store Connect → Upload. 업로드 뒤 App Store Connect > TestFlight에서 수출 규정 질문(암호화: 표준 암호화만 사용 → 면제 해당 여부 확인)에 답한다.
+Xcode > 실행 대상 "Any iOS Device (arm64)" > Product > Archive → Distribute App → App Store Connect → Upload.
+
+- 수출 규정: `Config/Masense-Info.plist`에 `ITSAppUsesNonExemptEncryption = NO` (2026-10-25). 앱이 자체 암호화를 쓰지 않고 OS의 HTTPS·StoreKit만 쓰므로 면제. 업로드마다 질문이 뜨지 않는다
+- 개인정보 매니페스트: `Masense/Resources/PrivacyInfo.xcprivacy` (2026-10-25). 추적 없음, 수집 데이터 없음(기록은 기기에만), 필수 사유 API는 `@AppStorage`의 UserDefaults(CA92.1, 앱 자신만 읽고 씀). 위젯 확장은 사유 API를 쓰지 않음. 새 사유 API를 쓰면 여기에 추가한다
+- HealthKit 쓰기 문구: 앱은 쓰기 권한을 요청하지 않지만(`toShare: []`), HealthKit entitlement가 있으면 업로드 검사가 `NSHealthUpdateUsageDescription`을 요구해 거절한다 (2026-10-25 업로드 실패). "쓰지 않는다"는 사실만 적은 문구를 `INFOPLIST_KEY_NSHealthUpdateUsageDescription` + `InfoPlist.xcstrings`에 둔다
+- 다시 올릴 때는 `CURRENT_PROJECT_VERSION`(빌드 번호)을 앱·위젯 두 타깃에서 함께 올린다. 같은 `MARKETING_VERSION` 안에서 빌드 번호가 겹치면 업로드가 거절된다
+- 2026-10-25 확인: `xcodebuild -scheme Masense -configuration Release -destination 'generic/platform=iOS' archive` 성공 (0.2 (1), HealthKit·App Group entitlement 포함, 위젯 확장 내장)
 
 ### 실기기에서 화면 좌우에 검은 띠가 보이면
 
