@@ -8195,6 +8195,40 @@
         }
       }
     },
+    "today.routine.dismiss": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide for today"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘은 닫기"
+          }
+        }
+      }
+    },
+    "today.routine.notice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General wellness information, not a personal exercise prescription. Consult your doctor about the type and intensity of exercise that suits you."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일반 건강관리 정보이며 개인 맞춤 운동 처방이 아닙니다. 몸 상태에 맞는 운동 종류와 강도는 의사와 상의하세요."
+          }
+        }
+      }
+    },
     "today.sequence.a11y %lld %lld": {
       "extractionState": "manual",
       "localizations": {

@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-1a 지난 투약 안내, 1-2 컨디션, 1-1c 지난 정리, 1-1b 남은 펜, 1-3 체중, 1-4 오늘의 마디, 1-5 진료, 1-6 알아 두기.
+/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-1a 지난 투약 안내, 1-2 컨디션, 1-1c 지난 정리, 1-1b 남은 펜, 1-3 체중, 1-4 오늘의 마디, 1-5 진료, 1-7 맨몸 근력 예시, 1-6 알아 두기.
 struct TodayView: View {
     var openReport: () -> Void = {}
 
@@ -62,6 +62,8 @@ struct TodayView: View {
     /// 닫은 패키지 정리 구간 시작 (D9)
     @AppStorage("packageSummary.dismissedStart") private var dismissedPackageStart: Double = 0
     @State private var weeklyListDestination: WeeklySummaryListView.Segment?
+    /// 하루 닫은 맨몸 근력 예시 카드의 날짜 "y-m-d" (D10). 기기 화면 상태
+    @AppStorage("strengthRoutine.dismissedDay") private var dismissedRoutineDay = ""
     /// 진료 카드의 "진료 준비" (D9)
     @State private var infoDestination: InfoTopic?
 
@@ -117,6 +119,10 @@ struct TodayView: View {
                         dailyCycleCard(model.daily, now: timeline.date)
                         if let clinic = model.clinicDate {
                             clinicCard(clinic)
+                        }
+                        // 저컨디션 날(R11)에는 근력 예시를 띄우지 않는다
+                        if !model.daily.isLowCondition, dismissedRoutineDay != dayKey(timeline.date) {
+                            routineCard(now: timeline.date)
                         }
                     }
                     infoRow
@@ -185,8 +191,13 @@ struct TodayView: View {
 
     /// 하루에 한 번 닫는다: 같은 종류·같은 날이면 숨김
     private func dailyLineKey(_ line: DailyLine, now: Date) -> String {
-        let day = calendar.dateComponents([.year, .month, .day], from: now)
-        return "\(line.kind)|\(day.year ?? 0)-\(day.month ?? 0)-\(day.day ?? 0)"
+        "\(line.kind)|\(dayKey(now))"
+    }
+
+    /// 하루 단위로 닫는 카드의 키 "y-m-d"
+    private func dayKey(_ date: Date) -> String {
+        let day = calendar.dateComponents([.year, .month, .day], from: date)
+        return "\(day.year ?? 0)-\(day.month ?? 0)-\(day.day ?? 0)"
     }
 
     private func dailyLineView(_ line: DailyLine, now: Date) -> some View {
@@ -365,6 +376,48 @@ struct TodayView: View {
                     GhostButton("clinic.prepareReport", action: openReport)
                 }
                 GhostButton("info.clinicPrep.title") { infoDestination = .clinicPrep }
+            }
+        }
+    }
+
+    // MARK: 1-7 맨몸 근력 예시 (D10)
+
+    /// 페이지 아래 예시 루틴 (S8과 같은 문구). 일반 건강관리 정보이며 개인 맞춤이 아니다 (COMPLIANCE.md 2.2).
+    /// 횟수·목표·연속일 없이 예시만 두고, 오늘 하루 닫을 수 있다
+    private func routineCard(now: Date) -> some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("exercise.routine.title")
+                        .font(Typography.sectionHeader)
+                        .foregroundStyle(Color.ink)
+                    Spacer()
+                    Button {
+                        dismissedRoutineDay = dayKey(now)
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color.inkSecondary)
+                            .frame(minWidth: 32, minHeight: 32)
+                    }
+                    .accessibilityLabel(Text("today.routine.dismiss"))
+                }
+                VStack(alignment: .leading, spacing: Spacing.s2) {
+                    ForEach(StrengthSheet.routineKeys, id: \.self) { key in
+                        HStack(alignment: .firstTextBaseline, spacing: Spacing.s2) {
+                            Circle().fill(Color.accent).frame(width: 5, height: 5).accessibilityHidden(true)
+                            Text(LocalizedStringKey(key))
+                                .font(Typography.body)
+                                .foregroundStyle(Color.ink)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                Text("exercise.routine.repeat")
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+                NoticeLine("today.routine.notice")
+                GhostButton("daily.logExercise") { sheet = .strength }
             }
         }
     }
@@ -588,7 +641,10 @@ struct TodayView: View {
             HStack(spacing: Spacing.s1) {
                 Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
                     .accessibilityHidden(true)
+                // 좁은 화면에서 "식이섬유"가 두 줄로 꺾이지 않게
                 Text(key)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             }
             .font(Typography.label)
             .foregroundStyle(isOn ? Color.ink : Color.inkSecondary)
