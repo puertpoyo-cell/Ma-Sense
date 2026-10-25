@@ -1231,13 +1231,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Light activity %lld"
+            "value": "Walks and cardio: %lld"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "가벼운 활동 %lld회"
+            "value": "걷기·유산소 등 %lld회"
           }
         }
       }
@@ -6019,6 +6019,23 @@
         }
       }
     },
+    "session.cardio": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cardio"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "유산소"
+          }
+        }
+      }
+    },
     "session.rest": {
       "extractionState": "manual",
       "localizations": {
@@ -9153,13 +9170,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Strength %1$lld · Light %2$lld"
+            "value": "Strength %1$lld · walks and cardio %2$lld"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "근력 %1$lld회 · 가벼운 활동 %2$lld회"
+            "value": "근력 %1$lld회 · 걷기·유산소 등 %2$lld회"
           }
         }
       }

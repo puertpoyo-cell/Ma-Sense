@@ -212,7 +212,7 @@ struct StrengthWeek { let strengthCount: Int; let lightCount: Int; let restCount
 - 주간 목표 수치를 화면에 띄우지 않는다. "이번 주 근력 2회" 같은 사실만
 - `isLowConditionDay(checks:now:)`: 최근 48h 체크에 강도 2 이상 증상이 있으면 (식욕은 보지 않음)
 - `kindOrder(isLowCondition:)`: 평소 근력 / 걷기 / 스트레칭 / 쉬기, 저컨디션 날 걷기 / 스트레칭 / 쉬기 / 근력
-- 가벼운 활동 = 걷기 + 스트레칭. 주는 `calendar.firstWeekday` 기준
+- 가벼운 활동 = 걷기 + 유산소(D16) + 스트레칭, 화면 이름 "걷기·유산소 등". 운동 기록 순서는 근력·걷기·유산소·스트레칭·쉬기 (저컨디션 날 걷기·스트레칭·쉬기·근력·유산소). 주는 `calendar.firstWeekday` 기준
 - 최근 48h 컨디션에 심각도 2 이상 증상이 있으면 운동 기록 화면에서 걷기·스트레칭·쉬기를 상단에 배치 (R10과 같은 조건 함수 공유: `isLowConditionDay`)
 
 ## R12. 리포트 기간

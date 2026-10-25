@@ -268,13 +268,13 @@ enum ProteinFood: String, Codable, CaseIterable {
 | WeightSample.leanBodyMassKg | `leanBodyMass` | 읽기 |
 | WeightSample.bodyFatPercent (D11) | `bodyFatPercentage` (0~1 비율 → ×100) | 읽기 |
 | 바디맵 그림 (D13) | `HKCharacteristicType.biologicalSex` (여·남만, 그 밖은 없음으로) | 읽기. SwiftData에 두지 않고 UserDefaults `health.bodyFigure`에만, 내보내지 않음 |
-| StrengthSession (M2, P2) | `HKWorkoutType` activityType `.traditionalStrengthTraining`, `.functionalStrengthTraining`, `.walking`, `.flexibility` | 읽기 |
+| StrengthSession (M2, P2, D16) | `HKWorkoutType` 모든 운동 (Apple 피트니스·Watch·다른 앱) | 읽기 |
 
 Info.plist: `NSHealthShareUsageDescription` 필수 (빌드 설정 `INFOPLIST_KEY_NSHealthShareUsageDescription`, 번역 `InfoPlist.xcstrings`, entitlement `Config/Masense.entitlements`). 쓰기 전까지 `NSHealthUpdateUsageDescription`은 넣지 않음.
 
 - 제지방량·체지방률은 별도 샘플로 오므로, 같은 날 HealthKit 체중 샘플의 `leanBodyMassKg`·`bodyFatPercent`에 붙인다 (그날 가장 늦은 값). 같은 날 체중이 없으면 버린다
 - 동기화 범위는 최근 52주 (D11에서 26주 → 52주). 체지방률은 나중에 더한 읽기 종류라, 이미 허용한 사용자는 오늘 화면을 열 때 시스템 권한 시트가 한 번 뜬다
-- 운동은 `StrengthSession(source: .healthKit)`으로 `healthKitUUID` 기준 upsert. 근력(traditional·functional) → `.strength`, 걷기 → `.walk`, 유연성 → `.stretch`, 그 밖은 무시. 강도는 알 수 없어 `.moderate`
+- 운동은 `StrengthSession(source: .healthKit)`으로 `healthKitUUID` 기준 upsert. D16(2026-10-25 사람 결정 "피트니스 운동 기록 전부"): 근력(traditional·functional·core·HIIT·crossTraining) → `.strength`, 걷기·하이킹 → `.walk`, 유연성·요가·필라테스·마음과 몸·쿨다운·태극권·준비와 회복 → `.stretch`, 그 밖(달리기·자전거·수영 등) → `.cardio`(새 종류, rawValue 저장이라 스키마 변경 없음). 강도는 알 수 없어 `.moderate`
 
 ## 스키마 버전
 

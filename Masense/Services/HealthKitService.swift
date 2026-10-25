@@ -96,13 +96,18 @@ final class HealthKitService: HealthKitReading {
         }
     }
 
-    /// Apple Watch 운동 종류 → 근력운동 마디 종류 (DATA_MODEL.md HealthKit 매핑)
+    /// Apple 피트니스·Watch 운동 종류 → 운동 기록 종류 (DATA_MODEL.md HealthKit 매핑).
+    /// D16: 모든 운동을 가져온다. 근력 계열은 근력, 걷기·하이킹은 걷기, 요가·필라테스 등은 스트레칭, 나머지는 유산소
     static func sessionKind(for type: HKWorkoutActivityType) -> SessionKind? {
         switch type {
-        case .traditionalStrengthTraining, .functionalStrengthTraining: return .strength
-        case .walking: return .walk
-        case .flexibility: return .stretch
-        default: return nil
+        case .traditionalStrengthTraining, .functionalStrengthTraining, .coreTraining, .highIntensityIntervalTraining, .crossTraining:
+            return .strength
+        case .walking, .hiking:
+            return .walk
+        case .flexibility, .yoga, .pilates, .mindAndBody, .cooldown, .taiChi, .preparationAndRecovery:
+            return .stretch
+        default:
+            return .cardio
         }
     }
 

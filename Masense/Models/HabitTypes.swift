@@ -36,7 +36,8 @@ enum ProteinFood: String, Codable, CaseIterable, Identifiable {
 }
 
 enum SessionKind: String, Codable, CaseIterable, Identifiable {
-    case strength, walk, stretch, rest
+    /// cardio: D16 피트니스 연동으로 더함 (달리기·자전거·수영 등). rawValue 문자열 저장이라 스키마 변경 없음
+    case strength, walk, cardio, stretch, rest
 
     var id: String { rawValue }
     var titleKey: String { "session." + rawValue }

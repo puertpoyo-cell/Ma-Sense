@@ -65,8 +65,8 @@ struct M2RulesTests {
     }
 
     @Test func sessionOrderPutsLightOptionsFirstOnLowConditionDay() {
-        #expect(StrengthRules.kindOrder(isLowCondition: false) == [.strength, .walk, .stretch, .rest])
-        #expect(StrengthRules.kindOrder(isLowCondition: true) == [.walk, .stretch, .rest, .strength])
+        #expect(StrengthRules.kindOrder(isLowCondition: false) == [.strength, .walk, .cardio, .stretch, .rest])
+        #expect(StrengthRules.kindOrder(isLowCondition: true) == [.walk, .stretch, .rest, .strength, .cardio])
     }
 
     @Test func strengthWeekCountsFacts() {
@@ -76,11 +76,13 @@ struct M2RulesTests {
             StrengthSessionSnapshot(startedAt: TestCalendar.date(2026, 10, 21, 7), durationMinutes: 15, kind: .strength),
             StrengthSessionSnapshot(startedAt: TestCalendar.date(2026, 10, 22, 7), durationMinutes: 30, kind: .walk),
             StrengthSessionSnapshot(startedAt: TestCalendar.date(2026, 10, 23, 7), durationMinutes: 10, kind: .stretch),
+            // D16 피트니스 유산소도 걷기·유산소 등으로 센다
+            StrengthSessionSnapshot(startedAt: TestCalendar.date(2026, 10, 23, 18), durationMinutes: 35, kind: .cardio),
             StrengthSessionSnapshot(startedAt: TestCalendar.date(2026, 10, 24, 7), durationMinutes: 0, kind: .rest),
             StrengthSessionSnapshot(startedAt: TestCalendar.date(2026, 10, 25, 7), durationMinutes: 20, kind: .strength),
         ]
         let week = StrengthRules.strengthWeekSummary(sessions: sessions, weekOf: TestCalendar.date(2026, 10, 22), calendar: calendar)
-        #expect(week == StrengthWeek(strengthCount: 2, lightCount: 2, restCount: 1))
+        #expect(week == StrengthWeek(strengthCount: 2, lightCount: 3, restCount: 1))
     }
 
     // MARK: R8 감량 속도
