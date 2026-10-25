@@ -8,6 +8,8 @@ import SwiftUI
 @Observable
 final class CoachPopupCenter {
     private(set) var current: CoachLine?
+    /// 시작 전환 화면 등으로 가려져 있을 때. 쉬는 동안 닿은 자리는 기록하지 않는다
+    var isPaused = false
 
     /// 떠 있는 시간
     static let visibleSeconds: Double = 6
@@ -35,7 +37,7 @@ final class CoachPopupCenter {
     @MainActor
     func reach(_ spot: CoachSpot, context: CoachContext, now: Date, calendar: Calendar) {
         resetIfNewDay(now: now, calendar: calendar)
-        guard current == nil, !isPending, !shownSpots.contains(spot.rawValue) else { return }
+        guard !isPaused, current == nil, !isPending, !shownSpots.contains(spot.rawValue) else { return }
         if let lastDismissedAt, now.timeIntervalSince(lastDismissedAt) < Self.restSeconds { return }
         // 그 자리는 오늘 지나간 것으로 (후보를 다 띄웠으면 조용히)
         shownSpots.insert(spot.rawValue)
@@ -45,7 +47,12 @@ final class CoachPopupCenter {
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(Self.popDelaySeconds))
             isPending = false
-            guard current == nil else { return }
+            guard current == nil, !isPaused else {
+                // 띄우지 못했으면 다음에 다시 닿을 수 있게 되돌린다
+                shownSpots.remove(spot.rawValue)
+                shownLines.remove(line.key)
+                return
+            }
             current = line
             scheduleDismiss()
         }
@@ -260,12 +267,19 @@ private struct CoachPopupOverlay: ViewModifier {
                 )
             }
             .sensoryFeedback(.impact(weight: .light, intensity: 0.6), trigger: coach.current?.key) { _, new in new != nil }
-            .onAppear {
-                if let appearSpot {
-                    coach.reach(appearSpot, context: CoachContext(), now: .now, calendar: calendar)
-                }
+            .onAppear { reachAppearSpot() }
+            .onChange(of: coach.isPaused) { _, paused in
+                if !paused { reachAppearSpot() }
             }
             .onDisappear { coach.dismiss() }
+    }
+}
+
+private extension CoachPopupOverlay {
+    func reachAppearSpot() {
+        if let appearSpot {
+            coach.reach(appearSpot, context: CoachContext(), now: .now, calendar: calendar)
+        }
     }
 }
 
@@ -286,7 +300,7 @@ private struct CoachSpotModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame = $0 }
-            .onChange(of: isReached, initial: true) { _, reached in
+            .onChange(of: isReached && !coach.isPaused, initial: true) { _, reached in
                 if reached {
                     coach.reach(spot, context: context, now: .now, calendar: calendar)
                 }

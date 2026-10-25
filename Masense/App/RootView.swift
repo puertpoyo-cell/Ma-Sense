@@ -12,6 +12,8 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var phase: Phase = .loading
     @State private var showsSplash = RootView.startsWithSplash
+    /// 마선생 한마디 팝업 (D18). 세 탭이 함께 쓴다 (같은 한 줄을 하루 두 번 띄우지 않게)
+    @State private var coach = CoachPopupCenter()
 
     var body: some View {
         Group {
@@ -32,6 +34,9 @@ struct RootView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .environment(\.coach, coach)
+        // 시작 전환 화면이 덮고 있는 동안에는 팝업을 띄우지 않는다 (걷힌 뒤 닿아 있는 자리에서 뜬다)
+        .onChange(of: showsSplash, initial: true) { _, shows in coach.isPaused = shows }
         .task {
             // 시작 전환 화면: 1초 머문 뒤 흐려지며 사라진다. 그동안 아래에서 온보딩·홈을 준비한다
             guard showsSplash else { return }
@@ -75,8 +80,6 @@ struct MainTabView: View {
     }
 
     @State private var selection: Tab = MainTabView.initialTab
-    /// 마선생 한마디 팝업 (D18). 세 탭이 함께 쓴다 (같은 한 줄을 하루 두 번 띄우지 않게)
-    @State private var coach = CoachPopupCenter()
     @Environment(\.router) private var router
 
     private static var initialTab: Tab {
@@ -115,7 +118,6 @@ struct MainTabView: View {
             .tag(Tab.report)
         }
         .tint(Color.accent)
-        .environment(\.coach, coach)
         // 알림·위젯에서 들어오면 오늘 탭으로. 시트는 오늘 화면이 연다
         .onChange(of: router.pending, initial: true) { _, route in
             if route != nil {

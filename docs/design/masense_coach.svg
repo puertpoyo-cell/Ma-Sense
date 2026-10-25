@@ -20,44 +20,41 @@
     <!-- 목 -->
     <rect x="232" y="368" width="48" height="50" rx="18" fill="#F2C3A2"/>
     <!-- 귀 -->
-    <ellipse cx="124" cy="262" rx="20" ry="24" fill="#F7CFB2"/>
-    <ellipse cx="388" cy="262" rx="20" ry="24" fill="#F7CFB2"/>
+    <ellipse cx="128" cy="258" rx="18" ry="24" fill="#F7CFB2"/>
+    <ellipse cx="384" cy="258" rx="18" ry="24" fill="#F7CFB2"/>
     <!-- 얼굴 (크고 둥글게) -->
-    <ellipse cx="256" cy="250" rx="134" ry="126" fill="url(#skin)"/>
-    <!-- 머리: 둥근 앞머리 -->
-    <path d="M118,262 C104,150 170,82 258,82 C348,82 410,150 394,262
-             C388,232 378,212 362,198
-             C356,222 334,232 316,214
-             C306,234 278,240 262,216
-             C248,238 214,238 204,214
-             C188,234 160,232 152,206
-             C136,222 124,240 118,262 Z" fill="url(#hair)"/>
-    <!-- 바보털 -->
-    <path d="M258,86 C250,56 270,40 292,48 C276,52 270,66 276,84" fill="url(#hair)"/>
-    <path d="M196,108 C226,96 270,94 300,104" fill="none" stroke="#7B82B3" stroke-width="7" stroke-linecap="round" opacity="0.6"/>
-    <!-- 눈 (크고 반짝) -->
-    <ellipse cx="204" cy="272" rx="20" ry="25" fill="url(#eye)"/>
-    <ellipse cx="308" cy="272" rx="20" ry="25" fill="url(#eye)"/>
-    <circle cx="212" cy="262" r="7.5" fill="#FFFFFF"/>
-    <circle cx="316" cy="262" r="7.5" fill="#FFFFFF"/>
-    <circle cx="198" cy="284" r="3.5" fill="#FFFFFF" opacity="0.85"/>
-    <circle cx="302" cy="284" r="3.5" fill="#FFFFFF" opacity="0.85"/>
-    <!-- 눈썹: 부드럽게 올라간 -->
-    <path d="M184,222 Q202,212 220,220" fill="none" stroke="#3A3F63" stroke-width="5" stroke-linecap="round"/>
-    <path d="M292,220 Q310,212 328,222" fill="none" stroke="#3A3F63" stroke-width="5" stroke-linecap="round"/>
+    <path d="M126,236 C126,150 186,112 256,112 C326,112 386,150 386,236 C386,318 334,374 256,378 C178,374 126,318 126,236 Z" fill="url(#skin)"/>
+    <!-- 머리: 옆 가르마, 단정하게 -->
+    <path d="M122,250 C108,150 168,78 262,80 C350,82 404,146 390,250
+             C384,214 372,190 354,174
+             C320,190 264,188 222,160
+             C214,182 196,200 168,206
+             C146,214 130,230 122,250 Z" fill="url(#hair)"/>
+    <path d="M222,160 C252,128 300,112 346,124" fill="none" stroke="#6A71A3" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+    <path d="M196,104 C222,92 252,88 282,92" fill="none" stroke="#7B82B3" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+    <!-- 눈썹: 차분하게 -->
+    <path d="M178,222 Q200,212 224,218" fill="none" stroke="#33385A" stroke-width="7" stroke-linecap="round"/>
+    <path d="M288,218 Q312,212 334,222" fill="none" stroke="#33385A" stroke-width="7" stroke-linecap="round"/>
+    <!-- 눈: 차분하게, 반짝임 하나 -->
+    <ellipse cx="204" cy="264" rx="13" ry="16" fill="url(#eye)"/>
+    <ellipse cx="308" cy="264" rx="13" ry="16" fill="url(#eye)"/>
+    <circle cx="209" cy="258" r="5" fill="#FFFFFF"/>
+    <circle cx="313" cy="258" r="5" fill="#FFFFFF"/>
+    <!-- 웃는 눈가 -->
+    <path d="M182,284 Q190,290 198,288 M326,284 Q318,290 310,288" fill="none" stroke="#D9A486" stroke-width="3" stroke-linecap="round"/>
     <!-- 동그란 안경 (얇게) -->
-    <circle cx="204" cy="272" r="42" fill="#FFFFFF" fill-opacity="0.10" stroke="#C99A4B" stroke-width="5.5"/>
-    <circle cx="308" cy="272" r="42" fill="#FFFFFF" fill-opacity="0.10" stroke="#C99A4B" stroke-width="5.5"/>
-    <path d="M246,268 Q256,258 266,268" fill="none" stroke="#C99A4B" stroke-width="5" stroke-linecap="round"/>
-    <path d="M180,246 Q188,236 202,234" fill="none" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="4" stroke-linecap="round"/>
-    <path d="M284,246 Q292,236 306,234" fill="none" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="4" stroke-linecap="round"/>
+    <rect x="164" y="234" width="80" height="62" rx="24" fill="#FFFFFF" fill-opacity="0.10" stroke="#B88A3E" stroke-width="5.5"/>
+    <rect x="268" y="234" width="80" height="62" rx="24" fill="#FFFFFF" fill-opacity="0.10" stroke="#B88A3E" stroke-width="5.5"/>
+    <path d="M244,258 Q256,250 268,258" fill="none" stroke="#B88A3E" stroke-width="5" stroke-linecap="round"/>
+    <path d="M150,252 L164,248 M362,252 L348,248" stroke="#B88A3E" stroke-width="5" stroke-linecap="round"/>
+    <path d="M178,248 Q186,240 200,240" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="4" stroke-linecap="round"/>
+    <path d="M282,248 Q290,240 304,240" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="4" stroke-linecap="round"/>
     <!-- 볼 -->
-    <ellipse cx="158" cy="322" rx="24" ry="13" fill="#FF8FA3" opacity="0.5"/>
-    <ellipse cx="354" cy="322" rx="24" ry="13" fill="#FF8FA3" opacity="0.5"/>
-    <path d="M146,320 l6,-6 M158,322 l6,-6 M342,320 l6,-6 M354,322 l6,-6" stroke="#F27A90" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+    <ellipse cx="166" cy="316" rx="20" ry="10" fill="#F59AA6" opacity="0.35"/>
+    <ellipse cx="346" cy="316" rx="20" ry="10" fill="#F59AA6" opacity="0.35"/>
     <!-- 입: 작게 웃는 입 -->
-    <path d="M240,330 Q256,350 272,330 Q256,338 240,330 Z" fill="#B5505A"/>
-    <path d="M248,338 Q256,346 264,338" fill="#FF9CA8"/>
+    <path d="M232,328 Q256,348 280,328" fill="none" stroke="#A4525A" stroke-width="6" stroke-linecap="round"/>
+    <path d="M250,300 Q256,306 262,300" fill="none" stroke="#D9A486" stroke-width="3.5" stroke-linecap="round"/>
     <!-- 체크리스트 판 -->
     <g transform="translate(18 26) rotate(-10 372 440)">
       <rect x="306" y="352" width="132" height="168" rx="16" fill="#E9BE6C"/>
