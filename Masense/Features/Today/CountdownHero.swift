@@ -9,6 +9,8 @@ struct CountdownHero: View {
     let totalDoses: Int?
     var onLogDose: () -> Void = {}
     var onEnterPrescription: () -> Void = {}
+    /// D15: 카드 안 "한눈에" 줄 (체중·남은 펜·지난 부위). 있으면 회차 셀은 이 줄로 옮긴다
+    var glance: AnyView?
 
     @ScaledMetric(relativeTo: .largeTitle) private var displaySize: CGFloat = 56
 
@@ -31,9 +33,15 @@ struct CountdownHero: View {
                     } trailing: {
                         VStack(spacing: 0) {
                             scheduleCell
-                            BlueprintDivider(crosshair: .leading)
-                            sequenceCell
+                            if glance == nil {
+                                BlueprintDivider(crosshair: .leading)
+                                sequenceCell
+                            }
                         }
+                    }
+                    if let glance {
+                        BlueprintDivider()
+                        glance
                     }
                     actionRow
                 }
