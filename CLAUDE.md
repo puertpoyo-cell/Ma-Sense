@@ -101,6 +101,7 @@ xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' 
 
 - 한국어 또는 영어 자유, 형식 `feat:`, `fix:`, `docs:`, `test:`
 - 문서와 코드가 함께 바뀌면 같은 커밋에
+- 작업 브랜치에 푸시한 변경은 CI(테스트·금지선 점검)가 통과하면 PR을 만들어 main에 합친다 (2026-10-25 사람 결정 "항상 메인에 합쳐줘"). 병합은 merge 방식, 사람이 Mac에서 `git pull origin main`으로 받는다
 
 ## 사람에게 꼭 묻는 것
 
