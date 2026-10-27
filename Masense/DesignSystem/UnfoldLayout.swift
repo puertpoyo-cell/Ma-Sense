@@ -18,9 +18,6 @@ struct UnfoldLayout<Content: View>: View {
     @State private var shownWidth: CGFloat?
     @State private var holdTask: Task<Void, Never>?
 
-    /// 느리게 시작해 길게 끝나는 곡선, 오버슈트 없음
-    static let unfoldAnimation = Animation.timingCurve(0.2, 0, 0, 1, duration: UnfoldRules.unfoldSeconds)
-
     private var shown: CGSize { held ?? container }
 
     var body: some View {
@@ -54,7 +51,7 @@ struct UnfoldLayout<Content: View>: View {
             try? await Task.sleep(for: .seconds(UnfoldRules.holdSeconds))
             guard !Task.isCancelled else { return }
             holdTask = nil
-            withAnimation(Self.unfoldAnimation) {
+            withAnimation(Animation.unfold) {
                 held = nil
                 shownWidth = container.width
             } completion: {
@@ -62,4 +59,9 @@ struct UnfoldLayout<Content: View>: View {
             }
         }
     }
+}
+
+extension Animation {
+    /// 펼침 풀기: 느리게 시작해 길게 끝나는 곡선, 오버슈트 없음 (R24)
+    static let unfold = Animation.timingCurve(0.2, 0, 0, 1, duration: UnfoldRules.unfoldSeconds)
 }
