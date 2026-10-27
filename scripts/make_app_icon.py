@@ -393,7 +393,9 @@ def render_mark(width: float = 136, scale: float = 1.28) -> Image.Image:
     return image.crop(alpha.getbbox())
 
 
-# 밝은 남색 바탕 옵션 (2026-10-27 사람 요청 "투명함을 살리고 바탕은 좀 밝은 남색")
+# 밝은 남색 바탕 옵션 (2026-10-27 사람 요청 "투명함을 살리고 바탕은 좀 밝은 남색").
+# 결정: 원본 `navy` 유지 (2026-10-27). 바탕을 밝히며 막대를 비치게 하면 막대·바탕 명도 대비가 2.85:1 → 1.1~1.5:1로 떨어져
+# 29pt(설정 목록)에서 M이 묻힌다. 비교표 docs/design/icon_options_navy_light*.png
 NAVY_LIGHT = {
     "1": ((0x2A, 0x3F, 0x7C), (0x15, 0x22, 0x48)),  # 지금 navy보다 한 단계 밝은 남색
     "2": ((0x35, 0x4E, 0x92), (0x1B, 0x2B, 0x5C)),  # 중간
