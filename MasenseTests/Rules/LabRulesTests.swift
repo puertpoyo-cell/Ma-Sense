@@ -32,7 +32,8 @@ struct LabRulesTests {
         #expect(byItem[.alt]?.value == 31)
         #expect(byItem[.hemoglobin]?.value == 13.9)
         #expect(byItem[.vitaminD]?.value == 28.3)
-        #expect(found.count == 11)
+        // 머리줄을 뺀 10줄이 10개 항목
+        #expect(found.count == 10)
     }
 
     @Test func englishShortNamesNeedWordBoundaries() {
