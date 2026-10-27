@@ -410,7 +410,18 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 
 - 주는 달력 firstWeekday부터 7일. 날마다 투약(취소 제외)·진료·컨디션·체중·단백질·운동 기록이 있는지만. 많고 적음·연속일 없음
 
-## 테스트 체크리스트
+## R24. 펼침 배치 (D21, 2026-10-27 사람 요청)
+
+```swift
+func isUnfold(from old: CGSize, to new: CGSize) -> Bool
+func columns(for size: CGSize) -> Int
+```
+
+- 펼침 = 폭이 1.3배 이상 늘고 높이는 20% 안에서 유지. 회전(폭·높이 맞바뀜)·접기·처음 배치는 아니다
+- 2단 = 폭 > 높이이고 폭 640pt 이상. 그 밖은 1단
+- 유지 1초(`holdSeconds`), 풀기 0.8초(`unfoldSeconds`, 곡선 0.2·0·0·1, 오버슈트 없음)
+
+
 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
 - [x] R2 예정 시각 직전·직후 `.due`/`.overdue` 전환
@@ -422,6 +433,7 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 - [x] R20 우선순위·정오 기준·주 후반 기준·날짜로 돌리기·건강관리 고지 표시, R20-1 자리별 후보·이미 띄운 줄 건너뛰기, R20-2 상황 우선·다시 물으면 다음 줄·처음으로 돌아가기, R20-3 새 주제·표정·고지 (`CoachRulesTests`)
 - [x] R18 4회째 다음 주까지·덜 찬 묶음 제외·다음 묶음이 일찍 시작하면 자르기·오늘 카드 7일 (`PackageSummaryRulesTests`, `TodayModelTests`), R19 지금 구간까지·구간별 최대 강도·정렬 (`SymptomFlowRulesTests`)
 - [x] R21 글자 줄 묶기·이름 뒤 숫자·괄호·다음 줄·영문 경계·최근 값 (`LabRulesTests`, `ReportBuilderTests`), R22 이름 → 식품·단위 g (`FoodPhotoRulesTests`), R23 주 7일·날짜 표시 (`HistoryDayRulesTests`)
+- [x] R24 펼침 판정·회전 제외·단 수 (`UnfoldRulesTests`)
 - [x] R15 입력 정리, 아직 묻지 않은 것 순서, 리포트 5개·메모와 합쳐 8줄 (`ClinicQuestionRulesTests`, `ReportBuilderTests`)
 - [x] R4 4주 제한, 재등록 시 중복 없음
 - [x] R5 창 경계값 (12h, 36h, 96h)

@@ -83,37 +83,29 @@ struct TodayView: View {
         TimelineView(.periodic(from: .now, by: 60)) { timeline in
             let model = makeModel(now: timeline.date)
             ScrollView {
-                VStack(spacing: Spacing.cardGap) {
-                    // D18: 마선생 한마디는 카드 자리에 닿을 때 팝업으로
-                    countdownCard(model)
-                        .coachSpot(.todayTop, viewport: viewport, context: model.coachContext)
-                    // 처방이 없으면 1-1만 보인다 (SCREENS.md 빈 상태)
-                    if let prescription {
-                        if model.backfillCount > 0, dismissedBackfill != prescription.id.uuidString {
-                            backfillCard(count: model.backfillCount, prescriptionID: prescription.id)
-                        }
-                        if let prompt = model.conditionPrompt {
-                            conditionCard(prompt)
-                        }
-                        // D20: 기록 버튼을 한 줄로 위에 모은다
-                        quickRecordRow(model, now: timeline.date)
-                            .coachSpot(.weight, viewport: viewport, context: model.coachContext)
-                        dailyCycleCard(model.daily, now: timeline.date)
-                            .coachSpot(.daily, viewport: viewport, context: model.coachContext)
-                        // D20: 정리·진료는 한 줄 안내로 줄이고 자세한 것은 기록·진료 탭에서
-                        summaryRow(model, prescription: prescription)
-                        if let clinic = model.clinicDate {
-                            clinicRow(clinic, now: timeline.date)
-                                .coachSpot(.pens, viewport: viewport, context: model.coachContext)
+                // D21: 펼칠 때 접힌 배치를 1초 두었다가 넓은 배치로. 가로로 펼치면 2단, 세로는 1단
+                UnfoldLayout(container: viewport.size) { shown in
+                    let columns = UnfoldRules.columns(for: shown)
+                    Group {
+                        if columns == 2 {
+                            HStack(alignment: .top, spacing: Spacing.cardGap) {
+                                leadingColumn(model, now: timeline.date)
+                                    .frame(maxWidth: .infinity)
+                                trailingColumn(model, now: timeline.date)
+                                    .frame(maxWidth: .infinity)
+                            }
+                        } else {
+                            VStack(spacing: Spacing.cardGap) {
+                                leadingColumn(model, now: timeline.date)
+                                trailingColumn(model, now: timeline.date)
+                            }
                         }
                     }
-                    infoRow
-                        .coachSpot(.info, viewport: viewport, context: model.coachContext)
+                    .padding(.horizontal, Spacing.screenHorizontal)
+                    .padding(.vertical, Spacing.s4)
+                    // 팝업이 마지막 카드를 가리지 않게 아래 여유
+                    .padding(.bottom, Spacing.s6)
                 }
-                .padding(.horizontal, Spacing.screenHorizontal)
-                .padding(.vertical, Spacing.s4)
-                // 팝업이 마지막 카드를 가리지 않게 아래 여유
-                .padding(.bottom, Spacing.s6)
             }
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { viewport = $0 }
         }
@@ -182,6 +174,49 @@ struct TodayView: View {
         )
     }
 
+    // MARK: 단 (D21). 1단이면 위아래로, 가로 2단이면 좌우로
+
+    /// 왼쪽 단: 이번 마디 카드 + 지난 투약 안내·컨디션 + 빠른 기록
+    @ViewBuilder
+    private func leadingColumn(_ model: TodayModel, now: Date) -> some View {
+        VStack(spacing: Spacing.cardGap) {
+            // D18: 마선생 한마디는 카드 자리에 닿을 때 팝업으로
+            countdownCard(model)
+                .coachSpot(.todayTop, viewport: viewport, context: model.coachContext)
+            // 처방이 없으면 1-1만 보인다 (SCREENS.md 빈 상태)
+            if let prescription {
+                if model.backfillCount > 0, dismissedBackfill != prescription.id.uuidString {
+                    backfillCard(count: model.backfillCount, prescriptionID: prescription.id)
+                }
+                if let prompt = model.conditionPrompt {
+                    conditionCard(prompt)
+                }
+                // D20: 기록 버튼을 한 줄로 위에 모은다
+                quickRecordRow(model, now: now)
+                    .coachSpot(.weight, viewport: viewport, context: model.coachContext)
+            }
+        }
+    }
+
+    /// 오른쪽 단: 오늘의 마디 + 정리·진료 한 줄 + 알아 두기
+    @ViewBuilder
+    private func trailingColumn(_ model: TodayModel, now: Date) -> some View {
+        VStack(spacing: Spacing.cardGap) {
+            if let prescription {
+                dailyCycleCard(model.daily, now: now)
+                    .coachSpot(.daily, viewport: viewport, context: model.coachContext)
+                // D20: 정리·진료는 한 줄 안내로 줄이고 자세한 것은 기록·진료 탭에서
+                summaryRow(model, prescription: prescription)
+                if let clinic = model.clinicDate {
+                    clinicRow(clinic, now: now)
+                        .coachSpot(.pens, viewport: viewport, context: model.coachContext)
+                }
+            }
+            infoRow
+                .coachSpot(.info, viewport: viewport, context: model.coachContext)
+        }
+    }
+
     // MARK: 1-1 카운트다운 (CountdownHero, DESIGN_SYSTEM.md 5.2)
 
     private func countdownCard(_ model: TodayModel) -> some View {
@@ -205,7 +240,7 @@ struct TodayView: View {
                     usedDoses: model.usedDoses,
                     totalDoses: model.totalDoses,
                     exhaustionDate: model.exhaustionDate,
-                    lastSite: model.lastSite,
+                    recentSites: model.recentSites,
                     onOpenWeight: { sheet = .weightTrend }
                 )
             )

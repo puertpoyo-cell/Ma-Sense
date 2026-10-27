@@ -42,6 +42,8 @@ struct TodayModel: Equatable {
     static let weightWeeks = 8
     /// 1-5 진료 카드는 진료일 7일 이내에만
     static let clinicCardDays = 7
+    /// D21 한눈에 그림에 보이는 최근 부위 수
+    static let recentSiteCount = 4
 
     let countdown: Countdown
     let remainingDoses: Int?
@@ -76,6 +78,8 @@ struct TodayModel: Equatable {
     let packageSummary: PackageSummary?
     /// D14 한눈에 카드: 가장 최근에 기록한 부위 (모든 처방, 부위 기록 없음 제외)
     let lastSite: SiteUse?
+    /// D21 한눈에 그림: 최근 부위 4회, 최근 순. 첫 번째만 또렷하고 뒤로 갈수록 흐리게 (R6, 추천 없음)
+    let recentSites: [SiteUse]
     /// 1-1b 펜 현황 (R13-1, D7)과 소진 예상일 (R13)
     let pens: PenStatus?
     let exhaustionDate: Date?
@@ -120,7 +124,8 @@ struct TodayModel: Equatable {
                 )
             }
             .flatMap { $0.isEmpty ? nil : $0 }
-        lastSite = SiteRules.siteHistory(doses: allDoses ?? doses, limit: 1).first
+        recentSites = SiteRules.siteHistory(doses: allDoses ?? doses, limit: Self.recentSiteCount)
+        lastSite = recentSites.first
         // 처방의 기록만으로 패키지를 센다
         packageSummary = PackageSummaryRules.recentlyFinished(doses: doses, now: now, calendar: calendar).map { package in
             PackageSummaryRules.summary(
