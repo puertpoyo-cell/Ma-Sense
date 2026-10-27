@@ -60,6 +60,8 @@ ProteinEntry        (날짜 기준 독립)
 StrengthSession     (날짜 기준 독립)
 HabitCheck          (날짜 기준 독립)
 ClinicQuestion      (독립, D6)
+ClinicVisit 1 ─── * LabResult      (D20, LabResult는 진료 없이도 둘 수 있음)
+            1 ─── * ClinicPhoto    (D20, 검사지 사진, 기기에만)
 WeightSample        (HealthKit 캐시 + 수동 입력)
 UserSettings        (단일 레코드)
 ```
@@ -233,6 +235,44 @@ enum ProteinFood: String, Codable, CaseIterable {
 
 관계 없음. 지우기는 실제 삭제 (투약 기록과 달리 리포트 무결성과 무관한 메모).
 
+### ClinicVisit — 진료 기록 (D20, SchemaV6)
+
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| visitedAt | Date | `.now` | 진료일 |
+| note | String? |  | 사용자 메모 그대로. 해석하지 않는다 |
+| labResults | [LabResult]? | `[]` | cascade |
+| photos | [ClinicPhoto]? | `[]` | cascade |
+| createdAt | Date | `.now` |  |
+
+### LabResult — 검사 결과 한 항목 (D20)
+
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| measuredAt | Date | `.now` | 진료일 00:00 |
+| itemRaw | String | `"custom"` | `LabItem` rawValue (hba1c, fastingGlucose, totalCholesterol, ldl, hdl, triglycerides, ast, alt, ggt, creatinine, egfr, hemoglobin, ferritin, vitaminD, tsh, custom). 모르는 값은 custom으로 읽음 |
+| customName | String? |  | custom일 때 이름 |
+| value | Double | `0` | 숫자만 |
+| unit | String | `""` | 항목 기본 단위, 사용자가 바꿀 수 있음 |
+| note | String? |  | 검사지 참고치 등. 해석하지 않는다 |
+| visit | ClinicVisit? |  |  |
+| createdAt | Date | `.now` |  |
+
+판단 필드(정상/높음, 기준 범위) 없음 (COMPLIANCE.md 2.2).
+
+### ClinicPhoto — 검사지 사진 (D20)
+
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| imageData | Data? |  | `@Attribute(.externalStorage)`, 긴 변 2000px JPEG |
+| visit | ClinicVisit? |  |  |
+| createdAt | Date | `.now` |  |
+
+내보내기 파일에 담지 않는다. 교체 가져오기 때도 같은 ID의 진료 기록에 다시 붙인다. 전체 삭제는 지운다. 식사 사진은 모델이 없다(저장하지 않음).
+
 ### UserSettings — 단일 레코드
 
 | 필드 | 타입 | 기본값 | 설명 |
@@ -315,6 +355,8 @@ enum MasenseMigrationPlan: SchemaMigrationPlan {
 - V2 (D5, 2026-10-22 사람 결정): `UserSettings.heightCm` 옵셔널 추가 → 경량 이전. 개발 중 기기에 있는 V1 저장소의 기록을 지우지 않으려고 고정 사본 방식으로 올렸다
 - V3 (D6, 2026-10-23 사람 결정): 관계 없는 `ClinicQuestion` 모델 추가 → 경량 이전. 기존 모델은 바뀌지 않아 고정 사본이 없다
 - V4 (D7, 2026-10-23 사람 결정): `UserSettings` 체중 알림 필드(기본값 있음·옵셔널) 추가 → 경량 이전. V2·V3의 `UserSettings`는 `SchemaV2.UserSettings` 고정 사본으로 바꿨다 (저장 속성은 그때와 같음)
+- V6 (D20, 2026-10-27 사람 결정): `ClinicVisit`·`LabResult`·`ClinicPhoto` 새 모델(서로의 관계만) → 경량 이전. 기존 모델은 바뀌지 않아 고정 사본 없음. 스키마 1.5.0
+- `Symptom.hairShedding` 추가 (D20): 문자열 rawValue라 스키마 변경 없음
 - `SchemaTests`: unique 없음, 열거형 rawValue 디스크 왕복, 모르는 rawValue 기본값, 설정 기본값, V1 저장소 → 지금 스키마 이전, V2 저장소 → V3 이전, V3 저장소 → V4 이전
 
 M1 출시 전에는 마이그레이션 없이 스키마 자유 변경. 베타 배포 후부터 `SchemaMigrationPlan` 필수.

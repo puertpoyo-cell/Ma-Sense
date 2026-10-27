@@ -1,9 +1,12 @@
 import SwiftData
 import SwiftUI
 
-/// S1 오늘 (홈). 위에서 아래로 Frost 카드 스택: 1-1 카운트다운, 1-1a 지난 투약 안내, 1-2 컨디션, 1-1c 지난 정리, 1-1b 남은 펜, 1-3 체중, 1-4 오늘의 마디, 1-5 진료, 1-7 맨몸 근력 예시, 1-6 알아 두기.
+/// S1 오늘 (홈, D20 재구성). 위에서 아래로: 1-1 카운트다운 + 한눈에, 1-1a 지난 투약 안내, 1-2 컨디션, 1-8 빠른 기록 줄,
+/// 1-4 오늘의 마디, 1-1c 정리 한 줄, 1-5 진료 한 줄, 1-6 알아 두기. 펜 그림·체중 추이·정리 목록은 기록 탭 "모아 보기", 맨몸 근력 예시는 운동 기록 시트로 옮겼다
 struct TodayView: View {
     var openReport: () -> Void = {}
+    /// D20 진료 탭으로
+    var openClinic: () -> Void = {}
 
     private enum Sheet: Identifiable {
         case prescription
@@ -15,9 +18,11 @@ struct TodayView: View {
         case backfill
         case questions
         case weightTrend
+        case foodPhoto
 
         var id: String {
             switch self {
+            case .foodPhoto: return "foodPhoto"
             case .weightTrend: return "weightTrend"
             case .backfill: return "backfill"
             case .questions: return "questions"
@@ -62,8 +67,6 @@ struct TodayView: View {
     /// 닫은 패키지 정리 구간 시작 (D9)
     @AppStorage("packageSummary.dismissedStart") private var dismissedPackageStart: Double = 0
     @State private var weeklyListDestination: WeeklySummaryListView.Segment?
-    /// 하루 닫은 맨몸 근력 예시 카드의 날짜 "y-m-d" (D10). 기기 화면 상태
-    @AppStorage("strengthRoutine.dismissedDay") private var dismissedRoutineDay = ""
     /// 건강 앱의 성별 (D13). 바디맵 그림을 고르는 데만 쓴다
     @AppStorage("health.bodyFigure") private var healthFigureRaw = ""
     /// 설정의 바디맵 그림 (D13). 한눈에 카드 그림도 같은 것을 쓴다
@@ -92,46 +95,16 @@ struct TodayView: View {
                         if let prompt = model.conditionPrompt {
                             conditionCard(prompt)
                         }
-                        if let package = model.packageSummary, package.package.period.start.timeIntervalSinceReferenceDate != dismissedPackageStart {
-                            // 패키지 정리가 보이는 동안은 주간 정리 카드를 함께 띄우지 않는다 (D9)
-                            PackageSummaryCard(
-                                summary: package,
-                                isSingleUsePen: prescription.dosesPerPen == 1,
-                                onShowAll: { weeklyListDestination = .packages },
-                                onDismiss: {
-                                    dismissedPackageStart = package.package.period.start.timeIntervalSinceReferenceDate
-                                    if let weekly = model.weeklySummary {
-                                        dismissedWeeklyStart = weekly.period.start.timeIntervalSinceReferenceDate
-                                    }
-                                }
-                            )
-                        } else if let summary = model.weeklySummary, summary.period.start.timeIntervalSinceReferenceDate != dismissedWeeklyStart {
-                            WeeklySummaryCard(
-                                summary: summary,
-                                onShowAll: { weeklyListDestination = .weeks },
-                                onDismiss: { dismissedWeeklyStart = summary.period.start.timeIntervalSinceReferenceDate }
-                            )
-                        }
-                        if let pens = model.pens {
-                            PenStatusCard(
-                                status: pens,
-                                exhaustionDate: model.exhaustionDate,
-                                memo: prescription.doseLabel,
-                                tint: Color.prescription(slot: allPrescriptions.colorSlots[prescription.id] ?? 0)
-                            )
-                            .coachSpot(.pens, viewport: viewport, context: model.coachContext)
-                        }
-                        weightCard(model)
+                        // D20: 기록 버튼을 한 줄로 위에 모은다
+                        quickRecordRow(model, now: timeline.date)
                             .coachSpot(.weight, viewport: viewport, context: model.coachContext)
                         dailyCycleCard(model.daily, now: timeline.date)
                             .coachSpot(.daily, viewport: viewport, context: model.coachContext)
+                        // D20: 정리·진료는 한 줄 안내로 줄이고 자세한 것은 기록·진료 탭에서
+                        summaryRow(model, prescription: prescription)
                         if let clinic = model.clinicDate {
-                            clinicCard(clinic)
-                        }
-                        // 저컨디션 날(R11)에는 근력 예시를 띄우지 않는다
-                        if !model.daily.isLowCondition, dismissedRoutineDay != dayKey(timeline.date) {
-                            routineCard(now: timeline.date)
-                                .coachSpot(.routine, viewport: viewport, context: model.coachContext)
+                            clinicRow(clinic, now: timeline.date)
+                                .coachSpot(.pens, viewport: viewport, context: model.coachContext)
                         }
                     }
                     infoRow
@@ -209,14 +182,6 @@ struct TodayView: View {
         )
     }
 
-    // MARK: 하루 단위 카드 닫기
-
-    /// 하루 단위로 닫는 카드의 키 "y-m-d"
-    private func dayKey(_ date: Date) -> String {
-        let day = calendar.dateComponents([.year, .month, .day], from: date)
-        return "\(day.year ?? 0)-\(day.month ?? 0)-\(day.day ?? 0)"
-    }
-
     // MARK: 1-1 카운트다운 (CountdownHero, DESIGN_SYSTEM.md 5.2)
 
     private func countdownCard(_ model: TodayModel) -> some View {
@@ -283,156 +248,106 @@ struct TodayView: View {
         }
     }
 
-    // MARK: 1-3 체중 (도면 셀: 체중 | 측정일 / 스파크라인 / 직접 입력)
+    // MARK: 빠른 기록 (D20)
 
-    @ViewBuilder
-    private func weightCard(_ model: TodayModel) -> some View {
-        if model.latestWeight != nil {
-            // D15: 최근 체중 숫자는 카운트다운 카드 "한눈에"에 있으므로 여기는 추이와 체성분만 촘촘하게
-            FrostCard(padding: 0) {
-                VStack(alignment: .leading, spacing: Spacing.s3) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("weight.trend.title")
-                            .font(Typography.sectionHeader)
-                            .foregroundStyle(Color.ink)
-                        Spacer(minLength: Spacing.s2)
-                        // D11·R14: 체지방률·제지방량·BMI 숫자만 한 줄로, 판단 라벨·색 없음 (COMPLIANCE.md 2.2)
-                        if let composition = compositionLine(model) {
-                            composition
-                                .font(Typography.caption)
-                                .monospacedDigit()
-                                .foregroundStyle(Color.inkSecondary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                        }
-                    }
-                    WeekSparkline(points: model.weightSeries, tickDates: model.doseDatesInSeries)
-                        .frame(height: 56)
-                    // D11: 최근 8주 기록이 없으면 마지막 기록 구간을 보이고 그 끝을 적는다
-                    if let shifted = model.weightSeriesShiftedTo {
-                        Text("weight.sparkline.until \(shifted.formatted(.dateTime.month(.defaultDigits).day()))")
-                            .font(Typography.caption)
-                            .foregroundStyle(Color.inkTertiary)
-                    }
-                    // R8: 빠른 경우에만, 색 강조 없이 한 줄. 출처가 정해진 뒤에만 보인다 (COMPLIANCE.md 2.2)
-                    if model.paceNotice != nil, let source = AppConfig.paceGuideSource {
-                        NoticeLine("pace.notice")
-                        Text(LocalizedStringKey(source))
-                            .font(Typography.caption)
-                            .foregroundStyle(Color.inkTertiary)
-                    }
-                    HStack {
-                        // D7: 큰 그래프와 기간 선택
-                        Button("weight.trend.open") { sheet = .weightTrend }
-                        Spacer()
-                        Button("weight.manualEntry") { sheet = .weight }
-                    }
-                    .font(Typography.label)
+    /// 단백질·사진·운동·체중·물을 한 줄로. 물은 누르면 오늘 습관 체크가 바뀐다
+    private func quickRecordRow(_ model: TodayModel, now: Date) -> some View {
+        let water = model.daily.habit?.water ?? false
+        return HStack(spacing: Spacing.s2) {
+            quickButton("today.quick.protein", systemImage: "fork.knife") { sheet = .protein(preselected: nil) }
+            quickButton("today.quick.photo", systemImage: "camera") { sheet = .foodPhoto }
+            quickButton("today.quick.exercise", systemImage: "figure.walk") { sheet = .strength }
+            quickButton("today.quick.weight", systemImage: "chart.xyaxis.line") { sheet = .weight }
+            quickButton("habit.water", systemImage: water ? "drop.fill" : "drop", isOn: water) {
+                toggleHabit(now: now) { $0.water.toggle() }
+            }
+        }
+    }
+
+    private func quickButton(_ key: LocalizedStringKey, systemImage: String, isOn: Bool = false, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: Spacing.s1) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .medium))
                     .foregroundStyle(Color.accent)
-                }
-                .padding(Spacing.cellPadding)
-            }
-        } else {
-            FrostCard {
-                VStack(alignment: .leading, spacing: Spacing.s3) {
-                    Text("weight.title")
-                        .font(Typography.sectionHeader)
-                        .foregroundStyle(Color.ink)
-                    Text("weight.empty")
-                        .font(Typography.body)
-                        .foregroundStyle(Color.inkSecondary)
-                    if services.healthKit.isAvailable {
-                        GhostButton("onboarding.permissions.health") {
-                            Task { await connectHealth() }
-                        }
-                    }
-                    GhostButton("weight.manualEntry") { sheet = .weight }
-                }
-            }
-        }
-    }
-
-    /// "체지방률 25.0% · 제지방량 58.8 kg · BMI 26.4" 중 있는 것만
-    private func compositionLine(_ model: TodayModel) -> Text? {
-        var parts: [Text] = []
-        if let fat = model.latestBodyFat {
-            parts.append(Text("history.weight.fat \(fat.value.formatted(.number.precision(.fractionLength(1))))"))
-        }
-        if let lean = model.latestLeanMass {
-            parts.append(Text("history.weight.lean \(lean.value.formatted(.number.precision(.fractionLength(1))))"))
-        }
-        if let bmi = model.latestBMI {
-            parts.append(Text("weight.bmi \(bmi.formatted(.number.precision(.fractionLength(1))))"))
-        }
-        guard let first = parts.first else { return nil }
-        return parts.dropFirst().reduce(first) { $0 + Text(verbatim: " · ") + $1 }
-    }
-
-    // MARK: 1-5 진료
-
-    /// 진료 7일 전부터. 물어볼 것(D6)을 적거나 진료에서 물어봤다고 표시하고, 리포트를 준비한다
-    private func clinicCard(_ date: Date) -> some View {
-        FrostCard {
-            VStack(alignment: .leading, spacing: Spacing.s4) {
-                VStack(alignment: .leading, spacing: Spacing.s1) {
-                    Text("clinic.card \(date.formatted(.dateTime.month(.defaultDigits).day()))")
-                        .font(Typography.title)
-                        .foregroundStyle(Color.ink)
-                    if !pendingQuestions.isEmpty {
-                        Text("clinic.card.questions \(pendingQuestions.count)")
-                            .font(Typography.caption)
-                            .foregroundStyle(Color.inkSecondary)
-                    }
-                }
-                AdaptiveStack(spacing: Spacing.s2) {
-                    GhostButton("clinic.questions.title") { sheet = .questions }
-                    GhostButton("clinic.prepareReport", action: openReport)
-                }
-                GhostButton("info.clinicPrep.title") { infoDestination = .clinicPrep }
-            }
-        }
-    }
-
-    // MARK: 1-7 맨몸 근력 예시 (D10)
-
-    /// 페이지 아래 예시 루틴 (S8과 같은 문구). 일반 건강관리 정보이며 개인 맞춤이 아니다 (COMPLIANCE.md 2.2).
-    /// 횟수·목표·연속일 없이 예시만 두고, 오늘 하루 닫을 수 있다
-    private func routineCard(now: Date) -> some View {
-        FrostCard {
-            VStack(alignment: .leading, spacing: Spacing.s3) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("exercise.routine.title")
-                        .font(Typography.sectionHeader)
-                        .foregroundStyle(Color.ink)
-                    Spacer()
-                    Button {
-                        dismissedRoutineDay = dayKey(now)
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(Color.inkSecondary)
-                            .frame(minWidth: 32, minHeight: 32)
-                    }
-                    .accessibilityLabel(Text("today.routine.dismiss"))
-                }
-                VStack(alignment: .leading, spacing: Spacing.s2) {
-                    ForEach(StrengthSheet.routineKeys, id: \.self) { key in
-                        HStack(alignment: .firstTextBaseline, spacing: Spacing.s2) {
-                            Circle().fill(Color.accent).frame(width: 5, height: 5).accessibilityHidden(true)
-                            Text(LocalizedStringKey(key))
-                                .font(Typography.body)
-                                .foregroundStyle(Color.ink)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                }
-                Text("exercise.routine.repeat")
+                    .frame(height: 22)
+                Text(key)
                     .font(Typography.caption)
-                    .foregroundStyle(Color.inkSecondary)
-                NoticeLine("today.routine.notice")
-                GhostButton("daily.logExercise") { sheet = .strength }
+                    .foregroundStyle(Color.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .frame(maxWidth: .infinity, minHeight: 64)
+            .background(isOn ? Color.accentSoft : Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: Radius.chip, style: .continuous).strokeBorder(isOn ? Color.accent : Color.frostBorder, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isOn ? .isSelected : [])
+    }
+
+    // MARK: 정리·진료 한 줄 (D20)
+
+    /// 끝난 주·패키지 정리가 있으면 한 줄. 누르면 정리 목록, ×는 그 구간을 닫는다
+    @ViewBuilder
+    private func summaryRow(_ model: TodayModel, prescription: Prescription) -> some View {
+        if let package = model.packageSummary, package.package.period.start.timeIntervalSinceReferenceDate != dismissedPackageStart {
+            noticeRow("today.summary.package", systemImage: "shippingbox", open: { weeklyListDestination = .packages }) {
+                dismissedPackageStart = package.package.period.start.timeIntervalSinceReferenceDate
+                if let weekly = model.weeklySummary {
+                    dismissedWeeklyStart = weekly.period.start.timeIntervalSinceReferenceDate
+                }
+            }
+        } else if let summary = model.weeklySummary, summary.period.start.timeIntervalSinceReferenceDate != dismissedWeeklyStart {
+            noticeRow("today.summary.weekly", systemImage: "list.bullet.rectangle", open: { weeklyListDestination = .weeks }) {
+                dismissedWeeklyStart = summary.period.start.timeIntervalSinceReferenceDate
             }
         }
+    }
+
+    /// 진료 7일 이내. 진료 탭에서 물어볼 것·리포트를 준비한다
+    private func clinicRow(_ date: Date, now: Date) -> some View {
+        let days = TodayModel.daysBetween(now, date, calendar: calendar)
+        let dateText = date.formatted(.dateTime.month(.defaultDigits).day())
+        return noticeRow(
+            days == 0 ? LocalizedStringKey("today.clinic.today \(pendingQuestions.count)") : LocalizedStringKey("today.clinic.days \(dateText) \(days) \(pendingQuestions.count)"),
+            systemImage: "list.clipboard",
+            open: openClinic,
+            dismiss: nil
+        )
+    }
+
+    private func noticeRow(_ key: LocalizedStringKey, systemImage: String, open: @escaping () -> Void, dismiss: (() -> Void)?) -> some View {
+        HStack(spacing: Spacing.s3) {
+            Button(action: open) {
+                HStack(spacing: Spacing.s3) {
+                    Image(systemName: systemImage)
+                        .foregroundStyle(Color.accent)
+                        .accessibilityHidden(true)
+                    Text(key)
+                        .font(Typography.label)
+                        .foregroundStyle(Color.ink)
+                        .multilineTextAlignment(.leading)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.inkTertiary)
+                        .accessibilityHidden(true)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if let dismiss {
+                Button(action: dismiss) {
+                    Image(systemName: "xmark")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.inkSecondary)
+                        .frame(minWidth: 28, minHeight: 28)
+                }
+                .accessibilityLabel(Text("today.routine.dismiss"))
+            }
+        }
+        .padding(Spacing.cellPadding)
+        .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
     }
 
     // MARK: 알아 두기 (D9, S13)
@@ -548,6 +463,14 @@ struct TodayView: View {
             ClinicQuestionsSheet()
         case .weightTrend:
             WeightTrendSheet()
+        case .foodPhoto:
+            FoodPhotoSheet(meal: ProteinLogModel.defaultMeal(at: .now, calendar: calendar)) { grams in
+                showsToast = true
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(1.6))
+                    coach.react(with: .proteinEstimate(grams))
+                }
+            }
         }
     }
 
@@ -618,13 +541,6 @@ struct TodayView: View {
                 }
                 BlueprintDivider()
 
-                AdaptiveStack(spacing: Spacing.s2) {
-                    GhostButton("daily.logProtein") { sheet = .protein(preselected: nil) }
-                    GhostButton("daily.logExercise") { sheet = .strength }
-                }
-                .padding(Spacing.cellPadding)
-                BlueprintDivider()
-
                 HStack(spacing: Spacing.s2) {
                     habitToggle("habit.water", isOn: daily.habit?.water ?? false, now: now) { $0.water.toggle() }
                     habitToggle("habit.fiber", isOn: daily.habit?.fiber ?? false, now: now) { $0.fiber.toggle() }
@@ -655,17 +571,22 @@ struct TodayView: View {
         }
     }
 
+    /// 오늘 습관 체크를 찾거나 만들어 바꾼다
+    private func toggleHabit(now: Date, change: (HabitCheck) -> Void) {
+        let day = calendar.startOfDay(for: now)
+        let check = habits.first { calendar.isDate($0.date, inSameDayAs: day) } ?? {
+            let created = HabitCheck(date: day)
+            context.insert(created)
+            return created
+        }()
+        change(check)
+        try? context.save()
+    }
+
     /// 수분·식이섬유·수면 가벼운 체크. 점수화 없음 (F14)
     private func habitToggle(_ key: LocalizedStringKey, isOn: Bool, now: Date, change: @escaping (HabitCheck) -> Void) -> some View {
         Button {
-            let day = calendar.startOfDay(for: now)
-            let check = habits.first { calendar.isDate($0.date, inSameDayAs: day) } ?? {
-                let created = HabitCheck(date: day)
-                context.insert(created)
-                return created
-            }()
-            change(check)
-            try? context.save()
+            toggleHabit(now: now, change: change)
         } label: {
             HStack(spacing: Spacing.s1) {
                 Image(systemName: isOn ? "checkmark.circle.fill" : "circle")

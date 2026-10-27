@@ -1,0 +1,582 @@
+import SwiftData
+import SwiftUI
+
+/// S4-1 종류별 보기 (D20 이전의 기록 탭). 세그먼트: 투약 / 컨디션 / 체중 / 습관(M2).
+/// D20부터 기록 탭은 날짜 중심(`HistoryView`)이고, 이 목록은 "모아 보기 > 종류별 보기"에서 연다
+struct HistoryListView: View {
+    private enum Segment: String, CaseIterable, Hashable {
+        case dose, condition, weight, habits
+
+        var titleKey: LocalizedStringKey { LocalizedStringKey("history.segment." + rawValue) }
+    }
+
+    private enum Sheet: Identifiable {
+        case dose(initialDate: Date)
+        case condition(doseID: UUID, window: ConditionWindow)
+        case weight
+        /// 지난 투약 한꺼번에 입력 (D6)
+        case backfill
+        /// 부위 기록 없음 고치기 (D6)
+        case site(doseID: UUID)
+
+        var id: String {
+            switch self {
+            case let .dose(date): return "dose.\(date.timeIntervalSinceReferenceDate)"
+            case let .condition(doseID, window): return "condition.\(doseID.uuidString).\(window.rawValue)"
+            case .weight: return "weight"
+            case .backfill: return "backfill"
+            case let .site(doseID): return "site.\(doseID.uuidString)"
+            }
+        }
+    }
+
+    @Environment(\.modelContext) private var context
+    @Environment(\.services) private var services
+    @Environment(\.calendar) private var calendar
+    @Query(sort: \Prescription.startDate) private var prescriptions: [Prescription]
+    @Query(sort: \ConditionCheck.checkedAt) private var checks: [ConditionCheck]
+    @Query(sort: \WeightSample.measuredAt, order: .reverse) private var weights: [WeightSample]
+    @Query(sort: \ProteinEntry.date) private var proteins: [ProteinEntry]
+    @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
+    @Query private var settingsList: [UserSettings]
+    @State private var segment: Segment = HistoryListView.initialSegment
+    /// 습관 캘린더에 보이는 달. nil이면 이번 달
+    @State private var habitMonth: Date?
+    @State private var sheet: Sheet?
+    @State private var showsToast = false
+
+    private var activePrescription: Prescription? { prescriptions.first { $0.isActive } }
+    private var allDoses: [Dose] { prescriptions.flatMap(\.doses) }
+
+    private static var initialSegment: Segment {
+        #if DEBUG
+        switch ScreenshotRoute.current {
+        case .historyCondition?: return .condition
+        case .historyWeight?: return .weight
+        case .historyHabits?: return .habits
+        default: break
+        }
+        #endif
+        return .dose
+    }
+
+    var body: some View {
+        TimelineView(.everyMinute) { timeline in
+            List {
+                Picker("history.segment", selection: $segment) {
+                    ForEach(Segment.allCases, id: \.self) { item in
+                        Text(item.titleKey).tag(item)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+
+                switch segment {
+                case .dose: doseSections(now: timeline.date)
+                case .condition: conditionSections(now: timeline.date)
+                case .weight: weightSections(now: timeline.date)
+                case .habits: habitSections(now: timeline.date)
+                }
+            }
+            .scrollContentBackground(.hidden)
+        }
+        .midnightBackground()
+        .navigationTitle("history.byType")
+        .toolbar {
+            if segment == .weight {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { sheet = .weight } label: { Image(systemName: "plus") }
+                        .accessibilityLabel("weight.entry.title")
+                }
+            }
+        }
+        .sheet(item: $sheet) { sheet in sheetContent(sheet) }
+        .recordedToast(isPresented: $showsToast)
+    }
+
+    // MARK: 투약
+
+    @ViewBuilder
+    private func doseSections(now: Date) -> some View {
+        let histories = prescriptions.map {
+            HistoryModel.PrescriptionHistory(prescription: $0.snapshot, doses: $0.doseSnapshots, isActive: $0.isActive)
+        }
+        let months = HistoryModel.doseMonths(histories, now: now, calendar: calendar)
+        if months.isEmpty {
+            emptyRow("history.empty")
+        }
+        // 주간 정리 목록 (R16, D8)
+        if activePrescription != nil {
+            NavigationLink {
+                WeeklySummaryListView()
+            } label: {
+                Label("history.weekly", systemImage: "list.bullet.rectangle")
+                    .font(Typography.label)
+                    .foregroundStyle(Color.ink)
+            }
+            .frostRow()
+        }
+        // 누락 마디가 둘 이상이면 한꺼번에 기록 (D6). 남은 회차가 없으면 숨긴다
+        if backfillCount(now: now) >= 2 {
+            Button { sheet = .backfill } label: {
+                Label("history.backfill", systemImage: "calendar.badge.plus")
+                    .font(Typography.label)
+                    .foregroundStyle(Color.accent)
+            }
+            .frostRow()
+        }
+        ForEach(months) { month in
+            Section {
+                ForEach(month.rows) { row in
+                    doseRow(row)
+                }
+            } header: {
+                SectionHeaderText(Text(month.start.formatted(.dateTime.year().month(.wide))))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func doseRow(_ row: HistoryModel.DoseRow) -> some View {
+        switch row.kind {
+        case let .dose(id, site, sequence, hasNote, isCancelled):
+            // 부위 기록 없음은 눌러서 나중에 고친다 (D6)
+            let editsSite = site == nil && !isCancelled
+            AdaptiveStack(spacing: Spacing.s3) {
+                VStack(alignment: .leading, spacing: Spacing.s1) {
+                    Text(row.date.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated).hour().minute()))
+                        .font(Typography.body)
+                        .strikethrough(isCancelled)
+                    Group {
+                        if let site {
+                            Text(site.localizedName)
+                        } else if editsSite {
+                            Text("history.site.unknown")
+                        } else {
+                            Text("site.unknown")
+                        }
+                    }
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+                }
+                Spacer()
+                if hasNote {
+                    Image(systemName: "note.text")
+                        .foregroundStyle(Color.inkSecondary)
+                        .accessibilityLabel("history.hasNote")
+                }
+                VStack(alignment: .trailing, spacing: Spacing.s1) {
+                    Text("history.sequence \(sequence)")
+                        .font(Typography.mono)
+                    if isCancelled {
+                        Text("history.cancelled")
+                            .font(Typography.caption)
+                            .foregroundStyle(Color.inkSecondary)
+                    }
+                }
+            }
+            .foregroundStyle(isCancelled ? Color.inkTertiary : Color.ink)
+            // 처방 구간 색 (R13-2, D7). 처방을 구분할 뿐 용량·단계 의미 없음
+            .padding(.leading, Spacing.s2)
+            .overlay(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 1.5)
+                    .fill(Color.prescription(slot: row.colorSlot).opacity(isCancelled ? 0.35 : 1))
+                    .frame(width: 3)
+                    .padding(.vertical, 2)
+                    .accessibilityHidden(true)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if editsSite { sheet = .site(doseID: id) }
+            }
+            .accessibilityAddTraits(editsSite ? .isButton : [])
+            .accessibilityHint(editsSite ? Text("history.site.unknown.hint") : Text(verbatim: ""))
+            .frostRow()
+            .swipeActions(edge: .trailing) {
+                // 빨강 금지: destructive 역할 대신 중립색
+                Button(LocalizedStringKey(isCancelled ? "history.restoreDose" : "history.cancelDose")) {
+                    setCancelled(!isCancelled, doseID: id)
+                }
+                .tint(isCancelled ? Color.accent : Color.inkTertiary)
+            }
+
+        case let .missed(scheduled, canAddDose):
+            Button {
+                if canAddDose { sheet = .dose(initialDate: scheduled) }
+            } label: {
+                HStack {
+                    Text(scheduled.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated)))
+                    Spacer()
+                    Text("history.missed")
+                    if canAddDose {
+                        Image(systemName: "plus.circle")
+                            .accessibilityHidden(true)
+                    }
+                }
+                .font(Typography.body)
+                .foregroundStyle(Color.inkTertiary)
+            }
+            .disabled(!canAddDose)
+            .listRowBackground(
+                RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
+                    .strokeBorder(Color.inkTertiary, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+            )
+            .accessibilityHint(canAddDose ? Text("history.missed.hint") : Text(verbatim: ""))
+
+        case let .prescriptionChange(label):
+            // 처방 전환 구분 행 (R13). 라벨은 사용자 메모 그대로 표시만 한다
+            HStack(spacing: Spacing.s2) {
+                Rectangle().fill(Color.gridHairline).frame(height: 1)
+                Circle().fill(Color.prescription(slot: row.colorSlot)).frame(width: 6, height: 6).accessibilityHidden(true)
+                Group {
+                    if let label {
+                        Text("history.prescriptionChange \(label)")
+                    } else {
+                        Text("history.prescriptionChange.noLabel")
+                    }
+                }
+                .font(Typography.caption)
+                .foregroundStyle(Color.inkSecondary)
+                .lineLimit(1)
+                .layoutPriority(1)
+                Rectangle().fill(Color.gridHairline).frame(height: 1)
+            }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    /// 활성 처방의 누락 마디 수. 남은 회차가 없으면 0 (R3-1)
+    private func backfillCount(now: Date) -> Int {
+        guard let activePrescription else { return 0 }
+        let doses = activePrescription.doseSnapshots
+        guard PrescriptionRules.remainingDoses(p: activePrescription.snapshot, doses: doses) > 0 else { return 0 }
+        return BackfillRules.candidates(prescription: activePrescription.snapshot, doses: doses, now: now, calendar: calendar).count
+    }
+
+    private func setCancelled(_ cancelled: Bool, doseID: UUID) {
+        guard let dose = allDoses.first(where: { $0.id == doseID }) else { return }
+        dose.isCancelled = cancelled
+        try? context.save()
+        Task { await services.refreshReminders(context: context) }
+    }
+
+    // MARK: 컨디션
+
+    @ViewBuilder
+    private func conditionSections(now: Date) -> some View {
+        let groups = HistoryModel.conditionGroups(
+            doses: allDoses.map(\.snapshot),
+            checks: checks.compactMap(\.snapshot),
+            now: now
+        )
+        if groups.isEmpty {
+            emptyRow("history.empty")
+        }
+        // 증상 흐름 (R19, D9)
+        if activePrescription != nil, !groups.isEmpty {
+            NavigationLink {
+                SymptomFlowView()
+            } label: {
+                Label("symptom.flow.title", systemImage: "chart.bar.xaxis")
+                    .font(Typography.label)
+                    .foregroundStyle(Color.ink)
+            }
+            .frostRow()
+        }
+        ForEach(groups) { group in
+            Section {
+                ForEach(group.slots, id: \.window) { slot in
+                    conditionRow(slot, doseID: group.doseID)
+                }
+            } header: {
+                SectionHeaderText(Text("history.condition.doseHeader \(group.administeredAt.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated)))"))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func conditionRow(_ slot: HistoryModel.ConditionSlot, doseID: UUID) -> some View {
+        AdaptiveStack(verticalAlignment: .firstTextBaseline) {
+            Text(LocalizedStringKey(slot.window.titleKey))
+                .font(Typography.body)
+                .foregroundStyle(Color.ink)
+            Spacer()
+            switch slot.state {
+            case let .recorded(count, maxSeverity, appetite):
+                VStack(alignment: .trailing, spacing: Spacing.s1) {
+                    if count == 0 {
+                        Text("history.condition.noSymptoms")
+                    } else {
+                        Text("history.condition.summary \(count) \(SymptomChip.severityLabel(maxSeverity))")
+                            .fontWeight(maxSeverity >= 3 ? .bold : .regular)
+                    }
+                    if appetite != .normal {
+                        Text("history.condition.appetite \(L10n.string(appetite.titleKey))")
+                    }
+                }
+                .font(Typography.caption)
+                .foregroundStyle(Color.inkSecondary)
+            case .missing:
+                Button("action.record") {
+                    sheet = .condition(doseID: doseID, window: slot.window)
+                }
+                .font(Typography.label)
+                .foregroundStyle(Color.accent)
+            }
+        }
+        .frostRow()
+    }
+
+    // MARK: 체중
+
+    @ViewBuilder
+    private func weightSections(now: Date) -> some View {
+        let snapshots = weights.map(\.snapshot)
+        // D11: 최근 12주 기록이 없으면 마지막 기록까지로
+        let end = WeightRules.seriesEnd(samples: snapshots, weeks: Self.weightWeeks, now: now, calendar: calendar)
+        let series = WeightRules.weeklyWeightSeries(samples: snapshots, weeks: Self.weightWeeks, now: end, calendar: calendar)
+        if weights.isEmpty {
+            emptyRow("weight.empty")
+        } else {
+            Section {
+                WeekChart(points: series, tickDates: WeightRules.doseTicks(doses: allDoses.map(\.snapshot), series: series, now: end))
+                    .frame(height: 180)
+                    .padding(.vertical, Spacing.s3)
+            } header: {
+                SectionHeaderText(Text("history.weight.chartTitle \(Self.weightWeeks)"))
+            } footer: {
+                if end < now {
+                    Text("weight.sparkline.until \(end.formatted(.dateTime.month(.defaultDigits).day()))")
+                }
+            }
+            .frostRow()
+
+            Section {
+                ForEach(weights) { sample in
+                    AdaptiveStack {
+                        VStack(alignment: .leading, spacing: Spacing.s1) {
+                            Text(sample.measuredAt.formatted(.dateTime.month(.defaultDigits).day().hour().minute()))
+                                .font(Typography.body)
+                            Text(LocalizedStringKey(sample.source == .healthKit ? "history.weight.sourceHealth" : "history.weight.sourceManual"))
+                                .font(Typography.caption)
+                                .foregroundStyle(Color.inkSecondary)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: Spacing.s1) {
+                            DimensionValue(
+                                sample.kilograms.formatted(.number.precision(.fractionLength(1))),
+                                unit: "unit.kg",
+                                valueFont: Typography.body.weight(.semibold),
+                                unitFont: Typography.caption
+                            )
+                            // R14: 키를 입력했을 때만 숫자로. 구간 이름 없음
+                            if let bmi = WeightRules.bmi(kilograms: sample.kilograms, heightCm: settingsList.first?.heightCm) {
+                                Text("weight.bmi \(bmi.formatted(.number.precision(.fractionLength(1))))")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color.inkSecondary)
+                            }
+                            // D11: 같은 날 Apple Health 체성분. 숫자만
+                            if let fat = sample.bodyFatPercent {
+                                Text("history.weight.fat \(fat.formatted(.number.precision(.fractionLength(1))))")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color.inkSecondary)
+                            }
+                            if let lean = sample.leanBodyMassKg {
+                                Text("history.weight.lean \(lean.formatted(.number.precision(.fractionLength(1))))")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color.inkSecondary)
+                            }
+                        }
+                    }
+                    .foregroundStyle(Color.ink)
+                    .frostRow()
+                    .swipeActions(edge: .trailing) {
+                        // HealthKit 샘플은 Apple Health에서 관리한다. 다음 동기화에 다시 들어오므로 수동 입력만 지운다
+                        if sample.source == .manual {
+                            Button("history.weight.delete") {
+                                context.delete(sample)
+                                try? context.save()
+                            }
+                            .tint(Color.inkTertiary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: 습관 (M2)
+
+    @ViewBuilder
+    private func habitSections(now: Date) -> some View {
+        let anchor = habitMonth ?? now
+        let target = settingsList.first?.proteinTargetGrams
+        let cells = HistoryModel.habitMonth(
+            containing: anchor,
+            proteins: proteins.map(\.snapshot),
+            sessions: sessions.map(\.snapshot),
+            proteinTarget: target,
+            calendar: calendar
+        )
+        let isCurrentMonth = calendar.isDate(anchor, equalTo: now, toGranularity: .month)
+        Section {
+            HStack {
+                Button { shiftMonth(-1, from: anchor) } label: { Image(systemName: "chevron.left") }
+                    .accessibilityLabel("history.habits.prevMonth")
+                Spacer()
+                Text(anchor.formatted(.dateTime.year().month(.wide)))
+                    .font(Typography.label)
+                Spacer()
+                Button { shiftMonth(1, from: anchor) } label: { Image(systemName: "chevron.right") }
+                    .accessibilityLabel("history.habits.nextMonth")
+                    .disabled(isCurrentMonth)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.ink)
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+
+            VStack(spacing: 0) {
+                LazyVGrid(columns: Self.weekColumns, spacing: 0) {
+                    ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
+                        Text(verbatim: symbol)
+                            .font(Typography.caption)
+                            .foregroundStyle(Color.inkSecondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                            .padding(.bottom, Spacing.s2)
+                    }
+                }
+                BlueprintDivider(crosshair: .none)
+                // 7칸 도면 격자: 칸 사이 선과 교차점 마커 (DESIGN_SYSTEM.md 1)
+                LazyVGrid(columns: Self.weekColumns, spacing: 0) {
+                    ForEach(Array(cells.enumerated()), id: \.offset) { _, cell in
+                        if let cell {
+                            habitDayCell(cell)
+                        } else {
+                            Color.clear.frame(height: Self.dayCellHeight)
+                        }
+                    }
+                }
+                .overlay {
+                    BlueprintGridLines(rows: (cells.count + 6) / 7, columns: 7)
+                }
+            }
+            // 7칸 격자는 접근성 최대 글자에서 숫자가 두 줄로 쪼개진다. 이 격자만 상한을 두고, 날짜는 VoiceOver 레이블로 읽는다
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+
+            HStack(spacing: Spacing.s4) {
+                Label {
+                    Text("history.habits.legend.protein")
+                } icon: {
+                    Circle().fill(Color.accent).frame(width: 7, height: 7)
+                }
+                Label {
+                    Text("history.habits.legend.strength")
+                } icon: {
+                    Rectangle().stroke(Color.ink, lineWidth: 1).frame(width: 7, height: 7)
+                }
+            }
+            .font(Typography.caption)
+            .foregroundStyle(Color.inkSecondary)
+            .lineLimit(1)
+            // 격자와 같은 상한. 그 이상에서는 "단백질"이 두 줄로 쪼개진다
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+            if target == nil {
+                Text("history.habits.noTargetNote")
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+            }
+        }
+        .frostRow()
+    }
+
+    private static let weightWeeks = 12
+    private static let weekColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
+    private static let dayCellHeight: CGFloat = 44
+
+    private var weekdaySymbols: [String] {
+        let symbols = calendar.veryShortWeekdaySymbols
+        let start = calendar.firstWeekday - 1
+        return Array(symbols[start...] + symbols[..<start])
+    }
+
+    private func shiftMonth(_ months: Int, from anchor: Date) {
+        habitMonth = calendar.date(byAdding: .month, value: months, to: anchor)
+    }
+
+    /// 모양으로 구분: 단백질은 채운 원, 근력운동은 빈 사각형 (색만으로 구분하지 않는다)
+    private func habitDayCell(_ day: HistoryModel.HabitDay) -> some View {
+        VStack(spacing: 3) {
+            Text(verbatim: String(calendar.component(.day, from: day.date)))
+                .font(Typography.caption)
+                .monospacedDigit()
+                .foregroundStyle(Color.ink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            HStack(spacing: 3) {
+                if day.proteinMarked {
+                    Circle().fill(Color.accent).frame(width: 6, height: 6)
+                }
+                if day.strengthDone {
+                    Rectangle().stroke(Color.ink, lineWidth: 1).frame(width: 6, height: 6)
+                }
+            }
+            .frame(height: 8)
+        }
+        .frame(maxWidth: .infinity, minHeight: Self.dayCellHeight)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(habitDayLabel(day))
+    }
+
+    private func habitDayLabel(_ day: HistoryModel.HabitDay) -> Text {
+        var parts = [day.date.formatted(.dateTime.month(.wide).day())]
+        if day.proteinMarked { parts.append(L10n.string("history.habits.legend.protein")) }
+        if day.strengthDone { parts.append(L10n.string("history.habits.legend.strength")) }
+        return Text(verbatim: parts.joined(separator: ", "))
+    }
+
+    // MARK: 공용
+
+    private func emptyRow(_ key: LocalizedStringKey) -> some View {
+        Text(key)
+            .font(Typography.body)
+            .foregroundStyle(Color.inkSecondary)
+            .listRowBackground(Color.clear)
+    }
+
+    @ViewBuilder
+    private func sheetContent(_ sheet: Sheet) -> some View {
+        switch sheet {
+        case let .dose(initialDate):
+            if let activePrescription {
+                DoseLogSheet(prescription: activePrescription, initialDate: initialDate) { showsToast = true }
+            }
+        case let .condition(doseID, window):
+            if let dose = allDoses.first(where: { $0.id == doseID }) {
+                ConditionCheckSheet(dose: dose, window: window) { showsToast = true }
+            }
+        case .weight:
+            WeightEntrySheet { showsToast = true }
+        case .backfill:
+            if let activePrescription {
+                BackfillSheet(prescription: activePrescription) { showsToast = true }
+            }
+        case let .site(doseID):
+            if let dose = allDoses.first(where: { $0.id == doseID }) {
+                SiteEditSheet(dose: dose) { showsToast = true }
+            }
+        }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        HistoryListView()
+    }
+    .modelContainer(ModelContainer.previewWithSampleData)
+    .preferredColorScheme(.dark)
+}

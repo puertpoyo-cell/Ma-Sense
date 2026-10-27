@@ -35,14 +35,17 @@
   "proteinEntries": [ ... ],
   "strengthSessions": [ ... ],
   "habitChecks": [ ... ],
-  "clinicQuestions": [ ... ]
+  "clinicQuestions": [ ... ],
+  "clinicVisits": [ ... ],
+  "labResults": [ ... ]
 }
 ```
 
 - `format`은 항상 `"masense-export"`. 가져오기 시 첫 검사
 - `formatVersion`은 **이 문서의 버전**. 스키마 버전(`schemaVersion`)과 별개로, 파일 구조가 바뀔 때만 올림
 - 관계는 중첩이 아니라 **ID 참조**로 평탄화. `doses[].prescriptionId`, `conditionChecks[].doseId`
-- M2 이전 빌드가 만든 파일은 `proteinEntries` 등이 빈 배열 또는 키 없음. 가져오기는 둘 다 허용. D6 이전 빌드가 만든 파일은 `clinicQuestions` 키가 없다 (빈 배열로 읽음)
+- M2 이전 빌드가 만든 파일은 `proteinEntries` 등이 빈 배열 또는 키 없음. 가져오기는 둘 다 허용. D6 이전 빌드가 만든 파일은 `clinicQuestions` 키가 없다 (빈 배열로 읽음). D20 이전 빌드가 만든 파일은 `clinicVisits`·`labResults` 키가 없다 (빈 배열로 읽음, formatVersion 1 그대로: D6와 같이 키 추가만)
+- `clinicVisits[]`: `id, visitedAt, note, createdAt`. `labResults[]`: `id, visitId(null 가능), measuredAt, item(LabItem rawValue), customName, value, unit, note, createdAt`. 검사지 사진(`ClinicPhoto`)은 담지 않는다
 
 ## 레코드 형식
 
