@@ -25,8 +25,24 @@
         }
       }
     },
-    "Masense Export" : {
-
+    "Masense Export" : {},
+    "NSCameraUsageDescription" : {
+      "comment" : "카메라 권한 문구 (D20). 검사지·식사 사진을 찍을 때만, 글자·식품 종류는 기기 안에서 읽고 식사 사진은 저장하지 않음",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app uses the camera only when you take a photo of a lab result sheet or a meal. Text and food types are read on this device, and meal photos are not saved."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검사지나 식사 사진을 찍을 때만 카메라를 씁니다. 글자와 음식 종류는 이 기기 안에서 읽으며, 식사 사진은 저장하지 않습니다."
+          }
+        }
+      }
     },
     "NSHealthShareUsageDescription" : {
       "comment" : "HealthKit 읽기 권한 요청 문구. 읽기 전용, 온디바이스 저장 (DATA_MODEL.md HealthKit 매핑)",

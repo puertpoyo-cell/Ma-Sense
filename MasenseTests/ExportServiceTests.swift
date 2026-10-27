@@ -48,7 +48,7 @@ struct ExportServiceTests {
         #expect(url.lastPathComponent == "Masense_Export_2026-10-24.masense.json")
 
         let document = try ExportCodec.decode(Data(contentsOf: url))
-        #expect(document.schemaVersion == "1.4.0")
+        #expect(document.schemaVersion == "1.5.0")
         #expect(document.prescriptions.map(\.doseLabel) == ["메모"])
         #expect(document.doses.map(\.note) == ["왼쪽"])
         #expect(document.doses.first?.prescriptionId == document.prescriptions.first?.id)
@@ -149,6 +149,45 @@ struct ExportServiceTests {
 
         let again = try ExportService.apply(document, mode: .add, context: context, calendar: TestCalendar.seoul)
         #expect(again.clinicQuestions == ExportCodec.ImportResult.Count(imported: 0, skipped: 2))
+    }
+
+    /// D20 진료 기록·검사 결과는 파일로 오가고, 검사지 사진은 파일에 없지만 교체 가져오기에서도 이 기기에 남는다
+    @Test func clinicVisitsAndLabResultsRoundTripAndPhotosStay() throws {
+        let visit = ClinicVisit(visitedAt: TestCalendar.date(2026, 10, 24, 10), note: "다음 진료 4주 뒤", createdAt: TestCalendar.date(2026, 10, 24, 11))
+        context.insert(visit)
+        let hba1c = LabResult(measuredAt: TestCalendar.date(2026, 10, 24), item: .hba1c, value: 5.9, unit: "%", createdAt: TestCalendar.date(2026, 10, 24, 11))
+        context.insert(hba1c)
+        hba1c.visit = visit
+        let custom = LabResult(measuredAt: TestCalendar.date(2026, 10, 24), item: .custom, customName: "요산", value: 6.1, unit: "mg/dL", note: "참고치 3.5-7.2", createdAt: TestCalendar.date(2026, 10, 24, 11))
+        context.insert(custom)
+        let photo = ClinicPhoto(imageData: Data([1, 2, 3]))
+        context.insert(photo)
+        photo.visit = visit
+        try context.save()
+
+        let data = try ExportCodec.encode(ExportService.makeDocument(context: context, now: TestCalendar.date(2026, 10, 25, 9)), timeZone: TestCalendar.seoul.timeZone)
+        let object = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let labs = try #require(object["labResults"] as? [[String: Any]])
+        #expect(labs.count == 2)
+        #expect(labs.contains { $0["visitId"] is NSNull })
+        #expect(object["clinicPhotos"] == nil)
+
+        let document = try ExportCodec.decode(data)
+        let result = try ExportService.apply(document, mode: .replace, context: context, calendar: TestCalendar.seoul)
+        #expect(result.clinicVisits == ExportCodec.ImportResult.Count(imported: 1, skipped: 0))
+        #expect(result.labResults == ExportCodec.ImportResult.Count(imported: 2, skipped: 0))
+        let storedVisit = try #require(try context.fetch(FetchDescriptor<ClinicVisit>()).first)
+        #expect(storedVisit.note == "다음 진료 4주 뒤")
+        #expect(storedVisit.labResults?.map(\.item) == [.hba1c])
+        #expect(storedVisit.photos?.first?.imageData == Data([1, 2, 3]))
+        let storedCustom = try #require(try context.fetch(FetchDescriptor<LabResult>()).first { $0.item == .custom })
+        #expect(storedCustom.customName == "요산")
+        #expect(storedCustom.visit == nil)
+
+        try ExportService.deleteAll(context: context)
+        #expect(try context.fetch(FetchDescriptor<ClinicVisit>()).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<LabResult>()).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<ClinicPhoto>()).isEmpty)
     }
 
     @Test func addImportTwiceSkipsEverythingTheSecondTime() throws {

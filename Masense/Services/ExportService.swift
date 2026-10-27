@@ -55,7 +55,9 @@ enum ExportService {
             proteinEntries: context.fetch(FetchDescriptor<ProteinEntry>(sortBy: [SortDescriptor(\.date)])).map(\.exportRecord),
             strengthSessions: context.fetch(FetchDescriptor<StrengthSession>(sortBy: [SortDescriptor(\.startedAt)])).map(\.exportRecord),
             habitChecks: context.fetch(FetchDescriptor<HabitCheck>(sortBy: [SortDescriptor(\.date)])).map(\.exportRecord),
-            clinicQuestions: context.fetch(FetchDescriptor<ClinicQuestion>(sortBy: [SortDescriptor(\.createdAt)])).map(\.exportRecord)
+            clinicQuestions: context.fetch(FetchDescriptor<ClinicQuestion>(sortBy: [SortDescriptor(\.createdAt)])).map(\.exportRecord),
+            clinicVisits: context.fetch(FetchDescriptor<ClinicVisit>(sortBy: [SortDescriptor(\.visitedAt)])).map(\.exportRecord),
+            labResults: context.fetch(FetchDescriptor<LabResult>(sortBy: [SortDescriptor(\.measuredAt)])).map(\.exportRecord)
         )
     }
 
@@ -97,8 +99,15 @@ enum ExportService {
         var prescriptions: [UUID: Prescription] = [:]
         var doses: [UUID: Dose] = [:]
         var existingIDs: Set<UUID> = []
+        var visits: [UUID: ClinicVisit] = [:]
+        // 검사지 사진은 파일에 없으므로 교체 모드에서도 지우지 않고, 같은 ID의 진료 기록이 다시 들어오면 그대로 붙인다 (D20)
+        var keptPhotos: [UUID: [ClinicPhoto]] = [:]
         switch mode {
         case .replace:
+            for photo in try context.fetch(FetchDescriptor<ClinicPhoto>()) {
+                if let visitID = photo.visit?.id { keptPhotos[visitID, default: []].append(photo) }
+                photo.visit = nil
+            }
             // 저장은 마지막에 한 번만. 실패하면 부르는 쪽이 rollback해 이 기기의 기록이 그대로 남는다
             try deleteRecords(context: context)
         case .add:
@@ -112,6 +121,9 @@ enum ExportService {
                 .union(context.fetch(FetchDescriptor<StrengthSession>()).map(\.id))
                 .union(context.fetch(FetchDescriptor<HabitCheck>()).map(\.id))
                 .union(context.fetch(FetchDescriptor<ClinicQuestion>()).map(\.id))
+                .union(context.fetch(FetchDescriptor<LabResult>()).map(\.id))
+            visits = try uniqueByID(context.fetch(FetchDescriptor<ClinicVisit>()), id: \.id)
+            existingIDs.formUnion(visits.keys)
         }
 
         let plan = ExportCodec.importPlan(document, mode: mode, existingIDs: existingIDs)
@@ -140,6 +152,19 @@ enum ExportService {
         plan.strengthSessions.forEach { context.insert(StrengthSession(record: $0)) }
         plan.habitChecks.forEach { context.insert(HabitCheck(record: $0)) }
         plan.clinicQuestions.forEach { context.insert(ClinicQuestion(record: $0)) }
+        for record in plan.clinicVisits {
+            let visit = ClinicVisit(record: record)
+            context.insert(visit)
+            visits[visit.id] = visit
+            keptPhotos.removeValue(forKey: visit.id)?.forEach { $0.visit = visit }
+        }
+        for record in plan.labResults {
+            let result = LabResult(record: record)
+            context.insert(result)
+            result.visit = record.visitId.flatMap { visits[$0] }
+        }
+        // 다시 붙일 진료 기록이 없는 사진은 지운다
+        keptPhotos.values.joined().forEach { context.delete($0) }
 
         try resolveActivePrescriptions(context: context, calendar: calendar)
         try context.save()
@@ -166,6 +191,7 @@ enum ExportService {
     /// 모든 기록과 설정을 즉시 영구 삭제한다 (COMPLIANCE.md 5).
     static func deleteAll(context: ModelContext) throws {
         try deleteRecords(context: context)
+        try context.fetch(FetchDescriptor<ClinicPhoto>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<UserSettings>()).forEach { context.delete($0) }
         try context.save()
     }
@@ -180,6 +206,9 @@ enum ExportService {
         try context.fetch(FetchDescriptor<StrengthSession>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<HabitCheck>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<ClinicQuestion>()).forEach { context.delete($0) }
+        try context.fetch(FetchDescriptor<LabResult>()).forEach { context.delete($0) }
+        // 진료 기록을 지우면 붙은 사진도 함께 지워진다(cascade). 교체 가져오기는 그 전에 사진을 떼어 둔다
+        try context.fetch(FetchDescriptor<ClinicVisit>()).forEach { context.delete($0) }
     }
 }
 

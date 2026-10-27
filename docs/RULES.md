@@ -385,6 +385,31 @@ func reply(to topic: CoachTopic, context: CoachContext, shownKeys: Set<String>, 
 - D19 물: 물 한 잔 > 자주 조금씩(건강관리) > 습관 체크 '수분' / 잠: 수면 리듬 > 화면 일찍 내려놓기(건강관리) > 습관 체크 '수면' / 체중: 기록 없음 > 같은 조건 > 오르내림 > 체중 추이 보는 법 / 컨디션: 저컨디션 > 24·48시간 칸 > 증상 흐름 > 의사와 상의
 - 이번 대화에서 한 줄은 건너뛰고, 다 했으면 처음 줄로 (빈 대답 없음). 말투는 화면이 3가지 중 하나를 고른다 (`variantCount`)
 
+## R21. 검사 결과 (D20, 2026-10-27 사람 결정)
+
+```swift
+func lines(from boxes: [TextBox]) -> [String]
+func candidates(lines: [String]) -> [LabCandidate]
+func latestByItem(_ results: [LabResultSnapshot], limit: Int?) -> [LabResultSnapshot]
+func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultSnapshot]
+```
+
+- 글자 조각은 세로 가운데가 글자 높이의 절반 안이면 같은 줄, 왼쪽부터 잇는다
+- 줄에서 항목 이름(`LabItem.aliases`, 당화혈색소를 혈색소보다·LDL/HDL을 총콜레스테롤보다 먼저)을 찾고, 이름 뒤 첫 숫자를 값으로. 이름 바로 뒤 괄호 안 숫자는 건너뜀. 숫자가 없으면 다음 줄이 숫자로 시작할 때 그 숫자. 영문 이름은 앞뒤가 영문자·숫자가 아닐 때만. 항목마다 처음 하나
+- 단위는 줄에 알려진 단위가 있으면 그것, 없으면 항목 기본 단위. 후보는 사용자가 확인한 뒤에만 저장
+- 최근 값: 항목(직접 입력은 이름)별 가장 최근, 최근 날짜 순. 리포트는 6개, 오늘 이후 날짜 제외
+- 기준 범위·정상/높음·색·추세 평가 없음 (COMPLIANCE.md 2.2)
+
+## R22. 사진으로 단백질 확인 (D20)
+
+- 이미지 분류 이름(확신도 0.12 이상)에 `FoodPhotoRules.keywords`가 들어 있으면 그 식품. 식품별 가장 높은 확신도, 높은 순 3개까지
+- 단위: R9 표 1회 기준 그대로(계란 1개 6 g, 두부 반 모 12 g, 닭가슴살 100g 23 g …). 요거트는 컵(150g) 15 g 또는 숟갈(약 15 g) 1.5 g, 콩·두유는 컵 8 g 또는 숟갈 0.5 g. 처음 양은 1(숟갈은 5)
+- 대략 g = Σ 단위 g × 양, 반올림. 사진으로 양·칼로리를 판정하지 않는다 (COMPLIANCE.md 2.1-3·2.1-6)
+
+## R23. 기록 탭 날짜 표시 (D20)
+
+- 주는 달력 firstWeekday부터 7일. 날마다 투약(취소 제외)·진료·컨디션·체중·단백질·운동 기록이 있는지만. 많고 적음·연속일 없음
+
 ## 테스트 체크리스트
 
 - [x] R1 주 경계·월 경계·연 경계·DST 없음(한국) 검증, 시작일이 예정 요일과 같은 날인 경우
@@ -396,6 +421,7 @@ func reply(to topic: CoachTopic, context: CoachContext, shownKeys: Set<String>, 
 - [x] R7-1 마지막 기록 구간으로 옮기기·체성분 값 고르기·가장 최근 값 (`WeightRulesTests`, `TodayModelTests`), 체지방률 같은 날 붙이기 (`M2ReportAndHealthTests`)
 - [x] R20 우선순위·정오 기준·주 후반 기준·날짜로 돌리기·건강관리 고지 표시, R20-1 자리별 후보·이미 띄운 줄 건너뛰기, R20-2 상황 우선·다시 물으면 다음 줄·처음으로 돌아가기, R20-3 새 주제·표정·고지 (`CoachRulesTests`)
 - [x] R18 4회째 다음 주까지·덜 찬 묶음 제외·다음 묶음이 일찍 시작하면 자르기·오늘 카드 7일 (`PackageSummaryRulesTests`, `TodayModelTests`), R19 지금 구간까지·구간별 최대 강도·정렬 (`SymptomFlowRulesTests`)
+- [x] R21 글자 줄 묶기·이름 뒤 숫자·괄호·다음 줄·영문 경계·최근 값 (`LabRulesTests`, `ReportBuilderTests`), R22 이름 → 식품·단위 g (`FoodPhotoRulesTests`), R23 주 7일·날짜 표시 (`HistoryDayRulesTests`)
 - [x] R15 입력 정리, 아직 묻지 않은 것 순서, 리포트 5개·메모와 합쳐 8줄 (`ClinicQuestionRulesTests`, `ReportBuilderTests`)
 - [x] R4 4주 제한, 재등록 시 중복 없음
 - [x] R5 창 경계값 (12h, 36h, 96h)

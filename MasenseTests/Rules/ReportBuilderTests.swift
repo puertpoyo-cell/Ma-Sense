@@ -280,4 +280,19 @@ struct ReportBuilderTests {
         #expect(single.summary.prescriptionTransitions == 0)
         #expect(single.cycles.allSatisfy { $0.marker == nil })
     }
+
+    // D20 최근 검사: 항목별 최근 값, 6개까지, 앞으로의 날짜 제외
+    @Test func labLinesKeepLatestPerItemUpToSix() {
+        func r(_ day: Int, _ item: LabItem, _ value: Double) -> LabResultSnapshot {
+            LabResultSnapshot(id: UUID(), measuredAt: TestCalendar.date(2026, 10, day), item: item, customName: nil, value: value, unit: item.defaultUnit)
+        }
+        let now = TestCalendar.date(2026, 10, 25, 9)
+        let labs = [r(1, .hba1c, 6.3), r(20, .hba1c, 5.9), r(20, .ldl, 118), r(20, .alt, 29), r(20, .hdl, 51),
+                    r(20, .triglycerides, 142), r(20, .ferritin, 64), r(20, .tsh, 2.1), r(26, .ast, 20)]
+        let lines = ReportBuilder.labLines(labs, now: now)
+        #expect(lines.count == ReportBuilder.maxLabs)
+        #expect(lines.first { $0.item == .hba1c }?.valueText == "5.9")
+        #expect(!lines.contains { $0.item == .ast })
+        #expect(lines.first { $0.item == .ldl }?.valueText == "118")
+    }
 }

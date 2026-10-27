@@ -76,7 +76,7 @@ extension RootView {
 /// 탭 3개 + 설정 push (SCREENS.md 내비게이션 구조)
 struct MainTabView: View {
     private enum Tab: Hashable {
-        case today, history, report
+        case today, history, clinic, report
     }
 
     @State private var selection: Tab = MainTabView.initialTab
@@ -87,6 +87,7 @@ struct MainTabView: View {
         switch ScreenshotRoute.current {
         case .historyDose?, .historyCondition?, .historyWeight?, .historyHabits?: return .history
         case .report?: return .report
+        case .clinic?, .clinicVisit?: return .clinic
         default: break
         }
         #endif
@@ -97,18 +98,25 @@ struct MainTabView: View {
         TabView(selection: $selection) {
             NavigationStack {
                 // 1-5 진료 카드 "리포트 준비" → 리포트 탭
-                TodayView(openReport: { selection = .report })
+                TodayView(openReport: { selection = .report }, openClinic: { selection = .clinic })
                     .coachPopupOverlay()
             }
             .tabItem { Label("tab.today", systemImage: "house") }
             .tag(Tab.today)
 
-            NavigationStack {
-                HistoryView()
-                    .coachPopupOverlay(appearSpot: .history)
-            }
+            // D20 날짜 중심 기록 탭은 모아 보기 이동을 위해 자기 NavigationStack(path)을 가진다
+            HistoryView()
+                .coachPopupOverlay(appearSpot: .history)
             .tabItem { Label("tab.history", systemImage: "calendar") }
             .tag(Tab.history)
+
+            NavigationStack {
+                // D20 진료 탭: 진료 전 물어볼 것, 진료 직후 기록·검사 결과
+                ClinicView(openReport: { selection = .report })
+                    .coachPopupOverlay(appearSpot: .clinic)
+            }
+            .tabItem { Label("tab.clinic", systemImage: "list.clipboard") }
+            .tag(Tab.clinic)
 
             NavigationStack {
                 ReportView()

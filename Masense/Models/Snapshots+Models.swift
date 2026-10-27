@@ -98,3 +98,9 @@ extension ClinicQuestion {
         ClinicQuestionSnapshot(id: id, text: text, askedAt: askedAt, createdAt: createdAt)
     }
 }
+
+extension LabResult {
+    var snapshot: LabResultSnapshot {
+        LabResultSnapshot(id: id, measuredAt: measuredAt, item: item, customName: customName, value: value, unit: unit)
+    }
+}

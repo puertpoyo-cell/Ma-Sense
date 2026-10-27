@@ -272,3 +272,44 @@ extension ClinicQuestion {
         self.init(id: record.id, text: record.text, askedAt: record.askedAt, createdAt: record.createdAt)
     }
 }
+
+extension ClinicVisit {
+    var exportRecord: ExportDocument.ClinicVisitRecord {
+        ExportDocument.ClinicVisitRecord(id: id, visitedAt: visitedAt, note: note, createdAt: createdAt)
+    }
+
+    convenience init(record: ExportDocument.ClinicVisitRecord) {
+        self.init(id: record.id, visitedAt: record.visitedAt, note: record.note, createdAt: record.createdAt)
+    }
+}
+
+extension LabResult {
+    var exportRecord: ExportDocument.LabResultRecord {
+        ExportDocument.LabResultRecord(
+            id: id,
+            visitId: visit?.id,
+            measuredAt: measuredAt,
+            item: itemRaw,
+            customName: customName,
+            value: value,
+            unit: unit,
+            note: note,
+            createdAt: createdAt
+        )
+    }
+
+    convenience init(record: ExportDocument.LabResultRecord) {
+        self.init(
+            id: record.id,
+            measuredAt: record.measuredAt,
+            item: .custom,
+            customName: record.customName,
+            value: record.value,
+            unit: record.unit,
+            note: record.note,
+            createdAt: record.createdAt
+        )
+        // 모르는 항목 값도 그대로 저장해 둔다 (읽을 때 `.custom`)
+        itemRaw = record.item
+    }
+}

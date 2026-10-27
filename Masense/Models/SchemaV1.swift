@@ -149,12 +149,22 @@ enum SchemaV5: VersionedSchema {
     }
 }
 
+/// D20 (2026-10-27 사람 결정): 진료 기록 `ClinicVisit`, 검사 결과 `LabResult`, 검사지 사진 `ClinicPhoto` 모델 추가.
+/// 기존 모델과 관계가 없는 새 모델끼리의 관계라 경량 이전
+enum SchemaV6: VersionedSchema {
+    static let versionIdentifier = Schema.Version(1, 5, 0)
+
+    static var models: [any PersistentModel.Type] {
+        SchemaV5.models + [ClinicVisit.self, LabResult.self, ClinicPhoto.self]
+    }
+}
+
 /// 지금 앱이 여는 스키마
-typealias CurrentSchema = SchemaV5
+typealias CurrentSchema = SchemaV6
 
 enum MasenseMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self]
+        [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self, SchemaV6.self]
     }
 
     static var stages: [MigrationStage] {
@@ -163,6 +173,7 @@ enum MasenseMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: SchemaV2.self, toVersion: SchemaV3.self),
             .lightweight(fromVersion: SchemaV3.self, toVersion: SchemaV4.self),
             .lightweight(fromVersion: SchemaV4.self, toVersion: SchemaV5.self),
+            .lightweight(fromVersion: SchemaV5.self, toVersion: SchemaV6.self),
         ]
     }
 }

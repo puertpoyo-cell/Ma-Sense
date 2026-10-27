@@ -50,6 +50,9 @@ struct ReportPage: View {
             if let quality = report.quality {
                 qualityRow(quality)
             }
+            if !report.labs.isEmpty {
+                labs
+            }
             if !report.questions.isEmpty {
                 questions
             }
@@ -399,6 +402,33 @@ struct ReportPage: View {
             }
         }
         .frame(height: 36 * Self.mm, alignment: .top)
+    }
+
+    // MARK: G. 최근 검사 (D20)
+
+    /// 두 칸으로 "항목 값 단위 · 날짜". 기준 범위·판단 표시 없음
+    private var labs: some View {
+        VStack(alignment: .leading, spacing: 1.5 * Self.mm) {
+            sectionTitle("report.section.labs")
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: gutter), GridItem(.flexible(), spacing: gutter)], alignment: .leading, spacing: 1.5 * Self.mm) {
+                ForEach(report.labs) { line in
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(verbatim: line.item == .custom ? (line.customName ?? "") : L10n.string("lab.item." + line.item.rawValue))
+                            .font(.system(size: 8))
+                            .lineLimit(1)
+                        Spacer(minLength: 4)
+                        Text(verbatim: "\(line.valueText) \(line.unit)")
+                            .font(.system(size: 8, weight: .medium))
+                            .monospacedDigit()
+                            .lineLimit(1)
+                        Text(verbatim: shortDate(line.date))
+                            .font(.system(size: 7.5))
+                            .monospacedDigit()
+                            .foregroundStyle(gray)
+                    }
+                }
+            }
+        }
     }
 
     // MARK: G. 진료 때 물어볼 것 (D6)

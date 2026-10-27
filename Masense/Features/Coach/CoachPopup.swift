@@ -51,7 +51,7 @@ final class CoachPopupCenter {
     /// 자리에 닿았을 때. `now`는 뷰의 주입 지점에서 받는다
     @MainActor
     func reach(_ spot: CoachSpot, context: CoachContext, now: Date, calendar: Calendar) {
-        if spot != .history, spot != .report { lastContext = context }
+        if ![.history, .report, .clinic].contains(spot) { lastContext = context }
         resetIfNewDay(now: now, calendar: calendar)
         guard !isPaused, current == nil, !isPending, !shownSpots.contains(spot.rawValue) else { return }
         if let lastDismissedAt, now.timeIntervalSince(lastDismissedAt) < Self.restSeconds { return }
@@ -77,9 +77,15 @@ final class CoachPopupCenter {
     /// 기록을 마친 직후 한마디 (D19). 하루 한 번 제한 없이, 떠 있던 팝업을 바꾼다
     @MainActor
     func react(to kind: CoachRecordKind) {
+        react(with: .recorded(kind))
+    }
+
+    /// 기록 직후 정해 둔 한 줄 (D20 사진 단백질 "약 n g")
+    @MainActor
+    func react(with line: CoachLine) {
         guard !isPaused else { return }
         isTalking = false
-        current = Self.message(.recorded(kind), avoiding: current)
+        current = Self.message(line, avoiding: current)
         scheduleDismiss()
     }
 
@@ -181,6 +187,12 @@ extension CoachMessage {
             case 1: return Text("coach.lowPens.v2 \(remaining)")
             case 2: return Text("coach.lowPens.v3 \(remaining)")
             default: return Text("coach.lowPens \(remaining)")
+            }
+        case let .proteinEstimate(grams):
+            switch variant {
+            case 1: return Text("coach.proteinEstimate.v2 \(grams)")
+            case 2: return Text("coach.proteinEstimate.v3 \(grams)")
+            default: return Text("coach.proteinEstimate \(grams)")
             }
         case let .fact(.lowSupply(remaining, false)):
             switch variant {

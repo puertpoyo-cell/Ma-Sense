@@ -12,6 +12,7 @@ struct ReportView: View {
     @Query(sort: \ProteinEntry.date) private var proteins: [ProteinEntry]
     @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
     @Query(sort: \ClinicQuestion.createdAt) private var questions: [ClinicQuestion]
+    @Query(sort: \LabResult.measuredAt) private var labResults: [LabResult]
 
     @State private var period: ReportPeriod?
     @State private var showsQuestions = false
@@ -187,6 +188,7 @@ struct ReportView: View {
             proteinTarget: settings?.proteinTargetGrams,
             heightCm: settings?.heightCm,
             questions: questions.map(\.snapshot),
+            labs: labResults.map(\.snapshot),
             now: now,
             calendar: calendar,
             appVersion: AppConfig.appVersion
