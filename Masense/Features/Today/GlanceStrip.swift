@@ -78,21 +78,17 @@ struct GlanceStrip: View {
         return Text(verbatim: shortDate(latestWeight.measuredAt))
     }
 
+    /// "1/4개" (1회용 펜: 패키지 전체 중 남은 펜), "5/12회" (여러 회 쓰는 펜: 남은 회차). D21-1: 쓴 수가 아니라 남은 수를 전체와 함께
     private func pensValue(_ pens: PenStatus) -> Text {
-        Text(verbatim: String(pens.isSingleUse ? pens.remainingPens : pens.remainingDoses))
+        let remaining = pens.isSingleUse ? pens.remainingPens : pens.remainingDoses
+        let total = pens.isSingleUse ? pens.penCount : pens.penCount * pens.dosesPerPen
+        return Text(verbatim: "\(remaining)/\(total)")
             + Text(pens.isSingleUse ? "glance.unit.pens" : "unit.times").font(Typography.caption).foregroundColor(Color.inkSecondary)
     }
 
-    /// "5/12회 · 소진 예상 12. 7."
+    /// "소진 예상 12. 7."
     private var pensDetail: Text? {
-        let sequence = (usedDoses.flatMap { used in totalDoses.map { Text("glance.sequence \(used) \($0)") } })
-        let exhaustion = exhaustionDate.map { Text("glance.exhaustion \(shortDate($0))") }
-        switch (sequence, exhaustion) {
-        case let (s?, e?): return s + Text(verbatim: " · ") + e
-        case let (s?, nil): return s
-        case let (nil, e?): return e
-        default: return nil
-        }
+        exhaustionDate.map { Text("glance.exhaustion \(shortDate($0))") }
     }
 
     private var siteValue: Text {
