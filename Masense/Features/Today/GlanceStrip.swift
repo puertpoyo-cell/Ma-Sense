@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// 카운트다운 카드 안 "한눈에" 줄 (D14, D15에서 카드 하나로 합침).
-/// 왼쪽 작은 바디맵(지난 부위만 빛남), 오른쪽 세 줄: 체중 · 남은 펜(회차) · 지난 부위. 숫자만, 판단·다음 부위 추천 없음 (R6)
+/// 왼쪽 바디맵(최근 부위만 빛남, D21: 세 줄 높이의 90%, 최근 4회를 뒤로 갈수록 흐리게), 오른쪽 세 줄: 체중 · 남은 펜(회차) · 지난 부위.
+/// 숫자만, 판단·다음 부위 추천 없음 (R6)
 struct GlanceStrip: View {
     let figure: BodyFigure
     let latestWeight: WeightSampleSnapshot?
@@ -10,13 +11,36 @@ struct GlanceStrip: View {
     let usedDoses: Int?
     let totalDoses: Int?
     let exhaustionDate: Date?
-    let lastSite: SiteUse?
+    /// 최근 순. 첫 번째가 지난 부위
+    var recentSites: [SiteUse] = []
     var onOpenWeight: () -> Void = {}
 
     @Environment(\.calendar) private var calendar
+    /// 오른쪽 세 줄의 높이. 그림은 이 높이의 90%
+    @State private var rowsHeight: CGFloat = 0
 
-    /// 바디맵 설계 좌표(240×420)를 줄인 비율
-    private static let scale: CGFloat = 0.27
+    /// 바디맵 설계 좌표 크기
+    private static let designSize = CGSize(width: 240, height: 420)
+    /// 그림 높이 = 세 줄 높이 × 이 비율
+    private static let figureHeightRatio: CGFloat = 0.9
+    /// 그림 폭 상한 (칸 폭). 세로로 긴 그림이라 보통 높이에서 정해진다
+    private static let maxFigureWidth: CGFloat = 120
+    /// 처음 그릴 때(줄 높이를 아직 모를 때) 쓰는 비율
+    private static let fallbackScale: CGFloat = 0.36
+    /// 이전 부위 점의 불투명도 (최근 순, 첫 번째는 지난 부위라 1)
+    private static let siteOpacities: [Double] = [1, 0.3, 0.25, 0.2]
+    /// 이전 부위 점은 한 단계 작게
+    private static let olderSiteScale: CGFloat = 0.75
+
+    private var lastSite: SiteUse? { recentSites.first }
+
+    /// 세 줄 높이에 맞춘 비율. 폭 상한을 넘지 않는다
+    private var scale: CGFloat {
+        guard rowsHeight > 0 else { return Self.fallbackScale }
+        let byHeight = rowsHeight * Self.figureHeightRatio / Self.designSize.height
+        let byWidth = Self.maxFigureWidth / Self.designSize.width
+        return min(byHeight, byWidth)
+    }
 
     var body: some View {
         HStack(alignment: .center, spacing: Spacing.s4) {
@@ -33,6 +57,7 @@ struct GlanceStrip: View {
                 }
                 row("glance.lastSite", value: siteValue, detail: lastSite.map { Text(verbatim: shortDate($0.date)) })
             }
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowsHeight = $0 }
         }
         .padding(Spacing.cellPadding)
     }
@@ -107,9 +132,10 @@ struct GlanceStrip: View {
 
     // MARK: 그림
 
-    /// 바디맵과 같은 실루엣(거울 보기)을 작게. 지난 부위만 accent로 빛낸다
+    /// 바디맵과 같은 실루엣(거울 보기). 지난 부위는 또렷하게, 그 전 부위는 오래될수록 흐리고 작게 (D21). 순서·추천 표시 없음
     private var figureView: some View {
-        let size = CGSize(width: 240 * Self.scale, height: 420 * Self.scale)
+        let scale = scale
+        let size = CGSize(width: Self.designSize.width * scale, height: Self.designSize.height * scale)
         return ZStack(alignment: .topLeading) {
             BodySilhouette(figure: figure)
                 .fill(LinearGradient(colors: [Color.white.opacity(0.13), Color.white.opacity(0.03)], startPoint: .top, endPoint: .bottom))
@@ -121,17 +147,27 @@ struct GlanceStrip: View {
                         )
                 )
                 .frame(width: size.width, height: size.height)
-            if let lastSite {
-                let rect = BodyMapView.frame(for: lastSite.site, figure: figure)
-                Capsule(style: .continuous)
-                    .fill(Color.accent)
-                    .shadow(color: Color.accent.opacity(0.7), radius: 4)
-                    .frame(width: max(rect.width * Self.scale, 4), height: max(rect.height * Self.scale, 5))
-                    .offset(x: rect.minX * Self.scale, y: rect.minY * Self.scale)
+            // 오래된 것을 먼저 그려 지난 부위가 맨 위에 오게
+            ForEach(Array(recentSites.prefix(Self.siteOpacities.count).enumerated().reversed()), id: \.offset) { rank, use in
+                siteDot(use.site, rank: rank, scale: scale)
             }
         }
         .frame(width: size.width, height: size.height, alignment: .topLeading)
         .accessibilityHidden(true)
+    }
+
+    private func siteDot(_ site: BodySite, rank: Int, scale: CGFloat) -> some View {
+        let rect = BodyMapView.frame(for: site, figure: figure)
+        let isLast = rank == 0
+        let dotScale = scale * (isLast ? 1 : Self.olderSiteScale)
+        let width = max(rect.width * dotScale, isLast ? 5 : 4)
+        let height = max(rect.height * dotScale, isLast ? 6 : 5)
+        return Capsule(style: .continuous)
+            .fill(Color.accent.opacity(Self.siteOpacities[rank]))
+            .shadow(color: Color.accent.opacity(isLast ? 0.7 : 0), radius: 4)
+            .frame(width: width, height: height)
+            // 가운데를 맞춰 작아지게
+            .offset(x: rect.midX * scale - width / 2, y: rect.midY * scale - height / 2)
     }
 
     private func shortDate(_ date: Date) -> String {
