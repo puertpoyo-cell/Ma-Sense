@@ -103,4 +103,22 @@ struct CoachRulesTests {
             return
         }
     }
+
+    // D19 새 주제·표정
+    @Test func newTopicsAnswerAndMoodsFollowTheLine() {
+        let now = TestCalendar.date(2026, 10, 22, 15)
+        #expect(CoachRules.reply(to: .water, context: CoachContext(), shownKeys: [], now: now, calendar: calendar) == .tip(3))
+        #expect(CoachRules.reply(to: .water, context: CoachContext(), shownKeys: ["tip.3"], now: now, calendar: calendar) == .answer(.water, 0))
+        #expect(CoachRules.reply(to: .condition, context: CoachContext(isLowCondition: true), shownKeys: [], now: now, calendar: calendar) == .lowCondition)
+        #expect(CoachRules.reply(to: .weight, context: CoachContext(dailyLine: .noRecentWeight), shownKeys: [], now: now, calendar: calendar) == .fact(.noRecentWeight))
+        #expect(CoachLine.answer(.water, 0).isHealthTip)
+        #expect(!CoachLine.answer(.condition, 2).isHealthTip)
+        #expect(CoachLine.recorded(.weight).mood == .happy)
+        #expect(CoachLine.lowCondition.mood == .gentle)
+        #expect(CoachLine.greeting.mood == .smile)
+        // 모든 주제가 빈 대답 없이 답한다
+        for topic in CoachTopic.allCases {
+            _ = CoachRules.reply(to: topic, context: CoachContext(), shownKeys: [], now: now, calendar: calendar)
+        }
+    }
 }

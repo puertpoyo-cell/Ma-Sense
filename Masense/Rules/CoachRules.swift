@@ -20,6 +20,21 @@ enum CoachLine: Equatable {
     case place(CoachSpot)
     /// 말 걸기를 눌렀을 때 첫 인사 (D18)
     case greeting
+    /// 기록을 마친 직후 (D19). 체중이 늘든 줄든 같은 말투, 평가 없음
+    case recorded(CoachRecordKind)
+    /// 말 걸기 주제의 고정 대답 (D19, `CoachRules.answerCounts`)
+    case answer(CoachTopic, Int)
+
+    /// 캐릭터 표정 (D19). 말에 맞춰 얼굴만 바꾼다
+    var mood: CoachMood {
+        switch self {
+        case .recorded: return .happy
+        case .lowCondition, .lowAppetite, .answer(.condition, _): return .gentle
+        case .fact(.lowSupply), .place(.pens), .place(.report), .tip(4), .answer(.clinic, _): return .thinking
+        case .tip(0), .tip(3), .tip(7), .answer(.water, _): return .wink
+        default: return .smile
+        }
+    }
 
     /// 하루에 같은 한마디를 두 번 띄우지 않는 데 쓰는 키
     var key: String {
@@ -32,6 +47,8 @@ enum CoachLine: Equatable {
         case let .tip(index): return "tip." + String(index)
         case let .place(spot): return "place." + spot.rawValue
         case .greeting: return "greeting"
+        case let .recorded(kind): return "recorded." + kind.rawValue
+        case let .answer(topic, index): return "answer." + topic.rawValue + "." + String(index)
         }
     }
 
@@ -40,6 +57,7 @@ enum CoachLine: Equatable {
         switch self {
         case .lowAppetite, .strengthNotYet: return true
         case let .tip(index): return CoachRules.healthTipIndices.contains(index)
+        case let .answer(topic, index): return CoachRules.healthAnswers.contains("\(topic.rawValue).\(index)")
         default: return false
         }
     }
@@ -58,13 +76,35 @@ enum CoachSpot: String, CaseIterable {
     case report
 }
 
-/// D18 말 걸기에서 고르는 주제
+/// D18 말 걸기에서 고르는 주제 (D19에서 물·수면·체중·컨디션 추가). 화면에는 이 순서로
 enum CoachTopic: String, CaseIterable {
     case today
     case protein
     case movement
+    case water
+    case sleep
+    case weight
+    case condition
     case clinic
     case more
+}
+
+/// D19 기록 직후 한마디의 종류
+enum CoachRecordKind: String, CaseIterable {
+    case dose
+    case condition
+    case weight
+    case protein
+    case exercise
+}
+
+/// D19 캐릭터 표정
+enum CoachMood: String, CaseIterable {
+    case smile
+    case happy
+    case gentle
+    case thinking
+    case wink
 }
 
 /// 자리별 한마디를 고르는 데 필요한 오늘의 사실
@@ -80,6 +120,10 @@ enum CoachRules {
     static let tipCount = 8
     /// 한 줄마다 같은 뜻의 다른 말투 수 (D18). 화면이 그중 하나를 고른다
     static let variantCount = 3
+    /// 주제별 고정 대답 수 (`coach.answer.<topic>.<n>`)
+    static let answerCounts: [CoachTopic: Int] = [.water: 2, .sleep: 2, .weight: 1, .condition: 3]
+    /// 고정 대답 중 건강관리 정보 (고지를 붙인다)
+    static let healthAnswers: Set<String> = ["water.0", "sleep.0"]
     /// 일반 한마디 중 건강관리 정보인 것 (단백질·물·근력·수면)
     static let healthTipIndices: Set<Int> = [2, 3, 5, 6]
     /// 이 시각 이후에만 단백질 기록을 권한다
@@ -183,6 +227,18 @@ enum CoachRules {
             if c.isLowCondition { result.append(.lowCondition) }
             if c.strengthThisWeek == 0 { result.append(.strengthNotYet) }
             candidates = result + [.tip(5), .tip(6)]
+        case .water:
+            candidates = [.tip(3)] + answers(.water)
+        case .sleep:
+            candidates = [.tip(6)] + answers(.sleep)
+        case .weight:
+            var result: [CoachLine] = []
+            if c.dailyLine == .noRecentWeight { result.append(.fact(.noRecentWeight)) }
+            candidates = result + [.tip(1), .tip(7)] + answers(.weight)
+        case .condition:
+            var result: [CoachLine] = []
+            if c.isLowCondition { result.append(.lowCondition) }
+            candidates = result + answers(.condition)
         case .clinic:
             var result: [CoachLine] = []
             if let fact = c.dailyLine, case .lowSupply = fact { result.append(.fact(fact)) }
@@ -193,5 +249,9 @@ enum CoachRules {
             candidates = (0..<tipCount).map { .tip((day + $0) % tipCount) }
         }
         return candidates.first { !shownKeys.contains($0.key) } ?? candidates[0]
+    }
+
+    private static func answers(_ topic: CoachTopic) -> [CoachLine] {
+        (0..<(answerCounts[topic] ?? 0)).map { .answer(topic, $0) }
     }
 }
