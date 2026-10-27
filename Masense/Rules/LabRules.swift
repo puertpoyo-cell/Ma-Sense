@@ -70,6 +70,14 @@ struct LabResultSnapshot: Equatable {
     }
 }
 
+/// 글자 인식 결과 한 조각. 좌표는 0~1, 위쪽이 0
+struct TextBox: Equatable {
+    var text: String
+    var minX: Double
+    var midY: Double
+    var height: Double
+}
+
 /// 검사지 글자에서 찾은 후보. 사용자가 확인·수정한 뒤에만 저장한다
 struct LabCandidate: Equatable {
     var item: LabItem
@@ -101,6 +109,23 @@ enum LabRules {
             found.append(LabCandidate(item: item, value: value, unit: unit(in: line) ?? item.defaultUnit))
         }
         return found
+    }
+
+    /// 글자 조각을 줄로 묶는다. 세로 가운데가 글자 높이의 절반 안이면 같은 줄로 보고 왼쪽부터 잇는다
+    /// (검사지 표는 항목·결과·단위·참고치가 따로 읽히므로 한 줄로 이어야 이름 뒤 숫자를 찾을 수 있다)
+    static func lines(from boxes: [TextBox]) -> [String] {
+        var rows: [[TextBox]] = []
+        for box in boxes.sorted(by: { $0.midY < $1.midY }) {
+            if let last = rows.last, let anchor = last.first,
+               abs(anchor.midY - box.midY) <= max(anchor.height, box.height) * 0.5 {
+                rows[rows.count - 1].append(box)
+            } else {
+                rows.append([box])
+            }
+        }
+        return rows.map { row in
+            row.sorted { $0.minX < $1.minX }.map(\.text).joined(separator: " ")
+        }
     }
 
     /// 항목별 가장 최근 값, 최근 검사일 순 (리포트 "최근 검사", 진료 탭)

@@ -4,14 +4,18 @@ import SwiftUI
 /// S7 단백질 채우기. 끼니 선택 → 식품 칩(수량) → "대략 n g". 경고·색 변화 없음 (R9).
 struct ProteinSheet: View {
     var onSaved: () -> Void = {}
+    /// D20 사진으로 확인해 기록했을 때 대략 g
+    var onPhotoSaved: (Int) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @State private var model: ProteinLogModel
+    @State private var showsPhoto = false
 
-    init(model: ProteinLogModel, onSaved: @escaping () -> Void = {}) {
+    init(model: ProteinLogModel, onSaved: @escaping () -> Void = {}, onPhotoSaved: @escaping (Int) -> Void = { _ in }) {
         _model = State(initialValue: model)
         self.onSaved = onSaved
+        self.onPhotoSaved = onPhotoSaved
     }
 
     private let columns = [GridItem(.flexible()), GridItem(.flexible())]
@@ -26,6 +30,32 @@ struct ProteinSheet: View {
                         }
                     }
                     .pickerStyle(.segmented)
+
+                    // D20 사진으로 확인: 종류만 짐작하고 양은 다시 묻는다
+                    Button {
+                        showsPhoto = true
+                    } label: {
+                        HStack(spacing: Spacing.s2) {
+                            CoachFace(size: 32)
+                                .accessibilityHidden(true)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("foodPhoto.entry")
+                                    .font(Typography.label)
+                                    .foregroundStyle(Color.ink)
+                                Text("foodPhoto.entry.detail")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color.inkSecondary)
+                            }
+                            Spacer(minLength: 0)
+                            Image(systemName: "camera")
+                                .foregroundStyle(Color.accent)
+                                .accessibilityHidden(true)
+                        }
+                        .padding(Spacing.s3)
+                        .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: Radius.chip, style: .continuous).stroke(Color.frostBorder, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
 
                     if model.isLowAppetite {
                         // R10 식욕 저하일: 작게 자주. 식품 종류만, 양·칼로리 없음
@@ -107,6 +137,12 @@ struct ProteinSheet: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
         .presentationBackground(Color.midnightElevated)
+        .sheet(isPresented: $showsPhoto) {
+            FoodPhotoSheet(meal: model.meal) { grams in
+                dismiss()
+                onPhotoSaved(grams)
+            }
+        }
     }
 
     private var total: some View {

@@ -11,6 +11,8 @@ enum Symptom: String, Codable, CaseIterable, Identifiable {
     case fatigue, headache, dizziness
     case injectionSiteReaction
     case heartburn, bloating
+    /// D20 (2026-10-27 사람 결정). 서서히 생기는 변화라 컨디션 체크 때 함께 남긴다. 기록만, 원인·대처 안내 없음
+    case hairShedding
 
     var id: String { rawValue }
 

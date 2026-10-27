@@ -87,6 +87,16 @@ struct ClinicReport: Equatable {
         let text: String
     }
 
+    /// "최근 검사" (D20). 항목별 가장 최근 숫자와 날짜만. 판단 없음
+    struct LabLine: Equatable, Identifiable {
+        let id: UUID
+        let item: LabItem
+        let customName: String?
+        let valueText: String
+        let unit: String
+        let date: Date
+    }
+
     /// F. 감량의 질 (M2). 기간 안에 단백질·운동·제지방량 기록이 하나도 없으면 nil이라 섹션을 그리지 않는다.
     /// "충분", "부족" 같은 평가어 없이 사실만
     struct QualitySection: Equatable {
@@ -119,6 +129,8 @@ struct ClinicReport: Equatable {
     let appVersion: String
     /// G 위 "진료 때 물어볼 것" (D6). 비어 있으면 그리지 않는다
     var questions: [QuestionLine] = []
+    /// G 위 "최근 검사" (D20). 비어 있으면 그리지 않는다
+    var labs: [LabLine] = []
 }
 
 /// R12 리포트 기간 선택지
@@ -161,6 +173,8 @@ enum ReportBuilder {
     static let noteLength = 60
     /// G 진료 때 물어볼 것 최대 줄 수 (D6). 물어볼 것과 메모를 합쳐 `maxQuestionAndNoteLines`줄까지라 질문이 많으면 메모가 줄어든다
     static let maxQuestions = 5
+    /// 최근 검사 항목 수 (두 칸 세 줄)
+    static let maxLabs = 6
     static let maxQuestionAndNoteLines = 8
     /// 예정일과 실제일 차이 표시 기준 (일)
     static let offsetThresholdDays = 2
@@ -229,6 +243,7 @@ enum ReportBuilder {
         proteinTarget: Int? = nil,
         heightCm: Double? = nil,
         questions: [ClinicQuestionSnapshot] = [],
+        labs: [LabResultSnapshot] = [],
         now: Date,
         calendar: Calendar,
         appVersion: String
@@ -364,8 +379,23 @@ enum ReportBuilder {
             ),
             generatedAt: now,
             appVersion: appVersion,
-            questions: questionRows
+            questions: questionRows,
+            labs: labLines(labs, now: now)
         )
+    }
+
+    /// 항목별 가장 최근 값을 최근 검사일 순으로 6개까지. 기간과 무관하다 (진료 때 함께 보는 숫자)
+    static func labLines(_ labs: [LabResultSnapshot], now: Date) -> [ClinicReport.LabLine] {
+        LabRules.latestByItem(labs.filter { $0.measuredAt <= now }, limit: maxLabs).map {
+            ClinicReport.LabLine(
+                id: $0.id,
+                item: $0.item,
+                customName: $0.customName,
+                valueText: $0.value.formatted(.number.precision(.fractionLength(0...2)).grouping(.never)),
+                unit: $0.unit,
+                date: $0.measuredAt
+            )
+        }
     }
 
     /// 아직 묻지 않은 것을 적은 순으로 5개까지, 60자에서 자른다 (R15). 기간과 무관하다 (다음 진료를 위한 것)

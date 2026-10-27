@@ -531,7 +531,13 @@ struct TodayView: View {
                     isLowAppetite: model.daily.isLowAppetite,
                     preselected: food
                 )
-            ) { recorded(.protein) }
+            , onSaved: { recorded(.protein) }, onPhotoSaved: { grams in
+                showsToast = true
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(1.6))
+                    coach.react(with: .proteinEstimate(grams))
+                }
+            })
         case .strength:
             StrengthSheet(isLowCondition: makeModel(now: .now).daily.isLowCondition) { recorded(.exercise) }
         case .backfill:

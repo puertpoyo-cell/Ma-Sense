@@ -30,6 +30,9 @@ enum ScreenshotRoute: String, CaseIterable {
     case infoList = "info"
     case infoProtein = "info.protein"
     case infoClinicPrep = "info.clinicPrep"
+    /// D20: 진료 탭, 진료 기록 추가 시트
+    case clinic
+    case clinicVisit = "sheet.clinicVisit"
     /// D18: 마선생 말 걸기 (인사 + 주제 버튼)
     case coachTalk = "coach.talk"
 

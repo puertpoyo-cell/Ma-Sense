@@ -65,4 +65,15 @@ struct LabRulesTests {
         #expect(LabRules.latestByItem(results, limit: 2).count == 2)
         #expect(LabRules.history(of: "hba1c", in: results).map(\.value) == [6.2, 5.9])
     }
+
+    @Test func boxesOnTheSameRowJoinLeftToRight() {
+        let boxes = [
+            TextBox(text: "5.8", minX: 0.5, midY: 0.301, height: 0.02),
+            TextBox(text: "HbA1c", minX: 0.1, midY: 0.30, height: 0.02),
+            TextBox(text: "공복혈당", minX: 0.1, midY: 0.34, height: 0.02),
+            TextBox(text: "98", minX: 0.5, midY: 0.339, height: 0.02),
+        ]
+        #expect(LabRules.lines(from: boxes) == ["HbA1c 5.8", "공복혈당 98"])
+        #expect(LabRules.candidates(lines: LabRules.lines(from: boxes)).map(\.value) == [5.8, 98])
+    }
 }

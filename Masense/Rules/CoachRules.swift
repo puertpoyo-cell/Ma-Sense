@@ -22,15 +22,17 @@ enum CoachLine: Equatable {
     case greeting
     /// 기록을 마친 직후 (D19). 체중이 늘든 줄든 같은 말투, 평가 없음
     case recorded(CoachRecordKind)
+    /// 사진으로 확인하고 기록한 단백질 대략 g (D20). 많다·적다 평가 없음
+    case proteinEstimate(Int)
     /// 말 걸기 주제의 고정 대답 (D19, `CoachRules.answerCounts`)
     case answer(CoachTopic, Int)
 
     /// 캐릭터 표정 (D19). 말에 맞춰 얼굴만 바꾼다
     var mood: CoachMood {
         switch self {
-        case .recorded: return .happy
+        case .recorded, .proteinEstimate: return .happy
         case .lowCondition, .lowAppetite, .answer(.condition, _): return .gentle
-        case .fact(.lowSupply), .place(.pens), .place(.report), .tip(4), .answer(.clinic, _): return .thinking
+        case .fact(.lowSupply), .place(.pens), .place(.report), .place(.clinic), .tip(4), .answer(.clinic, _): return .thinking
         case .tip(0), .tip(3), .tip(7), .answer(.water, _): return .wink
         default: return .smile
         }
@@ -48,6 +50,7 @@ enum CoachLine: Equatable {
         case let .place(spot): return "place." + spot.rawValue
         case .greeting: return "greeting"
         case let .recorded(kind): return "recorded." + kind.rawValue
+        case .proteinEstimate: return "proteinEstimate"
         case let .answer(topic, index): return "answer." + topic.rawValue + "." + String(index)
         }
     }
@@ -74,6 +77,8 @@ enum CoachSpot: String, CaseIterable {
     case info
     case history
     case report
+    /// D20 진료 탭
+    case clinic
 }
 
 /// D18 말 걸기에서 고르는 주제 (D19에서 물·수면·체중·컨디션 추가). 화면에는 이 순서로
@@ -201,6 +206,8 @@ enum CoachRules {
             return [.place(.history), .tip(0)]
         case .report:
             return [.place(.report), .tip(4)]
+        case .clinic:
+            return [.place(.clinic), .tip(4)]
         }
     }
 

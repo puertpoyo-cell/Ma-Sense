@@ -5,6 +5,8 @@ import SwiftUI
 /// 개인 맞춤 안내가 아니며 각 카드는 "의사와 상의하세요"로 끝난다 (COMPLIANCE.md 2.2, CLAUDE.md 톤 규칙)
 enum InfoTopic: String, CaseIterable, Identifiable, Hashable {
     case proteinFoods, strengthExamples, clinicPrep
+    /// D20 체중이 빠질 때 머리카락 빠짐 (사실만, 대처법 없음)
+    case hairShedding
 
     var id: String { rawValue }
     // 보간을 쓰면 키가 "info.%@.title"이 되므로 이어 붙인 String으로 만든다
@@ -15,6 +17,7 @@ enum InfoTopic: String, CaseIterable, Identifiable, Hashable {
         case .proteinFoods: return "fork.knife"
         case .strengthExamples: return "figure.strengthtraining.functional"
         case .clinicPrep: return "list.clipboard"
+        case .hairShedding: return "info.circle"
         }
     }
 }
@@ -79,6 +82,7 @@ struct InfoTopicView: View {
                 case .proteinFoods: ProteinFoodsInfo()
                 case .strengthExamples: StrengthExamplesInfo()
                 case .clinicPrep: ClinicPrepInfo(openReport: openReport)
+                case .hairShedding: HairSheddingInfo()
                 }
             }
             .padding(.horizontal, Spacing.screenHorizontal)
@@ -107,9 +111,15 @@ private struct ProteinFoodsInfo: View {
                 BlueprintDivider()
                 ForEach(Array(Self.foods.enumerated()), id: \.element) { index, food in
                     HStack {
-                        Text(LocalizedStringKey(food.titleKey))
-                            .font(Typography.body)
-                            .foregroundStyle(Color.ink)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(LocalizedStringKey(food.titleKey))
+                                .font(Typography.body)
+                                .foregroundStyle(Color.ink)
+                            // D20 1회 기준 분량 (R9 표)
+                            Text(LocalizedStringKey("food.serving." + food.rawValue))
+                                .font(Typography.caption)
+                                .foregroundStyle(Color.inkSecondary)
+                        }
                         Spacer()
                         Text("info.proteinFoods.grams \(food.defaultGrams)")
                             .font(Typography.label)
@@ -125,6 +135,31 @@ private struct ProteinFoodsInfo: View {
             }
         }
         InfoNotes(lines: ["info.proteinFoods.estimate", "protein.guide"], source: "protein.source")
+    }
+}
+
+// MARK: 머리카락 빠짐 (D20)
+
+/// 알려진 사실과 기록 방법만. 원인 단정·대처법·영양제 추천 없음 (COMPLIANCE.md 2.1-7). 출처는 사람 확인 대상
+private struct HairSheddingInfo: View {
+    @State private var showsQuestions = false
+
+    var body: some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
+                ForEach(["info.hairShedding.body1", "info.hairShedding.body2", "info.hairShedding.body3"], id: \.self) { key in
+                    Text(LocalizedStringKey(key))
+                        .font(Typography.body)
+                        .foregroundStyle(Color.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                GhostButton("info.hairShedding.addQuestion") { showsQuestions = true }
+            }
+        }
+        InfoNotes(lines: ["info.hairShedding.record", "info.hairShedding.consult"], source: "info.hairShedding.source")
+            .sheet(isPresented: $showsQuestions) {
+                ClinicQuestionsSheet(draft: L10n.string("info.hairShedding.draft"))
+            }
     }
 }
 

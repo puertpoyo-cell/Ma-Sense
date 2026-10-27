@@ -96,6 +96,22 @@ enum SampleData {
         context.insert(ClinicQuestion(text: "투약 다음 날 피로가 길어질 때 일상에서 조심할 것", createdAt: at(-3, 21)))
         context.insert(ClinicQuestion(text: "근력운동을 주 몇 회까지 해도 되는지", createdAt: at(-1, 8)))
         context.insert(ClinicQuestion(text: "변비가 이어질 때 상담이 필요한 시점", askedAt: at(-30, 11), createdAt: at(-33, 20)))
+
+        // 진료 기록·검사 결과 (D20): 두 번의 진료, 숫자만
+        let earlier = ClinicVisit(visitedAt: at(-60, 10), note: "처방 그대로. 다음 진료 때 피검사", createdAt: at(-60, 12))
+        let recent = ClinicVisit(visitedAt: at(-30, 11), note: "피검사 결과 함께 봄. 다음 진료 4주 뒤", createdAt: at(-30, 13))
+        context.insert(earlier)
+        context.insert(recent)
+        let labs: [(ClinicVisit, Int, LabItem, Double)] = [
+            (earlier, -60, .hba1c, 6.3), (earlier, -60, .ldl, 132), (earlier, -60, .alt, 38),
+            (recent, -30, .hba1c, 5.9), (recent, -30, .ldl, 118), (recent, -30, .alt, 29),
+            (recent, -30, .triglycerides, 142), (recent, -30, .ferritin, 64),
+        ]
+        for (visit, offset, item, value) in labs {
+            let result = LabResult(measuredAt: day(offset), item: item, value: value, unit: item.defaultUnit, createdAt: at(offset, 13))
+            context.insert(result)
+            result.visit = visit
+        }
         try context.save()
     }
 }

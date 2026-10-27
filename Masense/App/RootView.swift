@@ -76,7 +76,7 @@ extension RootView {
 /// 탭 3개 + 설정 push (SCREENS.md 내비게이션 구조)
 struct MainTabView: View {
     private enum Tab: Hashable {
-        case today, history, report
+        case today, history, clinic, report
     }
 
     @State private var selection: Tab = MainTabView.initialTab
@@ -87,6 +87,7 @@ struct MainTabView: View {
         switch ScreenshotRoute.current {
         case .historyDose?, .historyCondition?, .historyWeight?, .historyHabits?: return .history
         case .report?: return .report
+        case .clinic?, .clinicVisit?: return .clinic
         default: break
         }
         #endif
@@ -109,6 +110,14 @@ struct MainTabView: View {
             }
             .tabItem { Label("tab.history", systemImage: "calendar") }
             .tag(Tab.history)
+
+            NavigationStack {
+                // D20 진료 탭: 진료 전 물어볼 것, 진료 직후 기록·검사 결과
+                ClinicView(openReport: { selection = .report })
+                    .coachPopupOverlay(appearSpot: .clinic)
+            }
+            .tabItem { Label("tab.clinic", systemImage: "list.clipboard") }
+            .tag(Tab.clinic)
 
             NavigationStack {
                 ReportView()
