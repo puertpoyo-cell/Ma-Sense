@@ -766,6 +766,142 @@
         }
       }
     },
+    "coach.answer.condition.0": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A condition check opens 24 and 48 hours after a dose. A short note is enough."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 후 24시간, 48시간에 컨디션 칸이 열려요. 짧게 남겨 두면 돼요."
+          }
+        }
+      }
+    },
+    "coach.answer.condition.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "'Symptom flow' in the Report tab shows how each cycle went."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리포트 탭의 '증상 흐름 보기'에서 마디별로 어떻게 지나갔는지 볼 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.answer.condition.2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don't judge worrying symptoms alone. Talk with your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "신경 쓰이는 증상은 혼자 판단하지 말고 의사와 상의하세요."
+          }
+        }
+      }
+    },
+    "coach.answer.sleep.0": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Putting screens down a bit earlier may help you fall asleep."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자기 전에 화면을 조금 일찍 내려놓으면 잠드는 데 도움이 될 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.answer.sleep.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark 'Sleep' in the habit check to see it alongside your condition notes."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "습관 체크의 '수면'에 표시해 두면 컨디션 기록과 함께 볼 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.answer.water.0": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Small sips often tend to be easier than a lot at once."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물은 한 번에 많이보다 자주 조금씩 마시는 편이 수월해요."
+          }
+        }
+      }
+    },
+    "coach.answer.water.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap 'Water' in Today's habit check to follow your day."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘의 마디 습관 체크에서 '수분'을 눌러 두면 하루 흐름을 보기 쉬워요."
+          }
+        }
+      }
+    },
+    "coach.answer.weight.0": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Weight trend you can switch periods. Tap a point to see that day's number."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중 추이에서 기간을 바꿔 가며 흐름을 볼 수 있어요. 점을 누르면 그날 숫자가 나와요."
+          }
+        }
+      }
+    },
     "coach.doseDay %@": {
       "extractionState": "manual",
       "localizations": {
@@ -1429,6 +1565,261 @@
         }
       }
     },
+    "coach.recorded.condition": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Condition logged. It makes a good talking point at the clinic."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "컨디션 기록했어요. 진료 때 이야깃거리가 돼요."
+          }
+        }
+      }
+    },
+    "coach.recorded.condition.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logged. If you feel heavy, it's okay to rest today."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록했어요. 몸이 무거우면 오늘은 쉬어 가도 괜찮아요."
+          }
+        }
+      }
+    },
+    "coach.recorded.condition.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noted. Put anything that worries you in 'Questions'."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "적어 두셨네요. 신경 쓰이는 증상은 '물어볼 것'에 남겨 보세요."
+          }
+        }
+      }
+    },
+    "coach.recorded.dose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dose logged. The date and site are saved."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 기록했어요. 날짜와 부위가 그대로 남았어요."
+          }
+        }
+      }
+    },
+    "coach.recorded.dose.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logged. Shall we leave a short condition note at 24 and 48 hours?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록했어요. 24시간, 48시간 뒤에 컨디션도 짧게 남겨 볼까요."
+          }
+        }
+      }
+    },
+    "coach.recorded.dose.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That's today's log. Your next date is at the top of Today."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 기록 끝이에요. 다음 예정일은 오늘 화면 맨 위에 있어요."
+          }
+        }
+      }
+    },
+    "coach.recorded.exercise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercise logged. Your movement is saved as it is."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "운동 기록했어요. 움직인 만큼 그대로 남았어요."
+          }
+        }
+      }
+    },
+    "coach.recorded.exercise.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logged. Have a glass of water."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록했어요. 물 한 잔 챙겨 마셔요."
+          }
+        }
+      }
+    },
+    "coach.recorded.exercise.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noted. Remember, rest days count as records too."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "적어 두셨네요. 쉬는 날도 기록이 된다는 것, 기억해 둬요."
+          }
+        }
+      }
+    },
+    "coach.recorded.protein": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protein logged. Meal by meal, the day takes shape."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단백질 기록했어요. 한 끼씩 쌓이면 하루가 보여요."
+          }
+        }
+      }
+    },
+    "coach.recorded.protein.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logged. Shall we add one to the next meal too?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록했어요. 다음 끼니에도 하나 곁들여 볼까요."
+          }
+        }
+      }
+    },
+    "coach.recorded.protein.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noted. A rough amount is fine."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "적어 두셨네요. 대략으로 적어도 괜찮아요."
+          }
+        }
+      }
+    },
+    "coach.recorded.weight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight logged."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중 기록했어요."
+          }
+        }
+      }
+    },
+    "coach.recorded.weight.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logged. You can see the trend in Weight trend."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록했어요. 흐름은 체중 추이에서 볼 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.recorded.weight.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noted. Weighing at the same time makes comparison easier."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "적어 두셨어요. 같은 때 재면 비교가 쉬워요."
+          }
+        }
+      }
+    },
     "coach.strengthNotYet": {
       "extractionState": "manual",
       "localizations": {
@@ -1922,6 +2313,23 @@
         }
       }
     },
+    "coach.topic.condition": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About how I feel"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "컨디션은요"
+          }
+        }
+      }
+    },
     "coach.topic.more": {
       "extractionState": "manual",
       "localizations": {
@@ -1973,6 +2381,23 @@
         }
       }
     },
+    "coach.topic.sleep": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About sleep"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잠은요"
+          }
+        }
+      }
+    },
     "coach.topic.today": {
       "extractionState": "manual",
       "localizations": {
@@ -1986,6 +2411,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "오늘 뭐부터 할까요"
+          }
+        }
+      }
+    },
+    "coach.topic.water": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About water"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물은요"
+          }
+        }
+      }
+    },
+    "coach.topic.weight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About weight"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중은요"
           }
         }
       }

@@ -172,6 +172,7 @@ Deep Midnight Navy 배경 위에 상단 하이라이트 보더가 적용된 Fros
 - D18 (2026-10-25 사람 요청 "얼굴 좀 더 귀엽게", "30대 중반 느낌도 됨"): 얼굴을 크게, 옆 가르마의 단정한 머리, 차분한 눈썹과 반짝임 하나 있는 눈, 웃는 눈가 주름, 금테 둥근 사각 안경, 은은한 볼, 편안한 미소, 옆에 작은 별 반짝임
 - 흰 가운·청진기·적십자·주사기·알약은 그리지 않는다 (COMPLIANCE.md 3.1, 위 아이콘 금지)
 - 앱 안에서만 쓴다(마선생 한마디 팝업, SCREENS.md 1-0). 홈 화면 앱 아이콘은 "네이비 유리 M" 그대로
+- 표정 (D19): 웃음(기본) `MasenseCoach`, 기쁨(두 눈 감고 활짝) `MasenseCoachHappy`, 다정(눈썹이 살짝 내려간 미소) `MasenseCoachGentle`, 생각(한쪽 눈썹 올리고 위를 봄) `MasenseCoachThinking`, 윙크 `MasenseCoachWink`. 원본은 `docs/design/coach/*.svg`, 눈썹·눈·입만 바꾼다
 - 원본 `docs/design/masense_coach.svg`(512 기준), 에셋 `MasenseCoach` 96pt @1x·@2x·@3x PNG (원 밖 투명)
 
 ## 7. 참조 구현 (`Masense/DesignSystem/`)

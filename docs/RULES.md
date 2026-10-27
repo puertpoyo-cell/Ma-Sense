@@ -366,6 +366,11 @@ func next(for spot: CoachSpot, context: CoachContext, shownKeys: Set<String>, no
 - 기록 탭: "지난 기록은 진료 때 의사와 함께 보기 좋아요", 리포트 탭: "진료 며칠 전에 리포트를 미리…"
 - `next`는 오늘 이미 띄운 키(`CoachLine.key`)를 빼고 첫 줄. 없으면 nil
 
+### R20-3. 표정과 기록 직후 한마디 (D19)
+
+- `CoachLine.mood`: 기록 직후 → 기쁨, 저컨디션·식욕 저하·컨디션 대답 → 다정, 남은 회차·펜·리포트·물어볼 것·진료 대답 → 생각, 기록 짧아도·물·오르내림·물 대답 → 윙크, 그 밖 → 웃음
+- `CoachLine.recorded(kind)`: 투약·컨디션·체중·단백질·운동. 사실과 다음 과정만 말하고 결과를 평가하지 않는다 (체중 "체중 기록했어요.")
+
 ### R20-2. 말 걸기 대답 (D18)
 
 ```swift
@@ -377,6 +382,7 @@ func reply(to topic: CoachTopic, context: CoachContext, shownKeys: Set<String>, 
 - 운동: 저컨디션 > 이번 주 근력 기록 없음 > 작은 동작 / 수면
 - 진료 준비: 남은 회차 사실 > 물어볼 것 적기 > 리포트 > 기록 보기
 - 한마디 더: 오늘 날짜부터 일반 한마디를 차례로
+- D19 물: 물 한 잔 > 자주 조금씩(건강관리) > 습관 체크 '수분' / 잠: 수면 리듬 > 화면 일찍 내려놓기(건강관리) > 습관 체크 '수면' / 체중: 기록 없음 > 같은 조건 > 오르내림 > 체중 추이 보는 법 / 컨디션: 저컨디션 > 24·48시간 칸 > 증상 흐름 > 의사와 상의
 - 이번 대화에서 한 줄은 건너뛰고, 다 했으면 처음 줄로 (빈 대답 없음). 말투는 화면이 3가지 중 하나를 고른다 (`variantCount`)
 
 ## 테스트 체크리스트
@@ -388,7 +394,7 @@ func reply(to topic: CoachTopic, context: CoachContext, shownKeys: Set<String>, 
 - [x] R6 부위 기록 없음은 바디맵 이력·부위별 날짜에서 제외 (`SiteRulesTests`)
 - [x] R16 구간 경계·끝난 구간만·숫자 집계, R17 우선순위 (`WeeklySummaryRulesTests`, `DailyLineRulesTests`, `TodayModelTests`)
 - [x] R7-1 마지막 기록 구간으로 옮기기·체성분 값 고르기·가장 최근 값 (`WeightRulesTests`, `TodayModelTests`), 체지방률 같은 날 붙이기 (`M2ReportAndHealthTests`)
-- [x] R20 우선순위·정오 기준·주 후반 기준·날짜로 돌리기·건강관리 고지 표시, R20-1 자리별 후보·이미 띄운 줄 건너뛰기, R20-2 상황 우선·다시 물으면 다음 줄·처음으로 돌아가기 (`CoachRulesTests`)
+- [x] R20 우선순위·정오 기준·주 후반 기준·날짜로 돌리기·건강관리 고지 표시, R20-1 자리별 후보·이미 띄운 줄 건너뛰기, R20-2 상황 우선·다시 물으면 다음 줄·처음으로 돌아가기, R20-3 새 주제·표정·고지 (`CoachRulesTests`)
 - [x] R18 4회째 다음 주까지·덜 찬 묶음 제외·다음 묶음이 일찍 시작하면 자르기·오늘 카드 7일 (`PackageSummaryRulesTests`, `TodayModelTests`), R19 지금 구간까지·구간별 최대 강도·정렬 (`SymptomFlowRulesTests`)
 - [x] R15 입력 정리, 아직 묻지 않은 것 순서, 리포트 5개·메모와 합쳐 8줄 (`ClinicQuestionRulesTests`, `ReportBuilderTests`)
 - [x] R4 4주 제한, 재등록 시 중복 없음

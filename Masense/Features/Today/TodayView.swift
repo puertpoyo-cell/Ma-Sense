@@ -514,14 +514,14 @@ struct TodayView: View {
             PrescriptionSheet()
         case .dose:
             if let prescription {
-                DoseLogSheet(prescription: prescription) { showsToast = true }
+                DoseLogSheet(prescription: prescription) { recorded(.dose) }
             }
         case let .condition(doseID, window):
             if let dose = prescription?.doses.first(where: { $0.id == doseID }) {
-                ConditionCheckSheet(dose: dose, window: window) { showsToast = true }
+                ConditionCheckSheet(dose: dose, window: window) { recorded(.condition) }
             }
         case .weight:
-            WeightEntrySheet { showsToast = true }
+            WeightEntrySheet { recorded(.weight) }
         case let .protein(food):
             let model = makeModel(now: .now)
             ProteinSheet(
@@ -531,17 +531,26 @@ struct TodayView: View {
                     isLowAppetite: model.daily.isLowAppetite,
                     preselected: food
                 )
-            ) { showsToast = true }
+            ) { recorded(.protein) }
         case .strength:
-            StrengthSheet(isLowCondition: makeModel(now: .now).daily.isLowCondition) { showsToast = true }
+            StrengthSheet(isLowCondition: makeModel(now: .now).daily.isLowCondition) { recorded(.exercise) }
         case .backfill:
             if let prescription {
-                BackfillSheet(prescription: prescription) { showsToast = true }
+                BackfillSheet(prescription: prescription) { recorded(.dose) }
             }
         case .questions:
             ClinicQuestionsSheet()
         case .weightTrend:
             WeightTrendSheet()
+        }
+    }
+
+    /// 기록을 마치면 "기록했습니다" 알림과 함께, 시트가 내려간 뒤 마선생이 한마디 (D19)
+    private func recorded(_ kind: CoachRecordKind) {
+        showsToast = true
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.6))
+            coach.react(to: kind)
         }
     }
 

@@ -74,6 +74,15 @@ final class CoachPopupCenter {
         }
     }
 
+    /// 기록을 마친 직후 한마디 (D19). 하루 한 번 제한 없이, 떠 있던 팝업을 바꾼다
+    @MainActor
+    func react(to kind: CoachRecordKind) {
+        guard !isPaused else { return }
+        isTalking = false
+        current = Self.message(.recorded(kind), avoiding: current)
+        scheduleDismiss()
+    }
+
     /// 말 걸기: 인사와 주제 버튼. 오늘 화면에서 부르면 그 화면의 사실을 함께 받는다
     @MainActor
     func talk(context: CoachContext? = nil) {
@@ -197,6 +206,11 @@ extension CoachMessage {
             return plain("coach.place." + spot.rawValue)
         case .greeting:
             return plain("coach.greeting")
+        case let .recorded(kind):
+            return plain("coach.recorded." + kind.rawValue)
+        case let .answer(topic, index):
+            // 고정 대답은 말투 하나
+            return Text(LocalizedStringKey("coach.answer." + topic.rawValue + "." + String(index)))
         }
     }
 
@@ -235,7 +249,10 @@ struct CoachPopup: View {
         VStack(alignment: .leading, spacing: Spacing.s2) {
             HStack(alignment: .bottom, spacing: Spacing.s2) {
                 Button(action: onTalk) {
-                    CoachFace(size: 64)
+                    CoachFace(size: 64, mood: message.line.mood)
+                        // 표정이 바뀌면 살짝 튄다
+                        .id(message.line.mood)
+                        .transition(reduceMotion ? .opacity : .scale(scale: 0.85).combined(with: .opacity))
                         .rotationEffect(.degrees(settled || reduceMotion ? 0 : -16), anchor: .bottom)
                         .scaleEffect(settled || reduceMotion ? 1 : 0.6, anchor: .bottom)
                 }
@@ -333,9 +350,20 @@ struct CoachPopup: View {
 /// 마선생 얼굴 원 (팝업·말 걸기 버튼)
 struct CoachFace: View {
     var size: CGFloat
+    var mood: CoachMood = .smile
+
+    private var assetName: String {
+        switch mood {
+        case .smile: return "MasenseCoach"
+        case .happy: return "MasenseCoachHappy"
+        case .gentle: return "MasenseCoachGentle"
+        case .thinking: return "MasenseCoachThinking"
+        case .wink: return "MasenseCoachWink"
+        }
+    }
 
     var body: some View {
-        Image("MasenseCoach")
+        Image(assetName)
             .resizable()
             .scaledToFit()
             .frame(width: size, height: size)
