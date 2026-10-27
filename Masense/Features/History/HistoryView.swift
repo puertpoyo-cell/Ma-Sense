@@ -192,78 +192,126 @@ struct HistoryView: View {
 
     // MARK: 하루 카드
 
-    private func dayCard(day: Date, today: Date) -> some View {
-        let same = { (date: Date) in calendar.isDate(date, inSameDayAs: day) }
-        let dayDoses = allDoses.filter { !$0.isCancelled && same($0.administeredAt) }.sorted { $0.administeredAt < $1.administeredAt }
-        let dayVisits = visits.filter { same($0.visitedAt) }
-        let dayChecks = checks.filter { same($0.checkedAt) }
-        let dayWeights = weights.filter { same($0.measuredAt) }
-        let dayProteins = proteins.filter { same($0.date) }
-        let daySessions = sessions.filter { same($0.startedAt) }
-        let dayHabit = habits.first { same($0.date) }
-        let habitKeys = [
-            dayHabit?.water == true ? "habit.water" : nil,
-            dayHabit?.fiber == true ? "habit.fiber" : nil,
-            dayHabit?.sleep == true ? "habit.sleep" : nil,
-        ].compactMap { $0 }
-        let isEmpty = dayDoses.isEmpty && dayVisits.isEmpty && dayChecks.isEmpty && dayWeights.isEmpty
-            && dayProteins.isEmpty && daySessions.isEmpty && habitKeys.isEmpty
+    /// 고른 날의 기록 묶음
+    private struct DayEntries {
+        var doses: [Dose] = []
+        var visits: [ClinicVisit] = []
+        var checks: [ConditionCheck] = []
+        var weights: [WeightSample] = []
+        var proteins: [ProteinEntry] = []
+        var sessions: [StrengthSession] = []
+        var habitKeys: [String] = []
 
+        var isEmpty: Bool {
+            doses.isEmpty && visits.isEmpty && checks.isEmpty && weights.isEmpty
+                && proteins.isEmpty && sessions.isEmpty && habitKeys.isEmpty
+        }
+    }
+
+    private func entries(on day: Date) -> DayEntries {
+        let same = { (date: Date) in calendar.isDate(date, inSameDayAs: day) }
+        var entries = DayEntries()
+        entries.doses = allDoses.filter { !$0.isCancelled && same($0.administeredAt) }.sorted { $0.administeredAt < $1.administeredAt }
+        entries.visits = visits.filter { same($0.visitedAt) }
+        entries.checks = checks.filter { same($0.checkedAt) }
+        entries.weights = weights.filter { same($0.measuredAt) }
+        entries.proteins = proteins.filter { same($0.date) }
+        entries.sessions = sessions.filter { same($0.startedAt) }
+        if let habit = habits.first(where: { same($0.date) }) {
+            if habit.water { entries.habitKeys.append("habit.water") }
+            if habit.fiber { entries.habitKeys.append("habit.fiber") }
+            if habit.sleep { entries.habitKeys.append("habit.sleep") }
+        }
+        return entries
+    }
+
+    private func dayCard(day: Date, today: Date) -> some View {
+        let entries = entries(on: day)
         return FrostCard(padding: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Text(day.formatted(.dateTime.month().day().weekday(.wide)))
                     .font(Typography.sectionHeader)
                     .foregroundStyle(Color.ink)
                     .padding(Spacing.cellPadding)
-
-                if isEmpty {
+                if entries.isEmpty {
                     BlueprintDivider()
                     Text("history.day.empty")
                         .font(Typography.body)
                         .foregroundStyle(Color.inkSecondary)
                         .padding(Spacing.cellPadding)
                 }
-
-                ForEach(dayDoses) { dose in
-                    dayRow(.dose, title: Text("history.day.dose \(dose.sequence)"), detail: Text(verbatim: dose.administeredAt.formatted(.dateTime.hour().minute()) + " · " + BodySite.localizedName(dose.site)))
-                }
-                ForEach(dayVisits) { visit in
-                    dayRow(.clinic, title: Text("history.day.clinic \(visit.labResults?.count ?? 0)"), detail: visit.note.map { Text(verbatim: $0) })
-                }
-                ForEach(dayChecks) { check in
-                    let symptoms = check.symptoms.filter { $0.severity > 0 }.map(\.symptom.localizedName).joined(separator: ", ")
-                    dayRow(.condition, title: Text(LocalizedStringKey(check.window.titleKey)), detail: symptoms.isEmpty ? Text("history.day.noSymptoms") : Text(verbatim: symptoms))
-                }
-                ForEach(dayWeights) { sample in
-                    let fat = sample.bodyFatPercent.map { " · " + L10n.string("history.day.fat") + " " + $0.formatted(.number.precision(.fractionLength(1))) + "%" } ?? ""
-                    dayRow(.weight, title: Text(verbatim: sample.kilograms.formatted(.number.precision(.fractionLength(1))) + " kg" + fat), detail: nil)
-                }
-                if !dayProteins.isEmpty {
-                    let grams = dayProteins.reduce(0) { $0 + $1.estimatedGrams }
-                    let meals = dayProteins.map { L10n.string($0.meal.titleKey) }.joined(separator: ", ")
-                    dayRow(.protein, title: Text("protein.total.approx \(grams)"), detail: Text(verbatim: meals))
-                }
-                ForEach(daySessions) { session in
-                    dayRow(.exercise, title: Text(LocalizedStringKey(session.kind.titleKey)), detail: Text("history.day.minutes \(session.durationMinutes)"))
-                }
-                if !habitKeys.isEmpty {
-                    dayRow(nil, title: Text(verbatim: habitKeys.map(L10n.string).joined(separator: " · ")), detail: nil)
-                }
-
-                // 지난 날의 투약을 바로 채울 수 있게 (오늘은 오늘 화면에서)
-                if dayDoses.isEmpty, activePrescription != nil, day < today {
-                    BlueprintDivider()
-                    Button {
-                        sheet = .dose(calendar.date(bySettingHour: 20, minute: 0, second: 0, of: day) ?? day)
-                    } label: {
-                        Label("history.day.addDose", systemImage: "plus")
-                            .font(Typography.label)
-                            .foregroundStyle(Color.accent)
-                    }
-                    .padding(Spacing.cellPadding)
-                }
+                doseAndVisitRows(entries)
+                bodyRows(entries)
+                habitRows(entries)
+                addDoseRow(day: day, today: today, hasDose: !entries.doses.isEmpty)
             }
         }
+    }
+
+    @ViewBuilder
+    private func doseAndVisitRows(_ entries: DayEntries) -> some View {
+        ForEach(entries.doses) { dose in
+            let detail = dose.administeredAt.formatted(.dateTime.hour().minute()) + " · " + BodySite.localizedName(dose.site)
+            dayRow(.dose, title: Text("history.day.dose \(dose.sequence)"), detail: Text(verbatim: detail))
+        }
+        ForEach(entries.visits) { visit in
+            let count = visit.labResults?.count ?? 0
+            dayRow(.clinic, title: Text("history.day.clinic \(count)"), detail: visit.note.map { Text(verbatim: $0) })
+        }
+    }
+
+    @ViewBuilder
+    private func bodyRows(_ entries: DayEntries) -> some View {
+        ForEach(entries.checks) { check in
+            dayRow(.condition, title: Text(LocalizedStringKey(check.window.titleKey)), detail: symptomText(check))
+        }
+        ForEach(entries.weights) { sample in
+            dayRow(.weight, title: Text(verbatim: weightText(sample)), detail: nil)
+        }
+    }
+
+    @ViewBuilder
+    private func habitRows(_ entries: DayEntries) -> some View {
+        if !entries.proteins.isEmpty {
+            let grams = entries.proteins.reduce(0) { $0 + $1.estimatedGrams }
+            let meals = entries.proteins.map { L10n.string($0.meal.titleKey) }.joined(separator: ", ")
+            dayRow(.protein, title: Text("protein.total.approx \(grams)"), detail: Text(verbatim: meals))
+        }
+        ForEach(entries.sessions) { session in
+            dayRow(.exercise, title: Text(LocalizedStringKey(session.kind.titleKey)), detail: Text("history.day.minutes \(session.durationMinutes)"))
+        }
+        if !entries.habitKeys.isEmpty {
+            dayRow(nil, title: Text(verbatim: entries.habitKeys.map(L10n.string).joined(separator: " · ")), detail: nil)
+        }
+    }
+
+    /// 지난 날의 투약을 바로 채울 수 있게 (오늘은 오늘 화면에서)
+    @ViewBuilder
+    private func addDoseRow(day: Date, today: Date, hasDose: Bool) -> some View {
+        if !hasDose, activePrescription != nil, day < today {
+            BlueprintDivider()
+            Button {
+                sheet = .dose(calendar.date(bySettingHour: 20, minute: 0, second: 0, of: day) ?? day)
+            } label: {
+                Label("history.day.addDose", systemImage: "plus")
+                    .font(Typography.label)
+                    .foregroundStyle(Color.accent)
+            }
+            .padding(Spacing.cellPadding)
+        }
+    }
+
+    private func symptomText(_ check: ConditionCheck) -> Text {
+        let names = check.symptoms.filter { $0.severity > 0 }.map(\.symptom.localizedName)
+        return names.isEmpty ? Text("history.day.noSymptoms") : Text(verbatim: names.joined(separator: ", "))
+    }
+
+    private func weightText(_ sample: WeightSample) -> String {
+        var text = sample.kilograms.formatted(.number.precision(.fractionLength(1))) + " kg"
+        if let fat = sample.bodyFatPercent {
+            text += " · " + L10n.string("history.day.fat") + " " + fat.formatted(.number.precision(.fractionLength(1))) + "%"
+        }
+        return text
     }
 
     private func dayRow(_ kind: MarkKind?, title: Text, detail: Text?) -> some View {
