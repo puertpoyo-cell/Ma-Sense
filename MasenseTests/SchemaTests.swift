@@ -219,6 +219,33 @@ struct SchemaTests {
         #expect(try context.fetch(FetchDescriptor<WeightSample>()).first?.bodyFatPercent == 22.0)
     }
 
+    /// D20: 새 모델만 더해 V5 저장소의 기록이 그대로 남고 진료 기록을 넣을 수 있다
+    @Test func schemaV5StoreMigratesToV6() throws {
+        let (directory, url) = try diskStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        try autoreleasepool {
+            let schema = Schema(versionedSchema: SchemaV5.self)
+            let v5 = try ModelContainer(
+                for: schema,
+                configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)]
+            )
+            v5.mainContext.insert(ClinicQuestion(text: "질문"))
+            try v5.mainContext.save()
+        }
+
+        let container = try ModelContainer.masense(url: copyStore(url, in: directory))
+        let context = container.mainContext
+        #expect(try context.fetch(FetchDescriptor<ClinicQuestion>()).first?.text == "질문")
+        let visit = ClinicVisit(visitedAt: TestCalendar.date(2026, 10, 24, 10))
+        context.insert(visit)
+        let result = LabResult(measuredAt: TestCalendar.date(2026, 10, 24), item: .ldl, value: 110, unit: "mg/dL")
+        context.insert(result)
+        result.visit = visit
+        try context.save()
+        #expect(try context.fetch(FetchDescriptor<ClinicVisit>()).first?.labResults?.first?.item == .ldl)
+    }
+
     /// 이전 버전 컨테이너가 아직 파일을 붙잡고 있으면 같은 파일의 이전(migration)이 독점 잠금을 기다리다 멈출 수 있다.
     /// 저장한 파일(본 파일·-wal·-shm)을 새 위치로 복사해 그 사본을 연다 (앱에서는 컨테이너가 하나라 해당 없음)
     private func copyStore(_ url: URL, in directory: URL) throws -> URL {

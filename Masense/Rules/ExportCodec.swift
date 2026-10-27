@@ -26,6 +26,9 @@ struct ExportDocument: Equatable {
     var habitChecks: [HabitCheckRecord] = []
     /// D6 (SchemaV3). 키가 없는 파일은 빈 배열로 읽는다
     var clinicQuestions: [ClinicQuestionRecord] = []
+    /// D20 (SchemaV6) 진료 기록·검사 결과. 검사지 사진은 담지 않는다. 키가 없는 파일은 빈 배열로 읽는다
+    var clinicVisits: [ClinicVisitRecord] = []
+    var labResults: [LabResultRecord] = []
 
     struct Device: Codable, Equatable {
         /// "iPhone16,2"
@@ -148,6 +151,26 @@ struct ExportDocument: Equatable {
         var askedAt: Date?
         var createdAt: Date
     }
+
+    struct ClinicVisitRecord: Codable, Equatable {
+        var id: UUID
+        var visitedAt: Date
+        var note: String?
+        var createdAt: Date
+    }
+
+    struct LabResultRecord: Codable, Equatable {
+        var id: UUID
+        /// 진료 기록 없이 넣은 결과면 null
+        var visitId: UUID?
+        var measuredAt: Date
+        var item: String
+        var customName: String?
+        var value: Double
+        var unit: String
+        var note: String?
+        var createdAt: Date
+    }
 }
 
 // MARK: - Codable
@@ -156,7 +179,7 @@ extension ExportDocument: Codable {
     private enum CodingKeys: String, CodingKey {
         case format, formatVersion, appVersion, schemaVersion, exportedAt, device, settings
         case prescriptions, doses, conditionChecks, weightSamples, proteinEntries, strengthSessions, habitChecks
-        case clinicQuestions
+        case clinicQuestions, clinicVisits, labResults
     }
 
     /// 배열은 키가 없어도 빈 배열로 읽는다 (M2·D6 이전 빌드가 만든 파일)
@@ -177,6 +200,8 @@ extension ExportDocument: Codable {
         strengthSessions = try c.decodeIfPresent([StrengthSessionRecord].self, forKey: .strengthSessions) ?? []
         habitChecks = try c.decodeIfPresent([HabitCheckRecord].self, forKey: .habitChecks) ?? []
         clinicQuestions = try c.decodeIfPresent([ClinicQuestionRecord].self, forKey: .clinicQuestions) ?? []
+        clinicVisits = try c.decodeIfPresent([ClinicVisitRecord].self, forKey: .clinicVisits) ?? []
+        labResults = try c.decodeIfPresent([LabResultRecord].self, forKey: .labResults) ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -196,6 +221,8 @@ extension ExportDocument: Codable {
         try c.encode(strengthSessions, forKey: .strengthSessions)
         try c.encode(habitChecks, forKey: .habitChecks)
         try c.encode(clinicQuestions, forKey: .clinicQuestions)
+        try c.encode(clinicVisits, forKey: .clinicVisits)
+        try c.encode(labResults, forKey: .labResults)
     }
 }
 
@@ -310,6 +337,31 @@ extension ExportDocument.ClinicQuestionRecord {
     }
 }
 
+extension ExportDocument.ClinicVisitRecord {
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(visitedAt, forKey: .visitedAt)
+        try c.encodeNullable(note, forKey: .note)
+        try c.encode(createdAt, forKey: .createdAt)
+    }
+}
+
+extension ExportDocument.LabResultRecord {
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encodeNullable(visitId, forKey: .visitId)
+        try c.encode(measuredAt, forKey: .measuredAt)
+        try c.encode(item, forKey: .item)
+        try c.encodeNullable(customName, forKey: .customName)
+        try c.encode(value, forKey: .value)
+        try c.encode(unit, forKey: .unit)
+        try c.encodeNullable(note, forKey: .note)
+        try c.encode(createdAt, forKey: .createdAt)
+    }
+}
+
 private extension KeyedEncodingContainer {
     mutating func encodeNullable<T: Encodable>(_ value: T?, forKey key: Key) throws {
         if let value {
@@ -357,11 +409,13 @@ enum ExportCodec {
         var strengthSessions = Count()
         var habitChecks = Count()
         var clinicQuestions = Count()
+        var clinicVisits = Count()
+        var labResults = Count()
         /// 건강 앱에서 온 체중·운동. 가져오지 않고 건강 앱에서 다시 읽는다 (건너뜀으로 세지 않는다)
         var leftToHealthApp = 0
 
         var totalSkipped: Int {
-            [prescriptions, doses, conditionChecks, weightSamples, proteinEntries, strengthSessions, habitChecks, clinicQuestions]
+            [prescriptions, doses, conditionChecks, weightSamples, proteinEntries, strengthSessions, habitChecks, clinicQuestions, clinicVisits, labResults]
                 .map(\.skipped)
                 .reduce(0, +)
         }
@@ -379,6 +433,8 @@ enum ExportCodec {
         var strengthSessions: [ExportDocument.StrengthSessionRecord] = []
         var habitChecks: [ExportDocument.HabitCheckRecord] = []
         var clinicQuestions: [ExportDocument.ClinicQuestionRecord] = []
+        var clinicVisits: [ExportDocument.ClinicVisitRecord] = []
+        var labResults: [ExportDocument.LabResultRecord] = []
         var result = ImportResult()
     }
 
@@ -541,6 +597,25 @@ enum ExportCodec {
                 plan.result.clinicQuestions.imported += 1
             } else {
                 plan.result.clinicQuestions.skipped += 1
+            }
+        }
+
+        // D20. 검사 결과는 진료 기록이 파일에 없어도 넣는다 (연결만 비운다)
+        for record in document.clinicVisits {
+            if admit(record.id) {
+                plan.clinicVisits.append(record)
+                plan.result.clinicVisits.imported += 1
+            } else {
+                plan.result.clinicVisits.skipped += 1
+            }
+        }
+
+        for record in document.labResults {
+            if admit(record.id) {
+                plan.labResults.append(record)
+                plan.result.labResults.imported += 1
+            } else {
+                plan.result.labResults.skipped += 1
             }
         }
 
