@@ -393,7 +393,62 @@ def render_mark(width: float = 136, scale: float = 1.28) -> Image.Image:
     return image.crop(alpha.getbbox())
 
 
+# 밝은 남색 바탕 옵션 (2026-10-27 사람 요청 "투명함을 살리고 바탕은 좀 밝은 남색")
+NAVY_LIGHT = {
+    "1": ((0x2A, 0x3F, 0x7C), (0x15, 0x22, 0x48)),  # 지금 navy보다 한 단계 밝은 남색
+    "2": ((0x35, 0x4E, 0x92), (0x1B, 0x2B, 0x5C)),  # 중간
+    "3": ((0x41, 0x5C, 0xA8), (0x24, 0x37, 0x72)),  # 파랑에 가까운 밝은 남색
+}
+
+
+def render_glass_navy(option: str = "2", width: float = 136, scale: float = 1.28, fill: float = 0.58, refract: float = 0.07,
+                      rim: float = 0.75) -> Image.Image:
+    """밝은 남색 바탕 위에 **진짜 비치는** 유리 M (D22 옵션). `navy`는 밝은 바탕에서 그린 M을 오려 붙여 불투명해 보였다.
+    여기서는 막대를 남색 바탕 위에 직접 반투명으로 칠해 바탕과 아래 막대가 비친다.
+    - 바탕: 밝은 남색 세로 그라데이션 + 왼쪽 위에서 비치는 옅은 빛
+    - 막대: 아래 그림을 살짝 비켜 비춘(굴절) 위에 제 색을 fill만큼 덮고, 위쪽을 밝게. 겹친 곳은 두 색이 섞여 보인다
+    - 가장자리를 도는 가는 유리 테두리(위가 더 밝다), 위쪽 광택, 막대 아래 제 색 번짐
+    반짝임·빛줄기 같은 그림 요소 없음 (rim 안과 같은 원칙)"""
+    top, bottom = NAVY_LIGHT[option]
+    image = gradient_background(top, bottom)
+    # 왼쪽 위 옅은 빛
+    light = new_mask()
+    ImageDraw.Draw(light).ellipse([px(-260), px(-300), px(760), px(620)], fill=255)
+    image.paste(solid(WHITE), (0, 0), scaled(light.filter(ImageFilter.GaussianBlur(px(160))), 0.10))
+    colors = [SKY, VIOLET, BLUE, INDIGO]
+    bar = width * scale
+    for (start, end), color in zip(m_segments(scale), colors):
+        piece = capsule(start, end, bar)
+
+        def band(outer: float, inner: float) -> Image.Image:
+            return ImageChops.subtract(capsule(start, end, bar - 2 * outer), capsule(start, end, bar - 2 * inner))
+
+        _, y0, _, y1 = piece.getbbox()
+        # 제 색으로 번지는 빛 + 옅은 그림자
+        glow = piece.filter(ImageFilter.GaussianBlur(px(34)))
+        image.paste(solid(color), (0, 0), scaled(glow, 0.22))
+        soft_shadow(image, piece, (0x08, 0x0E, 0x24), 12 * scale, 18 * scale, 0.28)
+        # 굴절: 아래 그림을 조금 흐리게, 오른쪽 아래로 비켜
+        backdrop = ImageChops.offset(image.filter(ImageFilter.GaussianBlur(px(2.5))), px(bar * refract * 0.6), px(bar * refract))
+        # 반투명 색유리: 아래가 비치게 제 색을 덮고(screen 느낌으로 밝게), 위쪽은 흰빛을 더
+        tinted = Image.blend(backdrop, solid(color), fill)
+        lighter = Image.blend(tinted, solid(WHITE), 0.22)
+        image.paste(Image.composite(tinted, lighter, vertical_fade(y0, y1, 0, 255)), (0, 0), piece)
+        # 유리 테두리(위가 밝다) + 위쪽 광택
+        edge_line = band(0.6, 2.8).filter(ImageFilter.GaussianBlur(px(0.6)))
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(edge_line, vertical_fade(y0, y1, round(255 * rim), round(120 * rim))))
+        image.paste(solid(WHITE), (0, 0), ImageChops.multiply(piece, vertical_fade(y0, y0 + (y1 - y0) * 45 // 100, 58, 0)))
+        # 가장자리 두께감 (프레넬)
+        fresnel = band(0, 14).filter(ImageFilter.GaussianBlur(px(5)))
+        image.paste(solid(WHITE), (0, 0), scaled(ImageChops.multiply(fresnel, piece), 0.16))
+    return image
+
+
 VARIANTS = {
+    "glass-navy-1": lambda: render_glass_navy("1"),
+    "glass-navy-2": lambda: render_glass_navy("2"),
+    "glass-navy-3": lambda: render_glass_navy("3"),
+    "glass-navy-2-clear": lambda: render_glass_navy("2", fill=0.46),
     "liquid": render_liquid,
     "petals": render_petals,
     "rings": render_rings,
