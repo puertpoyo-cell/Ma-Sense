@@ -570,8 +570,9 @@ private struct SettingsForm: View {
 
     private var infoSection: some View {
         Section {
+            // D22: 버전과 빌드 번호를 함께 ("0.2 (5)"). 피드백에서 어느 빌드인지 가리키기 쉽게
             LabeledContent("settings.info.version") {
-                Text(verbatim: AppConfig.appVersion)
+                Text(verbatim: AppConfig.appVersionWithBuild)
             }
             if let url = AppConfig.privacyPolicyURL {
                 Link("settings.info.privacy", destination: url)
@@ -584,6 +585,10 @@ private struct SettingsForm: View {
             }
         } header: {
             SectionHeaderText("settings.section.info")
+        } footer: {
+            if AppConfig.isOpenBeta {
+                Text("settings.info.openBeta \(AppConfig.buildNumber)")
+            }
         }
         .frostRow()
     }

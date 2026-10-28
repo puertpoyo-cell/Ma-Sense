@@ -17,8 +17,21 @@ enum AppConfig {
 
     // MARK: 번들 정보
 
-    /// "1.0.0". 설정 > 정보, 리포트 바닥글
+    /// "1.0.0". 리포트 바닥글
     static var appVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
     }
+
+    /// "5" (CURRENT_PROJECT_VERSION). 설정 > 정보, TestFlight 피드백에서 빌드를 가리킬 때
+    static var buildNumber: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+    }
+
+    /// "0.2 (5)". 설정 > 정보 (D22, 2026-10-28 사람 요청 "빌드 번호 텍스트")
+    static var appVersionWithBuild: String {
+        "\(appVersion) (\(buildNumber))"
+    }
+
+    /// 오픈 베타 동안 설정 > 정보에 안내 한 줄 (D22). 정식 출시 때 false로
+    static let isOpenBeta = true
 }

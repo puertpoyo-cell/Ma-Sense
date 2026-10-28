@@ -8,8 +8,7 @@ import UniformTypeIdentifiers
 enum ExportService {
     /// "1.0.0 (12)"
     nonisolated static var appVersionWithBuild: String {
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
-        return "\(AppConfig.appVersion) (\(build))"
+        AppConfig.appVersionWithBuild
     }
 
     /// "1.1.0"

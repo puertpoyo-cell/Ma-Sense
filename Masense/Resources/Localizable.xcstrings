@@ -10064,6 +10064,23 @@
         }
       }
     },
+    "settings.info.openBeta %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open beta build %@. Send anything confusing or inconvenient through TestFlight feedback. Records stay on this device."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오픈 베타 빌드 %@입니다. 불편한 점이나 헷갈리는 문구는 TestFlight 피드백으로 보내 주세요. 기록은 이 기기에만 저장됩니다."
+          }
+        }
+      }
+    },
     "settings.info.openSource": {
       "extractionState": "manual",
       "localizations": {
