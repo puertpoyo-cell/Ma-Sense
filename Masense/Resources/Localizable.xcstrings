@@ -12087,6 +12087,23 @@
         }
       }
     },
+    "today.clinic.todayTitle %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit today · %lld questions"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 진료일입니다 · 물어볼 것 %lld개"
+          }
+        }
+      }
+    },
     "today.countdown.dDay %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -12308,6 +12325,23 @@
         }
       }
     },
+    "today.quick.done.a11y": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorded today"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 기록함"
+          }
+        }
+      }
+    },
     "today.quick.exercise": {
       "extractionState": "manual",
       "localizations": {
@@ -12474,6 +12508,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "지난 주 정리가 나왔습니다"
+          }
+        }
+      }
+    },
+    "today.todo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금 할 일"
           }
         }
       }

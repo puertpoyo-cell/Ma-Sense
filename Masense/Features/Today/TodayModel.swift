@@ -36,6 +36,9 @@ struct TodayModel: Equatable {
         /// R11 저컨디션 날: 운동 기록에서 걷기·스트레칭·쉬기를 위로
         let isLowCondition: Bool
         let habit: HabitCheckSnapshot?
+        /// N-D1 빠른 기록 줄의 "오늘 했음" 점: 운동·체중을 오늘 기록했는지 (많고 적음 아님)
+        var exercisedToday = false
+        var weighedToday = false
     }
 
     /// 1-3 체중 카드 스파크라인 주 수
@@ -147,7 +150,9 @@ struct TodayModel: Equatable {
             week: StrengthRules.strengthWeekSummary(sessions: sessions, weekOf: now, calendar: calendar),
             isLowAppetite: ConditionRules.isLowAppetiteDay(checks: checks, now: now),
             isLowCondition: ConditionRules.isLowConditionDay(checks: checks, now: now),
-            habit: habits.first { calendar.isDate($0.date, inSameDayAs: now) }
+            habit: habits.first { calendar.isDate($0.date, inSameDayAs: now) },
+            exercisedToday: sessions.contains { calendar.isDate($0.startedAt, inSameDayAs: now) },
+            weighedToday: weights.contains { calendar.isDate($0.measuredAt, inSameDayAs: now) }
         )
         coachContext = CoachContext(
             dailyLine: dailyLine,

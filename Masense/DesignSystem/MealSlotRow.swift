@@ -4,11 +4,25 @@ import SwiftUI
 /// 비어 있는 끼니를 "건너뜀"이라 부르지 않는다. 비어 있을 뿐 (R10).
 struct MealSlotRow: View {
     let filled: Set<MealSlot>
+    /// N-D5: 끼니를 누르면 그 끼니 단백질 기록을 연다. nil이면 표시만
+    var onTap: ((MealSlot) -> Void)? = nil
 
     var body: some View {
         HStack(spacing: Spacing.s2) {
             ForEach(MealSlot.allCases) { meal in
                 let isFilled = filled.contains(meal)
+                Button {
+                    onTap?(meal)
+                } label: {
+                    slot(meal, isFilled: isFilled)
+                }
+                .buttonStyle(.plain)
+                .disabled(onTap == nil)
+            }
+        }
+    }
+
+    private func slot(_ meal: MealSlot, isFilled: Bool) -> some View {
                 VStack(spacing: Spacing.s1) {
                     Circle()
                         .strokeBorder(isFilled ? Color.accent : Color.inkTertiary, lineWidth: 1)
@@ -18,14 +32,13 @@ struct MealSlotRow: View {
                         .font(Typography.caption)
                         .foregroundStyle(Color.inkSecondary)
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, minHeight: 36)
+                .contentShape(Rectangle())
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(
                     isFilled
                         ? Text("meal.recorded.a11y \(L10n.string(meal.titleKey))")
                         : Text("meal.empty.a11y \(L10n.string(meal.titleKey))")
                 )
-            }
-        }
     }
 }

@@ -14,6 +14,9 @@ struct GlanceStrip: View {
     /// 최근 순. 첫 번째가 지난 부위
     var recentSites: [SiteUse] = []
     var onOpenWeight: () -> Void = {}
+    /// N-D4: 남은 펜 줄 → 펜 현황, 지난 부위 줄 → 투약 기록(바디맵)
+    var onOpenPens: () -> Void = {}
+    var onOpenSite: () -> Void = {}
 
     @Environment(\.calendar) private var calendar
     /// 오른쪽 세 줄의 높이. 그림은 이 높이의 90%
@@ -52,10 +55,16 @@ struct GlanceStrip: View {
                 .buttonStyle(.plain)
                 BlueprintDivider(crosshair: .none)
                 if let pens {
-                    row(pens.isSingleUse ? "glance.pens" : "glance.doses", value: pensValue(pens), detail: pensDetail)
+                    Button(action: onOpenPens) {
+                        row(pens.isSingleUse ? "glance.pens" : "glance.doses", value: pensValue(pens), detail: pensDetail)
+                    }
+                    .buttonStyle(.plain)
                     BlueprintDivider(crosshair: .none)
                 }
-                row("glance.lastSite", value: siteValue, detail: lastSite.map { Text(verbatim: shortDate($0.date)) })
+                Button(action: onOpenSite) {
+                    row("glance.lastSite", value: siteValue, detail: lastSite.map { Text(verbatim: shortDate($0.date)) })
+                }
+                .buttonStyle(.plain)
             }
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowsHeight = $0 }
         }

@@ -13,7 +13,9 @@ struct TodayView: View {
         case dose
         case condition(doseID: UUID, window: ConditionWindow)
         case weight
-        case protein(preselected: ProteinFood?)
+        case protein(preselected: ProteinFood?, meal: MealSlot? = nil)
+        /// N-D4 펜 현황 (기록 탭 모아 보기와 같은 카드)
+        case pens
         case strength
         case backfill
         case questions
@@ -30,7 +32,8 @@ struct TodayView: View {
             case .dose: return "dose"
             case let .condition(doseID, window): return "condition.\(doseID.uuidString).\(window.rawValue)"
             case .weight: return "weight"
-            case let .protein(food): return "protein.\(food?.rawValue ?? "")"
+            case let .protein(food, meal): return "protein.\(food?.rawValue ?? "").\(meal?.rawValue ?? "")"
+            case .pens: return "pens"
             case .strength: return "strength"
             }
         }
@@ -180,6 +183,12 @@ struct TodayView: View {
     @ViewBuilder
     private func leadingColumn(_ model: TodayModel, now: Date) -> some View {
         VStack(spacing: Spacing.cardGap) {
+            // N-D2 지금 할 일: 열린 컨디션 칸·오늘 진료일을 맨 위 한 카드로. 투약은 카운트다운 카드의 버튼이 맡는다
+            if let prompt = model.conditionPrompt {
+                conditionCard(prompt)
+            } else if let clinic = model.clinicDate, TodayModel.daysBetween(now, clinic, calendar: calendar) == 0 {
+                clinicTodayCard
+            }
             // D18: 마선생 한마디는 카드 자리에 닿을 때 팝업으로
             countdownCard(model)
                 .coachSpot(.todayTop, viewport: viewport, context: model.coachContext)
@@ -187,9 +196,6 @@ struct TodayView: View {
             if let prescription {
                 if model.backfillCount > 0, dismissedBackfill != prescription.id.uuidString {
                     backfillCard(count: model.backfillCount, prescriptionID: prescription.id)
-                }
-                if let prompt = model.conditionPrompt {
-                    conditionCard(prompt)
                 }
                 // D20: 기록 버튼을 한 줄로 위에 모은다
                 quickRecordRow(model, now: now)
@@ -207,15 +213,27 @@ struct TodayView: View {
                     .coachSpot(.daily, viewport: viewport, context: model.coachContext)
                 // D20: 정리·진료는 한 줄 안내로 줄이고 자세한 것은 기록·진료 탭에서
                 summaryRow(model, prescription: prescription)
-                if let clinic = model.clinicDate {
+                // 오늘 진료일은 맨 위 지금 할 일 카드로 (N-D2)
+                if let clinic = model.clinicDate, TodayModel.daysBetween(now, clinic, calendar: calendar) > 0 {
                     clinicRow(clinic, now: now)
                         .coachSpot(.pens, viewport: viewport, context: model.coachContext)
                 }
             }
-            infoRow
-                .coachSpot(.info, viewport: viewport, context: model.coachContext)
+            // N-D3: 알아 두기는 설정 > 정보에도 있으니 처음 2주만 오늘 화면에
+            if showsInfoRow(now: now) {
+                infoRow
+                    .coachSpot(.info, viewport: viewport, context: model.coachContext)
+            }
         }
     }
+
+    /// 온보딩을 마친 날부터 14일 동안만
+    private func showsInfoRow(now: Date) -> Bool {
+        guard let created = settingsList.first?.createdAt else { return true }
+        return TodayModel.daysBetween(created, now, calendar: calendar) < Self.infoRowDays
+    }
+
+    static let infoRowDays = 14
 
     // MARK: 1-1 카운트다운 (CountdownHero, DESIGN_SYSTEM.md 5.2)
 
@@ -241,7 +259,9 @@ struct TodayView: View {
                     totalDoses: model.totalDoses,
                     exhaustionDate: model.exhaustionDate,
                     recentSites: model.recentSites,
-                    onOpenWeight: { sheet = .weightTrend }
+                    onOpenWeight: { sheet = .weightTrend },
+                    onOpenPens: { sheet = .pens },
+                    onOpenSite: { sheet = .dose }
                 )
             )
         )
@@ -268,11 +288,14 @@ struct TodayView: View {
         }
     }
 
-    // MARK: 1-2 컨디션 체크
+    // MARK: 지금 할 일 (N-D2) — 1-2 컨디션 체크, 오늘 진료일
 
     private func conditionCard(_ prompt: TodayModel.ConditionPrompt) -> some View {
         FrostCard {
-            VStack(alignment: .leading, spacing: Spacing.s4) {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
+                Text("today.todo")
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
                 Text(LocalizedStringKey(prompt.window.titleKey))
                     .font(Typography.title)
                     .foregroundStyle(Color.ink)
@@ -283,19 +306,39 @@ struct TodayView: View {
         }
     }
 
-    // MARK: 빠른 기록 (D20)
-
-    /// 단백질·사진·운동·체중을 한 줄로. 수분·식이섬유·수면 체크는 오늘의 마디 카드에만 (N-B2 중복 제거)
-    private func quickRecordRow(_ model: TodayModel, now: Date) -> some View {
-        HStack(spacing: Spacing.s2) {
-            quickButton("today.quick.protein", systemImage: "fork.knife") { sheet = .protein(preselected: nil) }
-            quickButton("today.quick.photo", systemImage: "camera") { sheet = .foodPhoto }
-            quickButton("today.quick.exercise", systemImage: "figure.walk") { sheet = .strength }
-            quickButton("today.quick.weight", systemImage: "chart.xyaxis.line") { sheet = .weight }
+    /// 오늘이 진료일: 물어볼 것과 리포트로 바로
+    private var clinicTodayCard: some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
+                Text("today.todo")
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+                Text("today.clinic.todayTitle \(pendingQuestions.count)")
+                    .font(Typography.title)
+                    .foregroundStyle(Color.ink)
+                AdaptiveStack(spacing: Spacing.s2) {
+                    PrimaryButton("tab.clinic", action: openClinic)
+                    GhostButton("clinic.prepareReport", action: openReport)
+                }
+            }
         }
     }
 
-    private func quickButton(_ key: LocalizedStringKey, systemImage: String, isOn: Bool = false, action: @escaping () -> Void) -> some View {
+    // MARK: 빠른 기록 (D20)
+
+    /// 단백질·사진·운동·체중을 한 줄로. 수분·식이섬유·수면 체크는 오늘의 마디 카드에만 (N-B2 중복 제거).
+    /// N-D1: 오늘 기록한 것은 아래에 작은 점 ("했음"만, 많고 적음 없음)
+    private func quickRecordRow(_ model: TodayModel, now: Date) -> some View {
+        let ateToday = !model.daily.filledMeals.isEmpty
+        return HStack(spacing: Spacing.s2) {
+            quickButton("today.quick.protein", systemImage: "fork.knife", done: ateToday) { sheet = .protein(preselected: nil) }
+            quickButton("today.quick.photo", systemImage: "camera", done: ateToday) { sheet = .foodPhoto }
+            quickButton("today.quick.exercise", systemImage: "figure.walk", done: model.daily.exercisedToday) { sheet = .strength }
+            quickButton("today.quick.weight", systemImage: "chart.xyaxis.line", done: model.daily.weighedToday) { sheet = .weight }
+        }
+    }
+
+    private func quickButton(_ key: LocalizedStringKey, systemImage: String, isOn: Bool = false, done: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: Spacing.s1) {
                 Image(systemName: systemImage)
@@ -307,6 +350,10 @@ struct TodayView: View {
                     .foregroundStyle(Color.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+                Circle()
+                    .fill(done ? Color.accent : Color.clear)
+                    .frame(width: 4, height: 4)
+                    .accessibilityHidden(true)
             }
             .frame(maxWidth: .infinity, minHeight: 64)
             .background(isOn ? Color.accentSoft : Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
@@ -314,6 +361,7 @@ struct TodayView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isOn ? .isSelected : [])
+        .accessibilityValue(done ? Text("today.quick.done.a11y") : Text(verbatim: ""))
     }
 
     // MARK: 정리·진료 한 줄 (D20)
@@ -468,14 +516,15 @@ struct TodayView: View {
             }
         case .weight:
             WeightEntrySheet { recorded(.weight) }
-        case let .protein(food):
+        case let .protein(food, meal):
             let model = makeModel(now: .now)
             ProteinSheet(
                 model: ProteinLogModel(
                     target: settingsList.first?.proteinTargetGrams,
                     recordedToday: recordedProteinToday,
                     isLowAppetite: model.daily.isLowAppetite,
-                    preselected: food
+                    preselected: food,
+                    meal: meal
                 )
             , onSaved: { recorded(.protein) }, onPhotoSaved: { grams in
                 showsToast = true
@@ -494,6 +543,8 @@ struct TodayView: View {
             ClinicQuestionsSheet()
         case .weightTrend:
             WeightTrendSheet()
+        case .pens:
+            PenStatusSheet()
         case .foodPhoto:
             FoodPhotoSheet(meal: ProteinLogModel.defaultMeal(at: .now, calendar: calendar)) { grams in
                 showsToast = true
@@ -552,7 +603,7 @@ struct TodayView: View {
                     BlueprintDivider()
                 }
 
-                MealSlotRow(filled: daily.filledMeals)
+                MealSlotRow(filled: daily.filledMeals) { meal in sheet = .protein(preselected: nil, meal: meal) }
                     .padding(Spacing.cellPadding)
                 BlueprintDivider()
 

@@ -441,6 +441,25 @@ private struct MarkDots: View {
     }
 }
 
+/// 오늘 화면 한눈에 "남은 펜"을 눌렀을 때 (N-D4). 펜 현황 페이지를 시트로
+struct PenStatusSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            PenStatusPage()
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("action.done") { dismiss() }
+                    }
+                }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        .presentationBackground(Color.midnightElevated)
+    }
+}
+
 /// 모아 보기 > 펜 현황 (D20에서 오늘 화면에서 옮김)
 struct PenStatusPage: View {
     @Environment(\.calendar) private var calendar

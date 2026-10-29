@@ -28,6 +28,7 @@ final class ProteinLogModel {
         recordedToday: Int,
         isLowAppetite: Bool,
         preselected: ProteinFood? = nil,
+        meal preselectedMeal: MealSlot? = nil,
         now: Date = Date(),
         calendar: Calendar = .current
     ) {
@@ -36,7 +37,8 @@ final class ProteinLogModel {
         self.isLowAppetite = isLowAppetite
         self.now = now
         self.calendar = calendar
-        meal = Self.defaultMeal(at: now, calendar: calendar)
+        // N-D5: 끼니 점을 눌러 열었으면 그 끼니
+        meal = preselectedMeal ?? Self.defaultMeal(at: now, calendar: calendar)
         if let preselected {
             quantities[preselected] = 1
         }
