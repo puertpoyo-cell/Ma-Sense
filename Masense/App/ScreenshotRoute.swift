@@ -8,6 +8,8 @@ enum ScreenshotRoute: String, CaseIterable {
     case splash
     case today
     case settings
+    /// D20 날짜 중심 기록 탭 (주 달력 + 하루 카드)
+    case history
     case historyDose = "history.dose"
     case historyCondition = "history.condition"
     case historyWeight = "history.weight"

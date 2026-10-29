@@ -285,17 +285,13 @@ struct TodayView: View {
 
     // MARK: 빠른 기록 (D20)
 
-    /// 단백질·사진·운동·체중·물을 한 줄로. 물은 누르면 오늘 습관 체크가 바뀐다
+    /// 단백질·사진·운동·체중을 한 줄로. 수분·식이섬유·수면 체크는 오늘의 마디 카드에만 (N-B2 중복 제거)
     private func quickRecordRow(_ model: TodayModel, now: Date) -> some View {
-        let water = model.daily.habit?.water ?? false
-        return HStack(spacing: Spacing.s2) {
+        HStack(spacing: Spacing.s2) {
             quickButton("today.quick.protein", systemImage: "fork.knife") { sheet = .protein(preselected: nil) }
             quickButton("today.quick.photo", systemImage: "camera") { sheet = .foodPhoto }
             quickButton("today.quick.exercise", systemImage: "figure.walk") { sheet = .strength }
             quickButton("today.quick.weight", systemImage: "chart.xyaxis.line") { sheet = .weight }
-            quickButton("habit.water", systemImage: water ? "drop.fill" : "drop", isOn: water) {
-                toggleHabit(now: now) { $0.water.toggle() }
-            }
         }
     }
 

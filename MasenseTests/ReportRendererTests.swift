@@ -45,7 +45,8 @@ struct ReportRendererTests {
     /// 칸마다 상한(타임라인 12칸, 증상 10개, 물어볼 것·메모 합쳐 8줄 60자)까지 채운 12주 리포트. 기간과 무관하게 이보다 길어지지 않는다
     private func fullReport(
         questionCount: Int = ReportBuilder.maxQuestions,
-        noteCount: Int = ReportBuilder.maxQuestionAndNoteLines - ReportBuilder.maxQuestions
+        noteCount: Int = ReportBuilder.maxQuestionAndNoteLines - ReportBuilder.maxQuestions,
+        labCount: Int = 0
     ) -> ClinicReport {
         let start = TestCalendar.date(2026, 8, 6, 20)
         let week: TimeInterval = 7 * 86_400
@@ -86,7 +87,10 @@ struct ReportRendererTests {
             notes: (0..<noteCount).map { ClinicReport.NoteLine(id: "note.\($0)", date: start.addingTimeInterval(Double($0) * week), text: longNote) },
             generatedAt: start.addingTimeInterval(12 * week),
             appVersion: "1.0",
-            questions: (0..<questionCount).map { _ in ClinicReport.QuestionLine(id: UUID(), text: longNote) }
+            questions: (0..<questionCount).map { _ in ClinicReport.QuestionLine(id: UUID(), text: longNote) },
+            labs: (0..<labCount).map { index in
+                ClinicReport.LabLine(id: UUID(), item: LabItem.allCases[index % 15], customName: nil, valueText: "123.4", unit: "mg/dL", date: start)
+            }
         )
     }
 
@@ -119,6 +123,15 @@ struct ReportRendererTests {
         #expect(notesOnly <= ReportPage.size.height, "자연 높이 \(notesOnly)pt, A4 \(ReportPage.size.height)pt")
         #expect(full > ReportRenderer.naturalHeight(of: sampleReport(), calendar: calendar))
         #expect(full <= ReportPage.size.height, "자연 높이 \(full)pt, A4 \(ReportPage.size.height)pt")
+    }
+
+    /// N-B1: 최근 검사 6개가 들어가면 물어볼 것·메모 줄이 그만큼 줄어 여전히 한 장
+    @Test func fullReportWithLabsFitsOnePage() {
+        let budget = ReportBuilder.maxQuestionAndNoteLines - ReportBuilder.labLineBudget(ReportBuilder.maxLabs)
+        #expect(ReportBuilder.labLineBudget(ReportBuilder.maxLabs) == 4)
+        #expect(ReportBuilder.labLineBudget(0) == 0)
+        let withLabs = ReportRenderer.naturalHeight(of: fullReport(questionCount: budget, noteCount: 0, labCount: ReportBuilder.maxLabs), calendar: calendar)
+        #expect(withLabs <= ReportPage.size.height, "자연 높이 \(withLabs)pt, A4 \(ReportPage.size.height)pt")
     }
 
     /// 상한을 넘는 내용(빌더는 만들지 않음)으로 넘침 판단이 실제 높이를 재는지 확인

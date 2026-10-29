@@ -80,7 +80,7 @@ jobs:
             xcrun simctl io "$UDID" screenshot "shots/$1.png" > /dev/null
             echo "captured $1"
           }
-          for route in splash today settings history.dose history.condition history.weight history.habits report \
+          for route in splash today settings history history.dose history.condition history.weight history.habits report \
                        sheet.dose sheet.condition sheet.protein sheet.strength sheet.backfill sheet.questions sheet.weightTrend sheet.import sheet.import.result \
                        summary.packages symptomFlow info info.protein info.clinicPrep sheet.dose.female coach.talk clinic sheet.clinicVisit; do
             shoot "$route" "$route"

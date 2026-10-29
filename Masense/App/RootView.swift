@@ -85,7 +85,7 @@ struct MainTabView: View {
     private static var initialTab: Tab {
         #if DEBUG
         switch ScreenshotRoute.current {
-        case .historyDose?, .historyCondition?, .historyWeight?, .historyHabits?: return .history
+        case .history?, .historyDose?, .historyCondition?, .historyWeight?, .historyHabits?: return .history
         case .report?: return .report
         case .clinic?, .clinicVisit?: return .clinic
         default: break

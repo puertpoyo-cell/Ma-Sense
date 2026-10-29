@@ -176,6 +176,10 @@ enum ReportBuilder {
     /// 최근 검사 항목 수 (두 칸 세 줄)
     static let maxLabs = 6
     static let maxQuestionAndNoteLines = 8
+    /// 최근 검사 칸이 차지하는 줄 (제목 1 + 두 칸 세 줄). 검사가 있으면 물어볼 것·메모 줄을 그만큼 줄인다 (N-B1, 한 장 유지)
+    static func labLineBudget(_ labCount: Int) -> Int {
+        labCount == 0 ? 0 : 1 + (labCount + 1) / 2
+    }
     /// 예정일과 실제일 차이 표시 기준 (일)
     static let offsetThresholdDays = 2
 
@@ -336,7 +340,10 @@ enum ReportBuilder {
             PrescriptionRules.exhaustionEstimate(p: $0.prescription, doses: $0.doses, now: now, calendar: calendar)
         }
 
-        let questionRows = Self.questionLines(questions, now: now)
+        let labRows = labLines(labs, now: now)
+        // 검사 칸이 있으면 물어볼 것·메모를 그만큼 줄여 한 장을 지킨다
+        let textBudget = max(maxQuestionAndNoteLines - labLineBudget(labRows.count), 0)
+        let questionRows = Array(Self.questionLines(questions, now: now).prefix(textBudget))
         return ClinicReport(
             period: period,
             weeks: weeks,
@@ -375,12 +382,12 @@ enum ReportBuilder {
             notes: noteLines(
                 doses: periodDoses,
                 checks: periodChecks.filter { inPeriod($0.checkedAt) },
-                limit: min(maxNotes, maxQuestionAndNoteLines - questionRows.count)
+                limit: min(maxNotes, textBudget - questionRows.count)
             ),
             generatedAt: now,
             appVersion: appVersion,
             questions: questionRows,
-            labs: labLines(labs, now: now)
+            labs: labRows
         )
     }
 
