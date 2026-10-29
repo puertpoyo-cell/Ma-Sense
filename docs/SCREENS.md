@@ -232,6 +232,7 @@ D20 (2026-10-27 사람 결정): 네 갈래로 나뉘어 "그날 무슨 일이 �
 
 ## S6. 설정 (SettingsView)
 
+- N-I (2026-10-29): 데이터 섹션에 "검사지 사진 내보내기 (n장)"(사진이 있을 때, JPEG 파일을 공유 시트로. JSON에는 사진이 없다), "마지막 내보내기: 날짜", 기록이 있는데 30일 넘게 내보내지 않았으면(또는 한 번도) 안내 한 줄 (`ExportService.backupNoticeNeeded`). iCloud 동기화는 `AppConfig.iCloudSyncEnabled`(기본 꺼짐, TESTFLIGHT.md 7)
 - N-G3 (2026-10-29): "마선생" 섹션 — 한마디 팝업 자주/가끔/끄기 (`coach.frequency`)
 - D22 (2026-10-28 사람 요청 "빌드 번호 및 오픈 베타 시 텍스트"): 정보 섹션의 버전은 "0.2 (5)"처럼 빌드 번호를 함께. `AppConfig.isOpenBeta`가 true인 동안 섹션 아래 "오픈 베타 빌드 n입니다. 불편한 점이나 헷갈리는 문구는 TestFlight 피드백으로 보내 주세요. 기록은 이 기기에만 저장됩니다." 정식 출시 때 false로
 

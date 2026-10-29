@@ -10336,6 +10336,23 @@
         }
       }
     },
+    "settings.data.backupNotice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Records live only on this device. Exporting about once a month keeps them safe if you change or lose the phone."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록은 이 기기에만 있습니다. 기기를 바꾸거나 잃을 때를 대비해 한 달에 한 번쯤 내보내기를 해 두면 안전합니다."
+          }
+        }
+      }
+    },
     "settings.data.deleteAll": {
       "extractionState": "manual",
       "localizations": {
@@ -10472,6 +10489,23 @@
         }
       }
     },
+    "settings.data.exportPhotos %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export lab sheet photos (%lld)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "검사지 사진 내보내기 (%lld장)"
+          }
+        }
+      }
+    },
     "settings.data.import": {
       "extractionState": "manual",
       "localizations": {
@@ -10489,6 +10523,23 @@
         }
       }
     },
+    "settings.data.lastExport %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last export: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마지막 내보내기: %@"
+          }
+        }
+      }
+    },
     "settings.data.share": {
       "extractionState": "manual",
       "localizations": {
@@ -10502,6 +10553,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "내보내기 파일 공유"
+          }
+        }
+      }
+    },
+    "settings.data.sharePhotos %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share %lld lab sheet photos"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "검사지 사진 %lld장 공유"
           }
         }
       }

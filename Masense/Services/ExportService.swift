@@ -69,6 +69,39 @@ enum ExportService {
         return url
     }
 
+    /// N-I2: 검사지 사진을 JPEG 파일로 임시 폴더에 쓴다 (내보내기 JSON에는 사진이 없다). 공유 시트에 넘길 URL 목록.
+    /// 파일명 `Masense_ClinicPhoto_2026-10-24_1.jpg` (진료일, 그날 몇 번째)
+    static func writeClinicPhotoFiles(context: ModelContext, calendar: Calendar = .current) throws -> [URL] {
+        let photos = try context.fetch(FetchDescriptor<ClinicPhoto>(sortBy: [SortDescriptor(\.createdAt)]))
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("Masense_ClinicPhotos", isDirectory: true)
+        try? FileManager.default.removeItem(at: directory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        var counts: [String: Int] = [:]
+        var urls: [URL] = []
+        for photo in photos {
+            guard let data = photo.imageData else { continue }
+            let date = photo.visit?.visitedAt ?? photo.createdAt
+            let day = calendar.dateComponents([.year, .month, .day], from: date)
+            let stamp = String(format: "%04d-%02d-%02d", day.year ?? 0, day.month ?? 0, day.day ?? 0)
+            counts[stamp, default: 0] += 1
+            let url = directory.appendingPathComponent("Masense_ClinicPhoto_\(stamp)_\(counts[stamp] ?? 1).jpg")
+            try data.write(to: url, options: [.atomic, .completeFileProtection])
+            urls.append(url)
+        }
+        return urls
+    }
+
+    /// N-I3: 마지막 내보내기 시각 (UserDefaults). 30일이 지나면 설정에 한 줄 안내
+    static let lastExportKey = "export.lastDate"
+    static let backupNoticeDays = 30
+
+    static func backupNoticeNeeded(lastExport: Date?, hasRecords: Bool, now: Date, calendar: Calendar) -> Bool {
+        guard hasRecords else { return false }
+        guard let lastExport else { return true }
+        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: lastExport), to: calendar.startOfDay(for: now)).day ?? 0
+        return days >= backupNoticeDays
+    }
+
     // MARK: 가져오기
 
     /// 파일 선택기가 준 URL을 읽고 형식·버전을 확인한다 (규칙 1~3). 저장은 사용자가 방식을 고른 뒤 `apply`

@@ -3,6 +3,7 @@ import SwiftData
 
 extension ModelContainer {
     /// 온디바이스 전용 컨테이너. 동기화는 꺼 둔다(`cloudKitDatabase: .none`). 스키마는 CloudKit 호환 규칙을 지킨다 (DATA_MODEL.md 원칙).
+    /// N-I1: `AppConfig.iCloudSyncEnabled`가 true면 앱 저장소만 개인 iCloud(`.automatic`)로. 테스트·미리보기·지정 URL은 늘 `.none`
     /// 앱의 저장소는 App Group 컨테이너에 둔다 (`StoreLocation`). 테스트·미리보기는 in-memory라 App Group을 쓰지 않는다
     /// - Parameter url: 테스트에서 디스크 저장소 위치를 지정할 때만 쓴다
     static func masense(inMemory: Bool = false, url: URL? = nil) throws -> ModelContainer {
@@ -19,7 +20,12 @@ extension ModelContainer {
                 cloudKitDatabase: .none
             )
         } else {
-            configuration = ModelConfiguration("Masense", schema: schema, url: StoreLocation.resolvedURL(), cloudKitDatabase: .none)
+            configuration = ModelConfiguration(
+                "Masense",
+                schema: schema,
+                url: StoreLocation.resolvedURL(),
+                cloudKitDatabase: AppConfig.iCloudSyncEnabled ? .automatic : .none
+            )
         }
         do {
             return try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [configuration])

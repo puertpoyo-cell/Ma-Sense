@@ -63,6 +63,12 @@ private struct SettingsForm: View {
     @State private var product: StoreProductInfo?
     @State private var storeNotice: LocalizedStringKey?
     @State private var exportURL: URL?
+    /// N-I2 검사지 사진 파일들
+    @State private var photoURLs: [URL]?
+    /// N-I3 마지막 내보내기
+    @AppStorage(ExportService.lastExportKey) private var lastExportInterval: Double = 0
+    @Query private var clinicPhotos: [ClinicPhoto]
+    @Query private var allDoses: [Dose]
     @State private var confirmsDelete = false
     @State private var confirmsDeleteAgain = false
     @State private var importsFile = false
@@ -523,9 +529,22 @@ private struct SettingsForm: View {
                 ShareLink(item: exportURL) {
                     Label("settings.data.share", systemImage: "square.and.arrow.up")
                 }
+                .simultaneousGesture(TapGesture().onEnded { lastExportInterval = Date().timeIntervalSinceReferenceDate })
             } else {
                 Button("settings.data.export") {
                     exportURL = try? ExportService.writeExportFile(context: context)
+                }
+            }
+            // N-I2: 검사지 사진은 JSON에 없으므로 따로 (사진 있을 때만)
+            if !clinicPhotos.isEmpty {
+                if let photoURLs, !photoURLs.isEmpty {
+                    ShareLink(items: photoURLs) {
+                        Label("settings.data.sharePhotos \(photoURLs.count)", systemImage: "square.and.arrow.up")
+                    }
+                } else {
+                    Button("settings.data.exportPhotos \(clinicPhotos.count)") {
+                        photoURLs = try? ExportService.writeClinicPhotoFiles(context: context, calendar: calendar)
+                    }
                 }
             }
             Button("settings.data.import") { importsFile = true }
@@ -538,6 +557,18 @@ private struct SettingsForm: View {
             VStack(alignment: .leading, spacing: Spacing.s2) {
                 Text("settings.data.export.notice")
                 Text("data.local")
+                // N-I3: 마지막 내보내기와 30일 안내 (서버·iCloud가 없어 내보내기가 유일한 백업)
+                if lastExportInterval > 0 {
+                    Text("settings.data.lastExport \(Date(timeIntervalSinceReferenceDate: lastExportInterval).formatted(.dateTime.year().month(.defaultDigits).day()))")
+                }
+                if ExportService.backupNoticeNeeded(
+                    lastExport: lastExportInterval > 0 ? Date(timeIntervalSinceReferenceDate: lastExportInterval) : nil,
+                    hasRecords: !allDoses.isEmpty,
+                    now: .now,
+                    calendar: calendar
+                ) {
+                    Text("settings.data.backupNotice")
+                }
             }
         }
         .frostRow()

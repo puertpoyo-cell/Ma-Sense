@@ -229,4 +229,26 @@ struct ExportServiceTests {
         #expect(try context.fetch(FetchDescriptor<UserSettings>()).isEmpty)
         #expect(try context.fetch(FetchDescriptor<ClinicQuestion>()).isEmpty)
     }
+
+    // N-I2: 검사지 사진을 날짜·순번 파일명으로. N-I3: 30일 안내 규칙
+    @Test func clinicPhotoFilesAndBackupNotice() throws {
+        let visit = ClinicVisit(visitedAt: TestCalendar.date(2026, 10, 24, 10))
+        context.insert(visit)
+        for index in 0..<2 {
+            let photo = ClinicPhoto(imageData: Data([UInt8(index)]), createdAt: TestCalendar.date(2026, 10, 24, 11, index))
+            context.insert(photo)
+            photo.visit = visit
+        }
+        try context.save()
+        let urls = try ExportService.writeClinicPhotoFiles(context: context, calendar: TestCalendar.seoul)
+        defer { urls.forEach { try? FileManager.default.removeItem(at: $0) } }
+        #expect(urls.map(\.lastPathComponent) == ["Masense_ClinicPhoto_2026-10-24_1.jpg", "Masense_ClinicPhoto_2026-10-24_2.jpg"])
+        #expect(try Data(contentsOf: urls[1]) == Data([1]))
+
+        let now = TestCalendar.date(2026, 10, 29, 9)
+        #expect(!ExportService.backupNoticeNeeded(lastExport: nil, hasRecords: false, now: now, calendar: TestCalendar.seoul))
+        #expect(ExportService.backupNoticeNeeded(lastExport: nil, hasRecords: true, now: now, calendar: TestCalendar.seoul))
+        #expect(!ExportService.backupNoticeNeeded(lastExport: TestCalendar.date(2026, 10, 1), hasRecords: true, now: now, calendar: TestCalendar.seoul))
+        #expect(ExportService.backupNoticeNeeded(lastExport: TestCalendar.date(2026, 9, 29), hasRecords: true, now: now, calendar: TestCalendar.seoul))
+    }
 }

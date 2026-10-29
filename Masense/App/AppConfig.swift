@@ -34,4 +34,9 @@ enum AppConfig {
 
     /// 오픈 베타 동안 설정 > 정보에 안내 한 줄 (D22). 정식 출시 때 false로
     static let isOpenBeta = true
+
+    /// N-I1 (v2 준비): 개인 iCloud 동기화. **사람이 Xcode에서 iCloud(CloudKit) Capability와 컨테이너
+    /// `iCloud.com.puertpoyo.masense`, Background Modes(Remote notifications)를 켠 뒤에만** true로 바꾼다 (TESTFLIGHT.md 7).
+    /// Capability 없이 true면 앱이 시작할 때 컨테이너를 못 열어 죽는다. 켤 때 처리방침 2장·3장을 "iCloud에 백업됩니다"로 고친다
+    static let iCloudSyncEnabled = false
 }

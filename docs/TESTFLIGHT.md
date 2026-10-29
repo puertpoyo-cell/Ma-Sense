@@ -62,6 +62,18 @@ main에 앱 코드(`Masense/`, `Shared/`, `MasenseWidgets/`, `Config/`, `project
 - 처음 App Store 심사 제출(스크린샷·설명 입력)은 App Store Connect 웹에서 사람이 한다. 빌드 자체는 자동 업로드된 것을 고르면 된다
 - 클라우드 서명이 만든 인증서는 App Store Connect > 인증서에서 보인다. Mac의 Xcode 수동 Archive도 그대로 된다
 
+## 7. iCloud 동기화 켜기 (N-I1, v2 — 사람이 할 일)
+
+스키마는 처음부터 CloudKit 호환 규칙(DATA_MODEL.md)을 지켰고, 코드는 `AppConfig.iCloudSyncEnabled` 하나로 켠다. 순서대로:
+1. Xcode > Masense 타깃 > Signing & Capabilities > **+ Capability** > **iCloud** → Services에서 **CloudKit** 체크 → Containers **+** → `iCloud.com.puertpoyo.masense`
+2. 같은 화면에서 **+ Capability** > **Background Modes** → **Remote notifications** 체크 (CloudKit이 변경을 밀어 주는 데 필요)
+3. `Config/Masense.entitlements`에 `com.apple.developer.icloud-container-identifiers`·`com.apple.developer.icloud-services`·`aps-environment`가 생겼는지 확인하고 커밋 (Xcode가 자동으로 넣는다)
+4. `AppConfig.iCloudSyncEnabled = true`로 바꾼다 (Claude에게 "iCloud 켜 줘"라고 하면 이 줄과 처리방침 문구를 함께 바꾼다)
+5. 처리방침 2장·3장 "iCloud 동기화도 하지 않습니다"를 "사용자의 개인 iCloud에 백업됩니다"로 고치고 Vercel 재배포 (2-1 절차)
+6. 실기기 두 대에서 같은 Apple ID로 기록이 오가는지 확인. 첫 동기화는 몇 분 걸린다
+- 켜기 전 조건: 저장 속성에 `@Attribute(.unique)` 없음(SchemaTests), 관계 전부 옵셔널 또는 기본값, 삭제 규칙 `.deny` 없음 — 모두 지켜져 있다
+- 켜지 않고 `iCloudSyncEnabled = true`만 두면 앱이 시작할 때 컨테이너를 못 열어 죽는다
+
 ## 3. 베타 테스트 정보 (App Store Connect에 붙여 넣을 문구)
 
 ### 베타 앱 설명
