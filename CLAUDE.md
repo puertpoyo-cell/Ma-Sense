@@ -103,6 +103,7 @@ xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' 
 - 문서와 코드가 함께 바뀌면 같은 커밋에
 - **main에 직접 푸시한다** (2026-10-28 사람 결정 "main에 푸시하자, 롤백이 얼마든지 가능하니까"). 작업 브랜치·PR을 거치지 않는다. 푸시 뒤 main의 CI(테스트·금지선 점검)를 확인하고, 실패하면 바로 고쳐 다시 푸시하거나 `git revert`로 되돌린다. 사람은 Mac에서 `git checkout -- . && git pull origin main`으로 받는다
   - 이전 방식(2026-10-25~27): 작업 브랜치 → CI → PR → merge. 기록으로만 남긴다
+  - CI 결과를 기다리는 건 푸시 뒤 **1분까지**만 (2026-10-29 사람 결정 "1분 이상 회신 안 되면 포기"). 그 안에 안 끝나면 백그라운드 알림에 맡기고 다음 일을 하거나 사람에게 보고한다. 실패 알림이 오면 그때 고쳐 다시 푸시한다
 - 앱 코드가 바뀌는 PR은 main에 합치기 전에 빌드 번호(`CURRENT_PROJECT_VERSION`, 앱·위젯 두 타깃 Debug·Release 6곳)를 1 올린다 (2026-10-27 사람 결정 "알아서 계속 올려야지"). 같은 버전에서 빌드 번호가 겹치면 TestFlight 업로드가 거절된다. 문서만 바뀌는 PR은 올리지 않는다
 
 ## 사람에게 꼭 묻는 것
