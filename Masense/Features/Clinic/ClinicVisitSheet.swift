@@ -222,6 +222,8 @@ struct ClinicVisitSheet: View {
                     EmptyView()
                 }
                 .labelsHidden()
+                // 항목 이름이 "LDL…테롤"로 줄지 않게 제 폭을 차지한다 (값·단위 칸이 줄어든다)
+                .fixedSize(horizontal: true, vertical: false)
                 .onChange(of: row.wrappedValue.item) { _, item in
                     if row.wrappedValue.unit.isEmpty || LabItem.allCases.contains(where: { $0.defaultUnit == row.wrappedValue.unit }) {
                         row.wrappedValue.unit = item.defaultUnit
@@ -232,11 +234,11 @@ struct ClinicVisitSheet: View {
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                     .font(Typography.body)
-                    .frame(maxWidth: 80)
+                    .frame(minWidth: 48, maxWidth: 80)
                 TextField("clinic.visit.lab.unit", text: row.unit)
                     .font(Typography.caption)
                     .foregroundStyle(Color.inkSecondary)
-                    .frame(maxWidth: 90)
+                    .frame(minWidth: 40, maxWidth: 90)
             }
             if row.wrappedValue.item == .custom {
                 TextField("clinic.visit.lab.customName", text: row.customName)
