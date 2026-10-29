@@ -48,14 +48,23 @@ struct ClinicVisitSheet: View {
     @State private var viewing: PhotoItem?
     @State private var confirmsDelete = false
 
-    init(editing: ClinicVisit? = nil, onSaved: @escaping () -> Void = {}) {
+    /// `template`: 새 기록일 때 지난 진료. 그 검사 항목·단위를 값 없이 미리 채운다 (N-F1). 값이 빈 줄은 저장되지 않는다
+    init(editing: ClinicVisit? = nil, template: ClinicVisit? = nil, onSaved: @escaping () -> Void = {}) {
         self.editing = editing
         self.onSaved = onSaved
         _visitedAt = State(initialValue: editing?.visitedAt ?? .now)
         _note = State(initialValue: editing?.note ?? "")
-        _labs = State(initialValue: (editing?.labResults ?? []).sorted { $0.createdAt < $1.createdAt }.map {
-            LabRow(item: $0.item, customName: $0.customName ?? "", valueText: Self.format($0.value), unit: $0.unit, note: $0.note ?? "")
-        })
+        let rows: [LabRow]
+        if let editing {
+            rows = (editing.labResults ?? []).sorted { $0.createdAt < $1.createdAt }.map {
+                LabRow(item: $0.item, customName: $0.customName ?? "", valueText: Self.format($0.value), unit: $0.unit, note: $0.note ?? "")
+            }
+        } else {
+            rows = (template?.labResults ?? []).sorted { $0.createdAt < $1.createdAt }.map {
+                LabRow(item: $0.item, customName: $0.customName ?? "", valueText: "", unit: $0.unit)
+            }
+        }
+        _labs = State(initialValue: rows)
         _photos = State(initialValue: (editing?.photos ?? []).sorted { $0.createdAt < $1.createdAt }.compactMap { photo in
             photo.imageData.flatMap(UIImage.init(data:)).map { PhotoItem(stored: photo, image: $0) }
         })
@@ -264,8 +273,14 @@ struct ClinicVisitSheet: View {
         readingCount -= 1
         readLines += lines
         var added = 0
-        for candidate in candidates where !labs.contains(where: { $0.item == candidate.item }) {
-            labs.append(LabRow(item: candidate.item, valueText: Self.format(candidate.value), unit: candidate.unit))
+        for candidate in candidates {
+            // 미리 채워 둔 빈 줄(N-F1)이 있으면 거기에 값을 넣고, 값이 있는 줄은 두고, 없으면 새 줄
+            if let index = labs.firstIndex(where: { $0.item == candidate.item && candidate.item != .custom }) {
+                guard labs[index].value == nil else { continue }
+                labs[index].valueText = Self.format(candidate.value)
+            } else {
+                labs.append(LabRow(item: candidate.item, valueText: Self.format(candidate.value), unit: candidate.unit))
+            }
             added += 1
         }
         lastReadCount = added
@@ -331,26 +346,76 @@ struct ClinicVisitSheet: View {
     }
 }
 
-/// 검사지 사진 크게 보기 (핀치로 확대)
+/// 검사지 사진 크게 보기 (N-F2: 두 손가락 확대·이동, 두 번 탭으로 확대/원래대로)
 struct PhotoViewer: View {
     let image: UIImage
     @Environment(\.dismiss) private var dismiss
-    @State private var scale: CGFloat = 1
 
     var body: some View {
         NavigationStack {
-            ScrollView([.horizontal, .vertical]) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: UIScreen.main.bounds.width * scale)
-            }
-            .gesture(MagnifyGesture().onChanged { scale = min(max($0.magnification, 1), 4) })
-            .background(Color.black)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("action.done") { dismiss() }
+            ZoomableImageView(image: image)
+                .ignoresSafeArea()
+                .background(Color.black)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("action.done") { dismiss() }
+                    }
                 }
+        }
+    }
+}
+
+/// UIScrollView 기반 확대 보기. SwiftUI만으로는 확대 뒤 이동이 자연스럽지 않다
+struct ZoomableImageView: UIViewRepresentable {
+    let image: UIImage
+
+    func makeUIView(context: Context) -> UIScrollView {
+        let scroll = UIScrollView()
+        scroll.delegate = context.coordinator
+        scroll.minimumZoomScale = 1
+        scroll.maximumZoomScale = 5
+        scroll.showsHorizontalScrollIndicator = false
+        scroll.showsVerticalScrollIndicator = false
+        scroll.bouncesZoom = true
+        let imageView = UIImageView(image: image)
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.isUserInteractionEnabled = true
+        scroll.addSubview(imageView)
+        NSLayoutConstraint.activate([
+            imageView.leadingAnchor.constraint(equalTo: scroll.contentLayoutGuide.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: scroll.contentLayoutGuide.trailingAnchor),
+            imageView.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor),
+            imageView.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor),
+            imageView.widthAnchor.constraint(equalTo: scroll.frameLayoutGuide.widthAnchor),
+            imageView.heightAnchor.constraint(equalTo: scroll.frameLayoutGuide.heightAnchor),
+        ])
+        let doubleTap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.doubleTapped(_:)))
+        doubleTap.numberOfTapsRequired = 2
+        scroll.addGestureRecognizer(doubleTap)
+        context.coordinator.imageView = imageView
+        return scroll
+    }
+
+    func updateUIView(_ uiView: UIScrollView, context: Context) {
+        context.coordinator.imageView?.image = image
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    final class Coordinator: NSObject, UIScrollViewDelegate {
+        var imageView: UIImageView?
+
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? { imageView }
+
+        @objc func doubleTapped(_ gesture: UITapGestureRecognizer) {
+            guard let scroll = gesture.view as? UIScrollView else { return }
+            if scroll.zoomScale > 1 {
+                scroll.setZoomScale(1, animated: true)
+            } else {
+                let point = gesture.location(in: imageView)
+                let size = CGSize(width: scroll.bounds.width / 2.5, height: scroll.bounds.height / 2.5)
+                scroll.zoom(to: CGRect(x: point.x - size.width / 2, y: point.y - size.height / 2, width: size.width, height: size.height), animated: true)
             }
         }
     }

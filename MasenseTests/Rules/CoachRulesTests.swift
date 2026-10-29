@@ -121,4 +121,18 @@ struct CoachRulesTests {
             _ = CoachRules.reply(to: topic, context: CoachContext(), shownKeys: [], now: now, calendar: calendar)
         }
     }
+
+    // N-F4 진료 기록 권유
+    @Test func clinicFollowUpOnVisitDayOrNextDayWithoutRecord() {
+        let clinic = TestCalendar.date(2026, 10, 22, 10)
+        #expect(CoachRules.clinicNeedsRecord(nextClinicDate: clinic, visitDates: [], now: TestCalendar.date(2026, 10, 22, 18), calendar: calendar))
+        #expect(CoachRules.clinicNeedsRecord(nextClinicDate: clinic, visitDates: [], now: TestCalendar.date(2026, 10, 23, 9), calendar: calendar))
+        #expect(!CoachRules.clinicNeedsRecord(nextClinicDate: clinic, visitDates: [], now: TestCalendar.date(2026, 10, 24, 9), calendar: calendar))
+        #expect(!CoachRules.clinicNeedsRecord(nextClinicDate: clinic, visitDates: [], now: TestCalendar.date(2026, 10, 21, 9), calendar: calendar))
+        #expect(!CoachRules.clinicNeedsRecord(nextClinicDate: clinic, visitDates: [TestCalendar.date(2026, 10, 22, 15)], now: TestCalendar.date(2026, 10, 23, 9), calendar: calendar))
+        #expect(!CoachRules.clinicNeedsRecord(nextClinicDate: nil, visitDates: [], now: clinic, calendar: calendar))
+        let now = TestCalendar.date(2026, 10, 22, 15)
+        #expect(CoachRules.line(dailyLine: nil, isLowCondition: false, isLowAppetite: false, proteinEntriesToday: 0, strengthThisWeek: 0, clinicNeedsRecord: true, now: now, calendar: calendar) == .clinicFollowUp)
+        #expect(CoachLine.clinicFollowUp.mood == .thinking)
+    }
 }

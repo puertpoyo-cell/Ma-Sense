@@ -28,6 +28,9 @@ struct ClinicView: View {
     @Query(sort: \ClinicVisit.visitedAt, order: .reverse) private var visits: [ClinicVisit]
     @Query(sort: \LabResult.measuredAt) private var labResults: [LabResult]
     @Query(filter: #Predicate<ClinicQuestion> { $0.askedAt == nil }, sort: \ClinicQuestion.createdAt) private var pendingQuestions: [ClinicQuestion]
+    @Query private var settingsList: [UserSettings]
+    @Environment(\.modelContext) private var context
+    @Environment(\.services) private var services
     @State private var sheet: Sheet?
     @State private var showsToast = false
 
@@ -54,7 +57,8 @@ struct ClinicView: View {
         }
         .sheet(item: $sheet) { sheet in
             switch sheet {
-            case .newVisit: ClinicVisitSheet { showsToast = true }
+            // N-F1: 지난 진료의 검사 항목·단위를 빈 값으로 미리 채운다
+            case .newVisit: ClinicVisitSheet(template: visits.first) { showsToast = true }
             case let .editVisit(visit): ClinicVisitSheet(editing: visit) { showsToast = true }
             case .questions: ClinicQuestionsSheet()
             case .prescription:
@@ -105,6 +109,35 @@ struct ClinicView: View {
                         .font(Typography.label)
                         .foregroundStyle(Color.accent)
                 }
+                // N-F3: 진료 알림(며칠 전)을 여기서 바로. 설정 > 알림과 같은 값
+                if let settings = settingsList.first, activePrescriptions.first?.nextClinicDate != nil {
+                    BlueprintDivider(crosshair: .none)
+                    reminderStepper(settings)
+                }
+            }
+        }
+    }
+
+    private func reminderStepper(_ settings: UserSettings) -> some View {
+        Stepper(value: Binding(get: { settings.clinicReminderDaysBefore }, set: { newValue in
+            settings.clinicReminderDaysBefore = newValue
+            try? context.save()
+            Task { await services.refreshReminders(context: context) }
+        }), in: 0...7) {
+            HStack {
+                Text("settings.notifications.clinic")
+                    .font(Typography.label)
+                    .foregroundStyle(Color.ink)
+                Spacer()
+                Group {
+                    if settings.clinicReminderDaysBefore == 0 {
+                        Text("settings.sameDay")
+                    } else {
+                        Text("settings.daysBefore \(settings.clinicReminderDaysBefore)").monospacedDigit()
+                    }
+                }
+                .font(Typography.caption)
+                .foregroundStyle(Color.inkSecondary)
             }
         }
     }
@@ -251,6 +284,8 @@ struct LabItemHistoryView: View {
     let itemKey: String
 
     @Query(sort: \LabResult.measuredAt) private var labResults: [LabResult]
+    /// N-F5: 점을 눌러 그날 숫자 보기
+    @State private var selectedDate: Date?
 
     var body: some View {
         let history = LabRules.history(of: itemKey, in: labResults.map(\.snapshot))
@@ -258,14 +293,8 @@ struct LabItemHistoryView: View {
             VStack(alignment: .leading, spacing: Spacing.cardGap) {
                 if history.count >= 2 {
                     FrostCard {
-                        Chart(history, id: \.id) { result in
-                            LineMark(x: .value("date", result.measuredAt), y: .value("value", result.value))
-                                .foregroundStyle(Color.accent)
-                            PointMark(x: .value("date", result.measuredAt), y: .value("value", result.value))
-                                .foregroundStyle(Color.accent)
-                        }
-                        .chartYScale(domain: .automatic(includesZero: false))
-                        .frame(height: 160)
+                        chart(history)
+                            .frame(height: 180)
                     }
                 }
                 FrostCard(padding: 0) {
@@ -297,5 +326,45 @@ struct LabItemHistoryView: View {
         .midnightBackground()
         .navigationTitle(history.first?.displayName ?? "")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func chart(_ history: [LabResultSnapshot]) -> some View {
+        Chart {
+            ForEach(history, id: \.id) { result in
+                LineMark(x: .value("date", result.measuredAt), y: .value("value", result.value))
+                    .foregroundStyle(Color.accent)
+                PointMark(x: .value("date", result.measuredAt), y: .value("value", result.value))
+                    .foregroundStyle(Color.accent)
+            }
+            if let selected = selected(in: history) {
+                RuleMark(x: .value("date", selected.measuredAt))
+                    .foregroundStyle(Color.inkTertiary)
+                    .annotation(position: .top, alignment: .center) {
+                        selectionLabel(selected)
+                    }
+            }
+        }
+        .chartYScale(domain: .automatic(includesZero: false))
+        .chartXSelection(value: $selectedDate)
+    }
+
+    private func selectionLabel(_ selected: LabResultSnapshot) -> some View {
+        VStack(spacing: 2) {
+            Text(verbatim: ClinicVisitSheet.format(selected.value) + " " + selected.unit)
+                .font(Typography.label)
+                .foregroundStyle(Color.ink)
+            Text(selected.measuredAt.formatted(.dateTime.year(.twoDigits).month(.defaultDigits).day()))
+                .font(Typography.caption)
+                .foregroundStyle(Color.inkSecondary)
+        }
+        .padding(.horizontal, Spacing.s2)
+        .padding(.vertical, Spacing.s1)
+        .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
+    }
+
+    /// 누른 자리에 가장 가까운 기록
+    private func selected(in history: [LabResultSnapshot]) -> LabResultSnapshot? {
+        guard let selectedDate else { return nil }
+        return history.min { abs($0.measuredAt.timeIntervalSince(selectedDate)) < abs($1.measuredAt.timeIntervalSince(selectedDate)) }
     }
 }

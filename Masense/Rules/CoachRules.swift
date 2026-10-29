@@ -20,6 +20,8 @@ enum CoachLine: Equatable {
     case place(CoachSpot)
     /// 말 걸기를 눌렀을 때 첫 인사 (D18)
     case greeting
+    /// 진료일 당일·다음 날인데 진료 기록이 없다 (N-F4). "진료 기록을 남겨 둘까요"
+    case clinicFollowUp
     /// 기록을 마친 직후 (D19). 체중이 늘든 줄든 같은 말투, 평가 없음
     case recorded(CoachRecordKind)
     /// 사진으로 확인하고 기록한 단백질 대략 g (D20). 많다·적다 평가 없음
@@ -32,7 +34,7 @@ enum CoachLine: Equatable {
         switch self {
         case .recorded, .proteinEstimate: return .happy
         case .lowCondition, .lowAppetite, .answer(.condition, _): return .gentle
-        case .fact(.lowSupply), .place(.pens), .place(.report), .place(.clinic), .tip(4), .answer(.clinic, _): return .thinking
+        case .fact(.lowSupply), .place(.pens), .place(.report), .place(.clinic), .tip(4), .answer(.clinic, _), .clinicFollowUp: return .thinking
         case .tip(0), .tip(3), .tip(7), .answer(.water, _): return .wink
         default: return .smile
         }
@@ -49,6 +51,7 @@ enum CoachLine: Equatable {
         case let .tip(index): return "tip." + String(index)
         case let .place(spot): return "place." + spot.rawValue
         case .greeting: return "greeting"
+        case .clinicFollowUp: return "clinicFollowUp"
         case let .recorded(kind): return "recorded." + kind.rawValue
         case .proteinEstimate: return "proteinEstimate"
         case let .answer(topic, index): return "answer." + topic.rawValue + "." + String(index)
@@ -119,6 +122,8 @@ struct CoachContext: Equatable {
     var isLowAppetite = false
     var proteinEntriesToday = 0
     var strengthThisWeek = 0
+    /// N-F4: 다음 진료일이 오늘이거나 어제인데 그날 진료 기록이 없다
+    var clinicNeedsRecord = false
 }
 
 enum CoachRules {
@@ -136,19 +141,21 @@ enum CoachRules {
     /// 주 시작(달력 firstWeekday)부터 며칠이 지나야 근력운동을 권하는지
     static let strengthNudgeDaysIntoWeek = 4
 
-    /// 우선순위: 사실 한 줄 > 저컨디션 > 식욕 저하 > 단백질 > 근력 > 일반 한마디(날짜로 돌림)
+    /// 우선순위: 사실 한 줄 > 저컨디션 > 식욕 저하 > 진료 기록 권유(N-F4) > 단백질 > 근력 > 일반 한마디(날짜로 돌림)
     static func line(
         dailyLine: DailyLine?,
         isLowCondition: Bool,
         isLowAppetite: Bool,
         proteinEntriesToday: Int,
         strengthThisWeek: Int,
+        clinicNeedsRecord: Bool = false,
         now: Date,
         calendar: Calendar
     ) -> CoachLine {
         if let dailyLine { return .fact(dailyLine) }
         if isLowCondition { return .lowCondition }
         if isLowAppetite { return .lowAppetite }
+        if clinicNeedsRecord { return .clinicFollowUp }
         if proteinEntriesToday == 0, calendar.component(.hour, from: now) >= proteinNudgeHour {
             return .proteinNotYet
         }
@@ -174,6 +181,7 @@ enum CoachRules {
                 isLowAppetite: c.isLowAppetite,
                 proteinEntriesToday: c.proteinEntriesToday,
                 strengthThisWeek: c.strengthThisWeek,
+                clinicNeedsRecord: c.clinicNeedsRecord,
                 now: now,
                 calendar: calendar
             )]
@@ -207,7 +215,7 @@ enum CoachRules {
         case .report:
             return [.place(.report), .tip(4)]
         case .clinic:
-            return [.place(.clinic), .tip(4)]
+            return (c.clinicNeedsRecord ? [.clinicFollowUp] : []) + [.place(.clinic), .tip(4)]
         }
     }
 
@@ -248,6 +256,7 @@ enum CoachRules {
             candidates = result + answers(.condition)
         case .clinic:
             var result: [CoachLine] = []
+            if c.clinicNeedsRecord { result.append(.clinicFollowUp) }
             if let fact = c.dailyLine, case .lowSupply = fact { result.append(.fact(fact)) }
             candidates = result + [.tip(4), .place(.report), .place(.history)]
         case .more:
@@ -260,5 +269,13 @@ enum CoachRules {
 
     private static func answers(_ topic: CoachTopic) -> [CoachLine] {
         (0..<(answerCounts[topic] ?? 0)).map { .answer(topic, $0) }
+    }
+
+    /// N-F4. 다음 진료일이 오늘 또는 어제이고, 그날짜의 진료 기록이 없으면 true
+    static func clinicNeedsRecord(nextClinicDate: Date?, visitDates: [Date], now: Date, calendar: Calendar) -> Bool {
+        guard let clinic = nextClinicDate else { return false }
+        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: clinic), to: calendar.startOfDay(for: now)).day ?? 0
+        guard (0...1).contains(days) else { return false }
+        return !visitDates.contains { calendar.isDate($0, inSameDayAs: clinic) }
     }
 }

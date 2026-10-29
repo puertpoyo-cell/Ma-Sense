@@ -57,6 +57,7 @@ struct TodayView: View {
     @Query(sort: \StrengthSession.startedAt) private var sessions: [StrengthSession]
     @Query(sort: \HabitCheck.date) private var habits: [HabitCheck]
     @Query(filter: #Predicate<ClinicQuestion> { $0.askedAt == nil }) private var pendingQuestions: [ClinicQuestion]
+    @Query(sort: \ClinicVisit.visitedAt) private var visits: [ClinicVisit]
     @State private var sheet: Sheet?
     #if DEBUG
     @State private var opensSettingsForScreenshot = ScreenshotRoute.current.map { [.settings, .importSheet, .importResult].contains($0) } ?? false
@@ -172,6 +173,7 @@ struct TodayView: View {
             proteinTarget: settingsList.first?.proteinTargetGrams,
             heightCm: settingsList.first?.heightCm,
             allDoses: allPrescriptions.flatMap(\.doses).map(\.snapshot),
+            visitDates: visits.map(\.visitedAt),
             now: now,
             calendar: calendar
         )

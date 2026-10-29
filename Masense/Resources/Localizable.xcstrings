@@ -1446,6 +1446,57 @@
         }
       }
     },
+    "coach.clinicFollowUp": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back from your visit? Noting what you heard in the Clinic tab makes the next one easier."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 다녀오셨죠. 들은 것을 진료 탭에 적어 두면 다음에 이어 가기 쉬워요."
+          }
+        }
+      }
+    },
+    "coach.clinicFollowUp.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shall we save a visit record? If you have a lab sheet, a photo works too."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 기록을 남겨 둘까요. 검사지가 있으면 사진으로 넣어도 돼요."
+          }
+        }
+      }
+    },
+    "coach.clinicFollowUp.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jot one line in the Clinic tab about today's visit before it slips away."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 진료에서 들은 것, 잊기 전에 진료 탭에 한 줄만 적어 둬요."
+          }
+        }
+      }
+    },
     "coach.doseDay %@": {
       "extractionState": "manual",
       "localizations": {

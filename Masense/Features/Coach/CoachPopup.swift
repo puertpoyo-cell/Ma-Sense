@@ -218,6 +218,8 @@ extension CoachMessage {
             return plain("coach.place." + spot.rawValue)
         case .greeting:
             return plain("coach.greeting")
+        case .clinicFollowUp:
+            return plain("coach.clinicFollowUp")
         case let .recorded(kind):
             return plain("coach.recorded." + kind.rawValue)
         case let .answer(topic, index):

@@ -100,6 +100,7 @@ struct TodayModel: Equatable {
         proteinTarget: Int? = nil,
         heightCm: Double? = nil,
         allDoses: [DoseSnapshot]? = nil,
+        visitDates: [Date] = [],
         now: Date,
         calendar: Calendar
     ) {
@@ -159,7 +160,8 @@ struct TodayModel: Equatable {
             isLowCondition: daily.isLowCondition,
             isLowAppetite: daily.isLowAppetite,
             proteinEntriesToday: todayProteins.count,
-            strengthThisWeek: daily.week.strengthCount
+            strengthThisWeek: daily.week.strengthCount,
+            clinicNeedsRecord: CoachRules.clinicNeedsRecord(nextClinicDate: prescription?.nextClinicDate, visitDates: visitDates, now: now, calendar: calendar)
         )
 
         latestWeight = WeightRules.latestSample(weights)
