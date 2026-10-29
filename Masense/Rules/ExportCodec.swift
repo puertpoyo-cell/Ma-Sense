@@ -142,6 +142,8 @@ struct ExportDocument: Equatable {
         var water: Bool
         var fiber: Bool
         var sleep: Bool
+        /// N-E3 (SchemaV7) 그날 메모. 키가 없는 파일은 null로 읽는다
+        var note: String? = nil
         var createdAt: Date
     }
 
@@ -322,6 +324,19 @@ extension ExportDocument.StrengthSessionRecord {
         try c.encode(intensity, forKey: .intensity)
         try c.encode(source, forKey: .source)
         try c.encodeNullable(healthKitUUID, forKey: .healthKitUUID)
+        try c.encodeNullable(note, forKey: .note)
+        try c.encode(createdAt, forKey: .createdAt)
+    }
+}
+
+extension ExportDocument.HabitCheckRecord {
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(date, forKey: .date)
+        try c.encode(water, forKey: .water)
+        try c.encode(fiber, forKey: .fiber)
+        try c.encode(sleep, forKey: .sleep)
         try c.encodeNullable(note, forKey: .note)
         try c.encode(createdAt, forKey: .createdAt)
     }

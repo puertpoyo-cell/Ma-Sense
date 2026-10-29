@@ -5003,6 +5003,23 @@
         }
       }
     },
+    "history.day.delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지우기"
+          }
+        }
+      }
+    },
     "history.day.dose %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -5016,6 +5033,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld회차"
+          }
+        }
+      }
+    },
+    "history.day.editSite": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit site"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "부위 고치기"
           }
         }
       }
@@ -5050,6 +5084,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "체지방률"
+          }
+        }
+      }
+    },
+    "history.day.fromHealth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Health"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "건강 앱"
+          }
+        }
+      }
+    },
+    "history.day.memo.add": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a note for this day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그날 메모 적기"
+          }
+        }
+      }
+    },
+    "history.day.memo.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes stay on this device and are not included in the report."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메모는 이 기기에만 저장되고 리포트에는 실리지 않습니다."
+          }
+        }
+      }
+    },
+    "history.day.memo.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What happened, how you felt (anything)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그날 있었던 일, 느낌 (자유롭게)"
           }
         }
       }
@@ -5207,6 +5309,23 @@
         }
       }
     },
+    "history.legend.toggle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Legend"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시 설명"
+          }
+        }
+      }
+    },
     "history.mark.clinic": {
       "extractionState": "manual",
       "localizations": {
@@ -5339,6 +5458,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "탭하면 이 날짜로 투약을 기록할 수 있습니다"
+          }
+        }
+      }
+    },
+    "history.month.close": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week view"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "주 보기"
+          }
+        }
+      }
+    },
+    "history.month.next": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next month"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 달"
+          }
+        }
+      }
+    },
+    "history.month.open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Month view"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "월 보기"
+          }
+        }
+      }
+    },
+    "history.month.previous": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous month"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 달"
           }
         }
       }

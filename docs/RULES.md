@@ -411,6 +411,7 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 ## R23. 기록 탭 날짜 표시 (D20)
 
 - 주는 달력 firstWeekday부터 7일. 날마다 투약(취소 제외)·진료·컨디션·체중·단백질·운동 기록이 있는지만. 많고 적음·연속일 없음
+- N-E1 월 보기: `monthGrid`는 그 달을 주 단위 7칸으로, 그 달이 아닌 칸은 nil. 투약일만 표시
 
 ## R24. 펼침 배치 (D21, 2026-10-27 사람 요청)
 

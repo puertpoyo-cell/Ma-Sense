@@ -247,6 +247,7 @@ extension HabitCheck {
             water: water,
             fiber: fiber,
             sleep: sleep,
+            note: note,
             createdAt: createdAt
         )
     }
@@ -258,6 +259,7 @@ extension HabitCheck {
             water: record.water,
             fiber: record.fiber,
             sleep: record.sleep,
+            note: record.note,
             createdAt: record.createdAt
         )
     }

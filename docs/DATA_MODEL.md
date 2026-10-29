@@ -222,6 +222,7 @@ enum ProteinFood: String, Codable, CaseIterable {
 | water | Bool | `false` |  |
 | fiber | Bool | `false` |  |
 | sleep | Bool | `false` |  |
+| note | String? |  | 그날 메모 (N-E3, SchemaV7). 자유 글, 해석하지 않음, 리포트에 싣지 않음 |
 | createdAt | Date | `.now` |  |
 
 ### ClinicQuestion — 진료 때 물어볼 것 (D6, SchemaV3)
@@ -356,6 +357,7 @@ enum MasenseMigrationPlan: SchemaMigrationPlan {
 - V3 (D6, 2026-10-23 사람 결정): 관계 없는 `ClinicQuestion` 모델 추가 → 경량 이전. 기존 모델은 바뀌지 않아 고정 사본이 없다
 - V4 (D7, 2026-10-23 사람 결정): `UserSettings` 체중 알림 필드(기본값 있음·옵셔널) 추가 → 경량 이전. V2·V3의 `UserSettings`는 `SchemaV2.UserSettings` 고정 사본으로 바꿨다 (저장 속성은 그때와 같음)
 - V6 (D20, 2026-10-27 사람 결정): `ClinicVisit`·`LabResult`·`ClinicPhoto` 새 모델(서로의 관계만) → 경량 이전. 기존 모델은 바뀌지 않아 고정 사본 없음. 스키마 1.5.0
+- V7 (N-E3, 2026-10-29 사람 승인): `HabitCheck.note` 옵셔널 추가 → 경량 이전. V1~V6는 `SchemaV1.HabitCheck` 고정 사본. 스키마 1.6.0
 - `Symptom.hairShedding` 추가 (D20): 문자열 rawValue라 스키마 변경 없음
 - `SchemaTests`: unique 없음, 열거형 rawValue 디스크 왕복, 모르는 rawValue 기본값, 설정 기본값, V1 저장소 → 지금 스키마 이전, V2 저장소 → V3 이전, V3 저장소 → V4 이전
 

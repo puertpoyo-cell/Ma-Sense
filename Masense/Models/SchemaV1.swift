@@ -8,6 +8,7 @@ import SwiftData
 /// V3(D6)는 `ClinicQuestion` 모델만 더해 기존 모델은 V2와 같다 (고정 사본 없음).
 /// V4(D7)에서 `UserSettings`에 체중 알림 필드가 더해져 V2·V3는 `SchemaV2.UserSettings` 고정 사본을 쓴다.
 /// V5(D11)에서 `WeightSample`에 체지방률이 더해져 V1~V4는 `SchemaV1.WeightSample` 고정 사본을 쓴다.
+/// V7(N-E3)에서 `HabitCheck`에 그날 메모가 더해져 V1~V6는 `SchemaV1.HabitCheck` 고정 사본을 쓴다.
 enum SchemaV1: VersionedSchema {
     static let versionIdentifier = Schema.Version(1, 0, 0)
 
@@ -20,7 +21,7 @@ enum SchemaV1: VersionedSchema {
             SchemaV1.UserSettings.self,
             ProteinEntry.self,
             StrengthSession.self,
-            HabitCheck.self,
+            SchemaV1.HabitCheck.self,
         ]
     }
 
@@ -41,6 +42,19 @@ enum SchemaV1: VersionedSchema {
         var hasPurchasedPro: Bool = false
         var reportTheme: String = "midnight"
         var reportDefaultPeriod: String?
+        var createdAt: Date = Date.now
+
+        init() {}
+    }
+
+    /// 1.0.0~1.5.0의 `HabitCheck` 고정 사본 (그날 메모 없음). V1~V6 저장소를 열고 V7로 옮길 때만 쓴다
+    @Model
+    final class HabitCheck {
+        var id: UUID = UUID()
+        var date: Date = Date.now
+        var water: Bool = false
+        var fiber: Bool = false
+        var sleep: Bool = false
         var createdAt: Date = Date.now
 
         init() {}
@@ -74,7 +88,7 @@ enum SchemaV2: VersionedSchema {
             SchemaV2.UserSettings.self,
             ProteinEntry.self,
             StrengthSession.self,
-            HabitCheck.self,
+            SchemaV1.HabitCheck.self,
         ]
     }
 
@@ -124,7 +138,7 @@ enum SchemaV4: VersionedSchema {
             UserSettings.self,
             ProteinEntry.self,
             StrengthSession.self,
-            HabitCheck.self,
+            SchemaV1.HabitCheck.self,
             ClinicQuestion.self,
         ]
     }
@@ -143,7 +157,7 @@ enum SchemaV5: VersionedSchema {
             UserSettings.self,
             ProteinEntry.self,
             StrengthSession.self,
-            HabitCheck.self,
+            SchemaV1.HabitCheck.self,
             ClinicQuestion.self,
         ]
     }
@@ -159,12 +173,34 @@ enum SchemaV6: VersionedSchema {
     }
 }
 
+/// N-E3 (2026-10-29 사람 승인): `HabitCheck.note` 그날 메모 추가. 옵셔널 필드 추가라 경량 이전
+enum SchemaV7: VersionedSchema {
+    static let versionIdentifier = Schema.Version(1, 6, 0)
+
+    static var models: [any PersistentModel.Type] {
+        [
+            Prescription.self,
+            Dose.self,
+            ConditionCheck.self,
+            WeightSample.self,
+            UserSettings.self,
+            ProteinEntry.self,
+            StrengthSession.self,
+            HabitCheck.self,
+            ClinicQuestion.self,
+            ClinicVisit.self,
+            LabResult.self,
+            ClinicPhoto.self,
+        ]
+    }
+}
+
 /// 지금 앱이 여는 스키마
-typealias CurrentSchema = SchemaV6
+typealias CurrentSchema = SchemaV7
 
 enum MasenseMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self, SchemaV6.self]
+        [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self, SchemaV6.self, SchemaV7.self]
     }
 
     static var stages: [MigrationStage] {
@@ -174,6 +210,7 @@ enum MasenseMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: SchemaV3.self, toVersion: SchemaV4.self),
             .lightweight(fromVersion: SchemaV4.self, toVersion: SchemaV5.self),
             .lightweight(fromVersion: SchemaV5.self, toVersion: SchemaV6.self),
+            .lightweight(fromVersion: SchemaV6.self, toVersion: SchemaV7.self),
         ]
     }
 }

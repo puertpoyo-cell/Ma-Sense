@@ -12,16 +12,23 @@ struct HistoryView: View {
     private enum Sheet: Identifiable {
         case dose(Date)
         case weightTrend
+        /// N-E2 부위 고치기
+        case site(Dose)
+        /// N-E3 그날 메모
+        case memo(Date)
 
         var id: String {
             switch self {
             case let .dose(date): return "dose.\(date.timeIntervalSinceReferenceDate)"
             case .weightTrend: return "weightTrend"
+            case let .site(dose): return "site.\(dose.id.uuidString)"
+            case let .memo(date): return "memo.\(date.timeIntervalSinceReferenceDate)"
             }
         }
     }
 
     @Environment(\.calendar) private var calendar
+    @Environment(\.modelContext) private var context
     @Query(sort: \Prescription.startDate) private var prescriptions: [Prescription]
     @Query(sort: \ConditionCheck.checkedAt) private var checks: [ConditionCheck]
     @Query(sort: \WeightSample.measuredAt) private var weights: [WeightSample]
@@ -34,6 +41,10 @@ struct HistoryView: View {
     @State private var path: [Destination] = HistoryView.initialPath
     @State private var sheet: Sheet?
     @State private var showsToast = false
+    /// N-E1 월 보기
+    @State private var showsMonth = false
+    /// N-E4 범례는 처음에만 펼쳐 두고, 날을 고르면 접는다. (i)로 다시 볼 수 있다
+    @AppStorage("history.legendShown") private var legendShown = true
 
     private var activePrescription: Prescription? { prescriptions.first { $0.isActive } }
     private var allDoses: [Dose] { prescriptions.flatMap(\.doses) }
@@ -83,6 +94,10 @@ struct HistoryView: View {
                     }
                 case .weightTrend:
                     WeightTrendSheet()
+                case let .site(dose):
+                    SiteEditSheet(dose: dose) { showsToast = true }
+                case let .memo(date):
+                    DayMemoSheet(day: date) { showsToast = true }
                 }
             }
             .recordedToast(isPresented: $showsToast)
@@ -98,45 +113,132 @@ struct HistoryView: View {
             VStack(spacing: Spacing.s3) {
                 HStack {
                     Button {
-                        selectedDay = HistoryDayRules.shiftWeek(day, by: -1, calendar: calendar)
+                        selectedDay = showsMonth
+                            ? HistoryDayRules.shiftMonth(day, by: -1, calendar: calendar)
+                            : HistoryDayRules.shiftWeek(day, by: -1, calendar: calendar)
                     } label: {
                         Image(systemName: "chevron.left").frame(minWidth: 36, minHeight: 32)
                     }
-                    .accessibilityLabel(Text("history.week.previous"))
+                    .accessibilityLabel(Text(showsMonth ? "history.month.previous" : "history.week.previous"))
                     Spacer()
-                    if let first = week.first, let last = week.last {
-                        Text(verbatim: first.formatted(.dateTime.month(.defaultDigits).day()) + " – " + last.formatted(.dateTime.month(.defaultDigits).day()))
-                            .font(Typography.label)
-                            .monospacedDigit()
-                            .foregroundStyle(Color.ink)
+                    // N-E1: 기간을 누르면 월 보기로
+                    Button {
+                        withAnimation(.easeOut(duration: 0.2)) { showsMonth.toggle() }
+                    } label: {
+                        HStack(spacing: Spacing.s1) {
+                            if showsMonth {
+                                Text(day.formatted(.dateTime.year().month(.wide)))
+                            } else if let first = week.first, let last = week.last {
+                                Text(verbatim: first.formatted(.dateTime.month(.defaultDigits).day()) + " – " + last.formatted(.dateTime.month(.defaultDigits).day()))
+                            }
+                            Image(systemName: showsMonth ? "chevron.up" : "chevron.down")
+                                .font(.caption2.weight(.semibold))
+                        }
+                        .font(Typography.label)
+                        .monospacedDigit()
+                        .foregroundStyle(Color.ink)
                     }
+                    .accessibilityLabel(Text(showsMonth ? "history.month.close" : "history.month.open"))
                     Spacer()
                     Button {
-                        let next = HistoryDayRules.shiftWeek(day, by: 1, calendar: calendar)
+                        let next = showsMonth
+                            ? HistoryDayRules.shiftMonth(day, by: 1, calendar: calendar)
+                            : HistoryDayRules.shiftWeek(day, by: 1, calendar: calendar)
                         selectedDay = min(next, today)
                     } label: {
                         Image(systemName: "chevron.right").frame(minWidth: 36, minHeight: 32)
                     }
-                    .disabled(isThisWeek)
-                    .accessibilityLabel(Text("history.week.next"))
+                    .disabled(showsMonth ? calendar.isDate(day, equalTo: today, toGranularity: .month) : isThisWeek)
+                    .accessibilityLabel(Text(showsMonth ? "history.month.next" : "history.week.next"))
                 }
                 .foregroundStyle(Color.accent)
 
-                HStack(spacing: 0) {
-                    ForEach(week, id: \.self) { date in
-                        dayButton(date, isSelected: calendar.isDate(date, inSameDayAs: day), isToday: date == today, isFuture: date > today)
+                if showsMonth {
+                    monthGrid(day: day, today: today)
+                } else {
+                    HStack(spacing: 0) {
+                        ForEach(week, id: \.self) { date in
+                            dayButton(date, isSelected: calendar.isDate(date, inSameDayAs: day), isToday: date == today, isFuture: date > today)
+                        }
                     }
                 }
 
-                legend
+                HStack(alignment: .top) {
+                    if legendShown { legend }
+                    Spacer(minLength: 0)
+                    Button {
+                        withAnimation(.easeOut(duration: 0.2)) { legendShown.toggle() }
+                    } label: {
+                        Image(systemName: "info.circle")
+                            .font(.caption)
+                            .foregroundStyle(Color.inkTertiary)
+                            .frame(minWidth: 28, minHeight: 20)
+                    }
+                    .accessibilityLabel(Text("history.legend.toggle"))
+                }
             }
         }
+    }
+
+    /// N-E1 한 달 달력. 투약일만 ● (많고 적음 없음). 날을 누르면 고르고 주 보기로 돌아간다
+    private func monthGrid(day: Date, today: Date) -> some View {
+        let rows = HistoryDayRules.monthGrid(containing: day, calendar: calendar)
+        let doseDays = Set(allDoses.filter { !$0.isCancelled }.map { calendar.startOfDay(for: $0.administeredAt) })
+        return VStack(spacing: Spacing.s1) {
+            HStack(spacing: 0) {
+                ForEach(HistoryDayRules.week(containing: day, calendar: calendar), id: \.self) { date in
+                    Text(date.formatted(.dateTime.weekday(.narrow)))
+                        .font(.caption2)
+                        .foregroundStyle(Color.inkTertiary)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: 0) {
+                    ForEach(Array(row.enumerated()), id: \.offset) { _, date in
+                        if let date {
+                            monthCell(date, isSelected: calendar.isDate(date, inSameDayAs: day), isToday: date == today, isFuture: date > today, hasDose: doseDays.contains(date))
+                        } else {
+                            Color.clear.frame(maxWidth: .infinity, minHeight: 36)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func monthCell(_ date: Date, isSelected: Bool, isToday: Bool, isFuture: Bool, hasDose: Bool) -> some View {
+        Button {
+            selectedDay = date
+            legendShown = false
+            withAnimation(.easeOut(duration: 0.2)) { showsMonth = false }
+        } label: {
+            VStack(spacing: 2) {
+                Text(date.formatted(.dateTime.day()))
+                    .font(Typography.caption.weight(isToday ? .bold : .regular))
+                    .monospacedDigit()
+                    .foregroundStyle(isFuture ? Color.inkTertiary : Color.ink)
+                    .frame(width: 28, height: 28)
+                    .background(isSelected ? Color.accentSoft : Color.clear, in: Circle())
+                    .overlay(Circle().strokeBorder(isToday ? Color.accent : Color.clear, lineWidth: 1))
+                Circle()
+                    .fill(hasDose ? Color.accent : Color.clear)
+                    .frame(width: 4, height: 4)
+            }
+            .frame(maxWidth: .infinity, minHeight: 36)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(isFuture)
+        .accessibilityLabel(Text(date.formatted(.dateTime.month().day().weekday())))
+        .accessibilityValue(hasDose ? Text("history.mark.dose") : Text(verbatim: ""))
     }
 
     private func dayButton(_ date: Date, isSelected: Bool, isToday: Bool, isFuture: Bool) -> some View {
         let marks = isFuture ? DayMarks() : marks(on: date)
         return Button {
             selectedDay = date
+            legendShown = false
         } label: {
             VStack(spacing: Spacing.s1) {
                 Text(date.formatted(.dateTime.weekday(.narrow)))
@@ -243,9 +345,42 @@ struct HistoryView: View {
                 doseAndVisitRows(entries)
                 bodyRows(entries)
                 habitRows(entries)
+                memoRow(day: day)
                 addDoseRow(day: day, today: today, hasDose: !entries.doses.isEmpty)
             }
         }
+    }
+
+    /// N-E3 그날 메모. 있으면 보여 주고, 누르면 고친다
+    @ViewBuilder
+    private func memoRow(day: Date) -> some View {
+        let note = habits.first { calendar.isDate($0.date, inSameDayAs: day) }?.note?.trimmingCharacters(in: .whitespacesAndNewlines)
+        BlueprintDivider()
+        Button {
+            sheet = .memo(day)
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: Spacing.s3) {
+                Image(systemName: "square.and.pencil")
+                    .font(.caption)
+                    .foregroundStyle(Color.accent)
+                    .frame(width: 8)
+                    .accessibilityHidden(true)
+                if let note, !note.isEmpty {
+                    Text(verbatim: note)
+                        .font(Typography.body)
+                        .foregroundStyle(Color.ink)
+                        .multilineTextAlignment(.leading)
+                } else {
+                    Text("history.day.memo.add")
+                        .font(Typography.label)
+                        .foregroundStyle(Color.accent)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(Spacing.cellPadding)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -253,6 +388,11 @@ struct HistoryView: View {
         ForEach(entries.doses) { dose in
             let detail = dose.administeredAt.formatted(.dateTime.hour().minute()) + " · " + BodySite.localizedName(dose.site)
             dayRow(.dose, title: Text("history.day.dose \(dose.sequence)"), detail: Text(verbatim: detail))
+                // N-E2: 길게 눌러 부위 고치기·취소 (취소는 기록을 지우지 않고 표시만, 종류별 보기에서 되돌릴 수 있다)
+                .contextMenu {
+                    Button { sheet = .site(dose) } label: { Label("history.day.editSite", systemImage: "figure.stand") }
+                    Button { cancel(dose) } label: { Label("history.cancelDose", systemImage: "xmark.circle") }
+                }
         }
         ForEach(entries.visits) { visit in
             let count = visit.labResults?.count ?? 0
@@ -264,21 +404,36 @@ struct HistoryView: View {
     private func bodyRows(_ entries: DayEntries) -> some View {
         ForEach(entries.checks) { check in
             dayRow(.condition, title: Text(LocalizedStringKey(check.window.titleKey)), detail: symptomText(check))
+                .contextMenu {
+                    Button { delete(check) } label: { Label("history.day.delete", systemImage: "trash") }
+                }
         }
         ForEach(entries.weights) { sample in
-            dayRow(.weight, title: Text(verbatim: weightText(sample)), detail: nil)
+            dayRow(.weight, title: Text(verbatim: weightText(sample)), detail: sample.source == .healthKit ? Text("history.day.fromHealth") : nil)
+                .contextMenu {
+                    // 건강 앱에서 온 기록은 건강 앱에서 지운다
+                    if sample.source == .manual {
+                        Button { delete(sample) } label: { Label("history.day.delete", systemImage: "trash") }
+                    }
+                }
         }
     }
 
     @ViewBuilder
     private func habitRows(_ entries: DayEntries) -> some View {
-        if !entries.proteins.isEmpty {
-            let grams = entries.proteins.reduce(0) { $0 + $1.estimatedGrams }
-            let meals = entries.proteins.map { L10n.string($0.meal.titleKey) }.joined(separator: ", ")
-            dayRow(.protein, title: Text("protein.total.approx \(grams)"), detail: Text(verbatim: meals))
+        ForEach(entries.proteins) { entry in
+            dayRow(.protein, title: Text("protein.total.approx \(entry.estimatedGrams)"), detail: Text(LocalizedStringKey(entry.meal.titleKey)))
+                .contextMenu {
+                    Button { delete(entry) } label: { Label("history.day.delete", systemImage: "trash") }
+                }
         }
         ForEach(entries.sessions) { session in
             dayRow(.exercise, title: Text(LocalizedStringKey(session.kind.titleKey)), detail: Text("history.day.minutes \(session.durationMinutes)"))
+                .contextMenu {
+                    if session.source == .manual {
+                        Button { delete(session) } label: { Label("history.day.delete", systemImage: "trash") }
+                    }
+                }
         }
         if !entries.habitKeys.isEmpty {
             dayRow(nil, title: Text(verbatim: entries.habitKeys.map(L10n.string).joined(separator: " · ")), detail: nil)
@@ -299,6 +454,18 @@ struct HistoryView: View {
             }
             .padding(Spacing.cellPadding)
         }
+    }
+
+    // MARK: 고치기·지우기 (N-E2). 투약은 지우지 않고 취소 표시만 (리포트 무결성)
+
+    private func cancel(_ dose: Dose) {
+        dose.isCancelled = true
+        try? context.save()
+    }
+
+    private func delete(_ model: any PersistentModel) {
+        context.delete(model)
+        try? context.save()
     }
 
     private func symptomText(_ check: ConditionCheck) -> Text {
@@ -438,6 +605,63 @@ private struct MarkDots: View {
         }
         .frame(width: 19)
         .accessibilityHidden(true)
+    }
+}
+
+/// 그날 메모 (N-E3). `HabitCheck.note`에 둔다. 앱은 해석하지 않는다
+struct DayMemoSheet: View {
+    let day: Date
+    var onSaved: () -> Void = {}
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+    @Environment(\.calendar) private var calendar
+    @Query(sort: \HabitCheck.date) private var habits: [HabitCheck]
+    @State private var text = ""
+    @FocusState private var isEditing: Bool
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("history.day.memo.placeholder", text: $text, axis: .vertical)
+                        .lineLimit(3...8)
+                        .focused($isEditing)
+                } footer: {
+                    Text("history.day.memo.footer")
+                }
+                .frostRow()
+            }
+            .scrollContentBackground(.hidden)
+            .background(Color.midnightElevated)
+            .navigationTitle(day.formatted(.dateTime.month().day()))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("action.cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button("action.save", action: save) }
+            }
+            .onAppear {
+                text = habits.first { calendar.isDate($0.date, inSameDayAs: day) }?.note ?? ""
+                isEditing = true
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+        .presentationBackground(Color.midnightElevated)
+    }
+
+    private func save() {
+        let start = calendar.startOfDay(for: day)
+        let habit = habits.first { calendar.isDate($0.date, inSameDayAs: start) } ?? {
+            let created = HabitCheck(date: start)
+            context.insert(created)
+            return created
+        }()
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        habit.note = trimmed.isEmpty ? nil : trimmed
+        try? context.save()
+        onSaved()
+        dismiss()
     }
 }
 

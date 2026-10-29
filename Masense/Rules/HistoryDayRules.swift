@@ -20,6 +20,30 @@ enum HistoryDayRules {
         return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: interval.start) }
     }
 
+    /// `date`가 든 달의 달력 칸 (N-E1). 주 단위 7칸씩, 그 달이 아닌 칸은 nil. 달력 firstWeekday부터
+    static func monthGrid(containing date: Date, calendar: Calendar) -> [[Date?]] {
+        guard let month = calendar.dateInterval(of: .month, for: date),
+              let firstWeek = calendar.dateInterval(of: .weekOfYear, for: month.start) else { return [] }
+        var rows: [[Date?]] = []
+        var cursor = firstWeek.start
+        while cursor < month.end {
+            let row: [Date?] = (0..<7).map { offset in
+                guard let day = calendar.date(byAdding: .day, value: offset, to: cursor) else { return nil }
+                return month.contains(day) ? day : nil
+            }
+            rows.append(row)
+            guard let next = calendar.date(byAdding: .day, value: 7, to: cursor) else { break }
+            cursor = next
+        }
+        return rows
+    }
+
+    /// 달을 `offset`만큼 옮긴 달의 1일
+    static func shiftMonth(_ date: Date, by offset: Int, calendar: Calendar) -> Date {
+        let start = calendar.dateInterval(of: .month, for: date)?.start ?? date
+        return calendar.date(byAdding: .month, value: offset, to: start) ?? date
+    }
+
     /// 주를 `offset`만큼 옮긴 날 (같은 요일)
     static func shiftWeek(_ date: Date, by offset: Int, calendar: Calendar) -> Date {
         calendar.date(byAdding: .weekOfYear, value: offset, to: date) ?? date

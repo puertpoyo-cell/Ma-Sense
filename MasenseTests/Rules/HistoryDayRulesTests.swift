@@ -34,4 +34,17 @@ struct HistoryDayRulesTests {
         let next = HistoryDayRules.marks(on: TestCalendar.date(2026, 10, 23), doses: [dose, cancelled], checks: [], weights: [], proteins: [], sessions: [], calendar: calendar)
         #expect(next.isEmpty)
     }
+
+    // N-E1 월 보기
+    @Test func monthGridPadsToWholeWeeks() {
+        // 2026년 10월: 1일이 목요일, 31일이 토요일 → 5줄, 첫 줄 앞 4칸 비고 마지막 줄은 꽉 참
+        let grid = HistoryDayRules.monthGrid(containing: TestCalendar.date(2026, 10, 22), calendar: calendar)
+        #expect(grid.count == 5)
+        #expect(grid.allSatisfy { $0.count == 7 })
+        #expect(grid[0].prefix(4).allSatisfy { $0 == nil })
+        #expect(grid[0][4] == TestCalendar.date(2026, 10, 1))
+        #expect(grid[4][6] == TestCalendar.date(2026, 10, 31))
+        #expect(grid.flatMap { $0 }.compactMap { $0 }.count == 31)
+        #expect(HistoryDayRules.shiftMonth(TestCalendar.date(2026, 10, 22), by: -1, calendar: calendar) == TestCalendar.date(2026, 9, 1))
+    }
 }
