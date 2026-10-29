@@ -272,7 +272,7 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - [x] N-B1 리포트: 최근 검사 칸이 있으면 물어볼 것·메모 줄을 줄여 한 장 유지 (`labLineBudget`, 테스트)
 - [x] N-B2 오늘: 빠른 기록 줄에서 수분을 빼 마디 카드 습관 체크와 중복 제거
 - [x] N-B3 스크린샷 경로 `history` (날짜 중심 기록 탭)
-- [ ] N-A TestFlight 자동 업로드
+- [x] N-A TestFlight 자동 업로드 워크플로 (`testflight.yml`, 클라우드 관리 서명). **사람: App Store Connect API 키 → Secrets 3개 등록 (TESTFLIGHT.md 2-1)**
 - [ ] N-D 오늘 화면 다듬기
 - [ ] N-C 사진·글자 읽기 보강
 - [ ] N-F 진료 탭 다듬기

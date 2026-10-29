@@ -1,0 +1,126 @@
+name: TestFlight
+
+# N-A (2026-10-29 사람 승인): main에 앱 코드가 바뀌어 올라가면 Archive → App Store Connect 업로드 → TestFlight.
+# 서명은 Xcode 클라우드 관리 서명(App Store Connect API 키만으로 인증서·프로파일을 만들어 씀)이라 .p12·프로파일 Secrets가 필요 없다.
+# 필요한 Secrets 3개 (docs/TESTFLIGHT.md 6): ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY(.p8 내용 그대로)
+# Secrets가 없으면 아무것도 하지 않고 끝난다 (CI와 별개, 실패로 보지 않음)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Masense/**"
+      - "Shared/**"
+      - "MasenseWidgets/**"
+      - "Config/**"
+      - "Masense.xcodeproj/project.pbxproj"
+      - ".github/workflows/testflight.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Secrets 확인
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          if [ -n "$KEY_ID" ] && [ -n "$ISSUER_ID" ] && [ -n "$PRIVATE_KEY" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "App Store Connect API Secrets가 없어 업로드를 건너뜁니다 (docs/TESTFLIGHT.md 6)."
+          fi
+
+  upload:
+    name: Archive → TestFlight
+    needs: gate
+    if: needs.gate.outputs.ready == 'true'
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Write API key
+        env:
+          PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/private_keys
+          printf '%s\n' "$PRIVATE_KEY" > ~/private_keys/AuthKey_$KEY_ID.p8
+          chmod 600 ~/private_keys/AuthKey_$KEY_ID.p8
+
+      - name: Build number and version
+        id: ver
+        run: |
+          BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION = ' Masense.xcodeproj/project.pbxproj | sed 's/[^0-9]//g')
+          VERSION=$(grep -m1 'MARKETING_VERSION = ' Masense.xcodeproj/project.pbxproj | sed 's/.*= //; s/;//')
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "버전 $VERSION 빌드 $BUILD"
+
+      - name: Archive (cloud-managed signing)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Masense.xcodeproj \
+            -scheme Masense \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath build/Masense.xcarchive \
+            -allowProvisioningUpdates \
+            -allowProvisioningDeviceRegistration \
+            -authenticationKeyPath ~/private_keys/AuthKey_$KEY_ID.p8 \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID" \
+            -skipPackagePluginValidation \
+            archive
+
+      - name: Export options
+        run: |
+          cat > build/ExportOptions.plist <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>24F957FFAD</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Upload to App Store Connect
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/Masense.xcarchive \
+            -exportOptionsPlist build/ExportOptions.plist \
+            -exportPath build/export \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_$KEY_ID.p8 \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID"
+          echo "업로드 완료: 버전 ${{ steps.ver.outputs.version }} 빌드 ${{ steps.ver.outputs.build }}. 처리 뒤 TestFlight에 나타납니다 (보통 5~15분)."
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/private_keys/AuthKey_$KEY_ID.p8

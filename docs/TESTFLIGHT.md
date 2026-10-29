@@ -40,6 +40,28 @@ Xcode > 실행 대상 "Any iOS Device (arm64)" > Product > Archive → Distribut
 - 기기: 설정 > 일반 > 정보 > iOS 버전, Mac: Xcode > About Xcode 버전을 비교한다 (예: iOS 27 기기면 Xcode 27)
 - 2026-10-23 확인: Xcode 26.3 + iOS 26 시뮬레이터(iPhone 17 Pro)에서는 띠 없이 화면을 다 채운다. CI 스크린샷 워크플로를 수동 실행하며 `xcode` 입력(예: `26`)을 주면 그 Xcode로 찍어 볼 수 있다
 
+## 2-1. 자동 업로드 (N-A, 2026-10-29 사람 승인) — `.github/workflows/testflight.yml`
+
+main에 앱 코드(`Masense/`, `Shared/`, `MasenseWidgets/`, `Config/`, `project.pbxproj`)가 바뀌어 올라가면 GitHub Actions가 Release Archive를 만들어 App Store Connect에 올린다. 처리가 끝나면(보통 5~15분) 폰의 TestFlight 앱에서 업데이트만 누르면 된다. Mac·Xcode·pull이 필요 없다.
+서명은 Xcode 클라우드 관리 서명이라 **App Store Connect API 키 하나**만 있으면 된다 (.p12 인증서·프로비저닝 프로파일 불필요). 공개 저장소라 Actions 시간은 무료.
+
+### 사람이 한 번 할 일 (Secrets 3개)
+
+1. **API 키 만들기**: [App Store Connect](https://appstoreconnect.apple.com) > 사용자 및 액세스 > **통합** 탭 > App Store Connect API > 팀 키 **+**
+   - 이름 `masense-ci`, 액세스 **App Manager** (업로드에 필요한 최소 권한은 Developer이지만 클라우드 서명이 인증서를 만들려면 App Manager)
+   - 만들면 **Issuer ID**(페이지 위), **키 ID**, 그리고 `.p8` 파일 다운로드 (한 번만 받을 수 있다. 잃으면 키를 새로 만든다)
+2. **GitHub Secrets 등록**: github.com/puertpoyo-cell/Ma-Sense > Settings > Secrets and variables > Actions > **New repository secret** 세 번
+   - `ASC_KEY_ID` — 키 ID (예: `AB12CD34EF`)
+   - `ASC_ISSUER_ID` — Issuer ID (UUID 모양)
+   - `ASC_PRIVATE_KEY` — `.p8` 파일을 텍스트 편집기로 열어 `-----BEGIN PRIVATE KEY-----`부터 `-----END PRIVATE KEY-----`까지 **전체를 그대로** 붙여 넣기
+3. **첫 실행**: Actions 탭 > TestFlight > Run workflow (main). 첫 번째는 클라우드 서명이 배포 인증서를 새로 만들므로 1~2분 더 걸린다
+   - 실패하면 로그의 `error:` 줄을 Claude에게 보내면 된다. 흔한 원인: 키 권한이 Developer(→ App Manager로), Secrets 이름 오타, 같은 빌드 번호 재업로드
+4. 그 뒤로는 main에 앱 코드가 올라갈 때마다 자동. 문서만 바뀐 커밋은 돌지 않는다. Secrets가 없으면 "Secrets 확인" 단계에서 조용히 끝난다
+
+### 수동 업로드가 여전히 필요한 때
+- 처음 App Store 심사 제출(스크린샷·설명 입력)은 App Store Connect 웹에서 사람이 한다. 빌드 자체는 자동 업로드된 것을 고르면 된다
+- 클라우드 서명이 만든 인증서는 App Store Connect > 인증서에서 보인다. Mac의 Xcode 수동 Archive도 그대로 된다
+
 ## 3. 베타 테스트 정보 (App Store Connect에 붙여 넣을 문구)
 
 ### 베타 앱 설명
