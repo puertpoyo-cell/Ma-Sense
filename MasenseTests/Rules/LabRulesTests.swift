@@ -77,4 +77,27 @@ struct LabRulesTests {
         #expect(LabRules.lines(from: boxes) == ["HbA1c 5.8", "공복혈당 98"])
         #expect(LabRules.candidates(lines: LabRules.lines(from: boxes)).map(\.value) == [5.8, 98])
     }
+
+    // N-C1: 쉼표 소수점, 단위 안의 숫자, 약어
+    @Test func commaDecimalsAndUnitDigitsAndAbbreviations() {
+        let found = LabRules.candidates(lines: [
+            "HbA1c 5,8 %",
+            "eGFR mL/min/1.73m² 95",
+            "T-CHOL 182 mg/dL", "LDL-C 110 mg/dL", "HDL-C 52 mg/dL", "TRIG 140 mg/dL",
+            "CREA 0,9 mg/dL", "Hgb 13.9 g/dL", "Vit D 28.3 ng/mL", "FPG 98 mg/dL",
+        ])
+        let byItem = Dictionary(uniqueKeysWithValues: found.map { ($0.item, $0.value) })
+        #expect(byItem[.hba1c] == 5.8)
+        #expect(byItem[.egfr] == 95)
+        #expect(byItem[.totalCholesterol] == 182)
+        #expect(byItem[.ldl] == 110)
+        #expect(byItem[.hdl] == 52)
+        #expect(byItem[.triglycerides] == 140)
+        #expect(byItem[.creatinine] == 0.9)
+        #expect(byItem[.hemoglobin] == 13.9)
+        #expect(byItem[.vitaminD] == 28.3)
+        #expect(byItem[.fastingGlucose] == 98)
+        // 천 단위 쉼표
+        #expect(LabRules.candidates(lines: ["페리틴 1,234 ng/mL"]).first?.value == 1234)
+    }
 }

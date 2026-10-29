@@ -30,19 +30,19 @@ enum LabItem: String, Codable, CaseIterable, Identifiable {
     var aliases: [String] {
         switch self {
         case .hba1c: return ["당화혈색소", "HbA1c", "Hb A1c", "A1c"]
-        case .fastingGlucose: return ["공복혈당", "공복 혈당", "Glucose", "FBS", "GLU", "혈당"]
-        case .ldl: return ["LDL"]
-        case .hdl: return ["HDL"]
-        case .triglycerides: return ["중성지방", "Triglyceride", "TG"]
-        case .totalCholesterol: return ["총콜레스테롤", "총 콜레스테롤", "Total Cholesterol", "T-Chol", "T.Chol", "Cholesterol"]
+        case .fastingGlucose: return ["공복혈당", "공복 혈당", "Glucose", "FBS", "FPG", "GLU", "혈당"]
+        case .ldl: return ["LDL-C", "LDL"]
+        case .hdl: return ["HDL-C", "HDL"]
+        case .triglycerides: return ["중성지방", "Triglyceride", "TRIG", "TG"]
+        case .totalCholesterol: return ["총콜레스테롤", "총 콜레스테롤", "Total Cholesterol", "T-Chol", "T.Chol", "T-CHOL", "CHOL", "Cholesterol", "TC"]
         case .ast: return ["AST", "SGOT", "GOT"]
         case .alt: return ["ALT", "SGPT", "GPT"]
-        case .ggt: return ["감마지티피", "γ-GTP", "r-GTP", "GGT"]
+        case .ggt: return ["감마지티피", "γ-GTP", "γ-GT", "r-GTP", "GGT", "GGTP"]
         case .egfr: return ["eGFR", "사구체여과율"]
-        case .creatinine: return ["크레아티닌", "Creatinine", "Cr"]
-        case .hemoglobin: return ["혈색소", "Hemoglobin", "HGB", "Hb"]
+        case .creatinine: return ["크레아티닌", "Creatinine", "CREA", "CRE", "Cr"]
+        case .hemoglobin: return ["혈색소", "Hemoglobin", "HGB", "Hgb", "Hb"]
         case .ferritin: return ["페리틴", "Ferritin"]
-        case .vitaminD: return ["비타민D", "비타민 D", "Vitamin D", "25(OH)D", "25-OH"]
+        case .vitaminD: return ["비타민D", "비타민 D", "Vitamin D", "Vit D", "Vit.D", "25(OH)D", "25-OH"]
         case .tsh: return ["갑상선자극호르몬", "TSH"]
         case .custom: return []
         }
@@ -95,12 +95,12 @@ enum LabRules {
         var seen: Set<LabItem> = []
         for (index, line) in lines.enumerated() {
             guard let (item, end) = match(line), !seen.contains(item) else { continue }
-            // 이름 바로 뒤 괄호 안(예: "비타민D(25-OH)")의 숫자는 값이 아니다
-            let rest = String(line[end...]).replacingOccurrences(of: #"^\s*\([^)]*\)"#, with: "", options: .regularExpression)
+            // 이름 바로 뒤 괄호 안(예: "비타민D(25-OH)")의 숫자는 값이 아니다. 단위 글자(eGFR의 "1.73")도 값이 아니다 (N-C1)
+            let rest = stripUnits(String(line[end...]).replacingOccurrences(of: #"^\s*\([^)]*\)"#, with: "", options: .regularExpression))
             var value = firstNumber(in: rest)
             if value == nil, lines.indices.contains(index + 1) {
                 let next = lines[index + 1].trimmingCharacters(in: .whitespaces)
-                if let number = firstNumber(in: next), next.first.map({ $0.isNumber || $0 == "." }) == true {
+                if let number = firstNumber(in: stripUnits(next)), next.first.map({ $0.isNumber || $0 == "." }) == true {
                     value = number
                 }
             }
@@ -179,9 +179,24 @@ enum LabRules {
         return nil
     }
 
+    /// 첫 숫자. 소수점이 쉼표인 검사지("5,8")도 받는다 (N-C1). 천 단위 쉼표("1,234")는 1234
     private static func firstNumber(in text: String) -> Double? {
-        guard let range = text.range(of: #"\d+(?:\.\d+)?"#, options: .regularExpression) else { return nil }
-        return Double(text[range])
+        guard let range = text.range(of: #"\d+(?:[.,]\d+)?"#, options: .regularExpression) else { return nil }
+        var token = String(text[range])
+        if let comma = token.firstIndex(of: ",") {
+            let decimals = token.distance(from: token.index(after: comma), to: token.endIndex)
+            token = decimals == 3 ? token.replacingOccurrences(of: ",", with: "") : token.replacingOccurrences(of: ",", with: ".")
+        }
+        return Double(token)
+    }
+
+    /// 줄에서 알려진 단위 글자를 지운다 (단위 안의 숫자를 값으로 읽지 않게)
+    private static func stripUnits(_ text: String) -> String {
+        var result = text
+        for unit in knownUnits + ["m²", "m2"] {
+            result = result.replacingOccurrences(of: unit, with: " ", options: .caseInsensitive)
+        }
+        return result
     }
 
     private static func unit(in line: String) -> String? {

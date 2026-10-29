@@ -1112,13 +1112,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Photos stay on this device and are not included in exports. Text is read on the device."
+            "value": "Photos stay on this device and are not included in exports. Text is read on the device. Several photos are read in order and combined."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "사진은 이 기기에만 저장하고 내보내기 파일에는 담지 않습니다. 글자는 기기 안에서 읽습니다."
+            "value": "사진은 이 기기에만 저장하고 내보내기 파일에는 담지 않습니다. 글자는 기기 안에서 읽습니다. 여러 장을 넣으면 순서대로 읽어 합칩니다."
           }
         }
       }
@@ -1153,6 +1153,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "검사 결과 %lld개를 채웠습니다. 검사지와 같은지 확인해 주세요."
+          }
+        }
+      }
+    },
+    "clinic.visit.photo.readLines %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show recognized text (%lld lines)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "읽은 글자 보기 (%lld줄)"
           }
         }
       }

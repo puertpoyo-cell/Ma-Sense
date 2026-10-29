@@ -42,6 +42,9 @@ struct ClinicVisitSheet: View {
     @State private var showsCamera = false
     @State private var readingCount = 0
     @State private var lastReadCount: Int?
+    /// N-C3: 이번에 넣은 사진에서 읽힌 줄 (화면에서만, 저장하지 않음). 왜 어떤 항목이 안 채워졌는지 볼 수 있게
+    @State private var readLines: [String] = []
+    @State private var showsReadLines = false
     @State private var viewing: PhotoItem?
     @State private var confirmsDelete = false
 
@@ -107,6 +110,19 @@ struct ClinicVisitSheet: View {
                         Text(lastReadCount > 0 ? "clinic.visit.photo.read \(lastReadCount)" : "clinic.visit.photo.readNone")
                             .font(Typography.caption)
                             .foregroundStyle(Color.inkSecondary)
+                    }
+                    if !readLines.isEmpty {
+                        DisclosureGroup(isExpanded: $showsReadLines) {
+                            ForEach(Array(readLines.prefix(Self.maxReadLines).enumerated()), id: \.offset) { _, line in
+                                Text(verbatim: line)
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color.inkSecondary)
+                            }
+                        } label: {
+                            Text("clinic.visit.photo.readLines \(readLines.count)")
+                                .font(Typography.caption)
+                                .foregroundStyle(Color.inkSecondary)
+                        }
                     }
                 } header: {
                     SectionHeaderText("clinic.visit.section.photos")
@@ -243,8 +259,10 @@ struct ClinicVisitSheet: View {
     private func add(_ image: UIImage) async {
         photos.append(PhotoItem(stored: nil, image: image))
         readingCount += 1
-        let candidates = await TextRecognitionService.labCandidates(in: image)
+        let lines = await TextRecognitionService.lines(in: image)
+        let candidates = LabRules.candidates(lines: lines)
         readingCount -= 1
+        readLines += lines
         var added = 0
         for candidate in candidates where !labs.contains(where: { $0.item == candidate.item }) {
             labs.append(LabRow(item: candidate.item, valueText: Self.format(candidate.value), unit: candidate.unit))
@@ -304,6 +322,9 @@ struct ClinicVisitSheet: View {
         try? context.save()
         dismiss()
     }
+
+    /// 읽은 글자 미리 보기 최대 줄 수
+    static let maxReadLines = 60
 
     static func format(_ value: Double) -> String {
         value.formatted(.number.precision(.fractionLength(0...2)).grouping(.never))

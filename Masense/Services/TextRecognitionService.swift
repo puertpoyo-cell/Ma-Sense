@@ -29,9 +29,14 @@ enum TextRecognitionService {
         }
     }
 
+    /// 검사지 사진 → 읽힌 줄 (N-C3 미리 보기용, 저장하지 않는다)
+    static func lines(in image: UIImage) async -> [String] {
+        LabRules.lines(from: await boxes(in: image))
+    }
+
     /// 검사지 사진 → 항목 후보
     static func labCandidates(in image: UIImage) async -> [LabCandidate] {
-        LabRules.candidates(lines: LabRules.lines(from: await boxes(in: image)))
+        LabRules.candidates(lines: await lines(in: image))
     }
 }
 

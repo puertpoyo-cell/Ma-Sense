@@ -30,4 +30,13 @@ struct FoodPhotoRulesTests {
             #expect(FoodPhotoRules.units(for: food).first.map { Int($0.grams) } == food.defaultGrams)
         }
     }
+
+    // N-C2: 한식에서 흔한 분류기 이름
+    @Test func koreanMealLabelsMapToFoods() {
+        #expect(FoodPhotoRules.foods(from: [("scrambled_eggs", 0.5)]) == [.egg])
+        #expect(FoodPhotoRules.foods(from: [("grilled_mackerel", 0.5), ("squid", 0.3)]) == [.fish])
+        #expect(FoodPhotoRules.foods(from: [("short_ribs", 0.6)]) == [.beef])
+        #expect(FoodPhotoRules.foods(from: [("pork_chop", 0.6), ("tonkatsu", 0.2)]) == [.pork])
+        #expect(FoodPhotoRules.foods(from: [("natto", 0.4)]) == [.beans])
+    }
 }

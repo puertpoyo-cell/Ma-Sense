@@ -5,18 +5,20 @@ import Foundation
 /// g은 R9 표의 1회 기준을 단위에 맞춰 나눈 대략값이다
 enum FoodPhotoRules {
     /// 분류 이름에 들어 있으면 그 식품으로 본다. 앞에 둔 식품부터 (두부를 콩보다, 셰이크를 우유보다 먼저)
+    /// N-C2: 한식에서 흔한 것(계란말이·두부조림·닭갈비·삼겹살·생선구이·해산물)이 분류기에서 나오는 이름까지. 분류기 이름은 영문
     static let keywords: [(ProteinFood, [String])] = [
-        (.egg, ["egg", "omelet", "omelette"]),
-        (.tofu, ["tofu", "bean_curd", "beancurd"]),
+        (.egg, ["egg", "omelet", "omelette", "frittata", "scrambled", "quiche"]),
+        (.tofu, ["tofu", "bean_curd", "beancurd", "soybean_curd"]),
         (.greekYogurt, ["yogurt", "yoghurt"]),
-        (.proteinShake, ["smoothie", "milkshake", "shake"]),
-        (.chickenBreast, ["chicken", "poultry"]),
-        (.fish, ["fish", "salmon", "tuna", "mackerel", "sashimi", "sushi", "seafood"]),
-        (.beef, ["beef", "steak", "burger", "hamburger", "bulgogi"]),
-        (.pork, ["pork", "bacon", "ham", "sausage"]),
-        (.cheese, ["cheese"]),
-        (.milk, ["milk"]),
-        (.beans, ["bean", "edamame", "soy", "legume", "lentil", "chickpea"]),
+        (.proteinShake, ["smoothie", "milkshake", "protein_shake", "shake"]),
+        (.chickenBreast, ["chicken", "poultry", "hen", "rotisserie", "drumstick", "wing"]),
+        (.fish, ["fish", "salmon", "tuna", "mackerel", "cod", "sashimi", "sushi", "seafood", "shrimp", "prawn", "squid", "octopus",
+                 "clam", "oyster", "mussel", "crab", "lobster", "eel", "anchovy"]),
+        (.beef, ["beef", "steak", "burger", "hamburger", "bulgogi", "brisket", "short_rib", "rib", "meatball", "meatloaf", "roast_beef"]),
+        (.pork, ["pork", "bacon", "ham", "sausage", "spare_rib", "pork_chop", "cutlet", "tonkatsu", "prosciutto"]),
+        (.cheese, ["cheese", "mozzarella", "cheddar", "parmesan"]),
+        (.milk, ["milk", "latte"]),
+        (.beans, ["bean", "edamame", "soy", "legume", "lentil", "chickpea", "hummus", "natto"]),
     ]
 
     /// 이 확신도보다 낮은 이름은 쓰지 않는다
