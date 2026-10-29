@@ -96,7 +96,7 @@ struct CoachRulesTests {
         // 같은 주제를 다시 물으면 다음 줄
         #expect(CoachRules.reply(to: .movement, context: context, shownKeys: ["lowCondition"], now: now, calendar: calendar) == .strengthNotYet)
         // 다 했으면 처음 줄로 돌아간다 (빈 대답은 없다)
-        let all: Set<String> = ["lowCondition", "strengthNotYet", "tip.5", "tip.6"]
+        let all: Set<String> = ["lowCondition", "strengthNotYet", "tip.5", "tip.6", "answer.movement.0", "answer.movement.1"]
         #expect(CoachRules.reply(to: .movement, context: context, shownKeys: all, now: now, calendar: calendar) == .lowCondition)
         guard case .tip = CoachRules.reply(to: .more, context: context, shownKeys: [], now: now, calendar: calendar) else {
             Issue.record("more should be a tip")
