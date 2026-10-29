@@ -131,9 +131,11 @@ enum CoachRules {
     /// 한 줄마다 같은 뜻의 다른 말투 수 (D18). 화면이 그중 하나를 고른다
     static let variantCount = 3
     /// 주제별 고정 대답 수 (`coach.answer.<topic>.<n>`)
-    static let answerCounts: [CoachTopic: Int] = [.water: 2, .sleep: 2, .weight: 1, .condition: 3]
+    static let answerCounts: [CoachTopic: Int] = [
+        .today: 2, .protein: 2, .movement: 2, .water: 3, .sleep: 3, .weight: 3, .condition: 4, .clinic: 2,
+    ]
     /// 고정 대답 중 건강관리 정보 (고지를 붙인다)
-    static let healthAnswers: Set<String> = ["water.0", "sleep.0"]
+    static let healthAnswers: Set<String> = ["water.0", "sleep.0", "protein.0", "movement.0", "movement.1"]
     /// 일반 한마디 중 건강관리 정보인 것 (단백질·물·근력·수면)
     static let healthTipIndices: Set<Int> = [2, 3, 5, 6]
     /// 이 시각 이후에만 단백질 기록을 권한다
@@ -231,17 +233,17 @@ enum CoachRules {
         let candidates: [CoachLine]
         switch topic {
         case .today:
-            candidates = lines(for: .todayTop, context: c, now: now, calendar: calendar) + [.tip(0), .tip(3)]
+            candidates = lines(for: .todayTop, context: c, now: now, calendar: calendar) + [.tip(0), .tip(3)] + answers(.today)
         case .protein:
             var result: [CoachLine] = []
             if c.isLowAppetite { result.append(.lowAppetite) }
             if c.proteinEntriesToday == 0, isAfternoon { result.append(.proteinNotYet) }
-            candidates = result + [.tip(2), .tip(3)]
+            candidates = result + [.tip(2), .tip(3)] + answers(.protein)
         case .movement:
             var result: [CoachLine] = []
             if c.isLowCondition { result.append(.lowCondition) }
             if c.strengthThisWeek == 0 { result.append(.strengthNotYet) }
-            candidates = result + [.tip(5), .tip(6)]
+            candidates = result + [.tip(5), .tip(6)] + answers(.movement)
         case .water:
             candidates = [.tip(3)] + answers(.water)
         case .sleep:
@@ -258,7 +260,7 @@ enum CoachRules {
             var result: [CoachLine] = []
             if c.clinicNeedsRecord { result.append(.clinicFollowUp) }
             if let fact = c.dailyLine, case .lowSupply = fact { result.append(.fact(fact)) }
-            candidates = result + [.tip(4), .place(.report), .place(.history)]
+            candidates = result + [.tip(4), .place(.report), .place(.history)] + answers(.clinic)
         case .more:
             // 오늘 날짜에서 시작해 일반 한마디를 차례로
             let day = calendar.ordinality(of: .day, in: .year, for: now) ?? 0

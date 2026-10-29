@@ -19,6 +19,8 @@ struct GlanceStrip: View {
     var onOpenSite: () -> Void = {}
 
     @Environment(\.calendar) private var calendar
+    /// N-H1: 접근성 글자 크기에서는 그림을 위, 세 줄을 아래로 (한 줄이 두 줄로 꺾이지 않게)
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     /// 오른쪽 세 줄의 높이. 그림은 이 높이의 90%
     @State private var rowsHeight: CGFloat = 0
 
@@ -37,16 +39,21 @@ struct GlanceStrip: View {
 
     private var lastSite: SiteUse? { recentSites.first }
 
-    /// 세 줄 높이에 맞춘 비율. 폭 상한을 넘지 않는다
+    /// 세 줄 높이에 맞춘 비율. 폭 상한을 넘지 않는다. 접근성 글자 크기에서는 세 줄 높이와 무관하게 기본 크기
     private var scale: CGFloat {
-        guard rowsHeight > 0 else { return Self.fallbackScale }
+        guard rowsHeight > 0, !isAccessibilitySize else { return Self.fallbackScale }
         let byHeight = rowsHeight * Self.figureHeightRatio / Self.designSize.height
         let byWidth = Self.maxFigureWidth / Self.designSize.width
         return min(byHeight, byWidth)
     }
 
+    private var isAccessibilitySize: Bool { dynamicTypeSize.isAccessibilitySize }
+
     var body: some View {
-        HStack(alignment: .center, spacing: Spacing.s4) {
+        let layout = isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.s4))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: Spacing.s4))
+        layout {
             figureView
             VStack(spacing: Spacing.s3) {
                 Button(action: onOpenWeight) {

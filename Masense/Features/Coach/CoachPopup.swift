@@ -21,6 +21,22 @@ final class CoachPopupCenter {
     private(set) var isTalking = false
     /// 시작 전환 화면 등으로 가려져 있을 때. 쉬는 동안 닿은 자리는 기록하지 않는다
     var isPaused = false
+    /// N-H4: VoiceOver가 켜져 있으면 저절로 들어가지 않는다 (닫을 때까지)
+    var holdsForVoiceOver = false
+
+    /// N-G3 설정 > 마선생: 자주(자리마다) / 가끔(하루 2번) / 끄기(팝업 없음, 말 걸기는 됨). UserDefaults `coach.frequency`
+    enum Frequency: String, CaseIterable {
+        case often, sometimes, off
+
+        /// 가끔일 때 하루 최대 팝업 수
+        static let sometimesLimit = 2
+    }
+
+    static let frequencyKey = "coach.frequency"
+
+    var frequency: Frequency {
+        Frequency(rawValue: defaults.string(forKey: Self.frequencyKey) ?? "") ?? .often
+    }
 
     /// 떠 있는 시간
     static let visibleSeconds: Double = 6
@@ -55,6 +71,12 @@ final class CoachPopupCenter {
         resetIfNewDay(now: now, calendar: calendar)
         guard !isPaused, current == nil, !isPending, !shownSpots.contains(spot.rawValue) else { return }
         if let lastDismissedAt, now.timeIntervalSince(lastDismissedAt) < Self.restSeconds { return }
+        // N-G3: 끄기면 자리 팝업 없음, 가끔이면 하루 2번까지
+        switch frequency {
+        case .off: return
+        case .sometimes: if shownLines.count >= Frequency.sometimesLimit { return }
+        case .often: break
+        }
         // 그 자리는 오늘 지나간 것으로 (후보를 다 띄웠으면 조용히)
         shownSpots.insert(spot.rawValue)
         guard let line = CoachRules.next(for: spot, context: context, shownKeys: shownLines, now: now, calendar: calendar) else { return }
@@ -83,7 +105,7 @@ final class CoachPopupCenter {
     /// 기록 직후 정해 둔 한 줄 (D20 사진 단백질 "약 n g")
     @MainActor
     func react(with line: CoachLine) {
-        guard !isPaused else { return }
+        guard !isPaused, frequency != .off else { return }
         isTalking = false
         current = Self.message(line, avoiding: current)
         scheduleDismiss()
@@ -129,6 +151,8 @@ final class CoachPopupCenter {
     @MainActor
     private func scheduleDismiss() {
         dismissTask?.cancel()
+        // VoiceOver 사용자는 읽는 데 시간이 더 걸린다. 닫을 때까지 둔다 (N-H4)
+        guard !holdsForVoiceOver else { return }
         dismissTask = Task { @MainActor in
             try? await Task.sleep(for: .seconds(Self.visibleSeconds))
             guard !Task.isCancelled, !isTalking else { return }
@@ -263,7 +287,7 @@ struct CoachPopup: View {
         VStack(alignment: .leading, spacing: Spacing.s2) {
             HStack(alignment: .bottom, spacing: Spacing.s2) {
                 Button(action: onTalk) {
-                    CoachFace(size: 64, mood: message.line.mood)
+                    CoachFace(size: 64, mood: message.line.mood, blinks: true)
                         // 표정이 바뀌면 살짝 튄다
                         .id(message.line.mood)
                         .transition(reduceMotion ? .opacity : .scale(scale: 0.85).combined(with: .opacity))
@@ -365,6 +389,11 @@ struct CoachPopup: View {
 struct CoachFace: View {
     var size: CGFloat
     var mood: CoachMood = .smile
+    /// N-G2: 나타날 때·표정이 바뀔 때 한 번 눈을 깜빡인다 (동작 줄이기면 생략). 눈을 감은 표정에서는 깜빡이지 않는다
+    var blinks = false
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var eyesClosed = false
 
     private var assetName: String {
         switch mood {
@@ -376,14 +405,40 @@ struct CoachFace: View {
         }
     }
 
+    /// 그림(512 기준)의 눈 위치·크기. 눈꺼풀은 피부색 캡슐로 덮는다
+    private static let eyes: [(x: CGFloat, y: CGFloat)] = [(204, 264), (308, 264)]
+    private static let eyeSize = CGSize(width: 44, height: 40)
+    private static let skin = Color(red: 1.0, green: 0.90, blue: 0.83)
+
     var body: some View {
         Image(assetName)
             .resizable()
             .scaledToFit()
             .frame(width: size, height: size)
+            .overlay {
+                if eyesClosed {
+                    let k = size / 512
+                    ForEach(Array(Self.eyes.enumerated()), id: \.offset) { _, eye in
+                        Capsule(style: .continuous)
+                            .fill(Self.skin)
+                            .frame(width: Self.eyeSize.width * k, height: Self.eyeSize.height * k)
+                            .position(x: eye.x * k, y: eye.y * k)
+                    }
+                }
+            }
             .clipShape(Circle())
             .overlay(Circle().strokeBorder(Color.white.opacity(0.4), lineWidth: size > 40 ? 1.5 : 1))
             .shadow(color: .black.opacity(0.35), radius: size > 40 ? 10 : 3, y: size > 40 ? 5 : 1)
+            .task(id: mood) { await blinkIfNeeded() }
+    }
+
+    private func blinkIfNeeded() async {
+        guard blinks, !reduceMotion, mood != .happy, mood != .wink else { return }
+        try? await Task.sleep(for: .milliseconds(450))
+        guard !Task.isCancelled else { return }
+        eyesClosed = true
+        try? await Task.sleep(for: .milliseconds(110))
+        eyesClosed = false
     }
 }
 
@@ -407,9 +462,11 @@ private struct CoachPopupOverlay: ViewModifier {
     @Environment(\.coach) private var coach
     @Environment(\.calendar) private var calendar
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
 
     func body(content: Content) -> some View {
         content
+            .onChange(of: voiceOver, initial: true) { _, on in coach.holdsForVoiceOver = on }
             .overlay(alignment: .bottom) {
                 ZStack {
                     if let message = coach.current {

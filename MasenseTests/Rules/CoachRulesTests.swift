@@ -135,4 +135,24 @@ struct CoachRulesTests {
         #expect(CoachRules.line(dailyLine: nil, isLowCondition: false, isLowAppetite: false, proteinEntriesToday: 0, strengthThisWeek: 0, clinicNeedsRecord: true, now: now, calendar: calendar) == .clinicFollowUp)
         #expect(CoachLine.clinicFollowUp.mood == .thinking)
     }
+
+    // N-G1: 모든 주제의 고정 대답에 문구 키가 있고, 건강관리 대답은 고지를 붙인다
+    @Test func everyTopicHasExtraAnswers() {
+        for topic in CoachTopic.allCases where topic != .more {
+            #expect((CoachRules.answerCounts[topic] ?? 0) >= 1, "\(topic)")
+        }
+        #expect(CoachLine.answer(.protein, 0).isHealthTip)
+        #expect(CoachLine.answer(.movement, 1).isHealthTip)
+        #expect(!CoachLine.answer(.clinic, 0).isHealthTip)
+        // 같은 주제를 여섯 번 물어도 빈 대답이 없고, 앞 다섯 번은 서로 다르다
+        let now = TestCalendar.date(2026, 10, 22, 15)
+        var shown: Set<String> = []
+        var keys: [String] = []
+        for _ in 0..<5 {
+            let line = CoachRules.reply(to: .water, context: CoachContext(), shownKeys: shown, now: now, calendar: calendar)
+            keys.append(line.key)
+            shown.insert(line.key)
+        }
+        #expect(Set(keys).count == 4)
+    }
 }

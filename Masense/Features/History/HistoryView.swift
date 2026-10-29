@@ -29,6 +29,8 @@ struct HistoryView: View {
 
     @Environment(\.calendar) private var calendar
     @Environment(\.modelContext) private var context
+    /// N-H2: 접근성 글자 크기에서는 요일 글자를 숨기고 날짜만 (7칸이 넘치지 않게)
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Query(sort: \Prescription.startDate) private var prescriptions: [Prescription]
     @Query(sort: \ConditionCheck.checkedAt) private var checks: [ConditionCheck]
     @Query(sort: \WeightSample.measuredAt) private var weights: [WeightSample]
@@ -241,9 +243,11 @@ struct HistoryView: View {
             legendShown = false
         } label: {
             VStack(spacing: Spacing.s1) {
-                Text(date.formatted(.dateTime.weekday(.narrow)))
-                    .font(Typography.caption)
-                    .foregroundStyle(Color.inkSecondary)
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Text(date.formatted(.dateTime.weekday(.narrow)))
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.inkSecondary)
+                }
                 Text(date.formatted(.dateTime.day()))
                     .font(Typography.label.weight(isToday ? .bold : .medium))
                     .monospacedDigit()

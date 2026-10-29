@@ -96,6 +96,7 @@ private struct SettingsForm: View {
             if services.healthKit.isAvailable {
                 healthSection
             }
+            coachSection
             reportSection
             purchaseSection
             dataSection
@@ -316,6 +317,25 @@ private struct SettingsForm: View {
                 Text("settings.body.height.footer")
                 Text("settings.body.figure.footer")
             }
+        }
+        .frostRow()
+    }
+
+    // MARK: 마선생 (N-G3)
+
+    @AppStorage(CoachPopupCenter.frequencyKey) private var coachFrequencyRaw = CoachPopupCenter.Frequency.often.rawValue
+
+    private var coachSection: some View {
+        Section {
+            Picker("settings.coach.frequency", selection: $coachFrequencyRaw) {
+                ForEach(CoachPopupCenter.Frequency.allCases, id: \.self) { item in
+                    Text(LocalizedStringKey("settings.coach.frequency." + item.rawValue)).tag(item.rawValue)
+                }
+            }
+        } header: {
+            SectionHeaderText("settings.section.coach")
+        } footer: {
+            Text("settings.coach.footer")
         }
         .frostRow()
     }

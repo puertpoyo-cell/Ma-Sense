@@ -363,6 +363,7 @@ struct TodayView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isOn ? .isSelected : [])
+        .accessibilityLabel(Text(key) + Text(verbatim: " ") + Text("today.quick.record.a11y"))
         .accessibilityValue(done ? Text("today.quick.done.a11y") : Text(verbatim: ""))
     }
 

@@ -1310,6 +1310,40 @@
         }
       }
     },
+    "coach.answer.clinic.0": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After a visit, noting what you heard in the Clinic tab makes the next one easier."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 뒤에는 진료 탭에 들은 것을 적어 두면 다음 진료 때 이어 가기 쉬워요."
+          }
+        }
+      }
+    },
+    "coach.answer.clinic.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a lab sheet photo and I'll fill in the numbers. Check them against the sheet once."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "검사지는 사진으로 넣으면 숫자를 읽어 채워 드려요. 검사지와 한 번 맞춰 봐요."
+          }
+        }
+      }
+    },
     "coach.answer.condition.0": {
       "extractionState": "manual",
       "localizations": {
@@ -1361,6 +1395,91 @@
         }
       }
     },
+    "coach.answer.condition.3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If symptoms are severe or persist, contact your doctor directly, not the app."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "증상이 심하거나 이어지면 앱이 아니라 의사에게 바로 연락하세요."
+          }
+        }
+      }
+    },
+    "coach.answer.movement.0": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strength work can be done at home, like chair stands or wall push-ups."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근력운동은 의자 앉았다 일어나기, 벽 짚고 팔굽혀펴기처럼 집에서도 할 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.answer.movement.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Walks count too. Connect Apple Health and workouts come in automatically."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "걷기도 기록이 돼요. 건강 앱과 연동하면 운동이 자동으로 들어와요."
+          }
+        }
+      }
+    },
+    "coach.answer.protein.0": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A palm-sized portion of protein with each meal makes it easy to spread out."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단백질은 끼니마다 손바닥 크기 정도를 곁들이면 나누기 쉬워요."
+          }
+        }
+      }
+    },
+    "coach.answer.protein.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Check with a photo and I'll look at the type and ask how much."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진으로 확인하기를 쓰면 종류를 보고 양을 물어봐 드려요."
+          }
+        }
+      }
+    },
     "coach.answer.sleep.0": {
       "extractionState": "manual",
       "localizations": {
@@ -1391,6 +1510,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "습관 체크의 '수면'에 표시해 두면 컨디션 기록과 함께 볼 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.answer.sleep.2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On days with less sleep, it's fine to go lighter and just keep the record."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잠을 덜 잔 날엔 운동 강도를 낮추고 기록만 남겨도 괜찮아요."
+          }
+        }
+      }
+    },
+    "coach.answer.today.0": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shall we pick just one today? A record, a glass of water, or a short walk."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘은 한 가지만 골라 볼까요. 기록 하나, 물 한 잔, 짧은 걷기 중에서요."
+          }
+        }
+      }
+    },
+    "coach.answer.today.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your next dose date is at the top of Today. You can log it right there."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 예정일은 오늘 화면 맨 위에 있어요. 거기서 바로 기록할 수 있어요."
           }
         }
       }
@@ -1429,6 +1599,23 @@
         }
       }
     },
+    "coach.answer.water.2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeping a bottle in sight makes it easier to remember to drink."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물병을 눈에 보이는 곳에 두면 잊지 않고 마시기 쉬워요."
+          }
+        }
+      }
+    },
     "coach.answer.weight.0": {
       "extractionState": "manual",
       "localizations": {
@@ -1442,6 +1629,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "체중 추이에서 기간을 바꿔 가며 흐름을 볼 수 있어요. 점을 누르면 그날 숫자가 나와요."
+          }
+        }
+      }
+    },
+    "coach.answer.weight.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The weight trend uses weekly averages, so daily ups and downs show less."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중 추이 그래프는 주 평균이라 하루 오르내림이 덜 보여요."
+          }
+        }
+      }
+    },
+    "coach.answer.weight.2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight is just a number. I only keep the record. Talk with your doctor about what it means."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중은 숫자일 뿐이에요. 저는 기록만 할게요. 해석은 의사와 상의하세요."
           }
         }
       }
@@ -10030,6 +10251,91 @@
         }
       }
     },
+    "settings.coach.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Often shows one per spot per day, sometimes up to two a day. Even when off, you can tap the face on Today to talk."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자주는 화면 자리마다 하루 한 번, 가끔은 하루 두 번까지입니다. 꺼도 오늘 화면의 얼굴을 눌러 말을 걸 수 있습니다."
+          }
+        }
+      }
+    },
+    "settings.coach.frequency": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pop-up tips"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한마디 팝업"
+          }
+        }
+      }
+    },
+    "settings.coach.frequency.off": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "끄기"
+          }
+        }
+      }
+    },
+    "settings.coach.frequency.often": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Often"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자주"
+          }
+        }
+      }
+    },
+    "settings.coach.frequency.sometimes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sometimes"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가끔"
+          }
+        }
+      }
+    },
     "settings.data.deleteAll": {
       "extractionState": "manual",
       "localizations": {
@@ -10995,6 +11301,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "신체 정보"
+          }
+        }
+      }
+    },
+    "settings.section.coach": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masense"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마선생"
           }
         }
       }
@@ -12644,6 +12967,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "단백질"
+          }
+        }
+      }
+    },
+    "today.quick.record.a11y": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "record"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록"
           }
         }
       }
