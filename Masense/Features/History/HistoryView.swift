@@ -70,8 +70,16 @@ struct HistoryView: View {
                 let today = calendar.startOfDay(for: timeline.date)
                 let day = selectedDay ?? today
                 ScrollView {
-                    // D23: 펼친 가로 화면은 왼쪽 달력·하루 카드, 오른쪽 모아 보기 2단
+                    // D23: 펼친 가로 화면은 왼쪽 몸 추이·달력·하루 카드, 오른쪽 모아 보기 2단
                     UnfoldColumns(container: viewport) {
+                        // D24: 몸 추이 그래프를 맨 위에 (체중·체지방률·제지방량 겹쳐 보기)
+                        if !weights.isEmpty {
+                            BodyTrendCard(
+                                samples: weights.map(\.snapshot),
+                                doses: allDoses.map(\.snapshot),
+                                now: timeline.date
+                            ) { sheet = .weightTrend }
+                        }
                         weekStrip(day: day, today: today)
                         dayCard(day: day, today: today)
                     } trailing: {
@@ -537,9 +545,6 @@ struct HistoryView: View {
                     collectionRow("history.pens", systemImage: "rectangle.split.3x1") { path.append(.pens) }
                 }
                 collectionRow("symptom.flow.title", systemImage: "chart.bar.xaxis") { path.append(.symptomFlow) }
-                if !weights.isEmpty {
-                    collectionRow("weight.trend.title", systemImage: "chart.xyaxis.line") { sheet = .weightTrend }
-                }
             }
         }
     }

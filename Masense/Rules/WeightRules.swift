@@ -143,6 +143,34 @@ enum WeightRules {
         return WeightTrend(weeks: series, daily: daily)
     }
 
+    // MARK: D24 측정값을 이은 선·겹쳐 보기 (2026-10-30 사람 요청 "그래프로 보여 줘야지 추이가")
+
+    /// 하루 측정값을 선으로 이을 구간. 두 측정 사이에 측정이 하나도 없는 주가 끼면 선을 끊는다 (R7 보간 금지와 같은 기준)
+    static func lineSegments(_ daily: [DailyWeight], calendar: Calendar) -> [[DailyWeight]] {
+        var segments: [[DailyWeight]] = []
+        var previousWeek: Date?
+        for point in daily.sorted(by: { $0.day < $1.day }) {
+            let week = calendar.dateInterval(of: .weekOfYear, for: point.day)?.start ?? point.day
+            if let previousWeek,
+               let next = calendar.date(byAdding: .weekOfYear, value: 1, to: previousWeek),
+               week <= next, !segments.isEmpty {
+                segments[segments.count - 1].append(point)
+            } else {
+                segments.append([point])
+            }
+            previousWeek = week
+        }
+        return segments
+    }
+
+    /// 단위가 다른 값(kg, %)을 한 그래프에 겹칠 때 각자 자기 범위로 0...1에 맞춘다.
+    /// 모두 같은 값이면 가운데(0.5). 높낮이의 모양만 비교하고 크기는 비교하지 않는다
+    static func normalized(_ values: [Double]) -> [Double] {
+        guard let low = values.min(), let high = values.max() else { return [] }
+        guard high > low else { return values.map { _ in 0.5 } }
+        return values.map { ($0 - low) / (high - low) }
+    }
+
     // MARK: D11 체성분·마지막 기록 구간
 
     /// 그 값이 있는 샘플만, 값을 `kilograms` 자리에 넣은 사본. 주 평균·추이 계산을 체중과 같은 함수로 하기 위해서다

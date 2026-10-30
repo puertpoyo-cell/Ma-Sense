@@ -3,6 +3,7 @@ import SwiftUI
 
 /// 주 평균 라인 차트 (기록 탭·리포트용, DESIGN_SYSTEM.md 5.5). y축은 최소·최대 2개, x축은 주 시작일.
 /// 샘플 없는 주는 선을 끊는다 (R7 보간 금지).
+/// D24: 하루 측정값(`dailyPoints`)을 주면 주 평균 대신 측정값을 이은 선과 점을 그린다 (측정 없는 주에서 끊음)
 struct WeekChart: View {
     let points: [WeekPoint]
     /// 투약일 세로 눈금 (리포트 D)
@@ -22,6 +23,7 @@ struct WeekChart: View {
     var valueUnit = "kg"
 
     @State private var selectedDate: Date?
+    @Environment(\.calendar) private var calendar
 
     /// 16주를 넘으면 x축 라벨을 달마다
     private var labelsMonthly: Bool { points.count > 16 }
@@ -35,6 +37,12 @@ struct WeekChart: View {
     }
 
     private var plotted: [Plotted] {
+        // D24: 하루 측정값이 있으면 그 값을 이은 선. 측정 없는 주가 끼면 구간을 바꿔 끊는다
+        if !dailyPoints.isEmpty {
+            return WeightRules.lineSegments(dailyPoints, calendar: calendar).enumerated().flatMap { index, segment in
+                segment.map { Plotted(weekStart: $0.day, kilograms: $0.kilograms, segment: index) }
+            }
+        }
         var segment = 0
         var result: [Plotted] = []
         for point in points {
@@ -59,21 +67,13 @@ struct WeekChart: View {
     }
 
     private var yValues: [Double] {
-        let values = plotted.map(\.kilograms) + dailyPoints.map(\.kilograms)
+        let values = plotted.map(\.kilograms)
         guard let low = values.min(), let high = values.max() else { return [] }
         return low == high ? [low] : [low, high]
     }
 
     var body: some View {
         Chart {
-            ForEach(dailyPoints) { day in
-                PointMark(
-                    x: .value("day", day.day),
-                    y: .value("kg", day.kilograms)
-                )
-                .foregroundStyle(labelColor.opacity(0.6))
-                .symbolSize(12)
-            }
             ForEach(plotted) { item in
                 LineMark(
                     x: .value("week", item.weekStart),
@@ -82,6 +82,8 @@ struct WeekChart: View {
                 )
                 .foregroundStyle(lineColor)
                 .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                // 측정값 사이를 부드럽게 잇되 값을 넘어 튀지 않게 (monotone)
+                .interpolationMethod(dailyPoints.isEmpty ? .linear : .monotone)
 
                 PointMark(
                     x: .value("week", item.weekStart),

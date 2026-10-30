@@ -130,4 +130,26 @@ struct WeightRulesTests {
         let fat = WeightRules.trend(samples: WeightRules.metricSamples(samples, metric: .bodyFat), range: .weeks4, now: now, calendar: calendar)
         #expect(fat.changeText == "-0.6")
     }
+
+    // D24 측정값을 이은 선: 측정이 없는 주가 끼면 끊는다. 일요일 시작 주
+    @Test func lineSegmentsBreakOnlyAcrossEmptyWeek() {
+        func day(_ m: Int, _ d: Int, _ kg: Double) -> DailyWeight {
+            DailyWeight(day: TestCalendar.date(2026, m, d), kilograms: kg)
+        }
+        // 10-25(일)·10-27·10-30은 같은 주, 11-02(월)는 바로 다음 주 → 한 줄
+        let joined = [day(10, 25, 79.2), day(10, 27, 78.0), day(10, 30, 77.0), day(11, 2, 76.8)]
+        #expect(WeightRules.lineSegments(joined, calendar: calendar).map(\.count) == [4])
+        // 10-05 주 다음 10-11 주가 비고 10-20 주 → 끊김
+        let gapped = [day(10, 5, 81), day(10, 7, 83), day(10, 20, 79.5)]
+        #expect(WeightRules.lineSegments(gapped, calendar: calendar).map(\.count) == [2, 1])
+        // 정렬 안 된 입력도 시간순
+        #expect(WeightRules.lineSegments(Array(gapped.reversed()), calendar: calendar).first?.first?.kilograms == 81)
+        #expect(WeightRules.lineSegments([], calendar: calendar).isEmpty)
+    }
+
+    @Test func normalizedFitsEachSeriesToItsOwnRange() {
+        #expect(WeightRules.normalized([79, 78, 77]) == [1, 0.5, 0])
+        #expect(WeightRules.normalized([22.6, 22.6]) == [0.5, 0.5])
+        #expect(WeightRules.normalized([]).isEmpty)
+    }
 }
