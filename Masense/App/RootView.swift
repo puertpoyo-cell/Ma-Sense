@@ -94,16 +94,6 @@ struct MainTabView: View {
         return .today
     }
 
-    /// 접힌 화면(상태 표시줄이 옆 기둥)이면 아래 탭 바 대신 기둥 반대쪽 세로 레일 (D23-1, R24)
-    @State private var railEdge: UnfoldRules.HorizontalEdge?
-
-    private static let tabs: [SideTabRail<Tab>.Item] = [
-        .init(tag: .today, title: "tab.today", systemImage: "house"),
-        .init(tag: .history, title: "tab.history", systemImage: "calendar"),
-        .init(tag: .clinic, title: "tab.clinic", systemImage: "list.clipboard"),
-        .init(tag: .report, title: "tab.report", systemImage: "doc.text"),
-    ]
-
     var body: some View {
         TabView(selection: $selection) {
             NavigationStack {
@@ -111,14 +101,12 @@ struct MainTabView: View {
                 TodayView(openReport: { selection = .report }, openClinic: { selection = .clinic })
                     .coachPopupOverlay()
             }
-            .toolbar(railEdge == nil ? .visible : .hidden, for: .tabBar)
             .tabItem { Label("tab.today", systemImage: "house") }
             .tag(Tab.today)
 
             // D20 날짜 중심 기록 탭은 모아 보기 이동을 위해 자기 NavigationStack(path)을 가진다
             HistoryView()
                 .coachPopupOverlay(appearSpot: .history)
-                .toolbar(railEdge == nil ? .visible : .hidden, for: .tabBar)
             .tabItem { Label("tab.history", systemImage: "calendar") }
             .tag(Tab.history)
 
@@ -127,7 +115,6 @@ struct MainTabView: View {
                 ClinicView(openReport: { selection = .report })
                     .coachPopupOverlay(appearSpot: .clinic)
             }
-            .toolbar(railEdge == nil ? .visible : .hidden, for: .tabBar)
             .tabItem { Label("tab.clinic", systemImage: "list.clipboard") }
             .tag(Tab.clinic)
 
@@ -135,39 +122,16 @@ struct MainTabView: View {
                 ReportView()
                     .coachPopupOverlay(appearSpot: .report)
             }
-            .toolbar(railEdge == nil ? .visible : .hidden, for: .tabBar)
             .tabItem { Label("tab.report", systemImage: "doc.text") }
             .tag(Tab.report)
         }
         .tint(Color.accent)
-        .safeAreaInset(edge: .leading, spacing: 0) {
-            if railEdge == .leading { SideTabRail(items: Self.tabs, selection: $selection) }
-        }
-        .safeAreaInset(edge: .trailing, spacing: 0) {
-            if railEdge == .trailing { SideTabRail(items: Self.tabs, selection: $selection) }
-        }
-        // 안전 영역만 보고 옆 기둥 여부를 정한다. 기기 종류·방향은 묻지 않는다 (Apple "Prepare your app for iPhone Duo").
-        // 반드시 레일(safeAreaInset) 바깥에서 읽는다: 안쪽에서 읽으면 레일 폭이 여백에 더해져
-        // 레일이 생기고 사라지기를 되풀이하다 앱이 멈춘다 (빌드 17, 2026-10-30 실기기 남색 화면 멈춤)
-        .onGeometryChange(for: RailKey.self) { proxy in
-            let insets = proxy.safeAreaInsets
-            return RailKey(top: insets.top, leading: insets.leading, trailing: insets.trailing)
-        } action: { key in
-            let edge = UnfoldRules.tabRailEdge(safeAreaTop: key.top, leading: key.leading, trailing: key.trailing)
-            if edge != railEdge { railEdge = edge }
-        }
         // 알림·위젯에서 들어오면 오늘 탭으로. 시트는 오늘 화면이 연다
         .onChange(of: router.pending, initial: true) { _, route in
             if route != nil {
                 selection = .today
             }
         }
-    }
-
-    private struct RailKey: Equatable {
-        let top: CGFloat
-        let leading: CGFloat
-        let trailing: CGFloat
     }
 }
 

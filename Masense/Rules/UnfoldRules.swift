@@ -27,26 +27,4 @@ enum UnfoldRules {
     static func columns(for size: CGSize) -> Int {
         size.width > size.height && size.width >= twoColumnMinWidth ? 2 : 1
     }
-
-    // MARK: 접힌 화면의 옆 레일 (D23-1, 2026-10-30 사람 요청 "접힌 UI에서도 상·하단 고정 버튼은 좌/우로")
-
-    /// 상태 표시줄이 옆 기둥에 있다고 보는 최소 옆 여백
-    static let sideStatusBarMinInset: CGFloat = 32
-    /// 반대쪽 옆 여백이 이보다 작아야 한쪽 기둥(접힌 화면)이다. 양쪽이 비슷하게 크면 보통 폰의 가로 회전
-    static let sideStatusBarMaxOppositeInset: CGFloat = 16
-    /// 위 여백이 이보다 작아야 상태 표시줄이 위가 아니라 옆에 있다
-    static let sideStatusBarMaxTopInset: CGFloat = 24
-
-    /// 탭 레일을 놓을 쪽. 상태 표시줄 기둥의 반대쪽 (예: 기둥이 오른쪽이면 왼쪽 레일).
-    /// nil이면 보통 배치(아래 탭 바). 안전 영역 값만 보고 판단하므로 기기 종류·방향을 묻지 않는다
-    static func tabRailEdge(safeAreaTop top: CGFloat, leading: CGFloat, trailing: CGFloat) -> HorizontalEdge? {
-        guard top < sideStatusBarMaxTopInset else { return nil }
-        if trailing >= sideStatusBarMinInset, leading < sideStatusBarMaxOppositeInset { return .leading }
-        if leading >= sideStatusBarMinInset, trailing < sideStatusBarMaxOppositeInset { return .trailing }
-        return nil
-    }
-
-    enum HorizontalEdge: Equatable {
-        case leading, trailing
-    }
 }

@@ -18,18 +18,6 @@ struct UnfoldRulesTests {
         #expect(!UnfoldRules.isUnfold(from: .zero, to: folded))
     }
 
-    // D23-1 접힌 화면: 상태 표시줄 기둥의 반대쪽에 탭 레일
-    @Test func tabRailOppositeSideStatusBar() {
-        // 기둥이 오른쪽(접힌 iPhone Duo) → 왼쪽 레일
-        #expect(UnfoldRules.tabRailEdge(safeAreaTop: 0, leading: 0, trailing: 56) == .leading)
-        #expect(UnfoldRules.tabRailEdge(safeAreaTop: 0, leading: 56, trailing: 0) == .trailing)
-        // 상태 표시줄이 위에 있으면 보통 배치
-        #expect(UnfoldRules.tabRailEdge(safeAreaTop: 59, leading: 0, trailing: 0) == nil)
-        // 보통 폰의 가로 회전은 양쪽 여백이 같아 보통 배치
-        #expect(UnfoldRules.tabRailEdge(safeAreaTop: 0, leading: 59, trailing: 59) == nil)
-        #expect(UnfoldRules.tabRailEdge(safeAreaTop: 0, leading: 0, trailing: 0) == nil)
-    }
-
     @Test func twoColumnsOnlyWhenLandscapeAndWide() {
         #expect(UnfoldRules.columns(for: CGSize(width: 880, height: 820)) == 2)
         #expect(UnfoldRules.columns(for: CGSize(width: 820, height: 880)) == 1)
