@@ -55,7 +55,7 @@ main에 앱 코드(`Masense/`, `Shared/`, `MasenseWidgets/`, `Config/`, `project
    - `ASC_ISSUER_ID` — Issuer ID (UUID 모양)
    - `ASC_PRIVATE_KEY` — `.p8` 파일을 텍스트 편집기로 열어 `-----BEGIN PRIVATE KEY-----`부터 `-----END PRIVATE KEY-----`까지 **전체를 그대로** 붙여 넣기
 3. **첫 실행**: Actions 탭 > TestFlight > Run workflow (main). 첫 번째는 클라우드 서명이 배포 인증서를 새로 만들므로 1~2분 더 걸린다
-   - 워크플로는 러너의 Xcode 26으로 빌드한다 (App Store Connect가 iOS 26 SDK 이상만 받음, 2026-10-30 확인). Secret의 키가 한 줄로 붙어 있어도 PEM을 다시 만들어 쓴다
+   - 워크플로는 GitHub `xcode-27` 러너(공개 미리보기)의 Xcode 27.1로 빌드한다 (D23: iPhone Duo 펼친 화면을 다 쓰려면 iOS 27.1 SDK. App Store Connect는 iOS 26 SDK 이상만 받음, 2026-10-30 확인). Secret의 키가 한 줄로 붙어 있어도 PEM을 다시 만들어 쓴다
    - 실패하면 로그의 `error:` 줄을 Claude에게 보내면 된다. 흔한 원인: 키 권한이 Developer(→ App Manager로), Secrets 이름 오타, 같은 빌드 번호 재업로드
 4. 그 뒤로는 main에 앱 코드가 올라갈 때마다 자동. 문서만 바뀐 커밋은 돌지 않는다. Secrets가 없으면 "Secrets 확인" 단계에서 조용히 끝난다
 

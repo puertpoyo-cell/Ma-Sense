@@ -19,6 +19,8 @@ struct ReportView: View {
     @State private var pdfURL: URL?
     @State private var showsPurchase = false
     @State private var overflows = false
+    /// 펼침 배치용 스크롤 화면 크기 (D23)
+    @State private var viewport: CGSize = .zero
 
     private var activePrescription: Prescription? { prescriptions.first { $0.isActive } }
     private var settings: UserSettings? { settingsList.first }
@@ -37,32 +39,48 @@ struct ReportView: View {
     var body: some View {
         TimelineView(.everyMinute) { timeline in
             ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.cardGap) {
-                    if prescriptions.isEmpty {
-                        Text("report.empty")
-                            .font(Typography.body)
-                            .foregroundStyle(Color.inkSecondary)
-                    } else {
-                        let report = makeReport(now: timeline.date)
-                        questionsCard
-                        periodPicker
-                        ReportPreviewView(report: report, accent: accent)
-                            .task(id: report) {
-                                overflows = !ReportRenderer.fitsOnePage(report, calendar: calendar)
+                // D23: 펼친 가로 화면은 왼쪽 물어볼 것·기간·내보내기, 오른쪽 A4 미리보기 2단. 접힌 폭은 한 단
+                UnfoldLayout(container: viewport) { shown in
+                    let columns = UnfoldRules.columns(for: shown)
+                    VStack(alignment: .leading, spacing: Spacing.cardGap) {
+                        if prescriptions.isEmpty {
+                            Text("report.empty")
+                                .font(Typography.body)
+                                .foregroundStyle(Color.inkSecondary)
+                        } else {
+                            let report = makeReport(now: timeline.date)
+                            if columns == 2 {
+                                HStack(alignment: .top, spacing: Spacing.cardGap) {
+                                    VStack(alignment: .leading, spacing: Spacing.cardGap) {
+                                        questionsCard
+                                        periodPicker
+                                        if overflows {
+                                            NoticeLine("report.overflow")
+                                        }
+                                        export(report)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                                    preview(report)
+                                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                                }
+                            } else {
+                                questionsCard
+                                periodPicker
+                                preview(report)
+                                if overflows {
+                                    NoticeLine("report.overflow")
+                                }
+                                export(report)
                             }
-                        if overflows {
-                            NoticeLine("report.overflow")
                         }
-                        exportControls
-                            .task(id: ExportKey(report: report, isPurchased: isPurchased)) {
-                                await renderIfPurchased(report)
-                            }
+                        NoticeLine("report.disclaimer")
                     }
-                    NoticeLine("report.disclaimer")
+                    .padding(.horizontal, Spacing.screenHorizontal)
+                    .padding(.vertical, Spacing.s4)
+                    .padding(.bottom, Spacing.s6)
                 }
-                .padding(.horizontal, Spacing.screenHorizontal)
-                .padding(.vertical, Spacing.s4)
             }
+            .readsViewportSize(into: $viewport)
         }
         .midnightBackground()
         .navigationTitle("tab.report")
@@ -136,7 +154,21 @@ struct ReportView: View {
         .pickerStyle(.segmented)
     }
 
-    // MARK: 내보내기
+    // MARK: 미리보기·내보내기
+
+    private func preview(_ report: ClinicReport) -> some View {
+        ReportPreviewView(report: report, accent: accent)
+            .task(id: report) {
+                overflows = !ReportRenderer.fitsOnePage(report, calendar: calendar)
+            }
+    }
+
+    private func export(_ report: ClinicReport) -> some View {
+        exportControls
+            .task(id: ExportKey(report: report, isPurchased: isPurchased)) {
+                await renderIfPurchased(report)
+            }
+    }
 
     @ViewBuilder
     private var exportControls: some View {

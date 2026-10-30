@@ -33,22 +33,25 @@ struct ClinicView: View {
     @Environment(\.services) private var services
     @State private var sheet: Sheet?
     @State private var showsToast = false
+    /// 펼침 배치용 스크롤 화면 크기 (D23)
+    @State private var viewport: CGSize = .zero
 
     var body: some View {
         TimelineView(.everyMinute) { timeline in
             ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.cardGap) {
+                // D23: 펼친 가로 화면은 왼쪽 다음 진료·물어볼 것·새 진료, 오른쪽 검사 결과·진료 기록 2단
+                UnfoldColumns(container: viewport) {
                     nextClinicCard(now: timeline.date)
                     questionsCard
                     PrimaryButton("clinic.visit.new") { sheet = .newVisit }
+                } trailing: {
                     labsCard
                     visitsCard
+                } footer: {
                     NoticeLine("lab.notice")
                 }
-                .padding(.horizontal, Spacing.screenHorizontal)
-                .padding(.vertical, Spacing.s4)
-                .padding(.bottom, Spacing.s6)
             }
+            .readsViewportSize(into: $viewport)
         }
         .midnightBackground()
         .navigationTitle("tab.clinic")

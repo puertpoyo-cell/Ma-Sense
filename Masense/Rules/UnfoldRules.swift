@@ -23,7 +23,7 @@ enum UnfoldRules {
         return widthGrew && heightKept
     }
 
-    /// 오늘 화면 단 수. 가로(폭 > 높이)이고 충분히 넓을 때만 2단, 세로 펼침은 1단
+    /// 탭 화면(오늘·기록·진료·리포트) 단 수. 가로(폭 > 높이)이고 충분히 넓을 때만 2단, 세로 펼침은 1단 (D21·D23)
     static func columns(for size: CGSize) -> Int {
         size.width > size.height && size.width >= twoColumnMinWidth ? 2 : 1
     }

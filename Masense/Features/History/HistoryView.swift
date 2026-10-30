@@ -42,6 +42,8 @@ struct HistoryView: View {
     @State private var selectedDay: Date?
     @State private var path: [Destination] = HistoryView.initialPath
     @State private var sheet: Sheet?
+    /// 펼침 배치용 스크롤 화면 크기 (D23)
+    @State private var viewport: CGSize = .zero
     @State private var showsToast = false
     /// N-E1 월 보기
     @State private var showsMonth = false
@@ -68,15 +70,15 @@ struct HistoryView: View {
                 let today = calendar.startOfDay(for: timeline.date)
                 let day = selectedDay ?? today
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.cardGap) {
+                    // D23: 펼친 가로 화면은 왼쪽 달력·하루 카드, 오른쪽 모아 보기 2단
+                    UnfoldColumns(container: viewport) {
                         weekStrip(day: day, today: today)
                         dayCard(day: day, today: today)
+                    } trailing: {
                         collections
                     }
-                    .padding(.horizontal, Spacing.screenHorizontal)
-                    .padding(.vertical, Spacing.s4)
-                    .padding(.bottom, Spacing.s6)
                 }
+                .readsViewportSize(into: $viewport)
             }
             .midnightBackground()
             .navigationTitle("tab.history")

@@ -20,7 +20,9 @@ jobs:
 
   test:
     name: xcodebuild test (iOS Simulator)
-    runs-on: macos-15
+    # D23 (2026-10-30): iPhone Duo 펼친 화면을 다 쓰려면 iOS 27.1 SDK(Xcode 27.1)로 빌드해야 한다.
+    # GitHub 호스팅 러너는 `xcode-27` 이미지(공개 미리보기, 기본 Xcode 27.1)에만 Xcode 27이 있다
+    runs-on: xcode-27
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
