@@ -53,8 +53,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Xcode version
-        run: xcodebuild -version
+      # App Store Connect는 iOS 26 SDK(Xcode 26)로 빌드한 앱만 받는다 (2026-10-30 업로드 거절 "SDK version issue").
+      # 러너의 Xcode 26 중 가장 새 것을 고른다
+      - name: Select Xcode 26
+        run: |
+          set -euo pipefail
+          ls -d /Applications/Xcode_* || true
+          APP=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
+          sudo xcode-select -s "$APP"
+          xcodebuild -version
 
       - name: Write API key
         env:
