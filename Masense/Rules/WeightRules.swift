@@ -119,17 +119,21 @@ enum WeightRules {
 
     /// 확대 그래프 기간. 전체는 첫 기록이 있는 주부터 (최소 4주)
     static func trend(samples: [WeightSampleSnapshot], range: WeightTrendRange, now: Date, calendar: Calendar) -> WeightTrend {
-        let weeks: Int
-        if let fixed = range.weeks {
-            weeks = fixed
-        } else if let earliest = samples.map(\.measuredAt).min(),
-                  let firstWeek = calendar.dateInterval(of: .weekOfYear, for: earliest),
-                  let currentWeek = calendar.dateInterval(of: .weekOfYear, for: now) {
-            let span = calendar.dateComponents([.weekOfYear], from: firstWeek.start, to: currentWeek.start).weekOfYear ?? 0
-            weeks = max(span + 1, 4)
-        } else {
-            weeks = 4
-        }
+        trend(samples: samples, weeks: range.weeks ?? allWeeks(samples: samples, now: now, calendar: calendar), now: now, calendar: calendar)
+    }
+
+    /// 전체 기간의 주 수. 첫 기록이 있는 주부터 `now`의 주까지, 최소 4주
+    static func allWeeks(samples: [WeightSampleSnapshot], now: Date, calendar: Calendar) -> Int {
+        guard let earliest = samples.map(\.measuredAt).min(),
+              let firstWeek = calendar.dateInterval(of: .weekOfYear, for: earliest),
+              let currentWeek = calendar.dateInterval(of: .weekOfYear, for: now)
+        else { return 4 }
+        let span = calendar.dateComponents([.weekOfYear], from: firstWeek.start, to: currentWeek.start).weekOfYear ?? 0
+        return max(span + 1, 4)
+    }
+
+    /// 주 수로 정한 추이 (D24 핀치 확대·축소)
+    static func trend(samples: [WeightSampleSnapshot], weeks: Int, now: Date, calendar: Calendar) -> WeightTrend {
         let series = weeklyWeightSeries(samples: samples, weeks: weeks, now: now, calendar: calendar)
         guard let start = series.first?.weekStart else { return WeightTrend(weeks: [], daily: []) }
 
@@ -169,6 +173,18 @@ enum WeightRules {
         guard let low = values.min(), let high = values.max() else { return [] }
         guard high > low else { return values.map { _ in 0.5 } }
         return values.map { ($0 - low) / (high - low) }
+    }
+
+    /// D24-1 핀치로 고르는 가로 기간 단계 (주). 마지막 단계는 전체(`allWeeks`)
+    static let zoomSteps = [2, 4, 8, 12, 26, 52]
+
+    /// 핀치 배율로 다음 기간. 벌리면(배율 > 1) 짧게, 오므리면 길게. 단계 중 로그 거리로 가장 가까운 것에 붙는다.
+    /// `maxWeeks`(전체)보다 긴 단계는 빼고 전체를 마지막 단계로 둔다
+    static func zoomedWeeks(from base: Int, magnification: Double, maxWeeks: Int) -> Int {
+        let candidates = zoomSteps.filter { $0 < maxWeeks } + [max(maxWeeks, zoomSteps[0])]
+        guard magnification > 0, base > 0 else { return min(base, candidates.last ?? base) }
+        let target = log(Double(base) / magnification)
+        return candidates.min { abs(log(Double($0)) - target) < abs(log(Double($1)) - target) } ?? base
     }
 
     // MARK: D11 체성분·마지막 기록 구간

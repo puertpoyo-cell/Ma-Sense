@@ -5060,13 +5060,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Body trend chart. A line connecting measurements from the last 12 weeks"
+            "value": "Body trend chart. A line connecting your measurements"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "몸 추이 그래프. 최근 12주 측정값을 이은 선"
+            "value": "몸 추이 그래프. 측정값을 이은 선"
           }
         }
       }
@@ -5094,13 +5094,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The line connects your measurements and breaks over weeks with no record. Short ticks mark doses. Tap a name to overlay another value."
+            "value": "The line connects your measurements and breaks over weeks with no record. Short ticks mark doses. Pinch to change the time span."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "측정값을 이은 선입니다. 기록이 없는 주는 끊고, 아래 짧은 눈금은 투약일입니다. 이름을 눌러 다른 값을 겹쳐 볼 수 있습니다."
+            "value": "측정값을 이은 선입니다. 기록이 없는 주는 끊고, 아래 짧은 눈금은 투약일입니다. 두 손가락으로 벌리거나 오므려 기간을 바꿉니다."
           }
         }
       }
@@ -5111,13 +5111,47 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Units differ, so each line is drawn to its own range. Compare the shapes, and read numbers under each name or by tapping the chart. Short ticks mark doses."
+            "value": "Units differ, so each line is drawn to its own range. Read numbers under each name or by tapping the chart. Pinch to change the time span."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "단위가 달라 선마다 자기 범위에 맞춰 그렸습니다. 모양만 비교하고 숫자는 이름 아래와 눌러 보기로 확인합니다. 아래 짧은 눈금은 투약일입니다."
+            "value": "단위가 달라 선마다 자기 범위에 맞춰 그렸습니다. 숫자는 이름 아래와 눌러 보기로 확인합니다. 두 손가락으로 벌리거나 오므려 기간을 바꿉니다."
+          }
+        }
+      }
+    },
+    "history.bodyTrend.span.all": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전체"
+          }
+        }
+      }
+    },
+    "history.bodyTrend.span.weeks %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld wk"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld주"
           }
         }
       }

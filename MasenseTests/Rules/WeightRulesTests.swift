@@ -152,4 +152,24 @@ struct WeightRulesTests {
         #expect(WeightRules.normalized([22.6, 22.6]) == [0.5, 0.5])
         #expect(WeightRules.normalized([]).isEmpty)
     }
+
+    // D24-1 핀치: 벌리면 짧게, 오므리면 길게, 단계에 붙고 전체를 넘지 않는다
+    @Test func pinchZoomSnapsToSteps() {
+        #expect(WeightRules.zoomedWeeks(from: 12, magnification: 1, maxWeeks: 100) == 12)
+        #expect(WeightRules.zoomedWeeks(from: 12, magnification: 1.5, maxWeeks: 100) == 8)
+        #expect(WeightRules.zoomedWeeks(from: 12, magnification: 3, maxWeeks: 100) == 4)
+        #expect(WeightRules.zoomedWeeks(from: 12, magnification: 10, maxWeeks: 100) == 2)
+        #expect(WeightRules.zoomedWeeks(from: 12, magnification: 0.5, maxWeeks: 100) == 26)
+        #expect(WeightRules.zoomedWeeks(from: 12, magnification: 0.05, maxWeeks: 100) == 100)
+        // 기록이 10주뿐이면 12주 이상 단계는 없고 전체 10주가 끝
+        #expect(WeightRules.zoomedWeeks(from: 8, magnification: 0.3, maxWeeks: 10) == 10)
+        #expect(WeightRules.zoomedWeeks(from: 4, magnification: 0, maxWeeks: 10) == 4)
+    }
+
+    @Test func allWeeksSpansFromFirstRecordWithMinimumFour() {
+        #expect(WeightRules.allWeeks(samples: [], now: now, calendar: calendar) == 4)
+        #expect(WeightRules.allWeeks(samples: [sample(10, 20, 80)], now: now, calendar: calendar) == 4)
+        // 9-01(화) 주(8-30)부터 10-18 주까지 7주 차이 → 7 + 1
+        #expect(WeightRules.allWeeks(samples: [sample(9, 1, 80)], now: now, calendar: calendar) == 8)
+    }
 }

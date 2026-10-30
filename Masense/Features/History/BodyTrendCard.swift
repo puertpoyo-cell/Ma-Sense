@@ -1,7 +1,7 @@
 import Charts
 import SwiftUI
 
-/// 기록 탭 맨 위 몸 추이 카드 (D24, 2026-10-30 사람 요청 "그래프로 보여 줘야지 추이가, 기록 탭에 제일 위에").
+/// 기록 탭 맨 위 몸 추이 카드 (D24, D24-1 핀치로 가로 기간, 2026-10-30 사람 요청 "그래프로 보여 줘야지 추이가, 기록 탭에 제일 위에").
 /// 체중·체지방률·제지방량 중 기록이 있는 것을 선으로 겹쳐 보인다. 측정값을 이은 선, 측정 없는 주에서 끊음 (R7).
 /// 하나만 고르면 실제 눈금, 둘 이상이면 단위가 달라 선마다 자기 범위로 맞춰 모양만 겹친다 (`WeightRules.normalized`).
 /// 목표선·판단 색 없음 (COMPLIANCE.md 2.1-3). 빨강·초록 금지라 강조·모래·세이지 토큰을 쓴다
@@ -12,10 +12,13 @@ struct BodyTrendCard: View {
     var openDetail: () -> Void
 
     @Environment(\.calendar) private var calendar
-    @State private var shown: Set<BodyMetric> = [.weight]
+    /// 처음엔 기록이 있는 값 모두 (D24-1, 2026-10-30 사람 결정 "셋 다 켜지게")
+    @State private var shown: Set<BodyMetric> = Set(BodyMetric.allCases)
     @State private var selectedDate: Date?
-
-    private static let weeks = 12
+    /// D24-1 핀치로 고른 가로 기간(주). 기기 화면 상태라 UserDefaults
+    @AppStorage("bodyTrend.weeks") private var weeks = 12
+    /// 핀치 시작 때 기간. 진행 중 배율은 이 값 기준
+    @State private var pinchBase: Int?
 
     private struct Series: Identifiable {
         let metric: BodyMetric
@@ -34,8 +37,10 @@ struct BodyTrendCard: View {
     }
 
     var body: some View {
-        let end = WeightRules.seriesEnd(samples: samples, weeks: Self.weeks, now: now, calendar: calendar)
-        let available = series(end: end)
+        let maxWeeks = WeightRules.allWeeks(samples: samples, now: now, calendar: calendar)
+        let span = min(weeks, maxWeeks)
+        let end = WeightRules.seriesEnd(samples: samples, weeks: span, now: now, calendar: calendar)
+        let available = series(end: end, weeks: span)
         let visible = available.filter { shown.contains($0.metric) }
         let overlaid = visible.count > 1
         let points = plotted(visible, overlaid: overlaid)
@@ -46,6 +51,11 @@ struct BodyTrendCard: View {
                         .font(Typography.sectionHeader)
                         .foregroundStyle(Color.ink)
                     Spacer()
+                    // 지금 가로 기간. 핀치로 바뀐다
+                    Text(spanLabel(span, maxWeeks: maxWeeks))
+                        .font(Typography.caption.monospacedDigit())
+                        .foregroundStyle(Color.inkSecondary)
+                        .contentTransition(.numericText())
                     Button(action: openDetail) {
                         HStack(spacing: Spacing.s1) {
                             Text("history.bodyTrend.detail")
@@ -67,8 +77,10 @@ struct BodyTrendCard: View {
                         .foregroundStyle(Color.inkSecondary)
                         .frame(maxWidth: .infinity, minHeight: 160)
                 } else {
-                    chart(points, overlaid: overlaid, end: end)
+                    chart(points, overlaid: overlaid, end: end, weeks: span)
                         .frame(height: 200)
+                        .simultaneousGesture(pinch(maxWeeks: maxWeeks))
+                        .sensoryFeedback(.selection, trigger: weeks)
                 }
                 if end < now {
                     Text("weight.sparkline.until \(end.formatted(.dateTime.month(.defaultDigits).day()))")
@@ -85,10 +97,10 @@ struct BodyTrendCard: View {
 
     // MARK: 데이터
 
-    private func series(end: Date) -> [Series] {
+    private func series(end: Date, weeks: Int) -> [Series] {
         BodyMetric.allCases.compactMap { metric in
             let metricSamples = WeightRules.metricSamples(samples, metric: metric)
-            let trend = WeightRules.trend(samples: metricSamples, range: .weeks12, now: end, calendar: calendar)
+            let trend = WeightRules.trend(samples: metricSamples, weeks: weeks, now: end, calendar: calendar)
             // 체중은 기록이 없어도 자리를 둔다. 체성분은 기록이 있을 때만
             guard metric == .weight || !trend.daily.isEmpty else { return nil }
             return Series(metric: metric, daily: trend.daily)
@@ -165,7 +177,30 @@ struct BodyTrendCard: View {
 
     // MARK: 그래프
 
-    private func chart(_ points: [Plotted], overlaid: Bool, end: Date) -> some View {
+    // MARK: 핀치 (D24-1): 벌리면 짧은 기간, 오므리면 긴 기간. 단계(2·4·8·12·26·52주·전체)에 붙는다
+
+    private func pinch(maxWeeks: Int) -> some Gesture {
+        MagnifyGesture()
+            .onChanged { value in
+                let base = pinchBase ?? min(weeks, maxWeeks)
+                if pinchBase == nil { pinchBase = base }
+                let next = WeightRules.zoomedWeeks(from: base, magnification: value.magnification, maxWeeks: maxWeeks)
+                if next != min(weeks, maxWeeks) {
+                    selectedDate = nil
+                    withAnimation(.snappy(duration: 0.25)) { weeks = next }
+                }
+            }
+            .onEnded { _ in pinchBase = nil }
+    }
+
+    private func spanLabel(_ span: Int, maxWeeks: Int) -> String {
+        if span >= maxWeeks, maxWeeks > WeightRules.zoomSteps.first ?? 0, !WeightRules.zoomSteps.contains(span) {
+            return String(localized: "history.bodyTrend.span.all")
+        }
+        return String(localized: "history.bodyTrend.span.weeks \(span)")
+    }
+
+    private func chart(_ points: [Plotted], overlaid: Bool, end: Date, weeks: Int) -> some View {
         let selected = selection(points)
         let ys = points.map(\.y)
         let yAxis: [Double] = overlaid ? [] : {
@@ -199,11 +234,28 @@ struct BodyTrendCard: View {
         .chartYScale(domain: .automatic(includesZero: false), range: .plotDimension(padding: 8))
         .chartXScale(range: .plotDimension(startPadding: 12, endPadding: 12))
         .chartXAxis {
-            AxisMarks(values: .stride(by: .weekOfYear, count: 3)) { _ in
-                AxisGridLine().foregroundStyle(Color.inkTertiary.opacity(0.4))
-                AxisValueLabel(format: .dateTime.month(.defaultDigits).day(), anchor: .top)
-                    .font(.caption2)
-                    .foregroundStyle(Color.inkSecondary)
+            // 기간에 맞춘 눈금 간격: 2주는 3일, 4주는 주, 8~12주는 2·3주, 그 이상은 달
+            if weeks > 16 {
+                AxisMarks(values: .stride(by: .month, count: weeks > 60 ? 3 : (weeks > 30 ? 2 : 1))) { _ in
+                    AxisGridLine().foregroundStyle(Color.inkTertiary.opacity(0.4))
+                    AxisValueLabel(format: .dateTime.month(.abbreviated), anchor: .top)
+                        .font(.caption2)
+                        .foregroundStyle(Color.inkSecondary)
+                }
+            } else if weeks <= 2 {
+                AxisMarks(values: .stride(by: .day, count: 3)) { _ in
+                    AxisGridLine().foregroundStyle(Color.inkTertiary.opacity(0.4))
+                    AxisValueLabel(format: .dateTime.month(.defaultDigits).day(), anchor: .top)
+                        .font(.caption2)
+                        .foregroundStyle(Color.inkSecondary)
+                }
+            } else {
+                AxisMarks(values: .stride(by: .weekOfYear, count: weeks <= 4 ? 1 : (weeks <= 8 ? 2 : 3))) { _ in
+                    AxisGridLine().foregroundStyle(Color.inkTertiary.opacity(0.4))
+                    AxisValueLabel(format: .dateTime.month(.defaultDigits).day(), anchor: .top)
+                        .font(.caption2)
+                        .foregroundStyle(Color.inkSecondary)
+                }
             }
         }
         .chartYAxis {

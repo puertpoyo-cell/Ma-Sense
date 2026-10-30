@@ -158,6 +158,7 @@ struct WeekPoint { let weekStart: Date; let averageKg: Double?; let sampleCount:
 - D7 확대 그래프 `trend(samples:range:now:calendar:) -> WeightTrend`: 기간 4주·12주·26주(6개월)·전체(첫 기록이 있는 주부터, 최소 4주). 주 평균(위와 같음)과 하루 평균 점. `changeText` = 기간 마지막 측정일 - 첫 측정일, 소수 1자리 부호 그대로("-3.2", "+0.4"), 측정일 2일 미만이면 없음. 목표선·판단 색·속도 평가 없음
 
 - D24 (2026-10-30 사람 요청 "그래프로 보여 줘야지 추이가"): `lineSegments(_ daily:calendar:)` 하루 측정값을 선으로 잇되 두 측정 사이에 측정 없는 주가 끼면 끊는다 (위 보간 금지와 같은 기준). 확대 그래프는 주 평균 선 대신 이 선을 그린다. `normalized(_:)` 단위가 다른 값을 겹칠 때 선마다 자기 범위로 0...1 (모두 같으면 0.5). 모양만 비교, 크기 비교 없음
+- D24-1 `zoomedWeeks(from:magnification:maxWeeks:)` 핀치 배율로 가로 기간. 목표 = 시작 기간 / 배율, 단계 2·4·8·12·26·52주와 전체(`allWeeks`, 첫 기록 주부터 최소 4주) 중 로그 거리가 가장 가까운 것. 전체보다 긴 단계는 뺀다. `trend(samples:weeks:now:calendar:)` 주 수로 정한 추이
 
 ## R8. 감량 속도 안내 (M2)
 
