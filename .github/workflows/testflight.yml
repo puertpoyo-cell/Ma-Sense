@@ -59,9 +59,23 @@ jobs:
       - name: Write API key
         env:
           PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        # Secret에 줄바꿈 없이 한 줄로 붙여 넣었거나(2026-10-30 invalidPEMDocument) 앞뒤 공백이 섞여도 PEM을 다시 만든다:
+        # BEGIN/END 머리글·공백을 걷어 내고 base64 본문만 64자씩 다시 줄 바꿈
         run: |
           mkdir -p ~/private_keys
-          printf '%s\n' "$PRIVATE_KEY" > ~/private_keys/AuthKey_$KEY_ID.p8
+          python3 - <<'PY'
+          import os, re, pathlib
+          raw = os.environ["PRIVATE_KEY"]
+          body = re.sub(r"-----(BEGIN|END)[^-]*-----", "", raw)
+          body = re.sub(r"\s+", "", body)
+          if not body:
+              raise SystemExit("ASC_PRIVATE_KEY가 비어 있습니다")
+          lines = [body[i:i + 64] for i in range(0, len(body), 64)]
+          pem = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(lines) + "\n-----END PRIVATE KEY-----\n"
+          path = pathlib.Path.home() / "private_keys" / f"AuthKey_{os.environ['KEY_ID']}.p8"
+          path.write_text(pem)
+          print(f"키 길이 {len(body)}자, {len(lines)}줄로 썼습니다")
+          PY
           chmod 600 ~/private_keys/AuthKey_$KEY_ID.p8
 
       - name: Build number and version
