@@ -140,18 +140,21 @@ struct MainTabView: View {
             .tag(Tab.report)
         }
         .tint(Color.accent)
-        // 안전 영역만 보고 옆 기둥 여부를 정한다. 기기 종류·방향은 묻지 않는다 (Apple "Prepare your app for iPhone Duo")
-        .onGeometryChange(for: RailKey.self) { proxy in
-            let insets = proxy.safeAreaInsets
-            return RailKey(top: insets.top, leading: insets.leading, trailing: insets.trailing)
-        } action: { key in
-            railEdge = UnfoldRules.tabRailEdge(safeAreaTop: key.top, leading: key.leading, trailing: key.trailing)
-        }
         .safeAreaInset(edge: .leading, spacing: 0) {
             if railEdge == .leading { SideTabRail(items: Self.tabs, selection: $selection) }
         }
         .safeAreaInset(edge: .trailing, spacing: 0) {
             if railEdge == .trailing { SideTabRail(items: Self.tabs, selection: $selection) }
+        }
+        // 안전 영역만 보고 옆 기둥 여부를 정한다. 기기 종류·방향은 묻지 않는다 (Apple "Prepare your app for iPhone Duo").
+        // 반드시 레일(safeAreaInset) 바깥에서 읽는다: 안쪽에서 읽으면 레일 폭이 여백에 더해져
+        // 레일이 생기고 사라지기를 되풀이하다 앱이 멈춘다 (빌드 17, 2026-10-30 실기기 남색 화면 멈춤)
+        .onGeometryChange(for: RailKey.self) { proxy in
+            let insets = proxy.safeAreaInsets
+            return RailKey(top: insets.top, leading: insets.leading, trailing: insets.trailing)
+        } action: { key in
+            let edge = UnfoldRules.tabRailEdge(safeAreaTop: key.top, leading: key.leading, trailing: key.trailing)
+            if edge != railEdge { railEdge = edge }
         }
         // 알림·위젯에서 들어오면 오늘 탭으로. 시트는 오늘 화면이 연다
         .onChange(of: router.pending, initial: true) { _, route in
