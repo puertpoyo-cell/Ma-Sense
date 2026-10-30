@@ -12512,6 +12512,23 @@
         }
       }
     },
+    "tab.rail.a11y": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tabs"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "탭"
+          }
+        }
+      }
+    },
     "tab.report": {
       "extractionState": "manual",
       "localizations": {

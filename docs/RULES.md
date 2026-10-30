@@ -424,6 +424,7 @@ func columns(for size: CGSize) -> Int
 - 2단 = 폭 > 높이이고 폭 640pt 이상. 그 밖은 1단
 - 유지 1초(`holdSeconds`), 풀기 0.8초(`unfoldSeconds`, 곡선 0.2·0·0·1, 오버슈트 없음)
 - D23 (2026-10-30 사람 요청 "듀오 UI 최적화"): 같은 단 수 규칙을 기록·진료·리포트 탭에도 쓴다 (`UnfoldColumns`). 펼친 안쪽 화면은 iPhone Duo가 앱의 지원 방향을 따르지 않으므로 방향이 아니라 크기(폭·높이)로만 판단한다
+- D23-1 `tabRailEdge(safeAreaTop:leading:trailing:)`: 위 여백 < 24pt이고 한쪽 옆 여백 ≥ 32pt, 반대쪽 < 16pt이면 상태 표시줄이 옆 기둥에 있는 접힌 화면으로 보고 기둥 반대쪽(`.leading`/`.trailing`)에 탭 레일. 양쪽이 같이 크면(보통 폰 가로) nil
 
 
 
