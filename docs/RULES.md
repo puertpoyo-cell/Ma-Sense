@@ -416,6 +416,18 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 - 주는 달력 firstWeekday부터 7일. 날마다 투약(취소 제외)·진료·컨디션·체중·단백질·운동 기록이 있는지만. 많고 적음·연속일 없음
 - N-E1 월 보기: `monthGrid`는 그 달을 주 단위 7칸으로, 그 달이 아닌 칸은 nil. 투약일만 표시
 
+## R25. 투약 시각 30분 단위 (D25, 2026-10-31 사람 결정)
+
+```swift
+func roundedDown(_ date: Date, calendar: Calendar) -> Date
+func initialTime(initialDate: Date?, now: Date, calendar: Calendar) -> Date
+func shifted(_ date: Date, steps: Int, latest: Date, calendar: Calendar) -> Date
+```
+
+- 투약 기록 시각과 처방 예정 시각은 :00·:30만. 고르는 화면도 30분 간격(`HalfHourDatePicker`)
+- 기본값 = 지금을 내림한 가장 최근 30분 (8:47 → 8:30). 누락 마디에서 열면 그 예정일 시각(내림). 미래는 지금의 내림으로 막음
+- ± 버튼은 30분씩, 미래로는 가지 않음. 이미 저장된 :15 같은 기록은 그대로 둔다 (마이그레이션 없음)
+
 ## R24. 펼침 배치 (D21, 2026-10-27 사람 요청)
 
 ```swift

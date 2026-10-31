@@ -14,7 +14,11 @@ struct PrescriptionForm: View {
                         Text(model.weekdayName(weekday)).tag(weekday)
                     }
                 }
-                DatePicker("prescription.time", selection: $model.scheduledTime, displayedComponents: .hourAndMinute)
+                // D25: 예정 시각도 30분 단위
+                LabeledContent("prescription.time") {
+                    HalfHourDatePicker(selection: $model.scheduledTime, mode: .time)
+                        .fixedSize()
+                }
             }
             .frostRow()
 

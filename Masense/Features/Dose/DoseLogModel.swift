@@ -31,7 +31,8 @@ final class DoseLogModel {
         self.prescription = prescription
         self.calendar = calendar
         openedAt = now
-        administeredAt = min(initialDate ?? now, now)
+        // D25: 30분 단위. 기본은 지금을 내림한 가장 최근 30분, 누락 마디에서 열면 그 예정일
+        administeredAt = DoseTimeRules.initialTime(initialDate: initialDate, now: now, calendar: calendar)
         sequence = PrescriptionRules.nextSequence(doses: doses)
         // 부위는 몸 기준이라 이전 처방의 기록도 함께 본다
         let allDoses = (try? prescription.modelContext?.fetch(FetchDescriptor<Dose>())).map { $0.map(\.snapshot) } ?? doses

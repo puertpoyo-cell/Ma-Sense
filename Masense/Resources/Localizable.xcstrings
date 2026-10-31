@@ -3762,6 +3762,57 @@
         }
       }
     },
+    "dose.time.earlier": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 minutes earlier"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30분 전으로"
+          }
+        }
+      }
+    },
+    "dose.time.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Times are recorded in 30-minute steps. It starts at the most recent half hour."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30분 단위로 기록합니다. 처음엔 지금 기준 가장 최근 30분이 들어가 있습니다."
+          }
+        }
+      }
+    },
+    "dose.time.later": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 minutes later"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30분 뒤로"
+          }
+        }
+      }
+    },
     "exercise.general": {
       "extractionState": "manual",
       "localizations": {

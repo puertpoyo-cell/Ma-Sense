@@ -78,6 +78,12 @@ struct RecordingModelTests {
         #expect(model.lastDoseNote == LastDoseNote(site: .thighLeft, date: administered, daysAgo: 7))
     }
 
+    // D25: 기본 시각은 지금을 내림한 가장 최근 30분
+    @Test func doseLogDefaultsToLatestHalfHour() throws {
+        let model = DoseLogModel(prescription: try makePrescription(), now: TestCalendar.date(2026, 10, 22, 20, 47), calendar: calendar)
+        #expect(model.administeredAt == TestCalendar.date(2026, 10, 22, 20, 30))
+    }
+
     @Test func backdatedDoseClearsMissedCycle() throws {
         let prescription = try makePrescription()
         let now = TestCalendar.date(2026, 10, 30, 9)

@@ -9,6 +9,7 @@ struct DoseLogSheet: View {
     @Environment(\.modelContext) private var context
     @Environment(\.services) private var services
     @State private var model: DoseLogModel
+    @Environment(\.calendar) private var calendar
 
     init(prescription: Prescription, initialDate: Date? = nil, onSaved: @escaping () -> Void = {}) {
         _model = State(initialValue: DoseLogModel(prescription: prescription, initialDate: initialDate))
@@ -26,13 +27,26 @@ struct DoseLogSheet: View {
                     .frostRow()
                 }
 
+                // D25: 30분 단위. 기본은 지금 기준 가장 최근 30분이라 그대로 저장하면 된다.
+                // 바꿀 때는 30분 앞뒤 버튼, 날짜까지 바꿀 때는 가운데 시각을 눌러 고른다
                 Section {
-                    DatePicker(
-                        "dose.time",
-                        selection: $model.administeredAt,
-                        in: ...model.openedAt,
-                        displayedComponents: [.date, .hourAndMinute]
-                    )
+                    let latest = DoseTimeRules.roundedDown(model.openedAt, calendar: calendar)
+                    HStack(spacing: Spacing.s2) {
+                        Text("dose.time")
+                            .foregroundStyle(Color.ink)
+                        Spacer(minLength: Spacing.s2)
+                        shiftButton(systemImage: "minus", labelKey: "dose.time.earlier") {
+                            model.administeredAt = DoseTimeRules.shifted(model.administeredAt, steps: -1, latest: latest, calendar: calendar)
+                        }
+                        HalfHourDatePicker(selection: $model.administeredAt, maximum: latest)
+                            .fixedSize()
+                        shiftButton(systemImage: "plus", labelKey: "dose.time.later") {
+                            model.administeredAt = DoseTimeRules.shifted(model.administeredAt, steps: 1, latest: latest, calendar: calendar)
+                        }
+                        .disabled(model.administeredAt >= latest)
+                    }
+                } footer: {
+                    Text("dose.time.footer")
                 }
                 .frostRow()
 
@@ -87,6 +101,17 @@ struct DoseLogSheet: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
         .presentationBackground(Color.midnightElevated)
+    }
+
+    private func shiftButton(systemImage: String, labelKey: LocalizedStringKey, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.body.weight(.semibold))
+                .frame(width: 36, height: 36)
+                .background(Color.white.opacity(0.08), in: Circle())
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(Text(labelKey))
     }
 
     private func save() {
