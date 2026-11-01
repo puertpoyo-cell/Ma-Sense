@@ -179,4 +179,17 @@ struct PrescriptionRulesTests {
         #expect(PrescriptionRules.penCount(afterAdding: 0, to: 4, dosesPerPen: 1) == 4)
         #expect(PrescriptionRules.penCount(afterAdding: -1, to: 4, dosesPerPen: 1) == 4)
     }
+
+    // D33 남은 수 맞추기: 쓴 회차는 그대로, 전체만
+    @Test func penCountFromRemaining() {
+        // 1회용: 1회 썼고 손에 4개 → 5개
+        #expect(PrescriptionRules.penCount(remaining: 4, usedDoses: 1, dosesPerPen: 1) == 5)
+        #expect(PrescriptionRules.penCount(remaining: 0, usedDoses: 4, dosesPerPen: 1) == 4)
+        #expect(PrescriptionRules.penCount(remaining: 0, usedDoses: 0, dosesPerPen: 1) == 1)
+        // 여러 회 펜(펜당 4회): 6회 썼고 6회 남음 → 12회 = 3개
+        #expect(PrescriptionRules.penCount(remaining: 6, usedDoses: 6, dosesPerPen: 4) == 3)
+        // 나누어떨어지지 않으면 올림
+        #expect(PrescriptionRules.penCount(remaining: 3, usedDoses: 6, dosesPerPen: 4) == 3)
+        #expect(PrescriptionRules.penCount(remaining: 200, usedDoses: 0, dosesPerPen: 1) == 96)
+    }
 }

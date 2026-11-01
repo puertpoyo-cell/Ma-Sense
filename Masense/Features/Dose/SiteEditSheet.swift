@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// 부위 기록 없음으로 저장한 투약의 부위를 나중에 고친다 (D6, SCREENS.md S4). 기록 탭에서 연다.
+/// 투약 고치기 (D6 부위 → D33 시각·회차·부위, 2026-11-01 사람 요청 "꼬였을 때 쉽게 고치는 방법"). 기록 탭 투약 줄을 길게 눌러 연다.
 struct SiteEditSheet: View {
     let dose: Dose
     var onSaved: () -> Void = {}
@@ -9,12 +9,19 @@ struct SiteEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query private var allDoses: [Dose]
+    @Environment(\.services) private var services
+    @Environment(\.calendar) private var calendar
     @State private var site: BodySite?
+    @State private var administeredAt: Date
+    @State private var sequence: Int
+    @State private var showsTimeWheel = false
 
     init(dose: Dose, onSaved: @escaping () -> Void = {}) {
         self.dose = dose
         self.onSaved = onSaved
         _site = State(initialValue: dose.site)
+        _administeredAt = State(initialValue: dose.administeredAt)
+        _sequence = State(initialValue: dose.sequence)
     }
 
     var body: some View {
@@ -22,10 +29,37 @@ struct SiteEditSheet: View {
         let snapshots = allDoses.map(\.snapshot)
         NavigationStack {
             Form {
+                // D33 시각: 글자로 크게, 누르면 30분 단위 휠
                 Section {
-                    Text(dose.administeredAt.formatted(.dateTime.month(.wide).day().weekday(.abbreviated)))
-                        .font(Typography.body.weight(.semibold))
-                        .foregroundStyle(Color.ink)
+                    Button {
+                        withAnimation { showsTimeWheel.toggle() }
+                    } label: {
+                        HStack {
+                            Text(administeredAt.formatted(.dateTime.month().day().weekday(.abbreviated).hour().minute()))
+                                .font(Typography.metricLarge.weight(.semibold))
+                                .monospacedDigit()
+                                .foregroundStyle(Color.ink)
+                            Spacer()
+                            Image(systemName: showsTimeWheel ? "chevron.up" : "chevron.down")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Color.inkSecondary)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    if showsTimeWheel {
+                        HalfHourDatePicker(selection: $administeredAt, maximum: DoseTimeRules.roundedDown(.now, calendar: calendar))
+                            .frame(maxWidth: .infinity)
+                    }
+                    // D33 회차: "저번 패키지의 4번째 펜"처럼 바로잡기
+                    Stepper(value: $sequence, in: 1...max(dose.prescription?.totalDoses ?? 1, sequence, 1)) {
+                        LabeledContent("dose.sequence.label") {
+                            Text("dose.edit.sequence \(sequence)")
+                                .monospacedDigit()
+                        }
+                    }
+                } header: {
+                    SectionHeaderText("dose.time")
                 }
                 .frostRow()
 
@@ -53,7 +87,6 @@ struct SiteEditSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("action.save", action: save)
-                        .disabled(site == nil)
                 }
             }
         }
@@ -63,9 +96,11 @@ struct SiteEditSheet: View {
     }
 
     private func save() {
-        guard let site else { return }
-        dose.site = site
+        if let site { dose.site = site }
+        dose.administeredAt = administeredAt
+        dose.sequence = sequence
         try? context.save()
+        Task { await services.refreshReminders(context: context) }
         dismiss()
         onSaved()
     }

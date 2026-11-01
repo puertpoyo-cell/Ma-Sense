@@ -8,6 +8,8 @@ struct PrescriptionCard: View {
     let prescription: Prescription?
     var tint: Color = .accent
     var onRefill: () -> Void
+    /// D33 남은 수 맞추기
+    var onAdjust: () -> Void = {}
     var onEdit: () -> Void
     var onNew: () -> Void
 
@@ -89,8 +91,12 @@ struct PrescriptionCard: View {
         }
         if remaining == 0 {
             PrimaryButton("refill.title", action: onRefill)
-        } else {
-            GhostButton("refill.title", action: onRefill)
+        }
+        AdaptiveStack(spacing: Spacing.s2) {
+            if remaining > 0 {
+                GhostButton("refill.title", action: onRefill)
+            }
+            GhostButton("remaining.title", action: onAdjust)
         }
     }
 

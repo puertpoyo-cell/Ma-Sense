@@ -49,6 +49,16 @@ enum PrescriptionRules {
         return min(penCount + max(packages, 0) * perPackage, max(limit, penCount))
     }
 
+    /// D33 남은 수 맞추기 (2026-11-01 사람 요청 "꼬였을 때 쉽게 고치는 방법"): 손에 남은 수(1회용은 펜, 여러 회 펜은 회차)를
+    /// 직접 맞추면 그에 맞는 펜 수. 쓴 회차(취소 제외)는 기록에서 오므로 그대로 두고 전체만 바꾼다. 최소 1개, 범위 안
+    static func penCount(remaining: Int, usedDoses: Int, dosesPerPen: Int) -> Int {
+        let perPen = max(dosesPerPen, 1)
+        let total = max(usedDoses, 0) + max(remaining, 0)
+        let pens = Int((Double(total) / Double(perPen)).rounded(.up))
+        let limit = perPen == 1 ? 96 : 20
+        return min(max(pens, 1), limit)
+    }
+
     /// 1회용 펜(펜당 회차 1)의 회차 위치: n번째 패키지의 k번째 펜. `penPosition`과 같은 셈을 패키지 단위로
     static func packagePosition(sequence: Int) -> (package: Int, pen: Int) {
         let position = penPosition(sequence: sequence, dosesPerPen: dosesPerPackage)

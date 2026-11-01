@@ -701,6 +701,8 @@ struct PenStatusPage: View {
     @Query(sort: \Prescription.startDate) private var prescriptions: [Prescription]
     /// D27 새 펜 받음
     @State private var refilling: Prescription?
+    /// D33 남은 수 맞추기
+    @State private var adjusting: Prescription?
     @State private var showsToast = false
 
     var body: some View {
@@ -714,6 +716,7 @@ struct PenStatusPage: View {
                         tint: Color.prescription(slot: prescriptions.colorSlots[prescription.id] ?? 0)
                     )
                     PrimaryButton("refill.title") { refilling = prescription }
+                    GhostButton("remaining.title") { adjusting = prescription }
                 }
             }
             .padding(.horizontal, Spacing.screenHorizontal)
@@ -721,6 +724,9 @@ struct PenStatusPage: View {
         }
         .sheet(item: $refilling) { prescription in
             RefillSheet(prescription: prescription) { showsToast = true }
+        }
+        .sheet(item: $adjusting) { prescription in
+            RemainingPensSheet(prescription: prescription) { showsToast = true }
         }
         .recordedToast(isPresented: $showsToast)
         .midnightBackground()

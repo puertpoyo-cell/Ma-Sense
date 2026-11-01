@@ -20,6 +20,8 @@ struct ClinicView: View {
         /// D29 처방 카드
         case newPrescription
         case refill(Prescription)
+        /// D33 남은 수 맞추기
+        case remaining(Prescription)
 
         var id: String {
             switch self {
@@ -31,6 +33,7 @@ struct ClinicView: View {
             case .calendar: return "calendar"
             case .newPrescription: return "newPrescription"
             case .refill: return "refill"
+            case .remaining: return "remaining"
             }
         }
     }
@@ -62,6 +65,7 @@ struct ClinicView: View {
                         prescription: activePrescriptions.first,
                         tint: Color.prescription(slot: activePrescriptions.first.flatMap { allPrescriptions.colorSlots[$0.id] } ?? 0),
                         onRefill: { if let p = activePrescriptions.first { sheet = .refill(p) } },
+                        onAdjust: { if let p = activePrescriptions.first { sheet = .remaining(p) } },
                         onEdit: { sheet = .prescription },
                         onNew: { sheet = .newPrescription }
                     )
@@ -96,6 +100,8 @@ struct ClinicView: View {
                 PrescriptionSheet()
             case let .refill(prescription):
                 RefillSheet(prescription: prescription) { showsToast = true }
+            case let .remaining(prescription):
+                RemainingPensSheet(prescription: prescription) { showsToast = true }
             case .appointment:
                 if let prescription = activePrescriptions.first {
                     AppointmentSheet(prescription: prescription) { _ in showsToast = true }
