@@ -45,10 +45,12 @@ extension ModelContainer {
             return try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [local])
         } catch {
             #if DEBUG
-            // 출시 전 스키마 재정리(2026-10-22) 이전의 개발용 저장소는 버전을 알아보지 못한다. 개발 빌드에서만 지우고 새로 만든다
+            // 2026-11-01 사고: 예전에는 여기서 저장소 파일을 지웠고, iCloud 오류 때 실기기 개발 빌드가 사용자의 실제 기록을 지웠다.
+            // 이제 절대 지우지 않는다. 열 수 없으면 옆으로 옮겨 두고(복구용 백업) 빈 저장소로 연다
             guard !inMemory, url == nil else { throw error }
-            removeStoreFiles(at: configuration.url)
-            return try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [configuration])
+            backUpStoreFiles(at: configuration.url)
+            let local = ModelConfiguration("Masense", schema: schema, url: configuration.url, cloudKitDatabase: .none)
+            return try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [local])
             #else
             throw error
             #endif
@@ -72,6 +74,17 @@ extension ModelContainer {
             if let detailed = current.userInfo[NSDetailedErrorsKey] as? [NSError] { queue.append(contentsOf: detailed) }
         }
         return lines.joined(separator: "\n")
+    }
+
+    /// 열 수 없는 저장소를 `Masense.store.backup-<시각>`으로 옮겨 둔다 (지우지 않음). 같은 폴더에 남아 나중에 되살릴 수 있다
+    static func backUpStoreFiles(at url: URL, now: Date = Date()) {
+        let stamp = Int(now.timeIntervalSince1970)
+        for suffix in StoreLocation.fileSuffixes {
+            let source = URL(fileURLWithPath: url.path + suffix)
+            guard FileManager.default.fileExists(atPath: source.path) else { continue }
+            let target = URL(fileURLWithPath: url.path + ".backup-\(stamp)" + suffix)
+            try? FileManager.default.moveItem(at: source, to: target)
+        }
     }
 
     /// SQLite 저장소 파일과 저널 파일
