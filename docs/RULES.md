@@ -418,6 +418,18 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 - 주는 달력 firstWeekday부터 7일. 날마다 투약(취소 제외)·진료·컨디션·체중·단백질·운동 기록이 있는지만. 많고 적음·연속일 없음
 - N-E1 월 보기: `monthGrid`는 그 달을 주 단위 7칸으로, 그 달이 아닌 칸은 nil. 투약일만 표시
 
+## R27. 진료 예약·결과 흐름 (D28, 2026-11-01 사람 요청)
+
+```swift
+func appointment(next: Date?, visitDates: [Date], now: Date, calendar: Calendar) -> Appointment  // none, upcoming(days), today, needsResult, recorded
+func hasTime(_ date: Date, calendar: Calendar) -> Bool        // 0:00이면 날짜만 정한 예약
+func appointmentDate(day: Date, time: Date?, calendar: Calendar) -> Date
+func totalPackages(_ packages: [Int]) -> Int
+```
+
+- 진료 날(날짜 기준)이 지났는데 그날 이후 진료 기록이 없으면 `needsResult`, 있으면 `recorded`(다음 예약 차례). 오늘이면 기록 전 `today`
+- 진료 알림(R4): 당일 알림(0일 전)이고 시각을 정했으면 예약 2시간 전, 아니면 그날(며칠 전) 오전 9시
+
 ## R26. iCloud 동기화 중복 정리 (D26, 2026-11-01 사람 결정)
 
 ```swift

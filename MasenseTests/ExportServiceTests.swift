@@ -48,7 +48,7 @@ struct ExportServiceTests {
         #expect(url.lastPathComponent == "Masense_Export_2026-10-24.masense.json")
 
         let document = try ExportCodec.decode(Data(contentsOf: url))
-        #expect(document.schemaVersion == "1.6.0")
+        #expect(document.schemaVersion == "1.7.0")
         #expect(document.prescriptions.map(\.doseLabel) == ["메모"])
         #expect(document.doses.map(\.note) == ["왼쪽"])
         #expect(document.doses.first?.prescriptionId == document.prescriptions.first?.id)
@@ -188,6 +188,36 @@ struct ExportServiceTests {
         #expect(try context.fetch(FetchDescriptor<ClinicVisit>()).isEmpty)
         #expect(try context.fetch(FetchDescriptor<LabResult>()).isEmpty)
         #expect(try context.fetch(FetchDescriptor<ClinicPhoto>()).isEmpty)
+    }
+
+    /// D28 받은 펜은 파일로 오가고, 진료 id와 적은 메모가 그대로 남는다. 키가 없는 이전 파일은 빈 배열
+    @Test func penSuppliesRoundTripThroughExport() throws {
+        let visitID = UUID()
+        context.insert(PenSupply(receivedAt: TestCalendar.date(2026, 10, 31, 11), packages: 2, prescriptionMemo: "적은 그대로", visitID: visitID, createdAt: TestCalendar.date(2026, 10, 31, 12)))
+        context.insert(PenSupply(receivedAt: TestCalendar.date(2026, 11, 1, 9), packages: 1, createdAt: TestCalendar.date(2026, 11, 1, 9)))
+        try context.save()
+
+        let data = try ExportCodec.encode(ExportService.makeDocument(context: context, now: TestCalendar.date(2026, 11, 1, 10)), timeZone: TestCalendar.seoul.timeZone)
+        let object = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let records = try #require(object["penSupplies"] as? [[String: Any]])
+        #expect(records.map { $0["packages"] as? Int } == [2, 1])
+        #expect(records.last?["visitId"] is NSNull)
+
+        let document = try ExportCodec.decode(data)
+        let result = try ExportService.apply(document, mode: .replace, context: context, calendar: TestCalendar.seoul)
+        #expect(result.penSupplies == ExportCodec.ImportResult.Count(imported: 2, skipped: 0))
+        let stored = try context.fetch(FetchDescriptor<PenSupply>(sortBy: [SortDescriptor(\.receivedAt)]))
+        #expect(stored.map(\.packages) == [2, 1])
+        #expect(stored.first?.visitID == visitID)
+        #expect(stored.first?.prescriptionMemo == "적은 그대로")
+
+        var legacy = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        legacy.removeValue(forKey: "penSupplies")
+        let legacyDocument = try ExportCodec.decode(JSONSerialization.data(withJSONObject: legacy))
+        #expect(legacyDocument.penSupplies.isEmpty)
+
+        try ExportService.deleteAll(context: context)
+        #expect(try context.fetch(FetchDescriptor<PenSupply>()).isEmpty)
     }
 
     @Test func addImportTwiceSkipsEverythingTheSecondTime() throws {

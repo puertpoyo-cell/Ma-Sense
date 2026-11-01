@@ -11,7 +11,7 @@ struct MasenseSmokeTests {
         #expect(modelNames == [
             "Prescription", "Dose", "ConditionCheck", "WeightSample", "UserSettings",
             "ProteinEntry", "StrengthSession", "HabitCheck", "ClinicQuestion",
-            "ClinicVisit", "LabResult", "ClinicPhoto",
+            "ClinicVisit", "LabResult", "ClinicPhoto", "PenSupply",
         ])
     }
 

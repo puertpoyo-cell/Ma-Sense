@@ -274,6 +274,32 @@ struct SchemaTests {
         #expect(try context.fetch(FetchDescriptor<HabitCheck>()).first?.note == "진료 다녀옴")
     }
 
+    /// D28: 새 모델(받은 펜)만 더해 V7 저장소의 진료 기록이 그대로 남고 받은 펜을 넣을 수 있다
+    @Test func schemaV7StoreMigratesToV8() throws {
+        let (directory, url) = try diskStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let visitID = UUID()
+
+        try autoreleasepool {
+            let schema = Schema(versionedSchema: SchemaV7.self)
+            let v7 = try ModelContainer(
+                for: schema,
+                configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)]
+            )
+            v7.mainContext.insert(ClinicVisit(id: visitID, visitedAt: TestCalendar.date(2026, 10, 31, 10), note: "다음엔 4주 뒤"))
+            try v7.mainContext.save()
+        }
+
+        let container = try ModelContainer.masense(url: copyStore(url, in: directory))
+        let context = container.mainContext
+        #expect(try context.fetch(FetchDescriptor<ClinicVisit>()).first?.note == "다음엔 4주 뒤")
+        context.insert(PenSupply(receivedAt: TestCalendar.date(2026, 10, 31, 10), packages: 1, prescriptionMemo: "메모 그대로", visitID: visitID))
+        try context.save()
+        let supply = try #require(try context.fetch(FetchDescriptor<PenSupply>()).first)
+        #expect(supply.visitID == visitID)
+        #expect(supply.prescriptionMemo == "메모 그대로")
+    }
+
     /// 이전 버전 컨테이너가 아직 파일을 붙잡고 있으면 같은 파일의 이전(migration)이 독점 잠금을 기다리다 멈출 수 있다.
     /// 저장한 파일(본 파일·-wal·-shm)을 새 위치로 복사해 그 사본을 연다 (앱에서는 컨테이너가 하나라 해당 없음)
     private func copyStore(_ url: URL, in directory: URL) throws -> URL {

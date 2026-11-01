@@ -222,6 +222,176 @@
         }
       }
     },
+    "appointment.add": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add next visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 진료 예약하기"
+          }
+        }
+      }
+    },
+    "appointment.calendar": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to Calendar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "캘린더에 추가"
+          }
+        }
+      }
+    },
+    "appointment.calendar.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clinic visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료"
+          }
+        }
+      }
+    },
+    "appointment.change": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일정 바꾸기"
+          }
+        }
+      }
+    },
+    "appointment.clear": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove appointment"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예약 지우기"
+          }
+        }
+      }
+    },
+    "appointment.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료일"
+          }
+        }
+      }
+    },
+    "appointment.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With a time, the same-day reminder comes 2 hours before, and the calendar event uses that time."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시각을 정하면 당일 알림을 2시간 전에 보내고, 캘린더에도 그 시각으로 넣습니다."
+          }
+        }
+      }
+    },
+    "appointment.hasTime": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set a time"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시각 정함"
+          }
+        }
+      }
+    },
+    "appointment.time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시각"
+          }
+        }
+      }
+    },
+    "appointment.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 진료 예약"
+          }
+        }
+      }
+    },
     "backfill.card.action": {
       "extractionState": "manual",
       "localizations": {
@@ -494,6 +664,108 @@
         }
       }
     },
+    "clinic.archive.deleteRefill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this entry"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 기록 지우기"
+          }
+        }
+      }
+    },
+    "clinic.archive.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit results and received pens collect here by date."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 결과나 받은 펜을 적으면 여기에 날짜순으로 모입니다."
+          }
+        }
+      }
+    },
+    "clinic.archive.packages %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld packages"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "패키지 %lld개"
+          }
+        }
+      }
+    },
+    "clinic.archive.refill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pens received"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펜 받음"
+          }
+        }
+      }
+    },
+    "clinic.archive.totalPackages %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld packages received"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "받은 패키지 모두 %lld개"
+          }
+        }
+      }
+    },
+    "clinic.archive.visit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료"
+          }
+        }
+      }
+    },
     "clinic.card %@": {
       "extractionState": "manual",
       "localizations": {
@@ -558,6 +830,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "최근 검사"
+          }
+        }
+      }
+    },
+    "clinic.next.afterVisit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit results are saved. Add your next visit and you will get a reminder."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 결과를 적었습니다. 다음 진료 예약을 넣어 두면 알림을 보내 드립니다."
           }
         }
       }
@@ -885,6 +1174,74 @@
         }
       }
     },
+    "clinic.result.add": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write visit results"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 결과 적기"
+          }
+        }
+      }
+    },
+    "clinic.result.pending %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write the results of your %@ visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 진료 결과를 적어 주세요"
+          }
+        }
+      }
+    },
+    "clinic.result.pending.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit results"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 결과"
+          }
+        }
+      }
+    },
+    "clinic.visit.comment.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doctor's comments (as you heard them)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "의사 코멘트 (들은 것 그대로)"
+          }
+        }
+      }
+    },
     "clinic.visit.date": {
       "extractionState": "manual",
       "localizations": {
@@ -1051,6 +1408,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "진료 기록 추가"
+          }
+        }
+      }
+    },
+    "clinic.visit.next.toggle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add next visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 진료 예약 넣기"
           }
         }
       }
@@ -1242,6 +1616,23 @@
         }
       }
     },
+    "clinic.visit.section.next": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 진료"
+          }
+        }
+      }
+    },
     "clinic.visit.section.photos": {
       "extractionState": "manual",
       "localizations": {
@@ -1259,6 +1650,23 @@
         }
       }
     },
+    "clinic.visit.section.supply": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pens received"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "받은 펜"
+          }
+        }
+      }
+    },
     "clinic.visit.section.visit": {
       "extractionState": "manual",
       "localizations": {
@@ -1272,6 +1680,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "진료"
+          }
+        }
+      }
+    },
+    "clinic.visit.supply.addToPens": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to remaining pens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 펜에 더하기"
+          }
+        }
+      }
+    },
+    "clinic.visit.supply.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The prescription memo is kept exactly as written. The app does not read or compare it."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 메모는 적은 그대로 보관만 하고, 앱이 읽거나 비교하지 않습니다."
+          }
+        }
+      }
+    },
+    "clinic.visit.supply.memo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prescription memo (as written)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 메모 (적은 그대로)"
+          }
+        }
+      }
+    },
+    "clinic.visit.supply.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "안 받음"
           }
         }
       }

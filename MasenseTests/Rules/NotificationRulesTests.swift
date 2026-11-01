@@ -130,4 +130,13 @@ struct NotificationRulesTests {
         let monday = NotificationRules.weightReminders(settings: SettingsSnapshot(), prescriptionWeekday: nil, weights: [], now: now, calendar: calendar)
         #expect(monday.first?.fireDate == TestCalendar.date(2026, 10, 19, 8))
     }
+
+    // D28 당일 진료 알림: 예약 시각이 있으면 2시간 전, 날짜만이면 오전 9시
+    @Test func sameDayClinicReminderUsesAppointmentTime() {
+        let sameDay = SettingsSnapshot(clinicReminderDaysBefore: 0)
+        let timed = makePlan(p: prescription(clinic: TestCalendar.date(2026, 11, 10, 14, 30)), settings: sameDay)
+        #expect(timed.filter { $0.kind == .clinicSoon }.map(\.fireDate) == [TestCalendar.date(2026, 11, 10, 12, 30)])
+        let dateOnly = makePlan(p: prescription(clinic: TestCalendar.date(2026, 11, 10)), settings: sameDay)
+        #expect(dateOnly.filter { $0.kind == .clinicSoon }.map(\.fireDate) == [TestCalendar.date(2026, 11, 10, 9)])
+    }
 }

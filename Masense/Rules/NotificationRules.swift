@@ -40,6 +40,8 @@ struct PlannedNotification: Equatable, Identifiable {
 enum NotificationRules {
     static let horizonDays = 28
     static let clinicReminderHour = 9
+    /// D28 당일 진료 알림: 예약 시각이 있으면 이만큼 앞서
+    static let sameDayClinicLeadHours: Double = 2
 
     static func notificationPlan(
         p: PrescriptionSnapshot,
@@ -103,11 +105,16 @@ enum NotificationRules {
         }
 
         // 진료
+        // D28: 당일 알림이고 예약 시각을 정했으면 2시간 전, 아니면 그날(며칠 전) 오전 9시
         if let clinic = p.nextClinicDate,
            let day = calendar.date(byAdding: .day, value: -settings.clinicReminderDaysBefore, to: clinic),
-           let fire = calendar.date(bySettingHour: clinicReminderHour, minute: 0, second: 0, of: day),
-           inRange(fire) {
-            plan.append(PlannedNotification(id: "clinic.soon", kind: .clinicSoon, fireDate: fire))
+           let morning = calendar.date(bySettingHour: clinicReminderHour, minute: 0, second: 0, of: day) {
+            let fire = settings.clinicReminderDaysBefore == 0 && ClinicRules.hasTime(clinic, calendar: calendar)
+                ? clinic.addingTimeInterval(-sameDayClinicLeadHours * 3_600)
+                : morning
+            if inRange(fire) {
+                plan.append(PlannedNotification(id: "clinic.soon", kind: .clinicSoon, fireDate: fire))
+            }
         }
 
         return sorted(plan)

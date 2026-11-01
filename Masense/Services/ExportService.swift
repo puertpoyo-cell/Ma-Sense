@@ -56,7 +56,8 @@ enum ExportService {
             habitChecks: context.fetch(FetchDescriptor<HabitCheck>(sortBy: [SortDescriptor(\.date)])).map(\.exportRecord),
             clinicQuestions: context.fetch(FetchDescriptor<ClinicQuestion>(sortBy: [SortDescriptor(\.createdAt)])).map(\.exportRecord),
             clinicVisits: context.fetch(FetchDescriptor<ClinicVisit>(sortBy: [SortDescriptor(\.visitedAt)])).map(\.exportRecord),
-            labResults: context.fetch(FetchDescriptor<LabResult>(sortBy: [SortDescriptor(\.measuredAt)])).map(\.exportRecord)
+            labResults: context.fetch(FetchDescriptor<LabResult>(sortBy: [SortDescriptor(\.measuredAt)])).map(\.exportRecord),
+            penSupplies: context.fetch(FetchDescriptor<PenSupply>(sortBy: [SortDescriptor(\.receivedAt)])).map(\.exportRecord)
         )
     }
 
@@ -154,6 +155,7 @@ enum ExportService {
                 .union(context.fetch(FetchDescriptor<HabitCheck>()).map(\.id))
                 .union(context.fetch(FetchDescriptor<ClinicQuestion>()).map(\.id))
                 .union(context.fetch(FetchDescriptor<LabResult>()).map(\.id))
+                .union(context.fetch(FetchDescriptor<PenSupply>()).map(\.id))
             visits = try uniqueByID(context.fetch(FetchDescriptor<ClinicVisit>()), id: \.id)
             existingIDs.formUnion(visits.keys)
         }
@@ -195,6 +197,7 @@ enum ExportService {
             context.insert(result)
             result.visit = record.visitId.flatMap { visits[$0] }
         }
+        plan.penSupplies.forEach { context.insert(PenSupply(record: $0)) }
         // 다시 붙일 진료 기록이 없는 사진은 지운다
         keptPhotos.values.joined().forEach { context.delete($0) }
 
@@ -239,6 +242,7 @@ enum ExportService {
         try context.fetch(FetchDescriptor<HabitCheck>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<ClinicQuestion>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<LabResult>()).forEach { context.delete($0) }
+        try context.fetch(FetchDescriptor<PenSupply>()).forEach { context.delete($0) }
         // 진료 기록을 지우면 붙은 사진도 함께 지워진다(cascade). 교체 가져오기는 그 전에 사진을 떼어 둔다
         try context.fetch(FetchDescriptor<ClinicVisit>()).forEach { context.delete($0) }
     }

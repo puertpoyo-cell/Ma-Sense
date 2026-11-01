@@ -315,3 +315,27 @@ extension LabResult {
         itemRaw = record.item
     }
 }
+
+extension PenSupply {
+    var exportRecord: ExportDocument.PenSupplyRecord {
+        ExportDocument.PenSupplyRecord(
+            id: id,
+            receivedAt: receivedAt,
+            packages: packages,
+            prescriptionMemo: prescriptionMemo,
+            visitId: visitID,
+            createdAt: createdAt
+        )
+    }
+
+    convenience init(record: ExportDocument.PenSupplyRecord) {
+        self.init(
+            id: record.id,
+            receivedAt: record.receivedAt,
+            packages: record.packages,
+            prescriptionMemo: record.prescriptionMemo,
+            visitID: record.visitId,
+            createdAt: record.createdAt
+        )
+    }
+}

@@ -3,7 +3,7 @@ import SwiftUI
 
 /// D27 새 펜 받음 (2026-11-01 사람 요청 "진료 후 세트 추가로 받음, 첫 페이지 남은 수 업데이트").
 /// 같은 처방으로 패키지를 더 받았을 때 펜 수만 늘린다. 처방(시작일·요일·메모)이 바뀌었으면 새 처방으로 적는다.
-/// 진료 직후에 여는 경우가 많아 다음 진료일도 같이 고칠 수 있다
+/// 받은 기록(`PenSupply`)이 진료 탭 아카이브에 남는다. 진료 예약은 진료 탭에서 (D28)
 struct RefillSheet: View {
     let prescription: Prescription
     var onSaved: () -> Void = {}
@@ -12,16 +12,11 @@ struct RefillSheet: View {
     @Environment(\.modelContext) private var context
     @Environment(\.services) private var services
     @State private var packages = 1
-    @State private var hasNextClinic: Bool
-    @State private var nextClinic: Date
     @State private var showsNewPrescription = false
 
     init(prescription: Prescription, onSaved: @escaping () -> Void = {}) {
         self.prescription = prescription
         self.onSaved = onSaved
-        _hasNextClinic = State(initialValue: prescription.nextClinicDate != nil)
-        _nextClinic = State(initialValue: prescription.nextClinicDate
-            ?? Calendar.current.date(byAdding: .day, value: 28, to: .now) ?? .now)
     }
 
     private var status: PenStatus {
@@ -61,14 +56,6 @@ struct RefillSheet: View {
                 .frostRow()
 
                 Section {
-                    Toggle("prescription.hasNextClinic", isOn: $hasNextClinic)
-                    if hasNextClinic {
-                        DatePicker("prescription.nextClinic", selection: $nextClinic, displayedComponents: .date)
-                    }
-                }
-                .frostRow()
-
-                Section {
                     Button("refill.changedPrescription") { showsNewPrescription = true }
                 } footer: {
                     Text("refill.changedPrescription.footer")
@@ -98,7 +85,8 @@ struct RefillSheet: View {
 
     private func save() {
         prescription.penCount = newPenCount
-        prescription.nextClinicDate = hasNextClinic ? Calendar.current.startOfDay(for: nextClinic) : nil
+        // D28 받은 펜 기록으로 남겨 진료 탭 아카이브에 보인다
+        context.insert(PenSupply(receivedAt: .now, packages: packages))
         guard (try? context.save()) != nil else { return }
         Task { await services.refreshReminders(context: context) }
         dismiss()

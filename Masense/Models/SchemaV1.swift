@@ -195,12 +195,22 @@ enum SchemaV7: VersionedSchema {
     }
 }
 
+/// D28 (2026-11-01 사람 요청 "진료 결과에 받은 펜·처방 메모"): 받은 펜 기록 `PenSupply` 모델 추가.
+/// 기존 모델과 관계 없는 새 모델이라 경량 이전, CloudKit 운영 스키마에도 추가만 (TESTFLIGHT.md 7 다시 배포)
+enum SchemaV8: VersionedSchema {
+    static let versionIdentifier = Schema.Version(1, 7, 0)
+
+    static var models: [any PersistentModel.Type] {
+        SchemaV7.models + [PenSupply.self]
+    }
+}
+
 /// 지금 앱이 여는 스키마
-typealias CurrentSchema = SchemaV7
+typealias CurrentSchema = SchemaV8
 
 enum MasenseMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self, SchemaV6.self, SchemaV7.self]
+        [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self, SchemaV6.self, SchemaV7.self, SchemaV8.self]
     }
 
     static var stages: [MigrationStage] {
@@ -211,6 +221,7 @@ enum MasenseMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: SchemaV4.self, toVersion: SchemaV5.self),
             .lightweight(fromVersion: SchemaV5.self, toVersion: SchemaV6.self),
             .lightweight(fromVersion: SchemaV6.self, toVersion: SchemaV7.self),
+            .lightweight(fromVersion: SchemaV7.self, toVersion: SchemaV8.self),
         ]
     }
 }

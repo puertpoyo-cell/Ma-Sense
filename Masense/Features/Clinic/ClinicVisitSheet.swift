@@ -33,7 +33,19 @@ struct ClinicVisitSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Environment(\.calendar) private var calendar
+    @Environment(\.services) private var services
+    @Query(filter: #Predicate<Prescription> { $0.isActive }) private var activePrescriptions: [Prescription]
+    @Query private var supplies: [PenSupply]
     @State private var visitedAt: Date
+    /// D28 받은 펜 (0 = 안 받음)·처방 메모(적은 그대로)·남은 펜에 더하기
+    @State private var packages: Int
+    @State private var supplyMemo: String
+    @State private var addsToPens = true
+    /// D28 다음 진료 예약
+    @State private var setsNextAppointment: Bool
+    @State private var nextDay: Date
+    @State private var nextHasTime = false
+    @State private var nextTime: Date
     @State private var note: String
     @State private var labs: [LabRow]
     @State private var photos: [PhotoItem]
@@ -49,10 +61,19 @@ struct ClinicVisitSheet: View {
     @State private var confirmsDelete = false
 
     /// `template`: 새 기록일 때 지난 진료. 그 검사 항목·단위를 값 없이 미리 채운다 (N-F1). 값이 빈 줄은 저장되지 않는다
-    init(editing: ClinicVisit? = nil, template: ClinicVisit? = nil, onSaved: @escaping () -> Void = {}) {
+    /// `visitDate`: 진료 탭 "결과 적기"에서 열면 그 진료일 (D28)
+    init(editing: ClinicVisit? = nil, template: ClinicVisit? = nil, visitDate: Date? = nil, supply: PenSupply? = nil, onSaved: @escaping () -> Void = {}) {
         self.editing = editing
         self.onSaved = onSaved
-        _visitedAt = State(initialValue: editing?.visitedAt ?? .now)
+        let visited = editing?.visitedAt ?? min(visitDate ?? .now, .now)
+        _visitedAt = State(initialValue: visited)
+        _packages = State(initialValue: supply?.packages ?? 0)
+        _supplyMemo = State(initialValue: supply?.prescriptionMemo ?? "")
+        // 새 진료 기록이면 다음 예약을 같이 받는다 (4주 뒤 10:00 제안, 바꿀 수 있음)
+        _setsNextAppointment = State(initialValue: editing == nil)
+        let suggested = Calendar.current.date(byAdding: .day, value: 28, to: visited) ?? visited
+        _nextDay = State(initialValue: suggested)
+        _nextTime = State(initialValue: Calendar.current.date(bySettingHour: 10, minute: 0, second: 0, of: suggested) ?? suggested)
         _note = State(initialValue: editing?.note ?? "")
         let rows: [LabRow]
         if let editing {
@@ -75,12 +96,58 @@ struct ClinicVisitSheet: View {
             Form {
                 Section {
                     DatePicker("clinic.visit.date", selection: $visitedAt, in: ...Date.now, displayedComponents: .date)
-                    TextField("clinic.visit.note.placeholder", text: $note, axis: .vertical)
+                    // D28: 의사 코멘트 (들은 것 그대로)
+                    TextField("clinic.visit.comment.placeholder", text: $note, axis: .vertical)
                         .lineLimit(2...6)
                 } header: {
                     SectionHeaderText("clinic.visit.section.visit")
                 }
                 .frostRow()
+
+                // D28 받은 펜·처방 메모. 메모는 적은 그대로 보이고 앱은 읽지 않는다
+                Section {
+                    Stepper(value: $packages, in: 0...6) {
+                        LabeledContent("refill.packages") {
+                            Group {
+                                if packages == 0 {
+                                    Text("clinic.visit.supply.none")
+                                } else if isSingleUse {
+                                    Text("refill.packages.singleUse \(packages) \(packages * PrescriptionRules.dosesPerPackage)")
+                                } else {
+                                    Text("refill.packages.multiDose \(packages)")
+                                }
+                            }
+                            .monospacedDigit()
+                        }
+                    }
+                    if packages > 0 {
+                        TextField("clinic.visit.supply.memo", text: $supplyMemo)
+                        if editing == nil, activePrescriptions.first != nil {
+                            Toggle("clinic.visit.supply.addToPens", isOn: $addsToPens)
+                        }
+                    }
+                } header: {
+                    SectionHeaderText("clinic.visit.section.supply")
+                } footer: {
+                    Text("clinic.visit.supply.footer")
+                }
+                .frostRow()
+
+                if activePrescriptions.first != nil {
+                    Section {
+                        Toggle("clinic.visit.next.toggle", isOn: $setsNextAppointment.animation())
+                        if setsNextAppointment {
+                            DatePicker("appointment.day", selection: $nextDay, in: visitedAt..., displayedComponents: .date)
+                            Toggle("appointment.hasTime", isOn: $nextHasTime.animation())
+                            if nextHasTime {
+                                DatePicker("appointment.time", selection: $nextTime, displayedComponents: .hourAndMinute)
+                            }
+                        }
+                    } header: {
+                        SectionHeaderText("clinic.visit.section.next")
+                    }
+                    .frostRow()
+                }
 
                 Section {
                     if !photos.isEmpty {
@@ -329,13 +396,44 @@ struct ClinicVisitSheet: View {
             context.insert(stored)
             stored.visit = visit
         }
+
+        // D28 받은 펜: 진료 하나에 한 줄. 0이면 지운다
+        let existing = supplies.first { $0.visitID == visit.id }
+        let memo = supplyMemo.trimmingCharacters(in: .whitespacesAndNewlines)
+        if packages > 0 {
+            let supply = existing ?? {
+                let created = PenSupply(receivedAt: visitedAt, packages: packages, visitID: visit.id)
+                context.insert(created)
+                return created
+            }()
+            supply.receivedAt = visitedAt
+            supply.packages = packages
+            supply.prescriptionMemo = memo.isEmpty ? nil : memo
+            // 새 기록일 때만 남은 펜에 더한다 (고칠 때 다시 더하면 두 번 셈)
+            if editing == nil, addsToPens, let prescription = activePrescriptions.first {
+                prescription.penCount = PrescriptionRules.penCount(afterAdding: packages, to: prescription.penCount, dosesPerPen: prescription.dosesPerPen)
+            }
+        } else if let existing {
+            context.delete(existing)
+        }
+
+        // D28 다음 진료 예약
+        if setsNextAppointment, let prescription = activePrescriptions.first {
+            prescription.nextClinicDate = ClinicRules.appointmentDate(day: nextDay, time: nextHasTime ? nextTime : nil, calendar: calendar)
+        }
         try? context.save()
+        Task { await services.refreshReminders(context: context) }
         onSaved()
         dismiss()
     }
 
+    private var isSingleUse: Bool { (activePrescriptions.first?.dosesPerPen ?? 1) == 1 }
+
     private func deleteVisit() {
-        if let editing { context.delete(editing) }
+        if let editing {
+            supplies.filter { $0.visitID == editing.id }.forEach { context.delete($0) }
+            context.delete(editing)
+        }
         try? context.save()
         dismiss()
     }

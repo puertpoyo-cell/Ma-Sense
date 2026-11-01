@@ -274,6 +274,19 @@ enum ProteinFood: String, Codable, CaseIterable {
 
 내보내기 파일에 담지 않는다. 교체 가져오기 때도 같은 ID의 진료 기록에 다시 붙인다. 전체 삭제는 지운다. 식사 사진은 모델이 없다(저장하지 않음).
 
+### PenSupply — 받은 펜 (D28, SchemaV8 1.7.0)
+
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| id | UUID | `UUID()` |  |
+| receivedAt | Date | `.now` | 받은 날 (진료 기록이면 진료일) |
+| packages | Int | `1` | 받은 패키지 수 (1회용 펜 4개, 여러 회 펜 1개) |
+| prescriptionMemo | String? |  | 적은 그대로. 앱은 읽거나 비교하지 않는다 (처방 메모와 같은 성격) |
+| visitID | UUID? |  | 진료 기록에서 적었으면 그 진료 id. 관계 대신 id (기존 모델을 바꾸지 않으려고) |
+| createdAt | Date | `.now` |  |
+
+진료 기록 화면과 오늘 화면 "새 펜 받음"에서 만든다. 진료 기록을 지우면 그 진료의 받은 펜도 지운다. 내보내기 `penSupplies[]`.
+
 ### UserSettings — 단일 레코드
 
 | 필드 | 타입 | 기본값 | 설명 |

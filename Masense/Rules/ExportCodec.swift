@@ -29,6 +29,8 @@ struct ExportDocument: Equatable {
     /// D20 (SchemaV6) 진료 기록·검사 결과. 검사지 사진은 담지 않는다. 키가 없는 파일은 빈 배열로 읽는다
     var clinicVisits: [ClinicVisitRecord] = []
     var labResults: [LabResultRecord] = []
+    /// D28 (SchemaV8) 받은 펜. 키가 없는 파일은 빈 배열로 읽는다
+    var penSupplies: [PenSupplyRecord] = []
 
     struct Device: Codable, Equatable {
         /// "iPhone16,2"
@@ -161,6 +163,15 @@ struct ExportDocument: Equatable {
         var createdAt: Date
     }
 
+    struct PenSupplyRecord: Codable, Equatable {
+        var id: UUID
+        var receivedAt: Date
+        var packages: Int
+        var prescriptionMemo: String?
+        var visitId: UUID?
+        var createdAt: Date
+    }
+
     struct LabResultRecord: Codable, Equatable {
         var id: UUID
         /// 진료 기록 없이 넣은 결과면 null
@@ -181,7 +192,7 @@ extension ExportDocument: Codable {
     private enum CodingKeys: String, CodingKey {
         case format, formatVersion, appVersion, schemaVersion, exportedAt, device, settings
         case prescriptions, doses, conditionChecks, weightSamples, proteinEntries, strengthSessions, habitChecks
-        case clinicQuestions, clinicVisits, labResults
+        case clinicQuestions, clinicVisits, labResults, penSupplies
     }
 
     /// 배열은 키가 없어도 빈 배열로 읽는다 (M2·D6 이전 빌드가 만든 파일)
@@ -204,6 +215,7 @@ extension ExportDocument: Codable {
         clinicQuestions = try c.decodeIfPresent([ClinicQuestionRecord].self, forKey: .clinicQuestions) ?? []
         clinicVisits = try c.decodeIfPresent([ClinicVisitRecord].self, forKey: .clinicVisits) ?? []
         labResults = try c.decodeIfPresent([LabResultRecord].self, forKey: .labResults) ?? []
+        penSupplies = try c.decodeIfPresent([PenSupplyRecord].self, forKey: .penSupplies) ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -225,6 +237,7 @@ extension ExportDocument: Codable {
         try c.encode(clinicQuestions, forKey: .clinicQuestions)
         try c.encode(clinicVisits, forKey: .clinicVisits)
         try c.encode(labResults, forKey: .labResults)
+        try c.encode(penSupplies, forKey: .penSupplies)
     }
 }
 
@@ -426,11 +439,12 @@ enum ExportCodec {
         var clinicQuestions = Count()
         var clinicVisits = Count()
         var labResults = Count()
+        var penSupplies = Count()
         /// 건강 앱에서 온 체중·운동. 가져오지 않고 건강 앱에서 다시 읽는다 (건너뜀으로 세지 않는다)
         var leftToHealthApp = 0
 
         var totalSkipped: Int {
-            [prescriptions, doses, conditionChecks, weightSamples, proteinEntries, strengthSessions, habitChecks, clinicQuestions, clinicVisits, labResults]
+            [prescriptions, doses, conditionChecks, weightSamples, proteinEntries, strengthSessions, habitChecks, clinicQuestions, clinicVisits, labResults, penSupplies]
                 .map(\.skipped)
                 .reduce(0, +)
         }
@@ -450,6 +464,7 @@ enum ExportCodec {
         var clinicQuestions: [ExportDocument.ClinicQuestionRecord] = []
         var clinicVisits: [ExportDocument.ClinicVisitRecord] = []
         var labResults: [ExportDocument.LabResultRecord] = []
+        var penSupplies: [ExportDocument.PenSupplyRecord] = []
         var result = ImportResult()
     }
 
@@ -631,6 +646,16 @@ enum ExportCodec {
                 plan.result.labResults.imported += 1
             } else {
                 plan.result.labResults.skipped += 1
+            }
+        }
+
+        // D28 받은 펜. 진료 기록이 파일에 없어도 넣는다 (진료 id는 그대로 둔다)
+        for record in document.penSupplies {
+            if admit(record.id) {
+                plan.penSupplies.append(record)
+                plan.result.penSupplies.imported += 1
+            } else {
+                plan.result.penSupplies.skipped += 1
             }
         }
 
