@@ -99,57 +99,51 @@ extension RootView {
     }
 }
 
-/// 탭 3개 + 설정 push (SCREENS.md 내비게이션 구조)
+/// D31 (2026-11-01 사람 결정 "탭 3개로: 오늘 / 기록(진료·의사와 볼 리포트 통합) / 설정"). 아이콘도 뜻이 바로 보이게
 struct MainTabView: View {
     private enum Tab: Hashable {
-        case today, history, clinic, report
+        case today, records, settings
     }
 
-    @State private var selection: Tab = MainTabView.initialTab
+    @State private var selection: Tab = MainTabView.initialTab.tab
+    @State private var recordsSegment: RecordsSegment = MainTabView.initialTab.segment
     @Environment(\.router) private var router
 
-    private static var initialTab: Tab {
+    private static var initialTab: (tab: Tab, segment: RecordsSegment) {
         #if DEBUG
         switch ScreenshotRoute.current {
-        case .history?, .historyDose?, .historyCondition?, .historyWeight?, .historyHabits?: return .history
-        case .report?: return .report
-        case .clinic?, .clinicVisit?: return .clinic
+        case .history?, .historyDose?, .historyCondition?, .historyWeight?, .historyHabits?: return (.records, .days)
+        case .report?: return (.records, .report)
+        case .clinic?, .clinicVisit?: return (.records, .clinic)
         default: break
         }
         #endif
-        return .today
+        return (.today, .days)
     }
 
     var body: some View {
         TabView(selection: $selection) {
             NavigationStack {
-                // 1-5 진료 카드 "리포트 준비" → 리포트 탭
-                TodayView(openReport: { selection = .report }, openClinic: { selection = .clinic })
-                    .coachPopupOverlay()
+                // 1-5 진료 카드 "리포트 준비" → 기록 탭의 리포트
+                TodayView(
+                    openReport: { open(.report) },
+                    openClinic: { open(.clinic) }
+                )
+                .coachPopupOverlay()
             }
-            .tabItem { Label("tab.today", systemImage: "house") }
+            .tabItem { Label("tab.today", systemImage: "sun.max") }
             .tag(Tab.today)
 
-            // D20 날짜 중심 기록 탭은 모아 보기 이동을 위해 자기 NavigationStack(path)을 가진다
-            HistoryView()
-                .coachPopupOverlay(appearSpot: .history)
-            .tabItem { Label("tab.history", systemImage: "calendar") }
-            .tag(Tab.history)
+            // 날짜별 기록 · 진료 · 리포트(의사와 볼 내보내기)를 한 탭에서 위쪽 전환으로
+            RecordsTab(segment: $recordsSegment)
+                .tabItem { Label("tab.records", systemImage: "book.closed") }
+                .tag(Tab.records)
 
             NavigationStack {
-                // D20 진료 탭: 진료 전 물어볼 것, 진료 직후 기록·검사 결과
-                ClinicView(openReport: { selection = .report })
-                    .coachPopupOverlay(appearSpot: .clinic)
+                SettingsView()
             }
-            .tabItem { Label("tab.clinic", systemImage: "list.clipboard") }
-            .tag(Tab.clinic)
-
-            NavigationStack {
-                ReportView()
-                    .coachPopupOverlay(appearSpot: .report)
-            }
-            .tabItem { Label("tab.report", systemImage: "doc.text") }
-            .tag(Tab.report)
+            .tabItem { Label("settings.title", systemImage: "gearshape") }
+            .tag(Tab.settings)
         }
         .tint(Color.accent)
         // 알림·위젯에서 들어오면 오늘 탭으로. 시트는 오늘 화면이 연다
@@ -157,6 +151,60 @@ struct MainTabView: View {
             if route != nil {
                 selection = .today
             }
+        }
+    }
+
+    private func open(_ segment: RecordsSegment) {
+        recordsSegment = segment
+        selection = .records
+    }
+}
+
+/// D31 기록 탭 안의 세 갈래
+enum RecordsSegment: String, CaseIterable, Hashable {
+    /// 날짜별 기록 (D20 날짜 중심)
+    case days
+    /// 진료 (예약·처방·결과·받은 펜)
+    case clinic
+    /// 의사와 볼 리포트·내보내기
+    case report
+
+    var titleKey: LocalizedStringKey { LocalizedStringKey("records.segment." + rawValue) }
+}
+
+/// D31 기록 탭. 위쪽 전환으로 날짜별 기록 · 진료 · 리포트
+struct RecordsTab: View {
+    @Binding var segment: RecordsSegment
+
+    var body: some View {
+        Group {
+            switch segment {
+            case .days:
+                // 모아 보기 이동을 위해 자기 NavigationStack(path)을 가진다
+                HistoryView()
+                    .coachPopupOverlay(appearSpot: .history)
+            case .clinic:
+                NavigationStack {
+                    ClinicView(openReport: { segment = .report })
+                        .coachPopupOverlay(appearSpot: .clinic)
+                }
+            case .report:
+                NavigationStack {
+                    ReportView()
+                        .coachPopupOverlay(appearSpot: .report)
+                }
+            }
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            Picker("records.segment.picker", selection: $segment) {
+                ForEach(RecordsSegment.allCases, id: \.self) { item in
+                    Text(item.titleKey).tag(item)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, Spacing.screenHorizontal)
+            .padding(.vertical, Spacing.s2)
+            .background(Color.midnight.opacity(0.92))
         }
     }
 }

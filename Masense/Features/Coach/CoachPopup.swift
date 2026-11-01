@@ -1,4 +1,5 @@
 import Observation
+import SwiftData
 import SwiftUI
 
 /// 화면에 띄운 한 줄과 그 말투 (D18). 같은 뜻을 `CoachRules.variantCount`가지 말투로 돌려 말한다
@@ -53,6 +54,12 @@ final class CoachPopupCenter {
     @ObservationIgnored private var lastContext = CoachContext()
     /// 이번 대화에서 한 줄 (같은 주제를 다시 물으면 다른 줄로)
     @ObservationIgnored private var talkKeys: Set<String> = []
+    /// D30 글로 물은 것 중 의사와 상의할 질문. "물어볼 것에 담기"를 누르면 저장
+    private(set) var pendingQuestion: String?
+    /// D30 글을 분류하는 중
+    private(set) var isThinking = false
+    /// D30 지금 상황에 맞춘 주제 버튼 순서
+    private(set) var topics: [CoachTopic] = CoachTopic.allCases
 
     private enum Key {
         static let day = "coach.popup.day"
@@ -113,17 +120,52 @@ final class CoachPopupCenter {
 
     /// 말 걸기: 인사와 주제 버튼. 오늘 화면에서 부르면 그 화면의 사실을 함께 받는다
     @MainActor
-    func talk(context: CoachContext? = nil) {
+    func talk(context: CoachContext? = nil, now: Date = .now, calendar: Calendar = .current) {
         if let context { lastContext = context }
         dismissTask?.cancel()
         talkKeys = []
+        pendingQuestion = nil
         isTalking = true
-        current = Self.message(.greeting, avoiding: current)
+        // D30: 지금 꼭 할 말이 있으면 그것, 없으면 시간대 인사. 주제 버튼은 상황에 맞는 것부터
+        topics = CoachRules.suggestedTopics(context: lastContext, now: now, calendar: calendar)
+        current = Self.message(CoachRules.greeting(context: lastContext, now: now, calendar: calendar), avoiding: current)
+    }
+
+    /// D30 글로 묻기. 규칙 → (있으면) 기기 안 AI 분류 → 정해 둔 대답. 의사 질문이면 물어볼 것에 담기를 권한다
+    @MainActor
+    func ask(text: String, now: Date, calendar: Calendar) async {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        isThinking = true
+        let intent = await CoachIntentService.classify(trimmed)
+        isThinking = false
+        switch intent {
+        case let .topic(topic):
+            pendingQuestion = nil
+            ask(topic, now: now, calendar: calendar)
+        case .askDoctor:
+            pendingQuestion = trimmed
+            current = Self.message(.askDoctor, avoiding: current)
+        case .unknown:
+            pendingQuestion = nil
+            current = Self.message(.notUnderstood, avoiding: current)
+        }
+    }
+
+    /// D30 의사 질문을 진료 탭 "물어볼 것"에 담는다
+    @MainActor
+    func saveQuestion(in context: ModelContext) {
+        guard let pendingQuestion else { return }
+        context.insert(ClinicQuestion(text: pendingQuestion))
+        try? context.save()
+        self.pendingQuestion = nil
+        current = Self.message(.savedQuestion, avoiding: current)
     }
 
     /// 주제 버튼을 눌렀을 때
     @MainActor
     func ask(_ topic: CoachTopic, now: Date, calendar: Calendar) {
+        pendingQuestion = nil
         let line = CoachRules.reply(to: topic, context: lastContext, shownKeys: talkKeys, now: now, calendar: calendar)
         talkKeys.insert(line.key)
         current = Self.message(line, avoiding: current)
@@ -134,6 +176,7 @@ final class CoachPopupCenter {
         dismissTask?.cancel()
         dismissTask = nil
         isTalking = false
+        pendingQuestion = nil
         guard current != nil else { return }
         current = nil
         lastDismissedAt = .now
@@ -249,6 +292,14 @@ extension CoachMessage {
         case let .answer(topic, index):
             // 고정 대답은 말투 하나
             return Text(LocalizedStringKey("coach.answer." + topic.rawValue + "." + String(index)))
+        case let .greetingAt(part):
+            return plain("coach.greeting." + part.rawValue)
+        case .askDoctor:
+            return plain("coach.askDoctor")
+        case .notUnderstood:
+            return plain("coach.notUnderstood")
+        case .savedQuestion:
+            return plain("coach.savedQuestion")
         }
     }
 
@@ -272,9 +323,18 @@ extension CoachTopic {
 struct CoachPopup: View {
     let message: CoachMessage
     let isTalking: Bool
+    /// D30 상황에 맞춘 주제 순서
+    var topics: [CoachTopic] = CoachTopic.allCases
+    /// D30 의사 질문을 담을 수 있으면 버튼을 보인다
+    var canSaveQuestion = false
+    var isThinking = false
     var onTalk: () -> Void
     var onAsk: (CoachTopic) -> Void
+    var onSend: (String) -> Void = { _ in }
+    var onSaveQuestion: () -> Void = {}
     var onDismiss: () -> Void
+    @State private var draft = ""
+    @FocusState private var inputFocused: Bool
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var settled = false
@@ -301,7 +361,7 @@ struct CoachPopup: View {
             if isTalking {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Spacing.s2) {
-                        ForEach(CoachTopic.allCases, id: \.self) { topic in
+                        ForEach(topics, id: \.self) { topic in
                             Button { onAsk(topic) } label: {
                                 Text(topic.titleKey)
                                     .font(Typography.label)
@@ -318,6 +378,33 @@ struct CoachPopup: View {
                     .padding(.leading, 64 + Spacing.s2)
                 }
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
+                // D30 직접 물어보기. 기기 안에서만 읽는다
+                HStack(spacing: Spacing.s2) {
+                    TextField("coach.input.placeholder", text: $draft)
+                        .font(Typography.body)
+                        .foregroundStyle(Color.ink)
+                        .focused($inputFocused)
+                        .submitLabel(.send)
+                        .onSubmit(send)
+                    if isThinking {
+                        ProgressView()
+                    } else {
+                        Button(action: send) {
+                            Image(systemName: "arrow.up.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(draft.trimmingCharacters(in: .whitespaces).isEmpty ? Color.inkTertiary : Color.accent)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty)
+                        .accessibilityLabel(Text("coach.input.send"))
+                    }
+                }
+                .padding(.horizontal, Spacing.s3)
+                .padding(.vertical, Spacing.s2)
+                .background(.ultraThinMaterial, in: Capsule())
+                .overlay(Capsule().strokeBorder(Color.white.opacity(0.25), lineWidth: 1))
+                .padding(.leading, 64 + Spacing.s2)
+                .transition(.opacity)
             }
         }
         .padding(.horizontal, Spacing.screenHorizontal)
@@ -332,6 +419,13 @@ struct CoachPopup: View {
                 settled = true
             }
         }
+    }
+
+    private func send() {
+        let text = draft
+        draft = ""
+        inputFocused = false
+        onSend(text)
     }
 
     private var bubbleContent: some View {
@@ -357,6 +451,15 @@ struct CoachPopup: View {
                 // 대답이 바뀔 때마다 살짝 튀며 바뀐다
                 .id(message.id)
                 .transition(reduceMotion ? .opacity : .scale(scale: 0.92, anchor: .leading).combined(with: .opacity))
+            if canSaveQuestion {
+                Button(action: onSaveQuestion) {
+                    Label("coach.saveQuestion", systemImage: "text.badge.plus")
+                        .font(Typography.label)
+                        .foregroundStyle(Color.accent)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, Spacing.s1)
+            }
             if message.line.isHealthTip {
                 Text("coach.notice")
                     .font(Typography.caption)
@@ -463,6 +566,7 @@ private struct CoachPopupOverlay: ViewModifier {
     @Environment(\.calendar) private var calendar
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
+    @Environment(\.modelContext) private var modelContext
 
     func body(content: Content) -> some View {
         content
@@ -473,8 +577,13 @@ private struct CoachPopupOverlay: ViewModifier {
                         CoachPopup(
                             message: message,
                             isTalking: coach.isTalking,
+                            topics: coach.topics,
+                            canSaveQuestion: message.line == .askDoctor && coach.pendingQuestion != nil,
+                            isThinking: coach.isThinking,
                             onTalk: { coach.talk() },
                             onAsk: { coach.ask($0, now: .now, calendar: calendar) },
+                            onSend: { text in Task { await coach.ask(text: text, now: .now, calendar: calendar) } },
+                            onSaveQuestion: { coach.saveQuestion(in: modelContext) },
                             onDismiss: { coach.dismiss() }
                         )
                         .transition(

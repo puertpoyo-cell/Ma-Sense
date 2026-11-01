@@ -418,6 +418,19 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 - 주는 달력 firstWeekday부터 7일. 날마다 투약(취소 제외)·진료·컨디션·체중·단백질·운동 기록이 있는지만. 많고 적음·연속일 없음
 - N-E1 월 보기: `monthGrid`는 그 달을 주 단위 7칸으로, 그 달이 아닌 칸은 nil. 투약일만 표시
 
+## R28. 마선생 글 묻기·상황 주제 (D30, 2026-11-01 사람 요청)
+
+```swift
+func classify(_ text: String) -> CoachIntent           // topic(CoachTopic) | askDoctor | unknown
+func merge(rule: CoachIntent, model: CoachIntent?) -> CoachIntent
+func suggestedTopics(context: CoachContext, now: Date, calendar: Calendar) -> [CoachTopic]
+func greeting(context: CoachContext, now: Date, calendar: Calendar) -> CoachLine
+```
+
+- 의사 단어(용량·단계·lv·약·처방·복용·부작용·심한 증상 등)가 있으면 다른 주제 단어보다 먼저 `askDoctor`. "예약"과 겹치지 않게 약은 띄어쓰기 기준
+- 주제 단어가 가장 많이 맞는 주제, 같으면 목록 순서. 없으면 `unknown` → (기기에 있으면) 기기 안 모델이 정해진 보기 중 하나를 고름. 모델 결과도 `askDoctor`가 이긴다
+- 모델은 분류만, 대답 문장은 앱의 고정 문장. 건강 판단을 만들지 않는다
+
 ## R27. 진료 예약·결과 흐름 (D28, 2026-11-01 사람 요청)
 
 ```swift

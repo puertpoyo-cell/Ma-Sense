@@ -131,14 +131,7 @@ struct TodayView: View {
                 }
                 .accessibilityLabel(Text("coach.talk.button"))
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink {
-                    SettingsView()
-                } label: {
-                    Image(systemName: "gearshape")
-                }
-                .accessibilityLabel("settings.title")
-            }
+            // D31: 설정은 세 번째 탭으로 옮겼다
         }
         #if DEBUG
         .navigationDestination(isPresented: $opensSettingsForScreenshot) { SettingsView() }

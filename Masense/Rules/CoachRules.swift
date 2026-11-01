@@ -28,12 +28,22 @@ enum CoachLine: Equatable {
     case proteinEstimate(Int)
     /// 말 걸기 주제의 고정 대답 (D19, `CoachRules.answerCounts`)
     case answer(CoachTopic, Int)
+    /// D30 시간대 인사 (아침·낮·저녁·밤)
+    case greetingAt(CoachDayPart)
+    /// D30 글로 물은 것이 의사와 상의할 이야기. "물어볼 것에 담을까요"
+    case askDoctor
+    /// D30 알아듣지 못함
+    case notUnderstood
+    /// D30 물어볼 것에 담음
+    case savedQuestion
 
     /// 캐릭터 표정 (D19). 말에 맞춰 얼굴만 바꾼다
     var mood: CoachMood {
         switch self {
         case .recorded, .proteinEstimate: return .happy
-        case .lowCondition, .lowAppetite, .answer(.condition, _): return .gentle
+        case .lowCondition, .lowAppetite, .answer(.condition, _), .askDoctor: return .gentle
+        case .savedQuestion: return .happy
+        case .notUnderstood: return .thinking
         case .fact(.lowSupply), .place(.pens), .place(.report), .place(.clinic), .tip(4), .answer(.clinic, _), .clinicFollowUp: return .thinking
         case .tip(0), .tip(3), .tip(7), .answer(.water, _): return .wink
         default: return .smile
@@ -55,6 +65,10 @@ enum CoachLine: Equatable {
         case let .recorded(kind): return "recorded." + kind.rawValue
         case .proteinEstimate: return "proteinEstimate"
         case let .answer(topic, index): return "answer." + topic.rawValue + "." + String(index)
+        case let .greetingAt(part): return "greeting." + part.rawValue
+        case .askDoctor: return "askDoctor"
+        case .notUnderstood: return "notUnderstood"
+        case .savedQuestion: return "savedQuestion"
         }
     }
 
@@ -65,6 +79,21 @@ enum CoachLine: Equatable {
         case let .tip(index): return CoachRules.healthTipIndices.contains(index)
         case let .answer(topic, index): return CoachRules.healthAnswers.contains("\(topic.rawValue).\(index)")
         default: return false
+        }
+    }
+}
+
+/// D30 하루 때. 인사를 바꾼다
+enum CoachDayPart: String, CaseIterable {
+    case morning, afternoon, evening, night
+
+    /// 5~11시 아침, 11~17시 낮, 17~21시 저녁, 그 밖 밤
+    static func of(_ date: Date, calendar: Calendar) -> CoachDayPart {
+        switch calendar.component(.hour, from: date) {
+        case 5..<11: return .morning
+        case 11..<17: return .afternoon
+        case 17..<21: return .evening
+        default: return .night
         }
     }
 }
@@ -267,6 +296,31 @@ enum CoachRules {
             candidates = (0..<tipCount).map { .tip((day + $0) % tipCount) }
         }
         return candidates.first { !shownKeys.contains($0.key) } ?? candidates[0]
+    }
+
+    /// D30 말 걸기 주제 버튼 순서. 지금 상황에 맞는 주제를 앞으로, 나머지는 원래 순서
+    static func suggestedTopics(context c: CoachContext, now: Date, calendar: Calendar) -> [CoachTopic] {
+        let hour = calendar.component(.hour, from: now)
+        let weekday = calendar.component(.weekday, from: now)
+        let daysIntoWeek = (weekday - calendar.firstWeekday + 7) % 7
+        var first: [CoachTopic] = []
+        if c.clinicNeedsRecord { first.append(.clinic) }
+        if c.isLowCondition || c.isLowAppetite { first.append(.condition) }
+        if c.proteinEntriesToday == 0, hour >= proteinNudgeHour { first.append(.protein) }
+        if c.strengthThisWeek == 0, daysIntoWeek >= strengthNudgeDaysIntoWeek { first.append(.movement) }
+        if c.dailyLine == .noRecentWeight { first.append(.weight) }
+        if hour >= 21 || hour < 5 { first.append(.sleep) }
+        if (5..<11).contains(hour) { first.append(.water) }
+        if let fact = c.dailyLine, case .lowSupply = fact { first.append(.clinic) }
+        var seen = Set<CoachTopic>()
+        return (first + [.today] + CoachTopic.allCases).filter { seen.insert($0).inserted }
+    }
+
+    /// D30 말 걸기 첫 인사: 진료 기록 권유처럼 지금 꼭 할 말이 있으면 그것, 없으면 시간대 인사
+    static func greeting(context c: CoachContext, now: Date, calendar: Calendar) -> CoachLine {
+        if c.clinicNeedsRecord { return .clinicFollowUp }
+        if c.isLowCondition { return .lowCondition }
+        return .greetingAt(CoachDayPart.of(now, calendar: calendar))
     }
 
     private static func answers(_ topic: CoachTopic) -> [CoachLine] {

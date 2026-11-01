@@ -2194,6 +2194,57 @@
         }
       }
     },
+    "coach.askDoctor": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is something to discuss with your doctor. If symptoms are severe or suddenly worse, contact a medical professional right away. Shall I add it to your questions for the visit."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그건 의사와 상의할 이야기예요. 증상이 심하거나 갑자기 나빠지면 바로 의료진에게 연락하세요. 진료 때 물어볼 것에 담아 둘까요."
+          }
+        }
+      }
+    },
+    "coach.askDoctor.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I do not judge medication, prescriptions, or severe symptoms. Please talk to your doctor. Shall I note it as a question."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "약이나 처방, 심한 증상은 제가 판단하지 않아요. 의사와 상의하세요. 물어볼 것에 적어 둘까요."
+          }
+        }
+      }
+    },
+    "coach.askDoctor.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good question. This one is for your doctor. If it is urgent, contact a medical professional now. Otherwise let's add it to your questions."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "좋은 질문이에요. 다만 이건 의사가 답할 부분이에요. 급하면 바로 의료진에게 연락하고, 아니면 물어볼 것에 담아 둬요."
+          }
+        }
+      }
+    },
     "coach.clinicFollowUp": {
       "extractionState": "manual",
       "localizations": {
@@ -2364,6 +2415,210 @@
         }
       }
     },
+    "coach.greeting.afternoon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Did you have lunch. Adding one protein food helps. Pick a topic or type a question."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "점심은 챙겼어요. 단백질 한 가지만 더해도 좋아요. 궁금한 걸 고르거나 적어 주세요."
+          }
+        }
+      }
+    },
+    "coach.greeting.afternoon.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afternoon. A short walk counts as a record too. What would you like to know."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오후예요. 잠깐 일어나 걸어 보는 것도 기록이 돼요. 무엇이 궁금해요."
+          }
+        }
+      }
+    },
+    "coach.greeting.afternoon.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good to see you. You are doing fine today. Pick below or ask me."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "반가워요. 오늘 여기까지 잘 오고 있어요. 아래에서 고르거나 물어봐 주세요."
+          }
+        }
+      }
+    },
+    "coach.greeting.evening": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evening. Shall we look over today's records. Pick a topic or type a question."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저녁이에요. 오늘 기록을 한 번 훑어볼까요. 궁금한 걸 고르거나 적어 주세요."
+          }
+        }
+      }
+    },
+    "coach.greeting.evening.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thanks for today. Let's see if anything is left to record. What would you like to know."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "하루 수고 많았어요. 남은 기록이 있는지 같이 봐요. 무엇이 궁금해요."
+          }
+        }
+      }
+    },
+    "coach.greeting.evening.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evening time. Eat slowly and have some water. Pick below or ask me."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저녁 시간이에요. 천천히 먹고 물도 한 잔 챙겨요. 아래에서 고르거나 물어봐 주세요."
+          }
+        }
+      }
+    },
+    "coach.greeting.morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good morning. How about starting with a glass of water. Pick a topic or type a question."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "좋은 아침이에요. 물 한 잔으로 시작해 볼까요. 궁금한 걸 고르거나 적어 주세요."
+          }
+        }
+      }
+    },
+    "coach.greeting.morning.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morning. What shall we look after first today. Pick below or ask me."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아침이에요. 오늘은 뭐부터 챙겨 볼까요. 아래에서 고르거나 물어봐 주세요."
+          }
+        }
+      }
+    },
+    "coach.greeting.morning.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Did you sleep well. Let's go through today with your records. Type anything you wonder about."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잘 잤어요. 오늘 하루도 기록으로 같이 가요. 궁금한 게 있으면 적어 주세요."
+          }
+        }
+      }
+    },
+    "coach.greeting.night": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It is late. Resting well counts too. Pick a topic or type a question."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "밤이 깊었어요. 오늘은 푹 쉬는 것도 기록이에요. 궁금한 걸 고르거나 적어 주세요."
+          }
+        }
+      }
+    },
+    "coach.greeting.night.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It is late. Let's just look at tomorrow before you sleep. What would you like to know."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "늦은 시간이네요. 잠들기 전에 내일 할 것만 같이 봐요. 무엇이 궁금해요."
+          }
+        }
+      }
+    },
+    "coach.greeting.night.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Well done today. Just a quick look, then rest. Pick below or ask me."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘도 고생했어요. 화면은 잠깐만 보고 쉬어요. 아래에서 고르거나 물어봐 주세요."
+          }
+        }
+      }
+    },
     "coach.greeting.v2": {
       "extractionState": "manual",
       "localizations": {
@@ -2394,6 +2649,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "반가워요. 궁금한 주제를 눌러 주세요."
+          }
+        }
+      }
+    },
+    "coach.input.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask Masense"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마선생에게 물어보기"
+          }
+        }
+      }
+    },
+    "coach.input.send": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "보내기"
           }
         }
       }
@@ -2666,6 +2955,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "요즘 체중 기록이 없네요. 흐름을 보려는 거라 가끔이어도 괜찮아요."
+          }
+        }
+      }
+    },
+    "coach.notUnderstood": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hmm, I am not sure about that yet. Pick a topic below and I can help better."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "음, 그 이야기는 아직 잘 모르겠어요. 아래 주제에서 골라 주면 더 잘 답할 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.notUnderstood.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I am still learning. Try asking about protein, exercise, sleep, or your visit."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제가 아직 배우는 중이에요. 단백질, 운동, 잠, 진료처럼 물어봐 주세요."
+          }
+        }
+      }
+    },
+    "coach.notUnderstood.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could you ask another way. You can also tap a topic below."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조금 다르게 물어봐 줄래요. 아래 주제를 눌러도 좋아요."
           }
         }
       }
@@ -3261,6 +3601,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "적어 두셨어요. 같은 때 재면 비교가 쉬워요."
+          }
+        }
+      }
+    },
+    "coach.saveQuestion": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to questions"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것에 담기"
+          }
+        }
+      }
+    },
+    "coach.savedQuestion": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added to your questions. You can review it in the Clinic tab before your visit."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것에 담았어요. 진료 탭에서 진료 전에 다시 볼 수 있어요."
+          }
+        }
+      }
+    },
+    "coach.savedQuestion.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noted. It is in the Clinic tab so you will not forget at the visit."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "적어 뒀어요. 진료 때 잊지 않게 진료 탭에 있어요."
+          }
+        }
+      }
+    },
+    "coach.savedQuestion.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved. You will find it in your question list before the visit."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "담았어요. 진료 전에 물어볼 것 목록에서 꺼내 봐요."
           }
         }
       }
@@ -9682,6 +10090,74 @@
         }
       }
     },
+    "records.segment.clinic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clinic"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료"
+          }
+        }
+      }
+    },
+    "records.segment.days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "날짜별"
+          }
+        }
+      }
+    },
+    "records.segment.picker": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Records view"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록 보기"
+          }
+        }
+      }
+    },
+    "records.segment.report": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리포트"
+          }
+        }
+      }
+    },
     "refill.changedPrescription": {
       "extractionState": "manual",
       "localizations": {
@@ -13403,6 +13879,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "History"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록"
+          }
+        }
+      }
+    },
+    "tab.records": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Records"
           }
         },
         "ko": {
