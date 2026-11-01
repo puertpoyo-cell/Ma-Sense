@@ -4969,6 +4969,23 @@
         }
       }
     },
+    "glance.pens.refill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to add new pens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 펜을 받았으면 눌러서 추가"
+          }
+        }
+      }
+    },
     "glance.sequence %lld %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -9134,6 +9151,176 @@
           "stringUnit": {
             "state": "translated",
             "value": "오늘 %1$lld / %2$lld g"
+          }
+        }
+      }
+    },
+    "refill.changedPrescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My prescription changed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방이 바뀌었어요"
+          }
+        }
+      }
+    },
+    "refill.changedPrescription.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If the prescription memo or dose day changed, enter it as a new prescription. Earlier prescriptions and records are kept."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 메모나 투약 요일이 바뀌었으면 새 처방으로 적어 주세요. 지난 처방과 기록은 그대로 보관됩니다."
+          }
+        }
+      }
+    },
+    "refill.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adds pens to the current prescription. The dose day, time, and prescription memo stay the same."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금 처방에 펜만 더합니다. 투약 요일·시각과 처방 메모는 그대로입니다."
+          }
+        }
+      }
+    },
+    "refill.packages": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Packages received"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "받은 패키지"
+          }
+        }
+      }
+    },
+    "refill.packages.multiDose %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펜 %lld개"
+          }
+        }
+      }
+    },
+    "refill.packages.singleUse %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld (%lld pens)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld개 (펜 %lld개)"
+          }
+        }
+      }
+    },
+    "refill.remaining": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remaining"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 수"
+          }
+        }
+      }
+    },
+    "refill.remaining.doses %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld → %lld doses"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld회 → %lld회"
+          }
+        }
+      }
+    },
+    "refill.remaining.pens %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld → %lld pens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld개 → %lld개"
+          }
+        }
+      }
+    },
+    "refill.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got new pens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 펜 받음"
           }
         }
       }

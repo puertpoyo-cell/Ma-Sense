@@ -699,6 +699,9 @@ struct PenStatusSheet: View {
 struct PenStatusPage: View {
     @Environment(\.calendar) private var calendar
     @Query(sort: \Prescription.startDate) private var prescriptions: [Prescription]
+    /// D27 새 펜 받음
+    @State private var refilling: Prescription?
+    @State private var showsToast = false
 
     var body: some View {
         ScrollView {
@@ -710,11 +713,16 @@ struct PenStatusPage: View {
                         memo: prescription.doseLabel,
                         tint: Color.prescription(slot: prescriptions.colorSlots[prescription.id] ?? 0)
                     )
+                    PrimaryButton("refill.title") { refilling = prescription }
                 }
             }
             .padding(.horizontal, Spacing.screenHorizontal)
             .padding(.vertical, Spacing.s4)
         }
+        .sheet(item: $refilling) { prescription in
+            RefillSheet(prescription: prescription) { showsToast = true }
+        }
+        .recordedToast(isPresented: $showsToast)
         .midnightBackground()
         .navigationTitle("history.pens")
         .navigationBarTitleDisplayMode(.inline)

@@ -40,6 +40,15 @@ enum PrescriptionRules {
     /// 패키지 하나 = 4회 = 약 한 달 (주 1회). 1회용 펜이면 펜 4개, 여러 회 쓰는 펜이면 펜 1개 (2026-10-24 사람 설명)
     static let dosesPerPackage = 4
 
+    /// D27 새 펜을 받았을 때 (2026-11-01 사람 요청 "진료 후 세트 추가로 받음"): 패키지 수만큼 펜을 더한 펜 수.
+    /// 1회용 펜은 패키지당 4개, 여러 회 쓰는 펜은 1개. 처방 설정의 범위(1회용 96개, 여러 회 20개)를 넘지 않는다
+    static func penCount(afterAdding packages: Int, to penCount: Int, dosesPerPen: Int) -> Int {
+        let isSingleUse = dosesPerPen == 1
+        let perPackage = isSingleUse ? dosesPerPackage : 1
+        let limit = isSingleUse ? 96 : 20
+        return min(penCount + max(packages, 0) * perPackage, max(limit, penCount))
+    }
+
     /// 1회용 펜(펜당 회차 1)의 회차 위치: n번째 패키지의 k번째 펜. `penPosition`과 같은 셈을 패키지 단위로
     static func packagePosition(sequence: Int) -> (package: Int, pen: Int) {
         let position = penPosition(sequence: sequence, dosesPerPen: dosesPerPackage)

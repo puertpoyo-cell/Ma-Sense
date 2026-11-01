@@ -169,4 +169,14 @@ struct PrescriptionRulesTests {
         #expect(PrescriptionRules.resolvingActive(spans, calendar: calendar) == spans)
         #expect(PrescriptionRules.resolvingActive([], calendar: calendar).isEmpty)
     }
+
+    // D27 새 펜 받음: 1회용은 패키지당 4개, 여러 회 펜은 1개, 범위를 넘지 않음
+    @Test func addingPackagesIncreasesPenCount() {
+        #expect(PrescriptionRules.penCount(afterAdding: 1, to: 4, dosesPerPen: 1) == 8)
+        #expect(PrescriptionRules.penCount(afterAdding: 2, to: 4, dosesPerPen: 1) == 12)
+        #expect(PrescriptionRules.penCount(afterAdding: 1, to: 2, dosesPerPen: 4) == 3)
+        #expect(PrescriptionRules.penCount(afterAdding: 3, to: 92, dosesPerPen: 1) == 96)
+        #expect(PrescriptionRules.penCount(afterAdding: 0, to: 4, dosesPerPen: 1) == 4)
+        #expect(PrescriptionRules.penCount(afterAdding: -1, to: 4, dosesPerPen: 1) == 4)
+    }
 }

@@ -63,7 +63,8 @@ struct GlanceStrip: View {
                 BlueprintDivider(crosshair: .none)
                 if let pens {
                     Button(action: onOpenPens) {
-                        row(pens.isSingleUse ? "glance.pens" : "glance.doses", value: pensValue(pens), detail: pensDetail)
+                        // D27: 다 쓰면 "새 펜 받았으면 눌러서 추가" (누르면 펜 현황 → 새 펜 받음)
+                        row(pens.isSingleUse ? "glance.pens" : "glance.doses", value: pensValue(pens), detail: pens.remainingDoses == 0 ? Text("glance.pens.refill").foregroundColor(Color.accent) : pensDetail)
                     }
                     .buttonStyle(.plain)
                     BlueprintDivider(crosshair: .none)

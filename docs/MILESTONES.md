@@ -298,6 +298,11 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - [x] DEBUG 전용 CloudKit 스키마 만들기 버튼
 - 사람 할 일: TESTFLIGHT.md 7의 1~5 (Xcode 실기기 실행 → 스키마 버튼 → CloudKit Console 배포 → 두 iPhone 확인 → Vercel 재배포)
 
+## D27 — 새 펜 받음 (2026-11-01 사람 요청)
+
+- [x] 펜 현황 "새 펜 받음": 패키지 수만큼 펜 추가, 다음 진료일 같이, 처방이 바뀌면 새 처방으로 (`RefillSheet`, `penCount(afterAdding:)` + 테스트)
+- [x] 남은 펜 0이면 오늘 화면 펜 줄에 "새 펜을 받았으면 눌러서 추가"
+
 ## N — 개선점 종합 (2026-10-29 사람 "전부 승인 진행", `docs/PROPOSAL_NEXT.md`)
 
 - [x] N-B1 리포트: 최근 검사 칸이 있으면 물어볼 것·메모 줄을 줄여 한 장 유지 (`labLineBudget`, 테스트)
