@@ -108,7 +108,7 @@ enum HealthSyncService {
         context: ModelContext,
         now: Date = Date(),
         calendar: Calendar = .current,
-        deletesMissing: Bool = !AppConfig.usesCloudSync
+        deletesMissing: Bool = !AppConfig.cloudSyncActive
     ) async throws {
         // D26: iCloud로 다른 기기가 가져온 건강 앱 기록은 이 기기 건강 앱에 아직 없을 수 있다.
         // 동기화가 켜져 있으면 "이 기기 건강 앱에 없음"을 지운 것으로 보지 않는다 (기기끼리 지웠다 다시 넣기를 되풀이하지 않게)

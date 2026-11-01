@@ -43,6 +43,19 @@ enum AppConfig {
 
     /// 이 실행에서 실제로 iCloud에 붙는지. 서명 없이 도는 실행은 iCloud 권한이 없어 붙으면 시작하다 멈출 수 있으므로 늘 기기 안에만:
     /// 단위 테스트(CI는 서명 없이 시뮬레이터), 시뮬레이터, DEBUG 스크린샷·예시 데이터 실행(예시가 개인 iCloud로 올라가지 않게)
+    /// D26-1 (빌드 30 실행 안 됨, 2026-11-01): iCloud로 저장소를 열지 못하면 기기 안 저장소로 열고 이유를 남긴다.
+    /// 이번 실행에서 iCloud에 실제로 붙었는지 (`ModelContainer.masense`가 정한다)
+    static var cloudSyncActive: Bool {
+        get { UserDefaults.standard.bool(forKey: "cloudSync.active") }
+        set { UserDefaults.standard.set(newValue, forKey: "cloudSync.active") }
+    }
+
+    /// iCloud로 열지 못한 이유 (설정 > 데이터에 보인다). 붙으면 지운다
+    static var cloudSyncFailure: String? {
+        get { UserDefaults.standard.string(forKey: "cloudSync.failure") }
+        set { UserDefaults.standard.set(newValue, forKey: "cloudSync.failure") }
+    }
+
     /// iCloud 컨테이너 (entitlements와 같아야 한다)
     static let cloudKitContainer = "iCloud.com.puertpoyo.masense"
 

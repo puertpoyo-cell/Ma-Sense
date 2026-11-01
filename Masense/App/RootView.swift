@@ -78,7 +78,7 @@ struct RootView: View {
 extension RootView {
     /// D26 iCloud로 다른 기기 기록이 들어왔을 때
     private func remoteChangesArrived() {
-        guard AppConfig.usesCloudSync else { return }
+        guard AppConfig.cloudSyncActive else { return }
         try? SyncMergeService.mergeDuplicates(context: context)
         // 새 기기에서 온보딩 중인데 다른 기기의 설정(온보딩 마침)이 들어오면 바로 홈으로
         if phase == .onboarding, (try? UserSettings.current(in: context))?.hasCompletedOnboarding == true {

@@ -27,8 +27,21 @@ extension ModelContainer {
                 cloudKitDatabase: AppConfig.usesCloudSync ? .private(AppConfig.cloudKitContainer) : .none
             )
         }
+        let wantsCloud = url == nil && !inMemory && AppConfig.usesCloudSync
         do {
-            return try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [configuration])
+            let container = try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [configuration])
+            if url == nil, !inMemory {
+                AppConfig.cloudSyncActive = wantsCloud
+                if wantsCloud { AppConfig.cloudSyncFailure = nil }
+            }
+            return container
+        } catch where wantsCloud {
+            // D26-1: iCloud로 열지 못하면(권한·이전·스키마 문제) 같은 파일을 기기 안 저장소로 연다. 기록은 그대로, 동기화만 꺼진다.
+            // 앱이 멈추지 않게 하고 이유를 설정 화면에 보인다
+            AppConfig.cloudSyncActive = false
+            AppConfig.cloudSyncFailure = String(describing: error)
+            let local = ModelConfiguration("Masense", schema: schema, url: StoreLocation.resolvedURL(), cloudKitDatabase: .none)
+            return try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [local])
         } catch {
             #if DEBUG
             // 출시 전 스키마 재정리(2026-10-22) 이전의 개발용 저장소는 버전을 알아보지 못한다. 개발 빌드에서만 지우고 새로 만든다

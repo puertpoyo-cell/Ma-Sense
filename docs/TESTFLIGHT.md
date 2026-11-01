@@ -89,6 +89,7 @@ GitHub 러너는 매번 빈 키체인이라, 클라우드 서명이 실행마다
 3. [CloudKit Console](https://icloud.developer.apple.com) > `iCloud.com.puertpoyo.masense` > Schema > **Deploy Schema Changes...** > Deploy
 4. TestFlight 빌드를 두 iPhone에 설치, 둘 다 기기 설정 > Apple ID > iCloud > (iCloud를 사용하는 앱 모두 보기) > 마선생 켜짐 확인. 첫 동기화는 몇 분
 5. 처리방침이 "개인 iCloud에 저장"으로 바뀌었으니 Vercel 재배포 (2-1 절차: `cd docs/privacy && npx vercel --prod`)
+- D26-1 (빌드 31): iCloud로 저장소를 열지 못하면 앱이 멈추지 않고 같은 파일을 기기 안 저장소로 연다(기록 그대로, 동기화만 꺼짐). 설정 > 데이터 아래에 "iCloud 동기화를 켜지 못해…"와 오류 앞부분이 보이면 길게 눌러 복사해 Claude에게 보낸다
 - 스키마(VersionedSchema)가 바뀔 때마다 1~3을 다시 한다. 운영 스키마는 지우거나 이름을 바꿀 수 없으므로 앞으로 모델 변경은 **추가만** 한다
 - GitHub Actions의 Archive가 "iCloud 컨테이너가 프로파일에 없음"으로 실패하면 1을 먼저 하고 다시 실행
 - 건강 앱 체중·운동은 각 기기 건강 앱에서 가져온다. 동기화가 켜진 동안은 "이 기기 건강 앱에 없음"을 지운 것으로 보지 않는다(다른 기기가 가져온 기록일 수 있음). 건강 앱에서 지운 기록은 앱의 하루 카드에서 지운다

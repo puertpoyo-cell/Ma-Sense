@@ -579,8 +579,14 @@ private struct SettingsForm: View {
                 Text("settings.data.export.notice")
                 Text("data.local")
                 // D26 iCloud 동기화 안내
-                if AppConfig.iCloudSyncEnabled {
+                if AppConfig.cloudSyncActive {
                     Text("settings.data.sync")
+                } else if AppConfig.iCloudSyncEnabled, let failure = AppConfig.cloudSyncFailure {
+                    // D26-1: iCloud로 열지 못해 이 기기에만 저장 중. 원인 파악용으로 오류 앞부분을 보인다
+                    Text("settings.data.syncFailed")
+                    Text(verbatim: String(failure.prefix(300)))
+                        .font(.caption2.monospaced())
+                        .textSelection(.enabled)
                 }
                 // N-I3: 마지막 내보내기와 30일 안내 (D26 iCloud를 켠 뒤에도 Apple ID·iCloud를 바꿀 때를 대비한 백업)
                 if lastExportInterval > 0 {
