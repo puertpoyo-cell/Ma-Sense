@@ -289,6 +289,15 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - [x] 투약 기록 시각 옆 30분 앞뒤 버튼, 가운데 시각을 누르면 30분 간격 달력·휠. 처방 예정 시각도 30분 간격
 - 사람 확인: 투약 기록 한 번에 저장되는지, ± 버튼 위치
 
+## D26 — iCloud로 여러 iPhone 동기화 (2026-11-01 사람 결정)
+
+- [x] iCloud 켬 (entitlements·Background Modes·`iCloudSyncEnabled`), 시뮬레이터·테스트·예시 데이터는 기기 안만 (`usesCloudSync`)
+- [x] 중복 정리 `SyncMergeRules`·`SyncMergeService` + 테스트, iCloud 변경 도착 시 정리·알림·위젯 다시 맞춤, 새 기기 온보딩 건너뜀
+- [x] 건강 앱 가져오기: 동기화 중엔 "이 기기에 없음"을 삭제로 보지 않음 + 테스트
+- [x] 앱 문구·처방침(PRIVACY.md, privacy/index.html)·TestFlight 설명을 "내 기기와 개인 iCloud"로
+- [x] DEBUG 전용 CloudKit 스키마 만들기 버튼
+- 사람 할 일: TESTFLIGHT.md 7의 1~5 (Xcode 실기기 실행 → 스키마 버튼 → CloudKit Console 배포 → 두 iPhone 확인 → Vercel 재배포)
+
 ## N — 개선점 종합 (2026-10-29 사람 "전부 승인 진행", `docs/PROPOSAL_NEXT.md`)
 
 - [x] N-B1 리포트: 최근 검사 칸이 있으면 물어볼 것·메모 줄을 줄여 한 장 유지 (`labLineBudget`, 테스트)

@@ -63,17 +63,21 @@ main에 앱 코드(`Masense/`, `Shared/`, `MasenseWidgets/`, `Config/`, `project
 - 처음 App Store 심사 제출(스크린샷·설명 입력)은 App Store Connect 웹에서 사람이 한다. 빌드 자체는 자동 업로드된 것을 고르면 된다
 - 클라우드 서명이 만든 인증서는 App Store Connect > 인증서에서 보인다. Mac의 Xcode 수동 Archive도 그대로 된다
 
-## 7. iCloud 동기화 켜기 (N-I1, v2 — 사람이 할 일)
+## 7. iCloud 동기화 (D26, 2026-11-01 켬 — 사람이 한 번 할 일)
 
-스키마는 처음부터 CloudKit 호환 규칙(DATA_MODEL.md)을 지켰고, 코드는 `AppConfig.iCloudSyncEnabled` 하나로 켠다. 순서대로:
-1. Xcode > Masense 타깃 > Signing & Capabilities > **+ Capability** > **iCloud** → Services에서 **CloudKit** 체크 → Containers **+** → `iCloud.com.puertpoyo.masense`
-2. 같은 화면에서 **+ Capability** > **Background Modes** → **Remote notifications** 체크 (CloudKit이 변경을 밀어 주는 데 필요)
-3. `Config/Masense.entitlements`에 `com.apple.developer.icloud-container-identifiers`·`com.apple.developer.icloud-services`·`aps-environment`가 생겼는지 확인하고 커밋 (Xcode가 자동으로 넣는다)
-4. `AppConfig.iCloudSyncEnabled = true`로 바꾼다 (Claude에게 "iCloud 켜 줘"라고 하면 이 줄과 처리방침 문구를 함께 바꾼다)
-5. 처리방침 2장·3장 "iCloud 동기화도 하지 않습니다"를 "사용자의 개인 iCloud에 백업됩니다"로 고치고 Vercel 재배포 (2-1 절차)
-6. 실기기 두 대에서 같은 Apple ID로 기록이 오가는지 확인. 첫 동기화는 몇 분 걸린다
-- 켜기 전 조건: 저장 속성에 `@Attribute(.unique)` 없음(SchemaTests), 관계 전부 옵셔널 또는 기본값, 삭제 규칙 `.deny` 없음 — 모두 지켜져 있다
-- 켜지 않고 `iCloudSyncEnabled = true`만 두면 앱이 시작할 때 컨테이너를 못 열어 죽는다
+코드에서 켰다: `AppConfig.iCloudSyncEnabled = true`, entitlements(iCloud 컨테이너 `iCloud.com.puertpoyo.masense`, CloudKit, `aps-environment`), Info.plist `UIBackgroundModes` remote-notification.
+같은 Apple ID로 로그인한 iPhone끼리 기록이 오가고, 겹친 기록은 가장 먼저 만든 쪽으로 합친다(`SyncMergeService`, RULES R26).
+시뮬레이터·단위 테스트·DEBUG 예시 데이터 실행은 iCloud에 붙지 않는다(`AppConfig.usesCloudSync`).
+
+**TestFlight 빌드는 iCloud "운영(Production)" 환경을 쓴다. 운영 환경에 기록 종류(스키마)를 한 번 올려야 기록이 오간다.** 순서대로:
+1. Mac Xcode에서 Masense 스킴, 실기기 iPhone을 골라 실행(▶, Debug). 처음이면 Xcode가 iCloud 컨테이너를 개발자 계정에 등록한다 (Signing & Capabilities에 iCloud가 보이면 됨. 빨간 오류가 있으면 Try Again)
+2. 앱 설정 > 데이터 맨 아래 **CloudKit schema (dev)** 를 한 번 누른다 → "CloudKit schema created"
+3. [CloudKit Console](https://icloud.developer.apple.com) > `iCloud.com.puertpoyo.masense` > Schema > **Deploy Schema Changes...** > Deploy
+4. TestFlight 빌드를 두 iPhone에 설치, 둘 다 기기 설정 > Apple ID > iCloud > (iCloud를 사용하는 앱 모두 보기) > 마선생 켜짐 확인. 첫 동기화는 몇 분
+5. 처리방침이 "개인 iCloud에 저장"으로 바뀌었으니 Vercel 재배포 (2-1 절차: `cd docs/privacy && npx vercel --prod`)
+- 스키마(VersionedSchema)가 바뀔 때마다 1~3을 다시 한다. 운영 스키마는 지우거나 이름을 바꿀 수 없으므로 앞으로 모델 변경은 **추가만** 한다
+- GitHub Actions의 Archive가 "iCloud 컨테이너가 프로파일에 없음"으로 실패하면 1을 먼저 하고 다시 실행
+- 건강 앱 체중·운동은 각 기기 건강 앱에서 가져온다. 동기화가 켜진 동안은 "이 기기 건강 앱에 없음"을 지운 것으로 보지 않는다(다른 기기가 가져온 기록일 수 있음). 건강 앱에서 지운 기록은 앱의 하루 카드에서 지운다
 
 ## 3. 베타 테스트 정보 (App Store Connect에 붙여 넣을 문구)
 
@@ -86,7 +90,7 @@ main에 앱 코드(`Masense/`, `Shared/`, `MasenseWidgets/`, `Config/`, `project
 
 마선생은 의학적 조언이나 판단을 하지 않습니다. 처방과 치료 결정은 담당 의사에게 있습니다.
 이 앱은 의사의 처방을 받은 만 19세 이상 성인을 위한 기록 도구입니다.
-모든 기록은 이 기기에만 저장되며 외부로 전송되지 않습니다.
+기록은 사용자의 기기와 본인 iCloud에만 저장되며 운영자 서버로 전송되지 않습니다.
 ```
 
 ### 테스트해 주실 것

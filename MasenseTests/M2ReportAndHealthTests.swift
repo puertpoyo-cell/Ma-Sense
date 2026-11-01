@@ -90,14 +90,21 @@ struct M2ReportAndHealthTests {
         ]
         context.insert(StrengthSession(startedAt: TestCalendar.date(2026, 10, 23, 7), durationMinutes: 0, kind: .rest))
 
-        try await HealthSyncService.syncAll(reader: reader, context: context, now: now, calendar: calendar)
+        try await HealthSyncService.syncAll(reader: reader, context: context, now: now, calendar: calendar, deletesMissing: true)
         var sessions = try context.fetch(FetchDescriptor<StrengthSession>(sortBy: [SortDescriptor(\.startedAt)]))
         #expect(sessions.map(\.kind) == [.strength, .walk, .rest])
         #expect(sessions.filter { $0.source == .healthKit }.count == 2)
 
         // HealthKit에서 걷기가 사라지고 근력 시간이 바뀌면 따라간다. 수동 기록은 그대로
         reader.workoutSamples = [HealthWorkout(uuid: strengthID, startedAt: TestCalendar.date(2026, 10, 21, 7), durationMinutes: 30, kind: .strength)]
-        try await HealthSyncService.syncAll(reader: reader, context: context, now: now, calendar: calendar)
+        // D26: iCloud 동기화 중에는 이 기기 건강 앱에 없다고 지우지 않는다 (다른 기기가 가져온 기록일 수 있음)
+        try await HealthSyncService.syncAll(reader: reader, context: context, now: now, calendar: calendar, deletesMissing: false)
+        sessions = try context.fetch(FetchDescriptor<StrengthSession>(sortBy: [SortDescriptor(\.startedAt)]))
+        #expect(sessions.map(\.kind) == [.strength, .walk, .rest])
+        #expect(sessions.first?.durationMinutes == 30)
+
+        // 동기화를 끈 기기에서는 건강 앱을 따라 지운다
+        try await HealthSyncService.syncAll(reader: reader, context: context, now: now, calendar: calendar, deletesMissing: true)
         sessions = try context.fetch(FetchDescriptor<StrengthSession>(sortBy: [SortDescriptor(\.startedAt)]))
         #expect(sessions.map(\.kind) == [.strength, .rest])
         #expect(sessions.first?.durationMinutes == 30)

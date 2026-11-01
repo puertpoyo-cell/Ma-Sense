@@ -10,7 +10,7 @@
 
 - iOS 17+, Swift 5.10+, SwiftUI
 - 저장: SwiftData. 스토어 파일은 **App Group 컨테이너**(`group.com.puertpoyo.masense`)에 둠 — v2 위젯·Live Activity·Watch가 같은 스토어를 읽기 위함. 서버·Supabase 없음
-- 동기화: v1은 꺼 둠(`cloudKitDatabase: .none`). 단, 스키마는 처음부터 CloudKit 호환 규칙을 지켜 나중에 스위치만 켜면 되게 함 (`DATA_MODEL.md` 원칙)
+- 동기화: 개인 iCloud(CloudKit 비공개 DB `iCloud.com.puertpoyo.masense`) 켬 (2026-11-01 사람 결정 "폰 여러 대 사용 시 상호 업데이트, iCloud 활용"). 운영 스키마는 지우거나 바꿀 수 없으니 모델 변경은 **추가만**, 바뀔 때마다 TESTFLIGHT.md 7의 스키마 배포
 - 체중·운동·제지방량: HealthKit (읽기 전용)
 - 알림: `UserNotifications` 로컬 알림
 - 리포트: PDFKit + SwiftUI `ImageRenderer`

@@ -11,7 +11,8 @@ enum WeightSyncService {
         reader: HealthKitReading,
         context: ModelContext,
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        deletesMissing: Bool = true
     ) async throws {
         guard reader.isAvailable,
               let since = calendar.date(byAdding: .weekOfYear, value: -lookbackWeeks, to: now)
@@ -26,7 +27,7 @@ enum WeightSyncService {
             if let latest = freshByUUID[uuid] {
                 sample.measuredAt = latest.measuredAt
                 sample.kilograms = latest.kilograms
-            } else if sample.measuredAt >= since {
+            } else if deletesMissing, sample.measuredAt >= since {
                 context.delete(sample)
             }
         }
@@ -64,7 +65,8 @@ enum WorkoutSyncService {
         reader: HealthKitReading,
         context: ModelContext,
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        deletesMissing: Bool = true
     ) async throws {
         guard reader.isAvailable,
               let since = calendar.date(byAdding: .weekOfYear, value: -WeightSyncService.lookbackWeeks, to: now)
@@ -80,7 +82,7 @@ enum WorkoutSyncService {
                 session.startedAt = latest.startedAt
                 session.durationMinutes = latest.durationMinutes
                 session.kind = latest.kind
-            } else if session.startedAt >= since {
+            } else if deletesMissing, session.startedAt >= since {
                 context.delete(session)
             }
         }
@@ -105,10 +107,15 @@ enum HealthSyncService {
         reader: HealthKitReading,
         context: ModelContext,
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        deletesMissing: Bool = !AppConfig.usesCloudSync
     ) async throws {
-        try await WeightSyncService.sync(reader: reader, context: context, now: now, calendar: calendar)
-        try await WorkoutSyncService.sync(reader: reader, context: context, now: now, calendar: calendar)
+        // D26: iCloud로 다른 기기가 가져온 건강 앱 기록은 이 기기 건강 앱에 아직 없을 수 있다.
+        // 동기화가 켜져 있으면 "이 기기 건강 앱에 없음"을 지운 것으로 보지 않는다 (기기끼리 지웠다 다시 넣기를 되풀이하지 않게)
+        try await WeightSyncService.sync(reader: reader, context: context, now: now, calendar: calendar, deletesMissing: deletesMissing)
+        try await WorkoutSyncService.sync(reader: reader, context: context, now: now, calendar: calendar, deletesMissing: deletesMissing)
         try context.save()
+        // 두 기기가 같은 건강 앱 기록을 각각 가져왔으면 하나로
+        try SyncMergeService.mergeDuplicates(context: context, calendar: calendar)
     }
 }

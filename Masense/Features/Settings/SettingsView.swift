@@ -68,6 +68,9 @@ private struct SettingsForm: View {
     /// N-I3 마지막 내보내기
     @AppStorage(ExportService.lastExportKey) private var lastExportInterval: Double = 0
     @Query private var clinicPhotos: [ClinicPhoto]
+    #if DEBUG
+    @State private var schemaResult: String?
+    #endif
     @Query private var allDoses: [Dose]
     @State private var confirmsDelete = false
     @State private var confirmsDeleteAgain = false
@@ -550,6 +553,24 @@ private struct SettingsForm: View {
             Button("settings.data.import") { importsFile = true }
             // 빨강 금지: destructive 역할 대신 일반 버튼 + 2단계 확인
             Button("settings.data.deleteAll") { confirmsDelete = true }
+            #if DEBUG
+            // D26 개발용: iCloud 개발 환경에 스키마 만들기 (실기기 DEBUG 빌드에서 한 번, TESTFLIGHT.md 7)
+            Button {
+                do {
+                    try CloudKitSchemaInitializer.run()
+                    schemaResult = "CloudKit schema created. Deploy it in CloudKit Console."
+                } catch {
+                    schemaResult = "CloudKit schema failed: \(error.localizedDescription)"
+                }
+            } label: {
+                Text(verbatim: "CloudKit schema (dev)")
+            }
+            if let schemaResult {
+                Text(verbatim: schemaResult)
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+            }
+            #endif
         } header: {
             SectionHeaderText("settings.section.data")
         } footer: {
@@ -557,7 +578,11 @@ private struct SettingsForm: View {
             VStack(alignment: .leading, spacing: Spacing.s2) {
                 Text("settings.data.export.notice")
                 Text("data.local")
-                // N-I3: 마지막 내보내기와 30일 안내 (서버·iCloud가 없어 내보내기가 유일한 백업)
+                // D26 iCloud 동기화 안내
+                if AppConfig.iCloudSyncEnabled {
+                    Text("settings.data.sync")
+                }
+                // N-I3: 마지막 내보내기와 30일 안내 (D26 iCloud를 켠 뒤에도 Apple ID·iCloud를 바꿀 때를 대비한 백업)
                 if lastExportInterval > 0 {
                     Text("settings.data.lastExport \(Date(timeIntervalSinceReferenceDate: lastExportInterval).formatted(.dateTime.year().month(.defaultDigits).day()))")
                 }

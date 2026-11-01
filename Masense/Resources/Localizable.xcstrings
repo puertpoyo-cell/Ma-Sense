@@ -1112,13 +1112,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Photos stay on this device and are not included in exports. Text is read on the device. Several photos are read in order and combined."
+            "value": "Photos are stored only on your devices and your private iCloud, and are not included in exports. Text is read on the device. Several photos are read in order and combined."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "사진은 이 기기에만 저장하고 내보내기 파일에는 담지 않습니다. 글자는 기기 안에서 읽습니다. 여러 장을 넣으면 순서대로 읽어 합칩니다."
+            "value": "사진은 내 기기들과 개인 iCloud에만 저장하고 내보내기 파일에는 담지 않습니다. 글자는 기기 안에서 읽습니다. 여러 장을 넣으면 순서대로 읽어 합칩니다."
           }
         }
       }
@@ -3611,13 +3611,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "All records are stored only on this device and are never sent anywhere."
+            "value": "Records are stored only on this device and in the private iCloud of your other devices signed in with the same Apple ID. They are never sent to a Masense server or anywhere else."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "모든 기록은 이 기기에만 저장되며 외부로 전송되지 않습니다."
+            "value": "기록은 이 기기와, 같은 Apple ID로 로그인한 내 다른 기기의 개인 iCloud에만 저장됩니다. 마선생 서버나 다른 곳으로는 보내지 않습니다."
           }
         }
       }
@@ -5519,13 +5519,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Notes stay on this device and are not included in the report."
+            "value": "Notes are stored only on your devices and your private iCloud, and are not included in the report."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "메모는 이 기기에만 저장되고 리포트에는 실리지 않습니다."
+            "value": "메모는 내 기기들과 개인 iCloud에만 저장되고 리포트에는 실리지 않습니다."
           }
         }
       }
@@ -6709,13 +6709,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Records on this device will be deleted and cannot be restored. Export them first if you need them. Purchases and Health app access stay as they are."
+            "value": "Records on this device will be deleted and cannot be restored. They are also deleted on your other devices linked through iCloud. Export them first if you need them. Purchases and Health app access stay as they are."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 기기에 있는 기록은 지워지고 되돌릴 수 없습니다. 필요하면 먼저 내보내 두세요. 구매와 건강 앱 연동 상태는 그대로입니다."
+            "value": "이 기기에 있는 기록은 지워지고 되돌릴 수 없습니다. iCloud로 이어진 내 다른 기기에서도 함께 지워집니다. 필요하면 먼저 내보내 두세요. 구매와 건강 앱 연동 상태는 그대로입니다."
           }
         }
       }
@@ -10512,13 +10512,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Records live only on this device. Exporting about once a month keeps them safe if you change or lose the phone."
+            "value": "Records are kept on your devices through your private iCloud. Exporting about once a month keeps them safe if you turn off iCloud or change Apple ID."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "기록은 이 기기에만 있습니다. 기기를 바꾸거나 잃을 때를 대비해 한 달에 한 번쯤 내보내기를 해 두면 안전합니다."
+            "value": "기록은 개인 iCloud로 내 기기들에 함께 저장됩니다. iCloud를 끄거나 Apple ID를 바꿀 때를 대비해 한 달에 한 번쯤 내보내기를 해 두면 안전합니다."
           }
         }
       }
@@ -10614,13 +10614,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dose, condition, and weight records and settings will be permanently deleted from this device."
+            "value": "Dose, condition, and weight records and settings will be permanently deleted from this device and from your other devices linked through iCloud."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "투약·컨디션·체중 기록과 설정이 이 기기에서 영구 삭제됩니다."
+            "value": "투약·컨디션·체중 기록과 설정이 이 기기와, iCloud로 이어진 내 다른 기기에서 영구 삭제됩니다."
           }
         }
       }
@@ -10740,6 +10740,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "검사지 사진 %lld장 공유"
+          }
+        }
+      }
+    },
+    "settings.data.sync": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Records move between iPhones signed in with the same Apple ID through iCloud. Masense must be turned on under Apple ID > iCloud in the device settings, and the first sync can take a few minutes. Weight and workouts from Health are read from each device's Health app."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "같은 Apple ID로 로그인한 iPhone끼리 기록이 iCloud로 오갑니다. 기기 설정의 Apple ID > iCloud에서 마선생이 켜져 있어야 하고, 처음에는 몇 분 걸릴 수 있습니다. 건강 앱 체중·운동은 각 기기의 건강 앱에서 가져옵니다."
           }
         }
       }
@@ -10869,13 +10886,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open beta build %@. Send anything confusing or inconvenient through TestFlight feedback. Records stay on this device."
+            "value": "Open beta build %@. Send anything confusing or inconvenient through TestFlight feedback. Records stay on your devices and your private iCloud."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "오픈 베타 빌드 %@입니다. 불편한 점이나 헷갈리는 문구는 TestFlight 피드백으로 보내 주세요. 기록은 이 기기에만 저장됩니다."
+            "value": "오픈 베타 빌드 %@입니다. 불편한 점이나 헷갈리는 문구는 TestFlight 피드백으로 보내 주세요. 기록은 내 기기들과 개인 iCloud에만 저장됩니다."
           }
         }
       }

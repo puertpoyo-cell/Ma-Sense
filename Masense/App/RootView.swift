@@ -1,3 +1,5 @@
+import Combine
+import CoreData
 import SwiftData
 import SwiftUI
 
@@ -50,18 +52,42 @@ struct RootView: View {
             guard phase == .loading else { return }
             // 온보딩 도중 종료했다가 다시 열어도 역할·연령 확인을 마쳤으면 홈으로 간다.
             // 처방이 없으면 홈 빈 상태에서 입력할 수 있다.
+            // D26: iCloud로 받은 설정과 이 기기 설정이 겹쳐 있으면 먼저 하나로 (온보딩을 마친 쪽이 남는다)
+            try? SyncMergeService.mergeDuplicates(context: context)
             let settings = try? UserSettings.current(in: context)
             phase = settings?.hasCompletedOnboarding == true ? .main : .onboarding
         }
         .onChange(of: scenePhase) { _, newPhase in
             // R4: 포그라운드로 올 때마다 전부 취소 후 재등록
             guard newPhase == .active, phase == .main else { return }
+            try? SyncMergeService.mergeDuplicates(context: context)
             Task { await services.refreshReminders(context: context) }
+        }
+        // D26: 다른 기기의 기록이 iCloud로 들어오면 중복을 정리하고 알림·위젯을 다시 맞춘다.
+        // 한꺼번에 여러 번 오므로 2초 모아서 한 번
+        .onReceive(
+            NotificationCenter.default
+                .publisher(for: .NSPersistentStoreRemoteChange)
+                .debounce(for: .seconds(2), scheduler: RunLoop.main)
+        ) { _ in
+            remoteChangesArrived()
         }
     }
 }
 
 extension RootView {
+    /// D26 iCloud로 다른 기기 기록이 들어왔을 때
+    private func remoteChangesArrived() {
+        guard AppConfig.usesCloudSync else { return }
+        try? SyncMergeService.mergeDuplicates(context: context)
+        // 새 기기에서 온보딩 중인데 다른 기기의 설정(온보딩 마침)이 들어오면 바로 홈으로
+        if phase == .onboarding, (try? UserSettings.current(in: context))?.hasCompletedOnboarding == true {
+            phase = .main
+        }
+        guard phase == .main else { return }
+        Task { await services.refreshReminders(context: context) }
+    }
+
     /// 앱을 새로 열 때만. 백그라운드에서 돌아올 때는 보이지 않는다 (상태가 살아 있으므로).
     /// 스크린샷 경로(DEBUG `-route`)로 띄울 때는 바로 화면으로 간다
     static var startsWithSplash: Bool {

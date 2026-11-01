@@ -38,5 +38,25 @@ enum AppConfig {
     /// N-I1 (v2 준비): 개인 iCloud 동기화. **사람이 Xcode에서 iCloud(CloudKit) Capability와 컨테이너
     /// `iCloud.com.puertpoyo.masense`, Background Modes(Remote notifications)를 켠 뒤에만** true로 바꾼다 (TESTFLIGHT.md 7).
     /// Capability 없이 true면 앱이 시작할 때 컨테이너를 못 열어 죽는다. 켤 때 처리방침 2장·3장을 "iCloud에 백업됩니다"로 고친다
-    static let iCloudSyncEnabled = false
+    /// D26 (2026-11-01 사람 결정 "폰 여러 대 사용 시 상호 업데이트, iCloud 활용"): 켬
+    static let iCloudSyncEnabled = true
+
+    /// 이 실행에서 실제로 iCloud에 붙는지. 서명 없이 도는 실행은 iCloud 권한이 없어 붙으면 시작하다 멈출 수 있으므로 늘 기기 안에만:
+    /// 단위 테스트(CI는 서명 없이 시뮬레이터), 시뮬레이터, DEBUG 스크린샷·예시 데이터 실행(예시가 개인 iCloud로 올라가지 않게)
+    /// iCloud 컨테이너 (entitlements와 같아야 한다)
+    static let cloudKitContainer = "iCloud.com.puertpoyo.masense"
+
+    static var usesCloudSync: Bool {
+        guard iCloudSyncEnabled else { return false }
+        #if targetEnvironment(simulator)
+        return false
+        #else
+        let process = ProcessInfo.processInfo
+        if process.environment["XCTestConfigurationFilePath"] != nil { return false }
+        #if DEBUG
+        if ScreenshotRoute.current != nil || process.arguments.contains("-seedSampleData") { return false }
+        #endif
+        return true
+        #endif
+    }
 }
