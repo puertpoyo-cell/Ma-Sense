@@ -11957,13 +11957,30 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "iCloud sync could not start, so records are saved on this device only for now. Your records are safe. Long-press the text below to copy it and send it to us."
+            "value": "iCloud sync could not start, so records are saved on this device only for now. Your records are safe. Tap Copy full error below and send it to us."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "iCloud 동기화를 켜지 못해 지금은 이 기기에만 저장하고 있습니다. 기록은 그대로 있습니다. 아래 내용을 길게 눌러 복사해 보내 주시면 원인을 찾습니다."
+            "value": "iCloud 동기화를 켜지 못해 지금은 이 기기에만 저장하고 있습니다. 기록은 그대로 있습니다. 아래 \"오류 전체 복사\"를 눌러 보내 주시면 원인을 찾습니다."
+          }
+        }
+      }
+    },
+    "settings.data.syncFailed.copy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy full error"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오류 전체 복사"
           }
         }
       }

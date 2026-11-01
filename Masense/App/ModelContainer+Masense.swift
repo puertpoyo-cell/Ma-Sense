@@ -39,7 +39,7 @@ extension ModelContainer {
             // D26-1: iCloud로 열지 못하면(권한·이전·스키마 문제) 같은 파일을 기기 안 저장소로 연다. 기록은 그대로, 동기화만 꺼진다.
             // 앱이 멈추지 않게 하고 이유를 설정 화면에 보인다
             AppConfig.cloudSyncActive = false
-            AppConfig.cloudSyncFailure = String(describing: error)
+            AppConfig.cloudSyncFailure = Self.fullDescription(error)
             let local = ModelConfiguration("Masense", schema: schema, url: StoreLocation.resolvedURL(), cloudKitDatabase: .none)
             return try ModelContainer(for: schema, migrationPlan: MasenseMigrationPlan.self, configurations: [local])
         } catch {
@@ -52,6 +52,25 @@ extension ModelContainer {
             throw error
             #endif
         }
+    }
+
+    /// D26-2: 원인(어느 항목이 CloudKit 규칙에 걸렸는지)은 안쪽 오류의 userInfo에 있다. 안쪽까지 모두 펼쳐 남긴다
+    static func fullDescription(_ error: Error) -> String {
+        var lines = [String(describing: error)]
+        var queue: [NSError] = [error as NSError]
+        var seen = 0
+        while let current = queue.first, seen < 20 {
+            queue.removeFirst()
+            seen += 1
+            lines.append("[\(current.domain) \(current.code)] \(current.localizedDescription)")
+            if let reason = current.localizedFailureReason { lines.append("reason: \(reason)") }
+            for (key, value) in current.userInfo where key != NSUnderlyingErrorKey && key != NSDetailedErrorsKey {
+                lines.append("\(key): \(value)")
+            }
+            if let underlying = current.userInfo[NSUnderlyingErrorKey] as? NSError { queue.append(underlying) }
+            if let detailed = current.userInfo[NSDetailedErrorsKey] as? [NSError] { queue.append(contentsOf: detailed) }
+        }
+        return lines.joined(separator: "\n")
     }
 
     /// SQLite 저장소 파일과 저널 파일

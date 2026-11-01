@@ -584,7 +584,10 @@ private struct SettingsForm: View {
                 } else if AppConfig.iCloudSyncEnabled, let failure = AppConfig.cloudSyncFailure {
                     // D26-1: iCloud로 열지 못해 이 기기에만 저장 중. 원인 파악용으로 오류 앞부분을 보인다
                     Text("settings.data.syncFailed")
-                    Text(verbatim: String(failure.prefix(300)))
+                    // D26-2: 오류 전체를 한 번에 복사 (화면에는 앞부분만)
+                    Button("settings.data.syncFailed.copy") { UIPasteboard.general.string = failure }
+                        .font(Typography.label)
+                    Text(verbatim: String(failure.prefix(1200)))
                         .font(.caption2.monospaced())
                         .textSelection(.enabled)
                 }
