@@ -56,6 +56,10 @@ enum AppConfig {
         set { UserDefaults.standard.set(newValue, forKey: "cloudSync.failure") }
     }
 
+    /// D32 (2026-11-01 사람 결정): 투약일 Live Activity(잠금 화면·다이내믹 아일랜드 실시간 현황)를 띄우지 않는다. 투약 알림만.
+    /// 코드는 남겨 두고 이 값으로 끈다
+    static let doseDayLiveActivityEnabled = false
+
     /// iCloud 컨테이너 (entitlements와 같아야 한다)
     static let cloudKitContainer = "iCloud.com.puertpoyo.masense"
 

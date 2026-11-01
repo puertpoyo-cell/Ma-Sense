@@ -46,7 +46,7 @@ struct ServiceTests {
         #expect(fake.pending.contains { $0.kind == .conditionH24 })
     }
 
-    /// D6: 기록이 바뀌면 알림과 함께 위젯 요약을 다시 쓰고 투약일 Live Activity를 맞춘다
+    /// D6: 기록이 바뀌면 알림과 함께 위젯 요약을 다시 쓴다. D32: Live Activity는 늘 끈다
     @Test func refreshRemindersPublishesWidgetAndLiveActivity() async throws {
         let context = makeContext()
         let prescription = Prescription(startDate: TestCalendar.date(2026, 10, 16, 9), penCount: 1, scheduledWeekday: 5, scheduledHour: 20)
@@ -63,10 +63,10 @@ struct ServiceTests {
         #expect(widgets.published.last?.scheduledDate == TestCalendar.date(2026, 10, 22, 20))
         #expect(activities.scheduled == nil)
 
-        // 투약일에 앱을 열면 Live Activity, 기록하면 끝난다
+        // D32: 투약일에도 Live Activity를 띄우지 않는다 (알림만). 떠 있던 것은 끈다
         let scheduled = TestCalendar.date(2026, 10, 22, 20)
         await services.refreshReminders(context: context, now: TestCalendar.date(2026, 10, 22, 9))
-        #expect(activities.scheduled == scheduled)
+        #expect(activities.scheduled == nil)
 
         prescription.doses.append(Dose(administeredAt: scheduled, scheduledFor: scheduled, site: nil, sequence: 1))
         try context.save()

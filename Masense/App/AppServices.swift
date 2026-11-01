@@ -40,8 +40,13 @@ final class AppServices {
     func refreshReminders(context: ModelContext, now: Date = Date()) async {
         let snapshot = WidgetService.snapshot(context: context, now: now, calendar: calendar)
         widgets.publish(snapshot)
-        let doseDay = LiveActivityRules.doseDayScheduledDate(snapshot: snapshot, now: now, calendar: calendar)
-        await liveActivities.sync(scheduled: doseDay, staleDate: doseDay.flatMap { LiveActivityRules.staleDate(for: $0, now: now, calendar: calendar) })
+        // D32 (2026-11-01 사람 결정 "투약일 실시간 현황은 필요 없음, 알림 정도만"): Live Activity는 띄우지 않고, 떠 있던 것은 끈다
+        if AppConfig.doseDayLiveActivityEnabled {
+            let doseDay = LiveActivityRules.doseDayScheduledDate(snapshot: snapshot, now: now, calendar: calendar)
+            await liveActivities.sync(scheduled: doseDay, staleDate: doseDay.flatMap { LiveActivityRules.staleDate(for: $0, now: now, calendar: calendar) })
+        } else {
+            await liveActivities.sync(scheduled: nil, staleDate: nil)
+        }
         await NotificationCoordinator(service: notifications, calendar: calendar).refresh(context: context, now: now)
     }
 }
