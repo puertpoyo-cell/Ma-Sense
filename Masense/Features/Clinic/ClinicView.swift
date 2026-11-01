@@ -17,6 +17,9 @@ struct ClinicView: View {
         case appointment
         /// D28 캘린더에 넣기
         case calendar(Date)
+        /// D29 처방 카드
+        case newPrescription
+        case refill(Prescription)
 
         var id: String {
             switch self {
@@ -24,14 +27,21 @@ struct ClinicView: View {
             case let .editVisit(visit): return "edit." + visit.id.uuidString
             case .questions: return "questions"
             case .prescription: return "prescription"
+            case .newPrescription:
+                PrescriptionSheet()
+            case let .refill(prescription):
+                RefillSheet(prescription: prescription) { showsToast = true }
             case .appointment: return "appointment"
             case .calendar: return "calendar"
+            case .newPrescription: return "newPrescription"
+            case .refill: return "refill"
             }
         }
     }
 
     @Environment(\.calendar) private var calendar
     @Query(filter: #Predicate<Prescription> { $0.isActive }) private var activePrescriptions: [Prescription]
+    @Query(sort: \Prescription.startDate) private var allPrescriptions: [Prescription]
     @Query(sort: \ClinicVisit.visitedAt, order: .reverse) private var visits: [ClinicVisit]
     @Query(sort: \LabResult.measuredAt) private var labResults: [LabResult]
     @Query(filter: #Predicate<ClinicQuestion> { $0.askedAt == nil }, sort: \ClinicQuestion.createdAt) private var pendingQuestions: [ClinicQuestion]
@@ -51,6 +61,14 @@ struct ClinicView: View {
                 // D23: 펼친 가로 화면은 왼쪽 다음 진료·물어볼 것·새 진료, 오른쪽 검사 결과·진료 기록 2단
                 UnfoldColumns(container: viewport) {
                     nextClinicCard(now: timeline.date)
+                    // D29: 설정에만 있던 처방 정보를 진료 탭에
+                    PrescriptionCard(
+                        prescription: activePrescriptions.first,
+                        tint: Color.prescription(slot: activePrescriptions.first.flatMap { allPrescriptions.colorSlots[$0.id] } ?? 0),
+                        onRefill: { if let p = activePrescriptions.first { sheet = .refill(p) } },
+                        onEdit: { sheet = .prescription },
+                        onNew: { sheet = .newPrescription }
+                    )
                     questionsCard
                 } trailing: {
                     archiveCard

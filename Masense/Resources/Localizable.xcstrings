@@ -953,6 +953,57 @@
         }
       }
     },
+    "clinic.prescription.more": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit or start a new prescription"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처방 수정, 새 처방 시작"
+          }
+        }
+      }
+    },
+    "clinic.prescription.schedule": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dose day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약"
+          }
+        }
+      }
+    },
+    "clinic.prescription.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current prescription"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금 처방"
+          }
+        }
+      }
+    },
     "clinic.questions.a11y.asked": {
       "extractionState": "manual",
       "localizations": {
