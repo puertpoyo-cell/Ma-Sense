@@ -274,6 +274,10 @@ enum ProteinFood: String, Codable, CaseIterable {
 
 내보내기 파일에 담지 않는다. 교체 가져오기 때도 같은 ID의 진료 기록에 다시 붙인다. 전체 삭제는 지운다. 식사 사진은 모델이 없다(저장하지 않음).
 
+### D34 관계 옵셔널 (SchemaV9 1.8.0)
+
+CloudKit은 모든 관계가 옵셔널이어야 한다. `Prescription.doses`·`Dose.conditionChecks`를 옵셔널 배열(`doseList`·`checkList`, 저장 이름은 그대로)로 바꾸고 코드에서는 옵셔널 아닌 `doses`·`conditionChecks` 계산 속성으로 읽고 쓴다. V1~V8은 `SchemaV1`의 고정 사본으로 이전 저장소를 알아본다.
+
 ### PenSupply — 받은 펜 (D28, SchemaV8 1.7.0)
 
 | 필드 | 타입 | 기본값 | 설명 |

@@ -14,9 +14,9 @@ enum SchemaV1: VersionedSchema {
 
     static var models: [any PersistentModel.Type] {
         [
-            Prescription.self,
-            Dose.self,
-            ConditionCheck.self,
+            SchemaV1.Prescription.self,
+            SchemaV1.Dose.self,
+            SchemaV1.ConditionCheck.self,
             SchemaV1.WeightSample.self,
             SchemaV1.UserSettings.self,
             ProteinEntry.self,
@@ -42,6 +42,59 @@ enum SchemaV1: VersionedSchema {
         var hasPurchasedPro: Bool = false
         var reportTheme: String = "midnight"
         var reportDefaultPeriod: String?
+        var createdAt: Date = Date.now
+
+        init() {}
+    }
+
+    /// 1.0.0~1.7.0의 `Prescription`·`Dose`·`ConditionCheck` 고정 사본 (관계가 옵셔널 아님). V1~V8 저장소를 열고 V9로 옮길 때만 쓴다 (D34)
+    @Model
+    final class Prescription {
+        var id: UUID = UUID()
+        var startDate: Date = Date.now
+        var penCount: Int = 1
+        var dosesPerPen: Int = 4
+        var intervalDays: Int = 7
+        var scheduledWeekday: Int = 5
+        var scheduledHour: Int = 20
+        var scheduledMinute: Int = 0
+        var endDate: Date?
+        var nextClinicDate: Date?
+        var doseLabel: String?
+        var isActive: Bool = true
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.Dose.prescription)
+        var doses: [SchemaV1.Dose] = []
+        var createdAt: Date = Date.now
+
+        init() {}
+    }
+
+    @Model
+    final class Dose {
+        var id: UUID = UUID()
+        var administeredAt: Date = Date.now
+        var scheduledFor: Date = Date.now
+        var siteRaw: String = "abdomenUpperLeft"
+        var sequence: Int = 1
+        var note: String?
+        var isCancelled: Bool = false
+        var prescription: SchemaV1.Prescription?
+        @Relationship(deleteRule: .cascade, inverse: \SchemaV1.ConditionCheck.dose)
+        var conditionChecks: [SchemaV1.ConditionCheck] = []
+        var createdAt: Date = Date.now
+
+        init() {}
+    }
+
+    @Model
+    final class ConditionCheck {
+        var id: UUID = UUID()
+        var checkedAt: Date = Date.now
+        var windowRaw: String = "h24"
+        var symptoms: [SymptomEntry] = []
+        var appetiteRaw: String = "normal"
+        var note: String?
+        var dose: SchemaV1.Dose?
         var createdAt: Date = Date.now
 
         init() {}
@@ -81,9 +134,9 @@ enum SchemaV2: VersionedSchema {
 
     static var models: [any PersistentModel.Type] {
         [
-            Prescription.self,
-            Dose.self,
-            ConditionCheck.self,
+            SchemaV1.Prescription.self,
+            SchemaV1.Dose.self,
+            SchemaV1.ConditionCheck.self,
             SchemaV1.WeightSample.self,
             SchemaV2.UserSettings.self,
             ProteinEntry.self,
@@ -131,9 +184,9 @@ enum SchemaV4: VersionedSchema {
 
     static var models: [any PersistentModel.Type] {
         [
-            Prescription.self,
-            Dose.self,
-            ConditionCheck.self,
+            SchemaV1.Prescription.self,
+            SchemaV1.Dose.self,
+            SchemaV1.ConditionCheck.self,
             SchemaV1.WeightSample.self,
             UserSettings.self,
             ProteinEntry.self,
@@ -150,9 +203,9 @@ enum SchemaV5: VersionedSchema {
 
     static var models: [any PersistentModel.Type] {
         [
-            Prescription.self,
-            Dose.self,
-            ConditionCheck.self,
+            SchemaV1.Prescription.self,
+            SchemaV1.Dose.self,
+            SchemaV1.ConditionCheck.self,
             WeightSample.self,
             UserSettings.self,
             ProteinEntry.self,
@@ -179,9 +232,9 @@ enum SchemaV7: VersionedSchema {
 
     static var models: [any PersistentModel.Type] {
         [
-            Prescription.self,
-            Dose.self,
-            ConditionCheck.self,
+            SchemaV1.Prescription.self,
+            SchemaV1.Dose.self,
+            SchemaV1.ConditionCheck.self,
             WeightSample.self,
             UserSettings.self,
             ProteinEntry.self,
@@ -205,12 +258,36 @@ enum SchemaV8: VersionedSchema {
     }
 }
 
+/// D34 (2026-11-01, 빌드 33 실기기 CloudKit 오류 134060 "관계가 모두 옵셔널이어야 함: Dose.conditionChecks, Prescription.doses"):
+/// 두 관계를 옵셔널로. 저장 이름은 그대로(originalName)라 경량 이전. V1~V8은 `SchemaV1`의 고정 사본을 쓴다
+enum SchemaV9: VersionedSchema {
+    static let versionIdentifier = Schema.Version(1, 8, 0)
+
+    static var models: [any PersistentModel.Type] {
+        [
+            Prescription.self,
+            Dose.self,
+            ConditionCheck.self,
+            WeightSample.self,
+            UserSettings.self,
+            ProteinEntry.self,
+            StrengthSession.self,
+            HabitCheck.self,
+            ClinicQuestion.self,
+            ClinicVisit.self,
+            LabResult.self,
+            ClinicPhoto.self,
+            PenSupply.self,
+        ]
+    }
+}
+
 /// 지금 앱이 여는 스키마
-typealias CurrentSchema = SchemaV8
+typealias CurrentSchema = SchemaV9
 
 enum MasenseMigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
-        [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self, SchemaV6.self, SchemaV7.self, SchemaV8.self]
+        [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self, SchemaV5.self, SchemaV6.self, SchemaV7.self, SchemaV8.self, SchemaV9.self]
     }
 
     static var stages: [MigrationStage] {
@@ -222,6 +299,7 @@ enum MasenseMigrationPlan: SchemaMigrationPlan {
             .lightweight(fromVersion: SchemaV5.self, toVersion: SchemaV6.self),
             .lightweight(fromVersion: SchemaV6.self, toVersion: SchemaV7.self),
             .lightweight(fromVersion: SchemaV7.self, toVersion: SchemaV8.self),
+            .lightweight(fromVersion: SchemaV8.self, toVersion: SchemaV9.self),
         ]
     }
 }

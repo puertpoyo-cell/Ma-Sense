@@ -97,7 +97,11 @@ struct SchemaTests {
             settings.hasAcceptedRoleNotice = true
             settings.proteinTargetGrams = 100
             context.insert(settings)
-            context.insert(Prescription(startDate: TestCalendar.date(2026, 10, 16, 9), penCount: 2, scheduledWeekday: 5, scheduledHour: 20))
+            // D34: V1~V8은 처방·투약·컨디션 고정 사본
+            let prescription = SchemaV1.Prescription()
+            prescription.startDate = TestCalendar.date(2026, 10, 16, 9)
+            prescription.penCount = 2
+            context.insert(prescription)
             try context.save()
         }
 
@@ -129,9 +133,14 @@ struct SchemaTests {
             let settings = SchemaV2.UserSettings()
             settings.heightCm = 168
             context.insert(settings)
-            let prescription = Prescription(startDate: TestCalendar.date(2026, 10, 16, 9), penCount: 1, scheduledWeekday: 5, scheduledHour: 20)
+            let prescription = SchemaV1.Prescription()
+            prescription.startDate = TestCalendar.date(2026, 10, 16, 9)
+            prescription.penCount = 1
             context.insert(prescription)
-            let dose = Dose(administeredAt: TestCalendar.date(2026, 10, 22, 20), scheduledFor: TestCalendar.date(2026, 10, 22, 20), site: nil, sequence: 1)
+            let dose = SchemaV1.Dose()
+            dose.administeredAt = TestCalendar.date(2026, 10, 22, 20)
+            dose.scheduledFor = TestCalendar.date(2026, 10, 22, 20)
+            dose.siteRaw = Dose.unknownSiteRaw
             context.insert(dose)
             dose.prescription = prescription
             try context.save()
@@ -298,6 +307,67 @@ struct SchemaTests {
         let supply = try #require(try context.fetch(FetchDescriptor<PenSupply>()).first)
         #expect(supply.visitID == visitID)
         #expect(supply.prescriptionMemo == "메모 그대로")
+    }
+
+    /// D34: V8 저장소(관계가 옵셔널 아님)의 처방·투약·컨디션이 V9(옵셔널 관계, 저장 이름 그대로)로 그대로 넘어온다
+    @Test func schemaV8StoreMigratesToV9WithOptionalRelationships() throws {
+        let (directory, url) = try diskStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        try autoreleasepool {
+            let schema = Schema(versionedSchema: SchemaV8.self)
+            let v8 = try ModelContainer(
+                for: schema,
+                configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)]
+            )
+            let context = v8.mainContext
+            let prescription = SchemaV1.Prescription()
+            prescription.startDate = TestCalendar.date(2026, 10, 11)
+            prescription.penCount = 8
+            prescription.dosesPerPen = 1
+            context.insert(prescription)
+            var fourthDose: SchemaV1.Dose?
+            for (index, day) in [11, 18, 25, 31].enumerated() {
+                let dose = SchemaV1.Dose()
+                dose.administeredAt = TestCalendar.date(2026, 10, day, 20)
+                dose.scheduledFor = TestCalendar.date(2026, 10, day, 20)
+                dose.siteRaw = "abdomenUpperRight"
+                dose.sequence = index + 1
+                context.insert(dose)
+                dose.prescription = prescription
+                fourthDose = dose
+            }
+            let check = SchemaV1.ConditionCheck()
+            check.checkedAt = TestCalendar.date(2026, 11, 1, 20)
+            context.insert(check)
+            check.dose = fourthDose
+            context.insert(PenSupply(receivedAt: TestCalendar.date(2026, 10, 31), packages: 1))
+            try context.save()
+        }
+
+        let container = try ModelContainer.masense(url: copyStore(url, in: directory))
+        let context = container.mainContext
+        let prescription = try #require(try context.fetch(FetchDescriptor<Prescription>()).first)
+        #expect(prescription.penCount == 8)
+        #expect(prescription.doses.map(\.sequence).sorted() == [1, 2, 3, 4])
+        #expect(prescription.remainingDoses == 4)
+        let fourth = try #require(prescription.doses.first { $0.sequence == 4 })
+        #expect(fourth.conditionChecks.count == 1)
+        #expect(try context.fetch(FetchDescriptor<PenSupply>()).count == 1)
+        // 새 구조에서도 관계로 더하고 지울 수 있다
+        fourth.conditionChecks.append(ConditionCheck(checkedAt: TestCalendar.date(2026, 11, 2, 20), window: .h48))
+        try context.save()
+        #expect(try context.fetch(FetchDescriptor<ConditionCheck>()).count == 2)
+    }
+
+    /// D34: CloudKit 규칙 — 모든 관계가 옵셔널 (빌드 33 실기기 오류 134060의 원인)
+    @Test func allRelationshipsAreOptionalForCloudKit() throws {
+        let container = try ModelContainer.masense(inMemory: true)
+        for entity in container.schema.entities {
+            for relationship in entity.relationships {
+                #expect(relationship.isOptional, "\(entity.name).\(relationship.name)")
+            }
+        }
     }
 
     /// 이전 버전 컨테이너가 아직 파일을 붙잡고 있으면 같은 파일의 이전(migration)이 독점 잠금을 기다리다 멈출 수 있다.

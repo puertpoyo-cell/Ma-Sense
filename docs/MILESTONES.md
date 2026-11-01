@@ -325,6 +325,13 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - [x] D30 의사 질문은 "의사와 상의" 고정 문장 + "물어볼 것에 담기"
 - 사람 확인: Apple Intelligence가 켜진 기기에서 애매한 질문이 알맞은 주제로 가는지, 탭 3개 배치가 직관적인지
 
+## D34 — iCloud 켜지지 않던 원인 고침 (2026-11-01, 빌드 33 오류 전체)
+
+- 원인: CloudKit은 모든 관계가 옵셔널이어야 하는데 `Prescription.doses`·`Dose.conditionChecks`가 옵셔널이 아니었다 (Core Data 134060)
+- [x] SchemaV9(1.8.0): 두 관계를 옵셔널(`doseList`·`checkList`, 저장 이름은 `doses`·`conditionChecks` 그대로 originalName). 코드는 옵셔널 아닌 `doses`·`conditionChecks`로 그대로 읽고 씀
+- [x] V1~V8은 `SchemaV1.Prescription`·`Dose`·`ConditionCheck` 고정 사본 (이전 저장소의 버전을 알아보게), V8→V9 경량 이전 + 테스트, "모든 관계 옵셔널" 테스트
+- 사람 할 일: 빌드 38 설치 뒤 설정 > 데이터에 실패 문구가 사라지는지. 그다음 TESTFLIGHT.md 7의 스키마 배포(Mac Xcode 실기기 실행 → CloudKit schema 버튼 → Console 배포)
+
 ## D33 — 꼬였을 때 쉽게 고치기 (2026-11-01 사람 요청)
 
 - [x] 투약 고치기: 기록 탭 투약 줄을 길게 눌러 시각(30분 휠)·회차·부위를 한 화면에서 (`SiteEditSheet` 확장)

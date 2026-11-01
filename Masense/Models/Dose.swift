@@ -19,8 +19,9 @@ final class Dose {
     /// 잘못 기록 취소용. 리포트에서는 제외
     var isCancelled: Bool = false
     var prescription: Prescription?
-    @Relationship(deleteRule: .cascade, inverse: \ConditionCheck.dose)
-    var conditionChecks: [ConditionCheck] = []
+    /// D34 (SchemaV9): CloudKit 관계 옵셔널 규칙 (빌드 33 오류 "Dose: conditionChecks"). 저장 이름은 `conditionChecks` 그대로
+    @Relationship(deleteRule: .cascade, originalName: "conditionChecks", inverse: \ConditionCheck.dose)
+    var checkList: [ConditionCheck]? = []
     var createdAt: Date = Date.now
 
     init(
@@ -43,8 +44,14 @@ final class Dose {
         self.note = note
         self.isCancelled = isCancelled
         self.prescription = prescription
-        self.conditionChecks = conditionChecks
+        self.checkList = conditionChecks
         self.createdAt = createdAt
+    }
+
+    /// 이 투약의 컨디션 체크 (관계가 없으면 빈 배열)
+    var conditionChecks: [ConditionCheck] {
+        get { checkList ?? [] }
+        set { checkList = newValue }
     }
 
     /// 부위를 모르고 저장한 기록 (D6 지난 투약 한꺼번에 입력)

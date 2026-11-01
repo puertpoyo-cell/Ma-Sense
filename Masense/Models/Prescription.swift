@@ -28,8 +28,10 @@ final class Prescription {
     var doseLabel: String?
     /// 현재 처방 여부
     var isActive: Bool = true
-    @Relationship(deleteRule: .cascade, inverse: \Dose.prescription)
-    var doses: [Dose] = []
+    /// D34 (SchemaV9): CloudKit은 관계가 모두 옵셔널이어야 한다 (빌드 33 실기기 오류 134060 "Prescription: doses").
+    /// 저장 이름은 `doses` 그대로(originalName), 코드에서는 아래 `doses`(옵셔널 아님)로 읽고 쓴다
+    @Relationship(deleteRule: .cascade, originalName: "doses", inverse: \Dose.prescription)
+    var doseList: [Dose]? = []
     var createdAt: Date = Date.now
 
     init(
@@ -60,8 +62,14 @@ final class Prescription {
         self.nextClinicDate = nextClinicDate
         self.doseLabel = doseLabel
         self.isActive = isActive
-        self.doses = doses
+        self.doseList = doses
         self.createdAt = createdAt
+    }
+
+    /// 이 처방의 투약 (관계가 없으면 빈 배열)
+    var doses: [Dose] {
+        get { doseList ?? [] }
+        set { doseList = newValue }
     }
 
     /// 예정 시각 (hour, minute)
