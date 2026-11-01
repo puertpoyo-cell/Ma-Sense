@@ -86,6 +86,34 @@ jobs:
           PY
           chmod 600 ~/private_keys/AuthKey_$KEY_ID.p8
 
+      # 2026-11-01: Archive가 "Authentication failed"로 멈출 때 원인을 바로 보이게. API 키로 App Store Connect에 직접 물어
+      # 상태 코드와 오류 코드만 찍는다 (키·토큰은 찍지 않음). 예: 403 FORBIDDEN.REQUIRED_AGREEMENTS_MISSING_OR_EXPIRED = 새 계약 동의 필요
+      - name: Check App Store Connect API key
+        continue-on-error: true
+        run: |
+          python3 -m pip install --quiet --disable-pip-version-check --break-system-packages pyjwt cryptography 2>/dev/null \
+            || python3 -m pip install --quiet --disable-pip-version-check pyjwt cryptography
+          python3 - <<'PY'
+          import json, os, time, urllib.request, urllib.error, pathlib
+          import jwt
+          key = (pathlib.Path.home() / "private_keys" / f"AuthKey_{os.environ['KEY_ID']}.p8").read_text()
+          now = int(time.time())
+          token = jwt.encode({"iss": os.environ["ISSUER_ID"], "iat": now, "exp": now + 600, "aud": "appstoreconnect-v1"},
+                             key, algorithm="ES256", headers={"kid": os.environ["KEY_ID"], "typ": "JWT"})
+          req = urllib.request.Request("https://api.appstoreconnect.apple.com/v1/apps?limit=1", headers={"Authorization": f"Bearer {token}"})
+          try:
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  print(f"API 키 확인: {r.status} 정상")
+          except urllib.error.HTTPError as e:
+              body = e.read().decode(errors="replace")
+              try:
+                  errors = json.loads(body).get("errors", [])
+                  for err in errors:
+                      print(f"API 키 확인 실패: {e.code} {err.get('code')} | {err.get('title')} | {err.get('detail')}")
+              except Exception:
+                  print(f"API 키 확인 실패: {e.code} {body[:300]}")
+          PY
+
       # 2026-11-01: 러너는 매번 빈 키체인이라 클라우드 서명이 실행마다 Apple Development 인증서를 새로 만들어
       # 계정 한도("reached the maximum number of certificates")에 걸렸다. Secrets에 인증서(.p12)가 있으면 그것을 넣어 새로 만들지 않게 한다.
       # 없으면 이전처럼 새로 만든다 (한도에 걸리면 developer.apple.com에서 "Created via API" 개발 인증서를 지운다, TESTFLIGHT.md 2-2)
