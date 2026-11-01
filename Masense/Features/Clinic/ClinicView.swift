@@ -83,7 +83,7 @@ struct ClinicView: View {
                     AppointmentSheet(prescription: prescription) { _ in showsToast = true }
                 }
             case let .calendar(date):
-                CalendarEventSheet(date: date, title: L10n.string("appointment.calendar.title")) { sheet = nil }
+                CalendarEventSheet(date: date, title: L10n.string("appointment.calendar.title")) { self.sheet = nil }
                     .ignoresSafeArea()
             }
         }
