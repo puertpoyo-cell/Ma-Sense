@@ -15,10 +15,16 @@ struct PrescriptionForm: View {
                     }
                 }
                 // D25: 예정 시각도 30분 단위
-                LabeledContent("prescription.time") {
-                    HalfHourDatePicker(selection: $model.scheduledTime, mode: .time)
-                        .fixedSize()
+                // 빌드 35 실기기: 접힌 피커가 보이지 않아 30분 칸 메뉴로 (0:00 ~ 23:30)
+                Picker("prescription.time", selection: Binding(
+                    get: { DoseTimeRules.roundedDown(model.scheduledTime, calendar: Calendar.current) },
+                    set: { model.scheduledTime = $0 }
+                )) {
+                    ForEach(PrescriptionSheet.halfHourSlots(base: model.scheduledTime), id: \.self) { slot in
+                        Text(slot.formatted(date: .omitted, time: .shortened)).tag(slot)
+                    }
                 }
+                .pickerStyle(.menu)
             }
             .frostRow()
 
@@ -81,6 +87,12 @@ struct PrescriptionForm: View {
 
 /// 처방 입력·수정 시트. 홈 빈 상태, 설정, 처방 소진 시 연다.
 struct PrescriptionSheet: View {
+    /// 그날 0:00부터 30분 간격 48칸
+    static func halfHourSlots(base: Date, calendar: Calendar = .current) -> [Date] {
+        let start = calendar.startOfDay(for: base)
+        return (0..<48).compactMap { calendar.date(byAdding: .minute, value: $0 * DoseTimeRules.stepMinutes, to: start) }
+    }
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Environment(\.services) private var services

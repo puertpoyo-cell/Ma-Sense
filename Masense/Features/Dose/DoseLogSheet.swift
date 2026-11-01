@@ -10,6 +10,7 @@ struct DoseLogSheet: View {
     @Environment(\.services) private var services
     @State private var model: DoseLogModel
     @Environment(\.calendar) private var calendar
+    @State private var showsTimeWheel = false
 
     init(prescription: Prescription, initialDate: Date? = nil, onSaved: @escaping () -> Void = {}) {
         _model = State(initialValue: DoseLogModel(prescription: prescription, initialDate: initialDate))
@@ -38,12 +39,32 @@ struct DoseLogSheet: View {
                         shiftButton(systemImage: "minus", labelKey: "dose.time.earlier") {
                             model.administeredAt = DoseTimeRules.shifted(model.administeredAt, steps: -1, latest: latest, calendar: calendar)
                         }
-                        HalfHourDatePicker(selection: $model.administeredAt, maximum: latest)
-                            .fixedSize()
                         shiftButton(systemImage: "plus", labelKey: "dose.time.later") {
                             model.administeredAt = DoseTimeRules.shifted(model.administeredAt, steps: 1, latest: latest, calendar: calendar)
                         }
                         .disabled(model.administeredAt >= latest)
+                    }
+                    // 빌드 35 실기기: 시각이 안 보였다. 늘 글자로 크게, 누르면 30분 단위 휠
+                    Button {
+                        withAnimation { showsTimeWheel.toggle() }
+                    } label: {
+                        HStack {
+                            Text(model.administeredAt.formatted(.dateTime.month().day().weekday(.abbreviated).hour().minute()))
+                                .font(Typography.metricLarge.weight(.semibold))
+                                .monospacedDigit()
+                                .foregroundStyle(Color.ink)
+                            Spacer()
+                            Image(systemName: showsTimeWheel ? "chevron.up" : "chevron.down")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Color.inkSecondary)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint(Text("dose.time.changeHint"))
+                    if showsTimeWheel {
+                        HalfHourDatePicker(selection: $model.administeredAt, maximum: latest)
+                            .frame(maxWidth: .infinity)
                     }
                 } footer: {
                     Text("dose.time.footer")

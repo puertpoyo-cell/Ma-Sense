@@ -4697,6 +4697,23 @@
         }
       }
     },
+    "dose.time.changeHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to pick the date and time in 30-minute steps"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "누르면 날짜와 시각을 30분 단위로 고릅니다"
+          }
+        }
+      }
+    },
     "dose.time.earlier": {
       "extractionState": "manual",
       "localizations": {
