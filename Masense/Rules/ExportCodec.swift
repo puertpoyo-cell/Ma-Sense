@@ -390,6 +390,18 @@ extension ExportDocument.LabResultRecord {
     }
 }
 
+extension ExportDocument.PenSupplyRecord {
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(receivedAt, forKey: .receivedAt)
+        try c.encode(packages, forKey: .packages)
+        try c.encodeNullable(prescriptionMemo, forKey: .prescriptionMemo)
+        try c.encodeNullable(visitId, forKey: .visitId)
+        try c.encode(createdAt, forKey: .createdAt)
+    }
+}
+
 private extension KeyedEncodingContainer {
     mutating func encodeNullable<T: Encodable>(_ value: T?, forKey key: Key) throws {
         if let value {
