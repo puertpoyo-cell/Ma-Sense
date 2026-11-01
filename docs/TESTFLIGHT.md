@@ -63,6 +63,20 @@ main에 앱 코드(`Masense/`, `Shared/`, `MasenseWidgets/`, `Config/`, `project
 - 처음 App Store 심사 제출(스크린샷·설명 입력)은 App Store Connect 웹에서 사람이 한다. 빌드 자체는 자동 업로드된 것을 고르면 된다
 - 클라우드 서명이 만든 인증서는 App Store Connect > 인증서에서 보인다. Mac의 Xcode 수동 Archive도 그대로 된다
 
+## 2-2. "maximum number of certificates"로 업로드가 실패할 때 (2026-11-01)
+
+GitHub 러너는 매번 빈 키체인이라, 클라우드 서명이 실행마다 Apple Development 인증서를 새로 만든다. 쌓이면 계정 한도에 걸려 Archive가 실패한다.
+
+**바로 풀기** (한 번):
+1. [developer.apple.com > Certificates](https://developer.apple.com/account/resources/certificates/list)에서 종류 **Development**, 이름에 "Created via API"가 붙은 인증서를 모두 Revoke (Mac Xcode가 쓰는 인증서도 지워져도 괜찮다. Xcode가 다음 실행 때 새로 만든다)
+2. GitHub > Actions > TestFlight > Run workflow (또는 Claude에게 "TestFlight 다시 돌려 줘")
+
+**다시 안 생기게** (권장, Secrets 2개):
+1. Mac Xcode > Settings > Accounts > 팀 선택 > Manage Certificates > **+ > Apple Development** (이미 있으면 생략)
+2. Mac 키체인 접근 > 로그인 > 내 인증서 > "Apple Development: …" 오른쪽 클릭 > 내보내기 > `.p12`, 암호 입력. **저장소 폴더에 두지 않는다**(`~/Developer/keys/`)
+3. 터미널 `base64 -i ~/Developer/keys/dev.p12 | pbcopy` → GitHub Secrets `BUILD_CERTIFICATE_BASE64`에 붙여 넣기, 2의 암호는 `P12_PASSWORD`
+4. 그 뒤로는 워크플로가 이 인증서를 쓰고 새로 만들지 않는다
+
 ## 7. iCloud 동기화 (D26, 2026-11-01 켬 — 사람이 한 번 할 일)
 
 코드에서 켰다: `AppConfig.iCloudSyncEnabled = true`, entitlements(iCloud 컨테이너 `iCloud.com.puertpoyo.masense`, CloudKit, `aps-environment`), Info.plist `UIBackgroundModes` remote-notification.

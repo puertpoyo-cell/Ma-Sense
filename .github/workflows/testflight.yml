@@ -86,6 +86,30 @@ jobs:
           PY
           chmod 600 ~/private_keys/AuthKey_$KEY_ID.p8
 
+      # 2026-11-01: 러너는 매번 빈 키체인이라 클라우드 서명이 실행마다 Apple Development 인증서를 새로 만들어
+      # 계정 한도("reached the maximum number of certificates")에 걸렸다. Secrets에 인증서(.p12)가 있으면 그것을 넣어 새로 만들지 않게 한다.
+      # 없으면 이전처럼 새로 만든다 (한도에 걸리면 developer.apple.com에서 "Created via API" 개발 인증서를 지운다, TESTFLIGHT.md 2-2)
+      - name: Import signing certificate (optional)
+        env:
+          P12_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+        run: |
+          if [ -z "$P12_BASE64" ]; then
+            echo "BUILD_CERTIFICATE_BASE64가 없어 클라우드 서명이 개발 인증서를 새로 만듭니다."
+            exit 0
+          fi
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          KEYCHAIN_PASSWORD=$(uuidgen)
+          printf '%s' "$P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+          security list-keychain -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security find-identity -v -p codesigning "$KEYCHAIN" | sed 's/"[^"]*"/"(이름 생략)"/'
+
       - name: Build number and version
         id: ver
         run: |
@@ -145,4 +169,6 @@ jobs:
 
       - name: Clean up key
         if: always()
-        run: rm -f ~/private_keys/AuthKey_$KEY_ID.p8
+        run: |
+          rm -f ~/private_keys/AuthKey_$KEY_ID.p8
+          security delete-keychain "$RUNNER_TEMP/build.keychain-db" 2>/dev/null || true
