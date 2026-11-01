@@ -52,6 +52,7 @@ jobs:
     env:
       KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      HAS_P12: ${{ secrets.BUILD_CERTIFICATE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -112,6 +113,37 @@ jobs:
                       print(f"API 키 확인 실패: {e.code} {err.get('code')} | {err.get('title')} | {err.get('detail')}")
               except Exception:
                   print(f"API 키 확인 실패: {e.code} {body[:300]}")
+          PY
+
+      # 2026-11-01: 러너가 매번 빈 키체인이라 실행마다 Apple Development 인증서("Created via API")가 하나씩 쌓여
+      # 계정 한도에 걸린다. Archive 직전에 예전 실행이 만든 개발 인증서만 지운다 (배포 인증서·Mac Xcode가 만든 인증서는 그대로)
+      # BUILD_CERTIFICATE_BASE64를 등록했으면 그 인증서를 쓰므로 건너뛴다
+      - name: Revoke stale CI development certificates
+        if: ${{ env.HAS_P12 != 'true' }}
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import json, os, time, urllib.request, urllib.error, pathlib
+          import jwt
+          key = (pathlib.Path.home() / "private_keys" / f"AuthKey_{os.environ['KEY_ID']}.p8").read_text()
+          now = int(time.time())
+          token = jwt.encode({"iss": os.environ["ISSUER_ID"], "iat": now, "exp": now + 600, "aud": "appstoreconnect-v1"},
+                             key, algorithm="ES256", headers={"kid": os.environ["KEY_ID"], "typ": "JWT"})
+          auth = {"Authorization": f"Bearer {token}"}
+          url = "https://api.appstoreconnect.apple.com/v1/certificates?limit=200&fields[certificates]=name,displayName,certificateType"
+          with urllib.request.urlopen(urllib.request.Request(url, headers=auth), timeout=30) as r:
+              certs = json.load(r).get("data", [])
+          dev_types = {"DEVELOPMENT", "IOS_DEVELOPMENT"}
+          stale = [c for c in certs
+                   if c["attributes"].get("certificateType") in dev_types
+                   and "Created via API" in ((c["attributes"].get("name") or "") + " " + (c["attributes"].get("displayName") or ""))]
+          print(f"개발 인증서 {sum(c['attributes'].get('certificateType') in dev_types for c in certs)}개 중 CI가 만든 것 {len(stale)}개를 지웁니다")
+          for c in stale:
+              req = urllib.request.Request(f"https://api.appstoreconnect.apple.com/v1/certificates/{c['id']}", headers=auth, method="DELETE")
+              try:
+                  urllib.request.urlopen(req, timeout=30)
+              except urllib.error.HTTPError as e:
+                  print(f"지우지 못함: {e.code}")
           PY
 
       # 2026-11-01: 러너는 매번 빈 키체인이라 클라우드 서명이 실행마다 Apple Development 인증서를 새로 만들어

@@ -67,6 +67,8 @@ main에 앱 코드(`Masense/`, `Shared/`, `MasenseWidgets/`, `Config/`, `project
 
 GitHub 러너는 매번 빈 키체인이라, 클라우드 서명이 실행마다 Apple Development 인증서를 새로 만든다. 쌓이면 계정 한도에 걸려 Archive가 실패한다.
 
+**자동 정리 (2026-11-01부터)**: 워크플로가 Archive 직전에 예전 실행이 만든 "Created via API" 개발 인증서를 API로 지운다. 배포 인증서·Mac Xcode 인증서는 그대로. `.p12`를 Secrets에 등록하면 이 단계는 건너뛴다
+
 **바로 풀기** (한 번):
 1. [developer.apple.com > Certificates](https://developer.apple.com/account/resources/certificates/list)에서 종류 **Development**, 이름에 "Created via API"가 붙은 인증서를 모두 Revoke (Mac Xcode가 쓰는 인증서도 지워져도 괜찮다. Xcode가 다음 실행 때 새로 만든다)
 2. GitHub > Actions > TestFlight > Run workflow (또는 Claude에게 "TestFlight 다시 돌려 줘")
