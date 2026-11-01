@@ -27,10 +27,6 @@ struct ClinicView: View {
             case let .editVisit(visit): return "edit." + visit.id.uuidString
             case .questions: return "questions"
             case .prescription: return "prescription"
-            case .newPrescription:
-                PrescriptionSheet()
-            case let .refill(prescription):
-                RefillSheet(prescription: prescription) { showsToast = true }
             case .appointment: return "appointment"
             case .calendar: return "calendar"
             case .newPrescription: return "newPrescription"
@@ -96,6 +92,10 @@ struct ClinicView: View {
                 } else {
                     PrescriptionSheet()
                 }
+            case .newPrescription:
+                PrescriptionSheet()
+            case let .refill(prescription):
+                RefillSheet(prescription: prescription) { showsToast = true }
             case .appointment:
                 if let prescription = activePrescriptions.first {
                     AppointmentSheet(prescription: prescription) { _ in showsToast = true }
