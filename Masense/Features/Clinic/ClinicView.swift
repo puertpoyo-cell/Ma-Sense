@@ -81,6 +81,7 @@ struct ClinicView: View {
         }
         .midnightBackground()
         .navigationTitle("tab.clinic")
+        .recordsSegmentBar()
         .navigationDestination(for: String.self) { itemKey in
             LabItemHistoryView(itemKey: itemKey)
         }

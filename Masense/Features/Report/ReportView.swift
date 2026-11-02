@@ -84,6 +84,7 @@ struct ReportView: View {
         }
         .midnightBackground()
         .navigationTitle("tab.report")
+        .recordsSegmentBar()
         .sheet(isPresented: $showsPurchase) {
             if let settings {
                 ReportPurchaseSheet(settings: settings)

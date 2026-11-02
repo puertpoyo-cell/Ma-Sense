@@ -195,18 +195,50 @@ struct RecordsTab: View {
                 }
             }
         }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            Picker("records.segment.picker", selection: $segment) {
-                ForEach(RecordsSegment.allCases, id: \.self) { item in
-                    Text(item.titleKey).tag(item)
+        // 전환은 각 화면 내비게이션 바 가운데 자리에 둔다 (큰 제목과 겹치지 않게)
+        .environment(\.recordsSegment, $segment)
+    }
+}
+
+private struct RecordsSegmentKey: EnvironmentKey {
+    static let defaultValue: Binding<RecordsSegment>? = nil
+}
+
+extension EnvironmentValues {
+    /// 기록 탭 안에서만 값이 있다. 있으면 맨 위 화면이 내비게이션 바에 전환을 띄운다
+    var recordsSegment: Binding<RecordsSegment>? {
+        get { self[RecordsSegmentKey.self] }
+        set { self[RecordsSegmentKey.self] = newValue }
+    }
+}
+
+private struct RecordsSegmentBar: ViewModifier {
+    @Environment(\.recordsSegment) private var segment
+
+    func body(content: Content) -> some View {
+        if let segment {
+            content
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Picker("records.segment.picker", selection: segment) {
+                            ForEach(RecordsSegment.allCases, id: \.self) { item in
+                                Text(item.titleKey).tag(item)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .fixedSize()
+                    }
                 }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, Spacing.screenHorizontal)
-            .padding(.vertical, Spacing.s2)
-            .background(Color.midnight.opacity(0.92))
+        } else {
+            content
         }
     }
+}
+
+extension View {
+    /// D31: 기록 탭의 맨 위 화면(날짜별·진료·리포트)에 붙인다
+    func recordsSegmentBar() -> some View { modifier(RecordsSegmentBar()) }
 }
 
 #Preview {

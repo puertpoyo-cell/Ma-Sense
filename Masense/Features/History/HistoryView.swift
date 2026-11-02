@@ -90,6 +90,7 @@ struct HistoryView: View {
             }
             .midnightBackground()
             .navigationTitle("tab.history")
+            .recordsSegmentBar()
             .navigationDestination(for: Destination.self) { destination in
                 switch destination {
                 case .list: HistoryListView()
