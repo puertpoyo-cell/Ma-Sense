@@ -337,7 +337,8 @@ struct CoachPopup: View {
     @FocusState private var inputFocused: Bool
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var settled = false
+    /// D35 나올 때·말이 바뀔 때마다 하나씩 올려 얼굴 움직임을 다시 튼다
+    @State private var entranceTick = 0
 
     private var bubble: UnevenRoundedRectangle {
         UnevenRoundedRectangle(topLeadingRadius: 20, bottomLeadingRadius: 6, bottomTrailingRadius: 20, topTrailingRadius: 20, style: .continuous)
@@ -351,8 +352,15 @@ struct CoachPopup: View {
                         // 표정이 바뀌면 살짝 튄다
                         .id(message.line.mood)
                         .transition(reduceMotion ? .opacity : .scale(scale: 0.85).combined(with: .opacity))
-                        .rotationEffect(.degrees(settled || reduceMotion ? 0 : -16), anchor: .bottom)
-                        .scaleEffect(settled || reduceMotion ? 1 : 0.6, anchor: .bottom)
+                        // D35: 표정에 맞춰 통통·부르르·살짝 커짐 (동작 줄이기면 없음)
+                        .keyframeAnimator(initialValue: FaceMotion(), trigger: entranceTick) { face, motion in
+                            face
+                                .scaleEffect(x: motion.scaleX, y: motion.scaleY, anchor: .bottom)
+                                .rotationEffect(.degrees(motion.rotation), anchor: .bottom)
+                                .offset(y: motion.offsetY)
+                        } keyframes: { _ in
+                            FaceMotion.keyframes(reduceMotion ? nil : CoachEntrance.for(message.line, variant: message.variant))
+                        }
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text("coach.talk.button"))
@@ -414,11 +422,8 @@ struct CoachPopup: View {
                 if value.translation.height > 16 { onDismiss() }
             }
         )
-        .onAppear {
-            withAnimation(.spring(response: 0.38, dampingFraction: 0.42).delay(0.06)) {
-                settled = true
-            }
-        }
+        .onAppear { entranceTick += 1 }
+        .onChange(of: message.id) { _, _ in entranceTick += 1 }
     }
 
     private func send() {
@@ -485,6 +490,75 @@ struct CoachPopup: View {
             if !isTalking { onDismiss() }
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// D35 얼굴 움직임 값과 세 가지 움직임의 박자. 모든 움직임이 같은 다섯 박자를 쓰고 값만 다르다
+struct FaceMotion {
+    var scaleX: CGFloat = 1
+    var scaleY: CGFloat = 1
+    var rotation: Double = 0
+    var offsetY: CGFloat = 0
+
+    /// 다섯 박자 길이 (합 약 0.6초)
+    static let beats: [TimeInterval] = [0.07, 0.16, 0.14, 0.11, 0.14]
+
+    struct Pattern {
+        var scaleX: [CGFloat]
+        var scaleY: [CGFloat]
+        var rotation: [Double]
+        var offsetY: [CGFloat]
+    }
+
+    static func pattern(_ entrance: CoachEntrance?) -> Pattern {
+        let still = Pattern(scaleX: [1, 1, 1, 1, 1], scaleY: [1, 1, 1, 1, 1], rotation: [0, 0, 0, 0, 0], offsetY: [0, 0, 0, 0, 0])
+        switch entrance {
+        case .pop?:
+            // 작게 → 크게 → 살짝 작게 → 제자리
+            return Pattern(scaleX: [0.7, 1.18, 0.95, 1.02, 1], scaleY: [0.7, 1.18, 0.95, 1.02, 1], rotation: [0, 0, 0, 0, 0], offsetY: [0, 0, 0, 0, 0])
+        case .wiggle?:
+            // 살짝 커지며 좌우로 부르르
+            return Pattern(scaleX: [1.05, 1.08, 1.05, 1.02, 1], scaleY: [1.05, 1.08, 1.05, 1.02, 1], rotation: [-12, 11, -8, 5, 0], offsetY: [0, 0, 0, 0, 0])
+        case .bounce?:
+            // 눌렸다가 위로 통, 한 번 더 작게 통
+            return Pattern(scaleX: [1.12, 0.94, 1.1, 0.98, 1], scaleY: [0.88, 1.08, 0.92, 1.03, 1], rotation: [0, 0, 0, 0, 0], offsetY: [0, -20, 0, -8, 0])
+        case nil:
+            return still
+        }
+    }
+
+    @KeyframesBuilder<FaceMotion>
+    static func keyframes(_ entrance: CoachEntrance?) -> some Keyframes<FaceMotion> {
+        let p = pattern(entrance)
+        let d = beats
+        KeyframeTrack(\.scaleX) {
+            CubicKeyframe(p.scaleX[0], duration: d[0])
+            CubicKeyframe(p.scaleX[1], duration: d[1])
+            CubicKeyframe(p.scaleX[2], duration: d[2])
+            CubicKeyframe(p.scaleX[3], duration: d[3])
+            SpringKeyframe(p.scaleX[4], duration: d[4])
+        }
+        KeyframeTrack(\.scaleY) {
+            CubicKeyframe(p.scaleY[0], duration: d[0])
+            CubicKeyframe(p.scaleY[1], duration: d[1])
+            CubicKeyframe(p.scaleY[2], duration: d[2])
+            CubicKeyframe(p.scaleY[3], duration: d[3])
+            SpringKeyframe(p.scaleY[4], duration: d[4])
+        }
+        KeyframeTrack(\.rotation) {
+            LinearKeyframe(p.rotation[0], duration: d[0])
+            LinearKeyframe(p.rotation[1], duration: d[1])
+            LinearKeyframe(p.rotation[2], duration: d[2])
+            LinearKeyframe(p.rotation[3], duration: d[3])
+            SpringKeyframe(p.rotation[4], duration: d[4])
+        }
+        KeyframeTrack(\.offsetY) {
+            CubicKeyframe(p.offsetY[0], duration: d[0])
+            CubicKeyframe(p.offsetY[1], duration: d[1])
+            CubicKeyframe(p.offsetY[2], duration: d[2])
+            CubicKeyframe(p.offsetY[3], duration: d[3])
+            SpringKeyframe(p.offsetY[4], duration: d[4])
+        }
     }
 }
 

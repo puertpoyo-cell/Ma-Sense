@@ -155,4 +155,15 @@ struct CoachRulesTests {
         }
         #expect(Set(keys).count == 4)
     }
+
+    // D35 나올 때 움직임: 표정에 맞춰, 웃음은 말투마다 돌아감
+    @Test func entranceFollowsMood() {
+        #expect(CoachEntrance.for(.recorded(.dose), variant: 0) == .bounce)
+        #expect(CoachEntrance.for(.clinicFollowUp, variant: 2) == .wiggle)
+        #expect(CoachEntrance.for(.lowCondition, variant: 1) == .pop)
+        let smile = CoachLine.greeting
+        #expect(smile.mood == .smile)
+        #expect(Set((0..<3).map { CoachEntrance.for(smile, variant: $0) }) == Set(CoachEntrance.allCases))
+        #expect(CoachEntrance.for(smile, variant: -1) == CoachEntrance.for(smile, variant: 2))
+    }
 }

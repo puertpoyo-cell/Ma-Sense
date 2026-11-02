@@ -83,6 +83,27 @@ enum CoachLine: Equatable {
     }
 }
 
+/// D35 마선생이 나올 때 얼굴 움직임 (2026-11-02 사람 요청 "살짝 커지거나 부르르 떨거나 통통 튀거나")
+enum CoachEntrance: String, CaseIterable {
+    /// 살짝 커졌다 제자리
+    case pop
+    /// 좌우로 부르르
+    case wiggle
+    /// 위로 통통 두 번
+    case bounce
+
+    /// 표정에 맞춰: 기쁨·윙크는 통통, 생각은 부르르, 다정은 살짝 커짐.
+    /// 기본 웃음은 말투(`variant`)마다 돌려 같은 말이라도 매번 조금 다르게
+    static func `for`(_ line: CoachLine, variant: Int) -> CoachEntrance {
+        switch line.mood {
+        case .happy, .wink: return .bounce
+        case .thinking: return .wiggle
+        case .gentle: return .pop
+        case .smile: return allCases[((variant % allCases.count) + allCases.count) % allCases.count]
+        }
+    }
+}
+
 /// D30 하루 때. 인사를 바꾼다
 enum CoachDayPart: String, CaseIterable {
     case morning, afternoon, evening, night
