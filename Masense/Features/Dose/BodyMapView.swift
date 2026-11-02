@@ -159,23 +159,24 @@ struct BodyMapView: View {
 
     // MARK: 구역
 
+    /// 복부 네 구역은 배꼽 위아래 18pt 가운데 (2026-11-02 사람 요청 "상복부가 가슴 같다, 좀 더 아래")
     /// 실루엣 안쪽에 들어가게 맞춘 구역 (거울 보기: 본인의 왼쪽 부위가 화면 왼쪽). 팔은 팔 가운데 선에 맞춰 기울인다
     static func frame(for site: BodySite, figure: BodyFigure) -> CGRect {
         switch (figure, site) {
         case (.female, .upperArmLeft): return CGRect(x: 66, y: 122, width: 11, height: 34)
         case (.female, .upperArmRight): return CGRect(x: 163, y: 122, width: 11, height: 34)
-        case (.female, .abdomenUpperLeft): return CGRect(x: 93, y: 130, width: 25, height: 28)
-        case (.female, .abdomenUpperRight): return CGRect(x: 122, y: 130, width: 25, height: 28)
-        case (.female, .abdomenLowerLeft): return CGRect(x: 93, y: 184, width: 25, height: 28)
-        case (.female, .abdomenLowerRight): return CGRect(x: 122, y: 184, width: 25, height: 28)
+        case (.female, .abdomenUpperLeft): return CGRect(x: 93, y: 143, width: 25, height: 22)
+        case (.female, .abdomenUpperRight): return CGRect(x: 122, y: 143, width: 25, height: 22)
+        case (.female, .abdomenLowerLeft): return CGRect(x: 93, y: 179, width: 25, height: 22)
+        case (.female, .abdomenLowerRight): return CGRect(x: 122, y: 179, width: 25, height: 22)
         case (.female, .thighLeft): return CGRect(x: 87, y: 252, width: 24, height: 52)
         case (.female, .thighRight): return CGRect(x: 129, y: 252, width: 24, height: 52)
         case (.male, .upperArmLeft): return CGRect(x: 52, y: 122, width: 14, height: 38)
         case (.male, .upperArmRight): return CGRect(x: 174, y: 122, width: 14, height: 38)
-        case (.male, .abdomenUpperLeft): return CGRect(x: 92, y: 128, width: 26, height: 30)
-        case (.male, .abdomenUpperRight): return CGRect(x: 122, y: 128, width: 26, height: 30)
-        case (.male, .abdomenLowerLeft): return CGRect(x: 92, y: 182, width: 26, height: 30)
-        case (.male, .abdomenLowerRight): return CGRect(x: 122, y: 182, width: 26, height: 30)
+        case (.male, .abdomenUpperLeft): return CGRect(x: 92, y: 141, width: 26, height: 22)
+        case (.male, .abdomenUpperRight): return CGRect(x: 122, y: 141, width: 26, height: 22)
+        case (.male, .abdomenLowerLeft): return CGRect(x: 92, y: 177, width: 26, height: 22)
+        case (.male, .abdomenLowerRight): return CGRect(x: 122, y: 177, width: 26, height: 22)
         case (.male, .thighLeft): return CGRect(x: 87, y: 250, width: 25, height: 54)
         case (.male, .thighRight): return CGRect(x: 128, y: 250, width: 25, height: 54)
         }
