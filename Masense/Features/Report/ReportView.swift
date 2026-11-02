@@ -5,6 +5,7 @@ import SwiftUI
 struct ReportView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.calendar) private var calendar
+    @Environment(\.services) private var services
     @Query(sort: \Prescription.startDate) private var prescriptions: [Prescription]
     @Query(sort: \ConditionCheck.checkedAt) private var checks: [ConditionCheck]
     @Query(sort: \WeightSample.measuredAt) private var weights: [WeightSample]
@@ -21,6 +22,8 @@ struct ReportView: View {
     @State private var overflows = false
     /// 펼침 배치용 스크롤 화면 크기 (D23)
     @State private var viewport: CGSize = .zero
+    /// D37 건강 앱 잠 (최근 1년, 열 때 읽음)
+    @State private var sleepNights: [SleepNight] = []
 
     private var activePrescription: Prescription? { prescriptions.first { $0.isActive } }
     private var settings: UserSettings? { settingsList.first }
@@ -37,6 +40,15 @@ struct ReportView: View {
     }
 
     var body: some View {
+        content
+            .task {
+                let since = calendar.date(byAdding: .year, value: -1, to: .now) ?? .now
+                let segments = (try? await services.healthKit.sleepSegments(since: since)) ?? []
+                sleepNights = SleepRules.nights(from: segments, calendar: calendar)
+            }
+    }
+
+    private var content: some View {
         TimelineView(.everyMinute) { timeline in
             ScrollView {
                 // D23: 펼친 가로 화면은 왼쪽 물어볼 것·기간·내보내기, 오른쪽 A4 미리보기 2단. 접힌 폭은 한 단
@@ -209,7 +221,7 @@ struct ReportView: View {
             now: now,
             calendar: calendar
         )
-        return ReportBuilder.build(
+        var report = ReportBuilder.build(
             period: interval,
             prescriptions: prescriptions.map {
                 ReportBuilder.PrescriptionData(prescription: $0.snapshot, doses: $0.doseSnapshots, isActive: $0.isActive)
@@ -226,6 +238,8 @@ struct ReportView: View {
             calendar: calendar,
             appVersion: AppConfig.appVersion
         )
+        report.sleep = SleepRules.summary(SleepRules.nights(sleepNights, in: interval), calendar: calendar)
+        return report
     }
 }
 

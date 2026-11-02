@@ -11008,6 +11008,23 @@
         }
       }
     },
+    "report.section.sleep": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sleep (Apple Health)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잠 (건강 앱)"
+          }
+        }
+      }
+    },
     "report.section.symptoms": {
       "extractionState": "manual",
       "localizations": {
@@ -13511,6 +13528,312 @@
           "stringUnit": {
             "state": "translated",
             "value": "상완 오른쪽"
+          }
+        }
+      }
+    },
+    "sleep.awakenings %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "woke %lld×"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "깸 %lld회"
+          }
+        }
+      }
+    },
+    "sleep.duration %lld %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lldh %2$lldm"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld시간 %2$lld분"
+          }
+        }
+      }
+    },
+    "sleep.flow.addQuestion": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to questions"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것에 넣기"
+          }
+        }
+      }
+    },
+    "sleep.flow.byDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days after the dose"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 후 며칠째"
+          }
+        }
+      }
+    },
+    "sleep.flow.byDay.footnote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Averages. Woke counts times awake for 5 minutes or more while asleep; Up at is the final wake time. With few nights, differences may be chance."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "평균입니다. 깸은 잠든 사이 5분 넘게 깨어 있던 횟수, 일어남은 마지막으로 깬 시각입니다. 밤 수가 적으면 차이가 우연일 수 있습니다."
+          }
+        }
+      }
+    },
+    "sleep.flow.caption %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Health sleep for the last %lld weeks. Each night counts on the day you woke up."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 %lld주 건강 앱 잠 기록입니다. 하룻밤은 일어난 날로 셉니다."
+          }
+        }
+      }
+    },
+    "sleep.flow.column.asleep": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asleep"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잔 시간"
+          }
+        }
+      }
+    },
+    "sleep.flow.column.awakenings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Woke"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "깸"
+          }
+        }
+      }
+    },
+    "sleep.flow.column.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "날"
+          }
+        }
+      }
+    },
+    "sleep.flow.column.wake": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up at"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일어남"
+          }
+        }
+      }
+    },
+    "sleep.flow.dayAfter %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day %lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld일째"
+          }
+        }
+      }
+    },
+    "sleep.flow.doseDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dose day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약일"
+          }
+        }
+      }
+    },
+    "sleep.flow.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sleep records were read from Apple Health. If your iPhone or Apple Watch records sleep, turn on Sleep in Settings > Health > Data Access & Devices > Masense."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "건강 앱에서 읽은 잠 기록이 없습니다. iPhone이나 Apple Watch로 잠을 기록하고 있다면 설정 앱 > 건강 > 데이터 접근 및 기기 > 마선생에서 수면 읽기를 켜 주세요."
+          }
+        }
+      }
+    },
+    "sleep.flow.notice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sleep changes for many reasons, such as schedule, stress, caffeine, and exercise. Masense does not judge the cause. If you often wake early or sleep stays uncomfortable, talk with your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잠은 일정, 스트레스, 카페인, 운동 등 여러 이유로 달라집니다. 마선생은 원인을 판단하지 않습니다. 새벽에 자주 깨거나 잠이 계속 불편하면 의사와 상의하세요."
+          }
+        }
+      }
+    },
+    "sleep.flow.question %lld %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sleep, last %1$lld weeks (Apple Health): %2$@. "
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 %1$lld주 잠(건강 앱): %2$@. "
+          }
+        }
+      }
+    },
+    "sleep.flow.recent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent nights"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 밤"
+          }
+        }
+      }
+    },
+    "sleep.flow.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sleep flow"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잠 흐름"
+          }
+        }
+      }
+    },
+    "sleep.summary %lld %@ %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld nights: average %2$@ asleep, woke %3$@ times, up at %4$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld밤 평균 %2$@, 깸 %3$@회, 일어난 시각 %4$@"
           }
         }
       }

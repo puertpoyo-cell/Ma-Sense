@@ -131,6 +131,8 @@ struct ClinicReport: Equatable {
     var questions: [QuestionLine] = []
     /// G 위 "최근 검사" (D20). 비어 있으면 그리지 않는다
     var labs: [LabLine] = []
+    /// D37 잠 한 줄 (건강 앱, 기간 안 밤 평균). 없으면 그리지 않는다
+    var sleep: SleepSummary?
 }
 
 /// R12 리포트 기간 선택지

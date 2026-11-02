@@ -327,6 +327,7 @@ CloudKit은 모든 관계가 옵셔널이어야 한다. `Prescription.doses`·`D
 | WeightSample.bodyFatPercent (D11) | `bodyFatPercentage` (0~1 비율 → ×100) | 읽기 |
 | 바디맵 그림 (D13) | `HKCharacteristicType.biologicalSex` (여·남만, 그 밖은 없음으로) | 읽기. SwiftData에 두지 않고 UserDefaults `health.bodyFigure`에만, 내보내지 않음 |
 | StrengthSession (M2, P2, D16) | `HKWorkoutType` 모든 운동 (Apple 피트니스·Watch·다른 앱) | 읽기 |
+| 잠 흐름·하루 카드·리포트 잠 한 줄 (D37) | `HKCategoryType.sleepAnalysis` (잠듦·코어·깊은·렘 → 잠, 깨어 있음, 침대) | 읽기. 저장하지 않음(SwiftData·내보내기·iCloud 모두 없음), 볼 때마다 읽어 `SleepRules`로 계산 |
 
 Info.plist: `NSHealthShareUsageDescription` 필수 (빌드 설정 `INFOPLIST_KEY_NSHealthShareUsageDescription`, 번역 `InfoPlist.xcstrings`, entitlement `Config/Masense.entitlements`). 쓰기 전까지 `NSHealthUpdateUsageDescription`은 넣지 않음.
 

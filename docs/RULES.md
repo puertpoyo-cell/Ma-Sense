@@ -419,6 +419,20 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 - 주는 달력 firstWeekday부터 7일. 날마다 투약(취소 제외)·진료·컨디션·체중·단백질·운동 기록이 있는지만. 많고 적음·연속일 없음
 - N-E1 월 보기: `monthGrid`는 그 달을 주 단위 7칸으로, 그 달이 아닌 칸은 nil. 투약일만 표시
 
+## R29. 잠 흐름 (D37, 2026-11-02 사람 결정 "잠 흐름 + 리포트")
+
+```swift
+func nights(from segments: [SleepSegment], calendar: Calendar) -> [SleepNight]
+func flow(nights: [SleepNight], doseDates: [Date], calendar: Calendar) -> [SleepFlowDay]   // 0...6일째
+func summary(_ nights: [SleepNight], calendar: Calendar) -> SleepSummary?
+```
+
+- 잠든 조각(코어·깊은·렘·구분 없음)을 겹침 없이 합친다. 잠든 조각이 하나도 없으면 침대에 있던 조각을 쓴다
+- 3시간 넘게 떨어지면 다른 잠. 하룻밤은 일어난 날(마지막 조각 끝의 날짜)로 세고, 같은 날 잠이 여럿이면 가장 오래 잔 것
+- 깸: 잠든 조각 사이 5분 이상 틈의 수. 일어남: 마지막 조각 끝 시각
+- 흐름: 밤의 날짜 이전(같은 날 포함) 가장 최근 투약일에서 센 날 수 0~6. 7 이상, 투약 전 밤은 넣지 않는다. 날마다 잔 시간·깸·일어난 시각 평균과 밤 수
+- 원인을 판단하는 문장을 만들지 않는다. 숫자와 "의사와 상의하세요"만 (COMPLIANCE.md)
+
 ## R28. 마선생 글 묻기·상황 주제 (D30, 2026-11-01 사람 요청)
 
 ```swift

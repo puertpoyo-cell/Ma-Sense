@@ -50,6 +50,9 @@ struct ReportPage: View {
             if let quality = report.quality {
                 qualityRow(quality)
             }
+            if let sleep = report.sleep {
+                sleepLine(sleep)
+            }
             if !report.labs.isEmpty {
                 labs
             }
@@ -402,6 +405,20 @@ struct ReportPage: View {
             }
         }
         .frame(height: 36 * Self.mm, alignment: .top)
+    }
+
+    // MARK: 잠 (D37)
+
+    /// 건강 앱 잠 평균 한 줄. 판단 없이 숫자만
+    private func sleepLine(_ sleep: SleepSummary) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            sectionTitle("report.section.sleep")
+            Text(verbatim: SleepFormat.summaryText(sleep))
+                .font(.system(size: 8))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
     }
 
     // MARK: G. 최근 검사 (D20)

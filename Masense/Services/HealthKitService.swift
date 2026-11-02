@@ -16,6 +16,8 @@ protocol HealthKitReading: AnyObject {
     func bodyFigure() -> BodyFigure?
     /// M2 (P2): 근력·걷기·유연성 운동. 그 밖의 종류는 돌려주지 않는다
     func workouts(since: Date) async throws -> [HealthWorkout]
+    /// D37: 수면 조각. 저장하지 않고 잠 흐름·하루 카드·리포트를 그릴 때마다 읽는다
+    func sleepSegments(since: Date) async throws -> [SleepSegment]
 }
 
 struct HealthWeightSample: Equatable {
@@ -44,6 +46,7 @@ final class HealthKitService: HealthKitReading {
     private let leanBodyMass = HKQuantityType(.leanBodyMass)
     private let bodyFat = HKQuantityType(.bodyFatPercentage)
     private let biologicalSex = HKCharacteristicType(.biologicalSex)
+    private let sleep = HKCategoryType(.sleepAnalysis)
 
     /// Info.plist에 `NSHealthShareUsageDescription`이 없으면 권한 요청 순간 앱이 종료된다.
     /// 키는 빌드 설정 `INFOPLIST_KEY_NSHealthShareUsageDescription`(번역은 `InfoPlist.xcstrings`)에 있다. 키가 빠진 빌드에서는 HealthKit을 쓰지 않는다.
@@ -55,7 +58,7 @@ final class HealthKitService: HealthKitReading {
     func requestReadAuthorization() async throws -> Bool {
         guard isAvailable else { return false }
         // 아직 묻지 않은 종류(D11 체지방률 등)가 있을 때만 시스템 시트가 뜬다
-        try await store.requestAuthorization(toShare: [], read: [bodyMass, leanBodyMass, bodyFat, biologicalSex, HKObjectType.workoutType()])
+        try await store.requestAuthorization(toShare: [], read: [bodyMass, leanBodyMass, bodyFat, biologicalSex, HKObjectType.workoutType(), sleep])
         // 읽기 권한은 조회 결과로만 알 수 있다 (거부해도 .sharingDenied를 돌려주지 않음)
         return true
     }
@@ -93,6 +96,25 @@ final class HealthKitService: HealthKitReading {
                 durationMinutes: Int((workout.duration / 60).rounded()),
                 kind: kind
             )
+        }
+    }
+
+    func sleepSegments(since: Date) async throws -> [SleepSegment] {
+        try await samples(of: sleep, since: since)
+            .compactMap { $0 as? HKCategorySample }
+            .compactMap { sample in
+                guard let stage = Self.sleepStage(sample.value) else { return nil }
+                return SleepSegment(start: sample.startDate, end: sample.endDate, stage: stage)
+            }
+    }
+
+    /// 건강 앱 수면 값 → 잠 단계. 코어·깊은·렘·구분 없음은 모두 잠
+    static func sleepStage(_ value: Int) -> SleepStage? {
+        switch HKCategoryValueSleepAnalysis(rawValue: value) {
+        case .inBed: return .inBed
+        case .awake: return .awake
+        case .asleepUnspecified, .asleepCore, .asleepDeep, .asleepREM: return .asleep
+        default: return nil
         }
     }
 
@@ -143,6 +165,7 @@ final class FakeHealthKitService: HealthKitReading {
     var fatSamples: [HealthPercentSample] = []
     var figure: BodyFigure?
     var workoutSamples: [HealthWorkout] = []
+    var sleepSamples: [SleepSegment] = []
 
     func requestReadAuthorization() async throws -> Bool { authorized }
 
@@ -162,5 +185,9 @@ final class FakeHealthKitService: HealthKitReading {
 
     func workouts(since: Date) async throws -> [HealthWorkout] {
         workoutSamples.filter { $0.startedAt >= since }
+    }
+
+    func sleepSegments(since: Date) async throws -> [SleepSegment] {
+        sleepSamples.filter { $0.start >= since }
     }
 }

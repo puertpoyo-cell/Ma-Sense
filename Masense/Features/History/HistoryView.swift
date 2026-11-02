@@ -6,7 +6,7 @@ import SwiftUI
 /// 날마다 무엇을 기록했는지만 표시하고 많고 적음을 판단하지 않는다 (COMPLIANCE.md 2.1-4)
 struct HistoryView: View {
     private enum Destination: Hashable {
-        case list, summaries, symptomFlow, pens
+        case list, summaries, symptomFlow, pens, sleepFlow
     }
 
     private enum Sheet: Identifiable {
@@ -97,6 +97,7 @@ struct HistoryView: View {
                 case .summaries: WeeklySummaryListView()
                 case .symptomFlow: SymptomFlowView()
                 case .pens: PenStatusPage()
+                case .sleepFlow: SleepFlowView()
                 }
             }
             .sheet(item: $sheet) { sheet in
@@ -360,6 +361,7 @@ struct HistoryView: View {
                 doseAndVisitRows(entries)
                 bodyRows(entries)
                 habitRows(entries)
+                SleepDayRow(day: day)
                 memoRow(day: day)
                 addDoseRow(day: day, today: today, hasDose: !entries.doses.isEmpty)
             }
@@ -546,6 +548,7 @@ struct HistoryView: View {
                     collectionRow("history.pens", systemImage: "rectangle.split.3x1") { path.append(.pens) }
                 }
                 collectionRow("symptom.flow.title", systemImage: "chart.bar.xaxis") { path.append(.symptomFlow) }
+                collectionRow("sleep.flow.title", systemImage: "bed.double") { path.append(.sleepFlow) }
             }
         }
     }
