@@ -27,4 +27,10 @@ enum UnfoldRules {
     static func columns(for size: CGSize) -> Int {
         size.width > size.height && size.width >= twoColumnMinWidth ? 2 : 1
     }
+
+    /// 오른쪽 탭 막대 자리 너비 (기록 탭 세로 전환을 그 자리에 둔다, 2026-11-02).
+    /// 오른쪽만 넓게 비어 있을 때만 값을 낸다. 가로 iPhone의 노치 여백은 양쪽이 비슷해 nil
+    static func trailingRailWidth(leading: CGFloat, trailing: CGFloat) -> CGFloat? {
+        trailing >= 56 && trailing - leading >= 40 ? trailing : nil
+    }
 }

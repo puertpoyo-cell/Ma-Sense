@@ -204,21 +204,26 @@ struct RecordsTab: View {
                 }
             }
         }
-        // 세로: 전환은 각 화면 내비게이션 바 가운데 자리 (큰 제목과 겹치지 않게)
-        // 가로: 오른쪽에 세로 버튼 3개 (2026-11-02 사람 결정 "오른쪽 세로로")
-        .environment(\.recordsSegment, isLandscape ? nil : $segment)
-        .safeAreaInset(edge: .trailing, spacing: 0) {
-            if isLandscape {
+        // 오른쪽 탭 막대가 있는 화면(iPhone Duo 접힘·펼침): 막대 위 빈 자리에 세로 버튼 3개
+        // (2026-11-02 사람 결정 "오른쪽 세로로"). 그 밖의 화면: 내비게이션 바 가운데 전환
+        .environment(\.recordsSegment, railWidth == nil ? $segment : nil)
+        .overlay(alignment: .trailing) {
+            if let railWidth {
                 RecordsSegmentColumn(segment: $segment)
+                    .frame(width: railWidth)
+                    .offset(x: railWidth)
             }
         }
-        .onGeometryChange(for: Bool.self) { $0.size.width > $0.size.height } action: { isLandscape = $0 }
+        .onGeometryChange(for: CGFloat?.self) { proxy in
+            UnfoldRules.trailingRailWidth(leading: proxy.safeAreaInsets.leading, trailing: proxy.safeAreaInsets.trailing)
+        } action: { railWidth = $0 }
     }
 
-    @State private var isLandscape = false
+    /// 오른쪽 탭 막대 자리 너비. 오른쪽만 넓게 비어 있을 때만 (가로 iPhone의 노치 여백은 양쪽이 비슷해 제외)
+    @State private var railWidth: CGFloat?
 }
 
-/// 가로 화면의 오른쪽 세로 전환
+/// 오른쪽 탭 막대 위의 세로 전환 (막대 자리 가운데)
 private struct RecordsSegmentColumn: View {
     @Binding var segment: RecordsSegment
 
@@ -229,14 +234,14 @@ private struct RecordsSegmentColumn: View {
                 Button { segment = item } label: {
                     VStack(spacing: 4) {
                         Image(systemName: item.symbol)
-                            .font(.system(size: 20, weight: .regular))
+                            .font(.system(size: 18, weight: .regular))
                         Text(item.titleKey)
                             .font(.caption)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     }
                     .foregroundStyle(selected ? Color.ink : Color.inkSecondary)
-                    .frame(width: 72, height: 64)
+                    .frame(width: 60, height: 52)
                     .background(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
                             .fill(selected ? Color.accentSoft : Color.frost)
@@ -249,10 +254,7 @@ private struct RecordsSegmentColumn: View {
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
-            Spacer(minLength: 0)
         }
-        .padding(.top, Spacing.s4)
-        .padding(.horizontal, Spacing.s2)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("records.segment.picker"))
     }

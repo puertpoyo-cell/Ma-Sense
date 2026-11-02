@@ -24,4 +24,13 @@ struct UnfoldRulesTests {
         #expect(UnfoldRules.columns(for: CGSize(width: 600, height: 400)) == 1)
         #expect(UnfoldRules.columns(for: CGSize(width: 400, height: 880)) == 1)
     }
+
+    // 기록 탭 세로 전환: 오른쪽만 넓게 빈 화면(오른쪽 탭 막대)일 때만
+    @Test func trailingRailWidthOnlyWhenRightSideIsReserved() {
+        #expect(UnfoldRules.trailingRailWidth(leading: 0, trailing: 100) == 100)
+        #expect(UnfoldRules.trailingRailWidth(leading: 0, trailing: 0) == nil)
+        // 가로 iPhone 노치 여백은 양쪽이 비슷하다
+        #expect(UnfoldRules.trailingRailWidth(leading: 59, trailing: 59) == nil)
+        #expect(UnfoldRules.trailingRailWidth(leading: 0, trailing: 40) == nil)
+    }
 }
