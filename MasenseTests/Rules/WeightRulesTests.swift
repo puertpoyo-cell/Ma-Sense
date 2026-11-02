@@ -172,4 +172,20 @@ struct WeightRulesTests {
         // 9-01(화) 주(8-30)부터 10-18 주까지 7주 차이 → 7 + 1
         #expect(WeightRules.allWeeks(samples: [sample(9, 1, 80)], now: now, calendar: calendar) == 8)
     }
+
+    // D36 기준 값 눈금·겹치기·숫자 붙일 점·날짜 눈금
+    @Test func focusRangeRescaleLabelsAndAxisDays() {
+        #expect(WeightRules.focusRange([79.2, 77.4]) == 77.4...79.2)
+        let flat = WeightRules.focusRange([77.4, 77.5])!
+        #expect(abs(flat.lowerBound - 77.25) < 0.0001 && abs(flat.upperBound - 77.65) < 0.0001)
+        #expect(WeightRules.focusRange([]) == nil)
+        #expect(WeightRules.rescaled([23.6, 22.8], into: 77...79) == [79, 77])
+        #expect(WeightRules.labeledIndices([1, 2, 3]) == [0, 1, 2])
+        #expect(WeightRules.labeledIndices([5, 1, 4, 4, 4, 9, 4, 3]) == [0, 1, 5, 7])
+        #expect(WeightRules.labeledIndices([]).isEmpty)
+        let d = { (n: Double) in Date(timeIntervalSinceReferenceDate: n * 86_400) }
+        #expect(WeightRules.axisDays([d(3), d(1), d(2), d(4), d(5)]) == [d(1), d(3), d(5)])
+        #expect(WeightRules.axisDays([d(2), d(1)]) == [d(1), d(2)])
+        #expect(WeightRules.axisDays([]).isEmpty)
+    }
 }

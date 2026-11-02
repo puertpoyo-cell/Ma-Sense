@@ -175,6 +175,40 @@ enum WeightRules {
         return values.map { ($0 - low) / (high - low) }
     }
 
+    /// D36 기준 값의 눈금 범위. 너무 납작하면(0.4 미만) 가운데를 두고 위아래 0.2씩 넓힌다
+    static func focusRange(_ values: [Double]) -> ClosedRange<Double>? {
+        guard let low = values.min(), let high = values.max() else { return nil }
+        if high - low < 0.4 {
+            let mid = (low + high) / 2
+            return (mid - 0.2)...(mid + 0.2)
+        }
+        return low...high
+    }
+
+    /// D36 다른 값을 기준 값의 눈금 범위에 모양만 겹친다 (자기 범위 → 기준 범위)
+    static func rescaled(_ values: [Double], into range: ClosedRange<Double>) -> [Double] {
+        normalized(values).map { range.lowerBound + $0 * (range.upperBound - range.lowerBound) }
+    }
+
+    /// D36 숫자를 붙일 점. 적으면 전부, 많으면 처음·끝·가장 낮은·가장 높은 점
+    static func labeledIndices(_ values: [Double], maxLabels: Int = 6) -> Set<Int> {
+        guard !values.isEmpty else { return [] }
+        if values.count <= maxLabels { return Set(values.indices) }
+        var result: Set<Int> = [0, values.count - 1]
+        if let low = values.indices.min(by: { values[$0] < values[$1] }) { result.insert(low) }
+        if let high = values.indices.max(by: { values[$0] < values[$1] }) { result.insert(high) }
+        return result
+    }
+
+    /// D36 가로 날짜 눈금: 처음·가운데·끝 (겹치지 않게 최대 3개)
+    static func axisDays(_ days: [Date]) -> [Date] {
+        let sorted = Array(Set(days)).sorted()
+        guard let first = sorted.first, let last = sorted.last else { return [] }
+        if sorted.count < 3 { return sorted }
+        let mid = sorted[sorted.count / 2]
+        return [first, mid, last]
+    }
+
     /// D24-1 핀치로 고르는 가로 기간 단계 (주). 마지막 단계는 전체(`allWeeks`)
     static let zoomSteps = [2, 4, 8, 12, 26, 52]
 

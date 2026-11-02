@@ -3,7 +3,9 @@ import SwiftUI
 
 /// 기록 탭 맨 위 몸 추이 카드 (D24, D24-1 핀치로 가로 기간, 2026-10-30 사람 요청 "그래프로 보여 줘야지 추이가, 기록 탭에 제일 위에").
 /// 체중·체지방률·제지방량 중 기록이 있는 것을 선으로 겹쳐 보인다. 측정값을 이은 선, 측정 없는 주에서 끊음 (R7).
-/// 하나만 고르면 실제 눈금, 둘 이상이면 단위가 달라 선마다 자기 범위로 맞춰 모양만 겹친다 (`WeightRules.normalized`).
+/// D36 (2026-11-02 사람 요청 "직관적이지 못하네, 체중이나 숫자도 잘 안 보이고"): 기준 값 하나(처음엔 체중)를 골라
+/// 맨 위에 최근 값을 크게, 그래프에 실제 눈금과 점마다 숫자를 붙인다. 나머지 값은 흐린 선으로 모양만 겹친다
+/// (`WeightRules.rescaled`). 곡선 보간은 없던 굴곡을 만들어 직선으로 잇는다.
 /// 목표선·판단 색 없음 (COMPLIANCE.md 2.1-3). 빨강·초록 금지라 강조·모래·세이지 토큰을 쓴다
 struct BodyTrendCard: View {
     let samples: [WeightSampleSnapshot]
@@ -12,8 +14,8 @@ struct BodyTrendCard: View {
     var openDetail: () -> Void
 
     @Environment(\.calendar) private var calendar
-    /// 처음엔 기록이 있는 값 모두 (D24-1, 2026-10-30 사람 결정 "셋 다 켜지게")
-    @State private var shown: Set<BodyMetric> = Set(BodyMetric.allCases)
+    /// D36 기준 값. 셋 다 보이되(D24-1 "셋 다 켜지게") 눈금·숫자는 기준 값만
+    @State private var focus: BodyMetric = .weight
     @State private var selectedDate: Date?
     /// D24-1 핀치로 고른 가로 기간(주). 기기 화면 상태라 UserDefaults
     @AppStorage("bodyTrend.weeks") private var weeks = 12
@@ -41,9 +43,9 @@ struct BodyTrendCard: View {
         let span = min(weeks, maxWeeks)
         let end = WeightRules.seriesEnd(samples: samples, weeks: span, now: now, calendar: calendar)
         let available = series(end: end, weeks: span)
-        let visible = available.filter { shown.contains($0.metric) }
-        let overlaid = visible.count > 1
-        let points = plotted(visible, overlaid: overlaid)
+        let focused = available.first { $0.metric == focus } ?? available.first
+        let overlaid = available.count > 1
+        let points = plotted(available, focus: focused)
         FrostCard {
             VStack(alignment: .leading, spacing: Spacing.s3) {
                 HStack(alignment: .firstTextBaseline) {
@@ -66,6 +68,9 @@ struct BodyTrendCard: View {
                     }
                     .buttonStyle(.plain)
                 }
+                if let focused, let latest = focused.daily.last {
+                    headline(focused, latest: latest)
+                }
                 if available.count > 1 {
                     legend(available)
                 } else if let only = available.first {
@@ -77,8 +82,8 @@ struct BodyTrendCard: View {
                         .foregroundStyle(Color.inkSecondary)
                         .frame(maxWidth: .infinity, minHeight: 160)
                 } else {
-                    chart(points, overlaid: overlaid, end: end, weeks: span)
-                        .frame(height: 200)
+                    chart(points, focus: focused?.metric ?? .weight, end: end)
+                        .frame(height: 220)
                         .simultaneousGesture(pinch(maxWeeks: maxWeeks))
                         .sensoryFeedback(.selection, trigger: weeks)
                 }
@@ -87,7 +92,7 @@ struct BodyTrendCard: View {
                         .font(Typography.caption)
                         .foregroundStyle(Color.inkSecondary)
                 }
-                Text(LocalizedStringKey(overlaid ? "history.bodyTrend.footnote.overlaid" : "history.bodyTrend.footnote"))
+                Text(LocalizedStringKey(overlaid ? "history.bodyTrend.footnote.focus" : "history.bodyTrend.footnote"))
                     .font(Typography.caption)
                     .foregroundStyle(Color.inkTertiary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -107,9 +112,14 @@ struct BodyTrendCard: View {
         }
     }
 
-    private func plotted(_ visible: [Series], overlaid: Bool) -> [Plotted] {
-        visible.flatMap { series in
-            let ys = overlaid ? WeightRules.normalized(series.daily.map(\.kilograms)) : series.daily.map(\.kilograms)
+    /// 기준 값은 실제 값, 나머지는 기준 값의 눈금 범위에 모양만 겹친다
+    private func plotted(_ available: [Series], focus: Series?) -> [Plotted] {
+        let range = focus.flatMap { WeightRules.focusRange($0.daily.map(\.kilograms)) }
+        // 기준 값을 맨 뒤에 그려 다른 선 위에 오게
+        let ordered = available.filter { $0.metric != focus?.metric } + available.filter { $0.metric == focus?.metric }
+        return ordered.flatMap { series in
+            let values = series.daily.map(\.kilograms)
+            let ys = series.metric == focus?.metric || range == nil ? values : WeightRules.rescaled(values, into: range!)
             let yByDay = Dictionary(uniqueKeysWithValues: zip(series.daily.map(\.day), ys))
             return WeightRules.lineSegments(series.daily, calendar: calendar).enumerated().flatMap { index, segment in
                 segment.map {
@@ -133,29 +143,25 @@ struct BodyTrendCard: View {
     }
 
     private func legendItem(_ series: Series, selectable: Bool) -> some View {
-        let isOn = shown.contains(series.metric)
+        let isOn = series.metric == focus || !selectable
         return Button {
             guard selectable else { return }
-            // 마지막 하나는 끌 수 없다
-            if isOn, shown.count > 1 {
-                shown.remove(series.metric)
-            } else {
-                shown.insert(series.metric)
-            }
+            selectedDate = nil
+            withAnimation(.snappy(duration: 0.25)) { focus = series.metric }
         } label: {
             HStack(spacing: Spacing.s1 + 2) {
                 Capsule()
                     .fill(Self.color(series.metric))
                     .frame(width: 14, height: 4)
-                    .opacity(isOn ? 1 : 0.3)
+                    .opacity(isOn ? 1 : 0.45)
                 VStack(alignment: .leading, spacing: 0) {
                     Text(LocalizedStringKey("weight.trend.metric." + series.metric.rawValue))
                         .font(Typography.caption.weight(.semibold))
-                        .foregroundStyle(isOn ? Color.ink : Color.inkTertiary)
+                        .foregroundStyle(isOn ? Color.ink : Color.inkSecondary)
                     if let first = series.daily.first, let last = series.daily.last {
                         Text(verbatim: "\(Self.format(first.kilograms)) → \(Self.format(last.kilograms)) \(Self.unit(series.metric))")
                             .font(.caption2.monospacedDigit())
-                            .foregroundStyle(isOn ? Color.inkSecondary : Color.inkTertiary)
+                            .foregroundStyle(Color.inkSecondary)
                     }
                 }
             }
@@ -163,16 +169,42 @@ struct BodyTrendCard: View {
             .padding(.vertical, Spacing.s1 + 2)
             .background(
                 RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
-                    .fill(isOn && selectable ? Color.white.opacity(0.06) : Color.clear)
+                    .fill(isOn && selectable ? Color.accentSoft : Color.clear)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
-                    .strokeBorder(selectable ? Color.frostBorder : Color.clear, lineWidth: 1)
+                    .strokeBorder(selectable ? (isOn ? Self.color(series.metric).opacity(0.7) : Color.frostBorder) : Color.clear, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
         .disabled(!selectable)
         .accessibilityAddTraits(isOn && selectable ? [.isSelected] : [])
+    }
+
+    // MARK: 맨 위 최근 값 (D36)
+
+    private func headline(_ series: Series, latest: DailyWeight) -> some View {
+        HStack(alignment: .lastTextBaseline, spacing: Spacing.s2) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(LocalizedStringKey("weight.trend.metric." + series.metric.rawValue))
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+                HStack(alignment: .lastTextBaseline, spacing: 4) {
+                    Text(verbatim: Self.format(latest.kilograms))
+                        .font(Font.system(size: 40, weight: .semibold, design: .rounded).monospacedDigit())
+                        .foregroundStyle(Color.ink)
+                        .contentTransition(.numericText())
+                    Text(verbatim: Self.unit(series.metric))
+                        .font(Typography.label)
+                        .foregroundStyle(Color.inkSecondary)
+                }
+            }
+            Spacer()
+            Text("history.bodyTrend.latestOn \(latest.day.formatted(.dateTime.month(.defaultDigits).day()))")
+                .font(Typography.caption)
+                .foregroundStyle(Color.inkSecondary)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: 그래프
@@ -200,26 +232,38 @@ struct BodyTrendCard: View {
         return String(localized: "history.bodyTrend.span.weeks \(span)")
     }
 
-    private func chart(_ points: [Plotted], overlaid: Bool, end: Date, weeks: Int) -> some View {
+    private func chart(_ points: [Plotted], focus: BodyMetric, end: Date) -> some View {
         let selected = selection(points)
-        let ys = points.map(\.y)
-        let yAxis: [Double] = overlaid ? [] : {
-            guard let low = ys.min(), let high = ys.max() else { return [] }
-            return low == high ? [low] : [low, high]
+        let focusPoints = points.filter { $0.metric == focus }
+        let labeled = WeightRules.labeledIndices(focusPoints.map(\.value))
+        let labeledIDs = Set(labeled.map { focusPoints[$0].id })
+        let yAxis: [Double] = {
+            guard let range = WeightRules.focusRange(focusPoints.map(\.value)) else { return [] }
+            let mid = (range.lowerBound + range.upperBound) / 2
+            return [range.lowerBound, mid, range.upperBound]
         }()
+        let unit = Self.unit(focus)
         return Chart {
             ForEach(points) { point in
+                let isFocus = point.metric == focus
                 LineMark(
                     x: .value("day", point.day),
                     y: .value("value", point.y),
                     series: .value("series", "\(point.metric.rawValue)-\(point.segment)")
                 )
-                .foregroundStyle(Self.color(point.metric))
-                .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
-                .interpolationMethod(.monotone)
+                .foregroundStyle(Self.color(point.metric).opacity(isFocus ? 1 : 0.4))
+                .lineStyle(StrokeStyle(lineWidth: isFocus ? 3 : 1.5, lineCap: .round, lineJoin: .round))
+                .interpolationMethod(.linear)
                 PointMark(x: .value("day", point.day), y: .value("value", point.y))
-                    .foregroundStyle(Self.color(point.metric))
-                    .symbolSize(18)
+                    .foregroundStyle(Self.color(point.metric).opacity(isFocus ? 1 : 0.4))
+                    .symbolSize(isFocus ? 36 : 12)
+                    .annotation(position: .top, spacing: 4, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                        if isFocus, labeledIDs.contains(point.id), selected.isEmpty {
+                            Text(verbatim: Self.format(point.value))
+                                .font(.caption2.weight(.semibold).monospacedDigit())
+                                .foregroundStyle(Color.ink)
+                        }
+                    }
             }
             if let date = selected.first?.day {
                 RuleMark(x: .value("selected", date))
@@ -231,37 +275,27 @@ struct BodyTrendCard: View {
             }
         }
         .chartXSelection(value: $selectedDate)
-        .chartYScale(domain: .automatic(includesZero: false), range: .plotDimension(padding: 8))
-        .chartXScale(range: .plotDimension(startPadding: 12, endPadding: 12))
+        .chartYScale(domain: .automatic(includesZero: false), range: .plotDimension(padding: 20))
+        .chartXScale(range: .plotDimension(startPadding: 16, endPadding: 16))
         .chartXAxis {
-            // 기간에 맞춘 눈금 간격: 2주는 3일, 4주는 주, 8~12주는 2·3주, 그 이상은 달
-            if weeks > 16 {
-                AxisMarks(values: .stride(by: .month, count: weeks > 60 ? 3 : (weeks > 30 ? 2 : 1))) { _ in
-                    AxisGridLine().foregroundStyle(Color.inkTertiary.opacity(0.4))
-                    AxisValueLabel(format: .dateTime.month(.abbreviated), anchor: .top)
-                        .font(.caption2)
-                        .foregroundStyle(Color.inkSecondary)
-                }
-            } else if weeks <= 2 {
-                AxisMarks(values: .stride(by: .day, count: 3)) { _ in
-                    AxisGridLine().foregroundStyle(Color.inkTertiary.opacity(0.4))
-                    AxisValueLabel(format: .dateTime.month(.defaultDigits).day(), anchor: .top)
-                        .font(.caption2)
-                        .foregroundStyle(Color.inkSecondary)
-                }
-            } else {
-                AxisMarks(values: .stride(by: .weekOfYear, count: weeks <= 4 ? 1 : (weeks <= 8 ? 2 : 3))) { _ in
-                    AxisGridLine().foregroundStyle(Color.inkTertiary.opacity(0.4))
-                    AxisValueLabel(format: .dateTime.month(.defaultDigits).day(), anchor: .top)
-                        .font(.caption2)
-                        .foregroundStyle(Color.inkSecondary)
-                }
+            // D36: 처음·가운데·끝 날짜만 (겹치지 않게)
+            AxisMarks(values: WeightRules.axisDays(focusPoints.map(\.day))) { _ in
+                AxisGridLine().foregroundStyle(Color.inkTertiary.opacity(0.4))
+                AxisValueLabel(format: .dateTime.month(.defaultDigits).day(), anchor: .top)
+                    .font(.caption2)
+                    .foregroundStyle(Color.inkSecondary)
             }
         }
         .chartYAxis {
-            AxisMarks(position: .leading, values: yAxis) { _ in
+            AxisMarks(position: .leading, values: yAxis) { value in
                 AxisGridLine().foregroundStyle(Color.inkTertiary.opacity(0.4))
-                AxisValueLabel().font(.caption2).foregroundStyle(Color.inkSecondary)
+                AxisValueLabel {
+                    if let number = value.as(Double.self) {
+                        Text(verbatim: "\(Self.format(number)) \(unit)")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(Color.inkSecondary)
+                    }
+                }
             }
         }
         .chartOverlay { proxy in
