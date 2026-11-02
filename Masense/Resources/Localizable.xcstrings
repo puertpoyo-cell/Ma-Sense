@@ -619,13 +619,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Left"
+            "value": "L"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "왼쪽"
+            "value": "L"
           }
         }
       }
@@ -636,13 +636,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Right"
+            "value": "R"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "오른쪽"
+            "value": "R"
           }
         }
       }
@@ -13215,13 +13215,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abdomen, lower left"
+            "value": "Abdomen lower L"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "복부 왼쪽 아래"
+            "value": "복부 아래 L"
           }
         }
       }
@@ -13232,13 +13232,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abdomen, lower right"
+            "value": "Abdomen lower R"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "복부 오른쪽 아래"
+            "value": "복부 아래 R"
           }
         }
       }
@@ -13249,13 +13249,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abdomen, upper left"
+            "value": "Abdomen upper L"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "복부 왼쪽 위"
+            "value": "복부 위 L"
           }
         }
       }
@@ -13266,13 +13266,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abdomen, upper right"
+            "value": "Abdomen upper R"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "복부 오른쪽 위"
+            "value": "복부 위 R"
           }
         }
       }
@@ -13453,13 +13453,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Left thigh"
+            "value": "Thigh L"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "허벅지 왼쪽"
+            "value": "허벅지 L"
           }
         }
       }
@@ -13470,13 +13470,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Right thigh"
+            "value": "Thigh R"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "허벅지 오른쪽"
+            "value": "허벅지 R"
           }
         }
       }
@@ -13504,13 +13504,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Left upper arm"
+            "value": "Upper arm L"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "상완 왼쪽"
+            "value": "상완 L"
           }
         }
       }
@@ -13521,13 +13521,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Right upper arm"
+            "value": "Upper arm R"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "상완 오른쪽"
+            "value": "상완 R"
           }
         }
       }
