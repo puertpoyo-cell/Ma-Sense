@@ -5,16 +5,13 @@ name: TestFlight
 # 필요한 Secrets 3개 (docs/TESTFLIGHT.md 6): ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY(.p8 내용 그대로)
 # Secrets가 없으면 아무것도 하지 않고 끝난다 (CI와 별개, 실패로 보지 않음)
 
+# 2026-11-02 사람 결정 "5개 정도 쌓이면 빌드 올리자": 앱 코드 푸시마다 올리지 않는다.
+# 빌드 번호(CURRENT_PROJECT_VERSION)를 올린 푸시에서만 업로드한다. 손으로는 workflow_dispatch
 on:
   push:
     branches: [main]
     paths:
-      - "Masense/**"
-      - "Shared/**"
-      - "MasenseWidgets/**"
-      - "Config/**"
       - "Masense.xcodeproj/project.pbxproj"
-      - ".github/workflows/testflight.yml"
   workflow_dispatch:
 
 concurrency:
@@ -28,12 +25,25 @@ jobs:
     outputs:
       ready: ${{ steps.check.outputs.ready }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - id: check
         env:
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
         run: |
+          if [ "$EVENT" = "push" ]; then
+            if git cat-file -e "$BEFORE^{commit}" 2>/dev/null \
+               && ! git diff "$BEFORE" HEAD -- Masense.xcodeproj/project.pbxproj | grep -q '^[+-].*CURRENT_PROJECT_VERSION'; then
+              echo "ready=false" >> "$GITHUB_OUTPUT"
+              echo "빌드 번호가 그대로라 업로드하지 않습니다 (몇 개 모아서 빌드 번호를 올릴 때 업로드)."
+              exit 0
+            fi
+          fi
           if [ -n "$KEY_ID" ] && [ -n "$ISSUER_ID" ] && [ -n "$PRIVATE_KEY" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
