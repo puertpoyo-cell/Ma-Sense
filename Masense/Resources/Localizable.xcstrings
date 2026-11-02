@@ -13294,6 +13294,74 @@
         }
       }
     },
+    "site.region.abdomenLower": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abdomen lower"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "복부 아래"
+          }
+        }
+      }
+    },
+    "site.region.abdomenUpper": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abdomen upper"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "복부 위"
+          }
+        }
+      }
+    },
+    "site.region.thigh": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thigh"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "허벅지"
+          }
+        }
+      }
+    },
+    "site.region.upperArm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upper arm"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "상완"
+          }
+        }
+      }
+    },
     "site.short.abdomenLowerLeft": {
       "extractionState": "manual",
       "localizations": {

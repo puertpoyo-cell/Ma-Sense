@@ -110,7 +110,9 @@ struct GlanceStrip: View {
 
     private var siteValue: Text {
         guard let lastSite else { return Text("glance.none") }
-        return Text(verbatim: lastSite.site.localizedName)
+        // D38-2: 좌우는 그림의 L/R로 보이고 글은 구역만 (화면 읽기는 좌우까지)
+        return Text(verbatim: lastSite.site.regionName)
+            .accessibilityLabel(Text(verbatim: lastSite.site.localizedName))
     }
 
     // MARK: 줄
@@ -160,6 +162,15 @@ struct GlanceStrip: View {
                         )
                 )
                 .frame(width: size.width, height: size.height)
+            // D38-2 거울 보기 좌우 표시 (본인의 L이 화면 왼쪽), 머리 양옆
+            Text("bodymap.left")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(Color.inkSecondary)
+                .position(x: 72 * scale, y: 30 * scale)
+            Text("bodymap.right")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(Color.inkSecondary)
+                .position(x: 168 * scale, y: 30 * scale)
             // 오래된 것을 먼저 그려 지난 부위가 맨 위에 오게
             ForEach(Array(recentSites.prefix(Self.siteOpacities.count).enumerated().reversed()), id: \.offset) { rank, use in
                 siteDot(use.site, rank: rank, scale: scale)
