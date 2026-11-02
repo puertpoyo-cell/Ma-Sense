@@ -170,6 +170,15 @@ enum RecordsSegment: String, CaseIterable, Hashable {
     case report
 
     var titleKey: LocalizedStringKey { LocalizedStringKey("records.segment." + rawValue) }
+
+    /// 가로 화면 세로 버튼 아이콘
+    var symbol: String {
+        switch self {
+        case .days: "calendar"
+        case .clinic: "stethoscope"
+        case .report: "doc.text"
+        }
+    }
 }
 
 /// D31 기록 탭. 위쪽 전환으로 날짜별 기록 · 진료 · 리포트
@@ -195,8 +204,57 @@ struct RecordsTab: View {
                 }
             }
         }
-        // 전환은 각 화면 내비게이션 바 가운데 자리에 둔다 (큰 제목과 겹치지 않게)
-        .environment(\.recordsSegment, $segment)
+        // 세로: 전환은 각 화면 내비게이션 바 가운데 자리 (큰 제목과 겹치지 않게)
+        // 가로: 오른쪽에 세로 버튼 3개 (2026-11-02 사람 결정 "오른쪽 세로로")
+        .environment(\.recordsSegment, isLandscape ? nil : $segment)
+        .safeAreaInset(edge: .trailing, spacing: 0) {
+            if isLandscape {
+                RecordsSegmentColumn(segment: $segment)
+            }
+        }
+        .onGeometryChange(for: Bool.self) { $0.size.width > $0.size.height } action: { isLandscape = $0 }
+    }
+
+    @State private var isLandscape = false
+}
+
+/// 가로 화면의 오른쪽 세로 전환
+private struct RecordsSegmentColumn: View {
+    @Binding var segment: RecordsSegment
+
+    var body: some View {
+        VStack(spacing: Spacing.s2) {
+            ForEach(RecordsSegment.allCases, id: \.self) { item in
+                let selected = item == segment
+                Button { segment = item } label: {
+                    VStack(spacing: 4) {
+                        Image(systemName: item.symbol)
+                            .font(.system(size: 20, weight: .regular))
+                        Text(item.titleKey)
+                            .font(.caption)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .foregroundStyle(selected ? Color.ink : Color.inkSecondary)
+                    .frame(width: 72, height: 64)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(selected ? Color.accentSoft : Color.frost)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(selected ? Color.accent.opacity(0.6) : Color.frostBorder, lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.top, Spacing.s4)
+        .padding(.horizontal, Spacing.s2)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text("records.segment.picker"))
     }
 }
 
