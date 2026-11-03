@@ -11968,6 +11968,23 @@
         }
       }
     },
+    "settings.credit %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Admin %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "관리자 %@"
+          }
+        }
+      }
+    },
     "settings.data.backupNotice": {
       "extractionState": "manual",
       "localizations": {

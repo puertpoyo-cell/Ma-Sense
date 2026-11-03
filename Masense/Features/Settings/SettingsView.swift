@@ -111,6 +111,7 @@ private struct SettingsForm: View {
             purchaseSection
             dataSection
             infoSection
+            creditSection
         }
         .scrollContentBackground(.hidden)
         .midnightBackground()
@@ -683,6 +684,24 @@ private struct SettingsForm: View {
             }
         }
         .frostRow()
+    }
+
+    /// D41 설정 맨 아래 관리자 표시 (2026-11-03 사람 요청 "관리자 Hanpark 및 달 마크"). 달은 SF Symbol
+    private var creditSection: some View {
+        Section {
+            HStack(spacing: Spacing.s2) {
+                Image(systemName: "moon.stars.fill")
+                    .foregroundStyle(Color.accent)
+                    .accessibilityHidden(true)
+                Text("settings.credit \(AppConfig.adminName)")
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, Spacing.s2)
+            .listRowBackground(Color.clear)
+            .accessibilityElement(children: .combine)
+        }
     }
 }
 
