@@ -329,7 +329,8 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 
 - [x] 설정 > 정보 "의견 보내기" (버전·빌드·기기 자동 기입, `AppConfig.feedbackMailURL` + 테스트)
 - [x] 테스터 안내문 `docs/BETA_GUIDE.md`, App Store Connect 공개 링크 절차 `docs/TESTFLIGHT.md` 6, 테스트 정보 문구 갱신
-- 사람: 처리방침 재배포 → ASC 테스트 정보 입력 → 외부 그룹 "오픈 베타" + 공개 링크 → 빌드 추가·베타 심사 제출 → 링크를 BETA_GUIDE에 채워 배포
+- [x] ASC 외부 그룹 "Open beta" + 공개 링크 `https://testflight.apple.com/join/XkVYdMBt`, 빌드 43 추가 (2026-11-03). BETA_GUIDE에 링크 채움
+- 사람: 베타 앱 심사 통과("테스트 중") 확인 뒤 안내문 배포, 처리방침 재배포
 - [x] `MARKETING_VERSION` 0.3 유지 (2026-11-03 사람 결정 "0.3으로 빌드 진행"), 오픈 베타 첫 빌드 43
 
 ## D39 — 사진 확인 더 잘 맞게 (2026-11-03 사람 요청 "비전 체크가 썩 작동 안 하네")

@@ -147,7 +147,7 @@ puertpoyo@gmail.com (`AppConfig.feedbackEmail`, 처리방침 10과 같음). 앱 
 3. 왼쪽 **외부 테스트** 옆 + > 그룹 이름 "오픈 베타". 만든 그룹에서 **공개 링크 활성화**를 켜고, 테스터 상한(기본 10,000)을 둔다
 4. 그룹의 **빌드** 탭 > + > 올라온 빌드(42 이상) 선택 > "테스트할 내용"에 3절 "테스트해 주실 것"을 넣고 제출. 처음엔 "수출 규정" 질문이 뜰 수 있다 → `ITSAppUsesNonExemptEncryption = NO`라 "아니요"
 5. 상태가 "심사 대기 중" → "테스트 중"으로 바뀌면 공개 링크(`https://testflight.apple.com/join/XXXXXXXX`)가 생긴다. 이후 빌드는 같은 그룹에 추가만 하면 되고, 보통 다시 심사하지 않는다(큰 변경이면 다시 심사)
-6. `docs/BETA_GUIDE.md`의 [공개 링크]를 채워 테스터에게 보낸다. 상표명을 넣지 않는다 (COMPLIANCE.md 2.1-5)
+6. 공개 링크 `https://testflight.apple.com/join/XkVYdMBt` (그룹 "Open beta", 2026-11-03 생성). `docs/BETA_GUIDE.md`에 채워 두었다. 테스터에게 보낸다. 상표명을 넣지 않는다 (COMPLIANCE.md 2.1-5)
 
 ### 빌드마다 (자동 업로드 뒤)
 

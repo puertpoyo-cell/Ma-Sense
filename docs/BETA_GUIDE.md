@@ -21,7 +21,7 @@ TestFlight 공개 링크와 함께 보내는 안내문입니다. 그대로 복�
 
 1. App Store에서 **TestFlight** 앱을 설치합니다.
 2. 아래 링크를 iPhone에서 엽니다. (iOS 17 이상)
-   [공개 링크]
+   https://testflight.apple.com/join/XkVYdMBt
 3. TestFlight에서 "설치"를 누릅니다. 새 빌드가 나오면 TestFlight가 알려 줍니다.
 
 ### 이렇게 써 보세요
