@@ -5020,6 +5020,23 @@
         }
       }
     },
+    "food.ask.package": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How many packages did you have?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "몇 개(포장 기준) 드셨어요?"
+          }
+        }
+      }
+    },
     "food.ask.piece": {
       "extractionState": "manual",
       "localizations": {
@@ -5564,6 +5581,23 @@
         }
       }
     },
+    "food.unit.package": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "package"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "포장"
+          }
+        }
+      }
+    },
     "food.unit.piece": {
       "extractionState": "manual",
       "localizations": {
@@ -5751,6 +5785,23 @@
         }
       }
     },
+    "foodPhoto.packageFound %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The nutrition label says %@ g protein."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영양성분표에 단백질 %@ g라고 적혀 있어요."
+          }
+        }
+      }
+    },
     "foodPhoto.pickFoods": {
       "extractionState": "manual",
       "localizations": {
@@ -5774,13 +5825,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Take a photo of what you ate. I'll look at the type and ask how much."
+            "value": "Take a photo of what you ate. If there is a nutrition label, include it for a better estimate."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "드신 음식을 찍어 주세요. 종류를 보고 양을 여쭤볼게요."
+            "value": "드신 음식을 찍어 주세요. 영양성분표가 있으면 같이 찍으면 더 정확해요."
           }
         }
       }
@@ -5808,13 +5859,47 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Looking at the food"
+            "value": "Looking at the food and any text"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "음식 종류를 보는 중이에요"
+            "value": "음식 종류와 글자를 보는 중이에요"
+          }
+        }
+      }
+    },
+    "foodPhoto.retake": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retake"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 찍기"
+          }
+        }
+      }
+    },
+    "foodPhoto.seen %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seen in the photo: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진에서 본 것: %@"
           }
         }
       }

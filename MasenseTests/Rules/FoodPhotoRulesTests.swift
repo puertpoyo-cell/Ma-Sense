@@ -40,3 +40,37 @@ struct FoodPhotoRulesTests {
         #expect(FoodPhotoRules.foods(from: [("natto", 0.4)]) == [.beans])
     }
 }
+
+// D39 여러 조각 합치기, 글자에서 식품, 영양성분표 단백질 g
+struct FoodPhotoTextRulesTests {
+    @Test func mergedKeepsHighestConfidencePerName() {
+        let merged = FoodPhotoRules.merged([[("egg", 0.2), ("plate", 0.9)], [("egg", 0.6)]])
+        #expect(merged.map(\.identifier) == ["plate", "egg"])
+        #expect(merged[1].confidence == 0.6)
+        #expect(FoodPhotoRules.cropRects.count == 6)
+    }
+
+    @Test func textFindsFoodsInOrderOfAppearance() {
+        #expect(FoodPhotoRules.foods(fromText: ["그릭 요거트 플레인", "원재료: 우유"]) == [.greekYogurt, .milk])
+        #expect(FoodPhotoRules.foods(fromText: ["닭가슴살 스테이크 100g"]) == [.chickenBreast, .beef])
+        #expect(FoodPhotoRules.foods(fromText: ["Protein Shake"]) == [.proteinShake])
+        #expect(FoodPhotoRules.foods(fromText: []).isEmpty)
+    }
+
+    @Test func nutritionLabelProteinGrams() {
+        #expect(FoodPhotoRules.labelProteinGrams(in: ["열량 120kcal", "단백질 23g (41%)"]) == 23)
+        #expect(FoodPhotoRules.labelProteinGrams(in: ["Protein 12.5 g"]) == 12.5)
+        #expect(FoodPhotoRules.labelProteinGrams(in: ["단백질: 8 g", "단백질 20g"]) == 20)
+        #expect(FoodPhotoRules.labelProteinGrams(in: ["단백질 함량 높음"]) == nil)
+        #expect(FoodPhotoRules.labelProteinGrams(in: ["단백질 0g"]) == nil)
+    }
+
+    @Test func labelsAndTextCombineUpToThree() {
+        let labels: [(identifier: String, confidence: Double)] = [("fried_egg", 0.5)]
+        #expect(FoodPhotoRules.foods(labels: labels, text: ["두부 300g", "계란"]) == [.egg, .tofu])
+        #expect(FoodPhotoRules.foods(labels: [("steak", 0.5), ("cheese", 0.4)], text: ["우유", "연어"]) == [.beef, .cheese, .milk])
+        let unit = FoodPhotoRules.packageUnit(grams: 23)
+        #expect(FoodPhotoRules.grams([(.chickenBreast, unit, 1.5)]) == 35)
+        #expect(FoodPhotoRules.displayName("fried_egg") == "fried egg")
+    }
+}

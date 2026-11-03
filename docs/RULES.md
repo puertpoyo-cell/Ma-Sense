@@ -413,6 +413,7 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 - 이미지 분류 이름(확신도 0.12 이상)에 `FoodPhotoRules.keywords`가 들어 있으면 그 식품. N-C2: 한식에서 흔한 이름(scrambled·frittata, squid·shrimp·clam 등 해산물 → 생선, short_rib·brisket → 소고기, pork_chop·tonkatsu·cutlet → 돼지고기, natto·hummus → 콩)까지. 식품별 가장 높은 확신도, 높은 순 3개까지
 - 단위: R9 표 1회 기준 그대로(계란 1개 6 g, 두부 반 모 12 g, 닭가슴살 100g 23 g …). 요거트는 컵(150g) 15 g 또는 숟갈(약 15 g) 1.5 g, 콩·두유는 컵 8 g 또는 숟갈 0.5 g. 처음 양은 1(숟갈은 5)
 - 대략 g = Σ 단위 g × 양, 반올림. 사진으로 양·칼로리를 판정하지 않는다 (COMPLIANCE.md 2.1-3·2.1-6)
+- D39: 확신도 기준 0.08. `cropRects` 여섯 조각의 분류를 `merged`(이름별 최대)로 합친다. `foods(fromText:)`는 읽은 글자에서 `textKeywords`(닭가슴살·그릭·프로틴·두부·계란·연어·소고기·돼지·치즈·우유·콩 등)를 글에 먼저 나온 순으로. `foods(labels:text:)`는 분류 결과 먼저, 글자 식품을 뒤에, 3개까지. `labelProteinGrams`는 "단백질 n g"/"Protein n g" 중 가장 큰 값(0 초과 200 미만), 포장 단위 `packageUnit(grams:)`로 쓴다
 
 ## R23. 기록 탭 날짜 표시 (D20)
 

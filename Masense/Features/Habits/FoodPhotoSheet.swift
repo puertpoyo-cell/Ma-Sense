@@ -31,6 +31,10 @@ struct FoodPhotoSheet: View {
     @State private var image: UIImage?
     @State private var portions: [Portion] = []
     @State private var guessedNothing = false
+    /// D39 사진에서 본 것 (분류 이름 위 5개·읽은 글자 몇 줄). 왜 그렇게 짐작했는지 보여 준다
+    @State private var seen: [String] = []
+    /// D39 영양성분표에서 읽은 단백질 g
+    @State private var packageGrams: Double?
     @State private var pickerItem: PhotosPickerItem?
     @State private var showsCamera = false
 
@@ -155,6 +159,19 @@ struct FoodPhotoSheet: View {
             ForEach($portions) { $portion in
                 portionRow($portion)
             }
+            if !seen.isEmpty {
+                Text("foodPhoto.seen \(seen.joined(separator: ", "))")
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            GhostButton("foodPhoto.retake") {
+                image = nil
+                portions = []
+                seen = []
+                packageGrams = nil
+                phase = .pick
+            }
 
             VStack(alignment: .leading, spacing: Spacing.s2) {
                 Text(portions.isEmpty ? "foodPhoto.pickFoods" : "foodPhoto.otherFoods")
@@ -174,6 +191,10 @@ struct FoodPhotoSheet: View {
 
     /// 짐작한 첫 식품으로 묻는다. 못 찾았으면 골라 달라고
     private var question: Text {
+        if let packageGrams, let first = portions.first, first.unit.key == FoodPhotoRules.packageUnitKey {
+            let grams = packageGrams.formatted(.number.precision(.fractionLength(0...1)))
+            return Text("foodPhoto.packageFound \(grams)") + Text(verbatim: " ") + Text("food.ask.package")
+        }
         guard let first = portions.first, !guessedNothing else { return Text("foodPhoto.guessedNothing") }
         let name = L10n.string(first.food.titleKey)
         // "달걀, 맞나요?" + 단위별로 다시 묻기 ("몇 개 드셨어요?", "몇 숟갈 드셨어요?")
@@ -263,11 +284,22 @@ struct FoodPhotoSheet: View {
     private func look(at picked: UIImage) async {
         image = picked
         phase = .reading
-        let foods = await FoodRecognitionService.foods(in: picked)
-        guessedNothing = foods.isEmpty
+        let reading = await FoodRecognitionService.read(picked)
+        let foods = reading.foods
+        packageGrams = reading.packageGrams
+        guessedNothing = foods.isEmpty && packageGrams == nil
         portions = foods.compactMap { food in
             FoodPhotoRules.units(for: food).first.map { Portion(food: food, unit: $0, amount: FoodPhotoRules.defaultAmount(for: $0)) }
         }
+        // 영양성분표를 읽었으면 첫 식품(없으면 기타)을 포장 단위로 — 표가 대략값보다 우선
+        if let packageGrams {
+            let unit = FoodPhotoRules.packageUnit(grams: packageGrams)
+            let packaged = Portion(food: foods.first ?? .other, unit: unit, amount: 1)
+            portions.removeAll { $0.food == packaged.food }
+            portions.insert(packaged, at: 0)
+        }
+        seen = reading.labels.prefix(5).map { FoodPhotoRules.displayName($0.identifier) }
+            + reading.lines.prefix(3).map { String($0.prefix(20)) }
         phase = .ask
     }
 

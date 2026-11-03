@@ -21,8 +21,86 @@ enum FoodPhotoRules {
         (.beans, ["bean", "edamame", "soy", "legume", "lentil", "chickpea", "hummus", "natto"]),
     ]
 
-    /// 이 확신도보다 낮은 이름은 쓰지 않는다
-    static let minimumConfidence = 0.12
+    /// D39 사진 속 글자(포장·메뉴판)에서 식품을 찾는 말. 한국어·영어, 앞에 둔 식품부터
+    static let textKeywords: [(ProteinFood, [String])] = [
+        (.chickenBreast, ["닭가슴살", "닭 가슴살", "닭안심", "닭고기", "치킨", "chicken"]),
+        (.greekYogurt, ["그릭", "요거트", "요구르트", "yogurt", "yoghurt"]),
+        (.proteinShake, ["프로틴", "쉐이크", "셰이크", "단백질 음료", "단백질음료", "protein shake", "whey", "웨이"]),
+        (.tofu, ["두부", "순두부", "tofu"]),
+        (.egg, ["계란", "달걀", "에그", "egg"]),
+        (.fish, ["연어", "참치", "고등어", "삼치", "갈치", "생선", "새우", "오징어", "문어", "조개", "굴", "게살", "salmon", "tuna", "fish", "shrimp"]),
+        (.beef, ["소고기", "쇠고기", "한우", "불고기", "스테이크", "갈비", "beef", "steak"]),
+        (.pork, ["돼지", "삼겹", "목살", "돈까스", "돈가스", "베이컨", "햄", "소시지", "pork", "bacon", "ham", "sausage"]),
+        (.cheese, ["치즈", "cheese"]),
+        (.milk, ["우유", "라떼", "라테", "milk", "latte"]),
+        (.beans, ["콩", "두유", "낫토", "병아리콩", "렌틸", "bean", "soy", "edamame", "lentil"]),
+    ]
+
+    /// 이 확신도보다 낮은 이름은 쓰지 않는다 (D39: 여러 조각으로 보면서 0.12 → 0.08)
+    static let minimumConfidence = 0.08
+
+    /// D39 사진을 나눠 보는 조각 (0...1 비율). 전체, 네 귀퉁이, 가운데. 한 상에 반찬이 여럿일 때 작은 것도 잡는다
+    static let cropRects: [CGRect] = [
+        CGRect(x: 0, y: 0, width: 1, height: 1),
+        CGRect(x: 0, y: 0, width: 0.6, height: 0.6),
+        CGRect(x: 0.4, y: 0, width: 0.6, height: 0.6),
+        CGRect(x: 0, y: 0.4, width: 0.6, height: 0.6),
+        CGRect(x: 0.4, y: 0.4, width: 0.6, height: 0.6),
+        CGRect(x: 0.2, y: 0.2, width: 0.6, height: 0.6),
+    ]
+
+    /// 조각마다 나온 분류 결과를 이름별 가장 높은 확신도로 합친다
+    static func merged(_ runs: [[(identifier: String, confidence: Double)]]) -> [(identifier: String, confidence: Double)] {
+        var best: [String: Double] = [:]
+        for run in runs {
+            for label in run { best[label.identifier] = max(best[label.identifier] ?? 0, label.confidence) }
+        }
+        return best.map { ($0.key, $0.value) }.sorted { $0.1 == $1.1 ? $0.0 < $1.0 : $0.1 > $1.1 }
+    }
+
+    /// D39 읽은 글자 → 식품 (글에 먼저 나온 순). 포장 이름·메뉴판에서
+    static func foods(fromText lines: [String]) -> [ProteinFood] {
+        let text = lines.joined(separator: "\n").lowercased()
+        var found: [(ProteinFood, Int)] = []
+        for (food, words) in textKeywords {
+            let positions = words.compactMap { text.range(of: $0.lowercased())?.lowerBound }
+            if let first = positions.min() {
+                found.append((food, text.distance(from: text.startIndex, to: first)))
+            }
+        }
+        return found.sorted { $0.1 < $1.1 }.map(\.0)
+    }
+
+    /// D39 영양성분표의 "단백질 12g" / "Protein 12 g". 여러 개면 가장 큰 값(1회 제공량 기준인 경우가 많다)
+    static func labelProteinGrams(in lines: [String]) -> Double? {
+        let text = lines.joined(separator: " ")
+        let pattern = #"(?:단백질|protein)\s*[:：]?\s*([0-9]+(?:[.,][0-9]+)?)\s*(?:g|그램)"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else { return nil }
+        let values = regex.matches(in: text, range: NSRange(text.startIndex..., in: text)).compactMap { match -> Double? in
+            guard let range = Range(match.range(at: 1), in: text) else { return nil }
+            return Double(text[range].replacingOccurrences(of: ",", with: "."))
+        }
+        guard let grams = values.max(), grams > 0, grams < 200 else { return nil }
+        return grams
+    }
+
+    /// 분류 결과와 읽은 글자를 합친 짐작. 분류(확신도 순) 먼저, 글자에서 찾은 것 뒤에, 3개까지
+    static func foods(labels: [(identifier: String, confidence: Double)], text: [String]) -> [ProteinFood] {
+        var result = foods(from: labels)
+        for food in foods(fromText: text) where !result.contains(food) { result.append(food) }
+        return Array(result.prefix(maxFoods))
+    }
+
+    /// 포장 표시 단위 (D39): 포장 1개에 영양성분표 단백질 g
+    static let packageUnitKey = "package"
+    static func packageUnit(grams: Double) -> PortionUnit {
+        PortionUnit(key: packageUnitKey, grams: grams, step: 0.5)
+    }
+
+    /// 분류기 영문 이름을 보여 줄 때 ("fried_egg" → "fried egg")
+    static func displayName(_ identifier: String) -> String {
+        identifier.replacingOccurrences(of: "_", with: " ")
+    }
     /// 묻는 식품은 많아야 이만큼
     static let maxFoods = 3
 
