@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 import UserNotifications
 
@@ -661,6 +662,12 @@ private struct SettingsForm: View {
             }
             if let url = AppConfig.privacyPolicyURL {
                 Link("settings.info.privacy", destination: url)
+            }
+            // D40 오픈 베타: 의견은 TestFlight 스크린샷 피드백 또는 메일
+            Button("settings.info.feedback") {
+                if let url = AppConfig.feedbackMailURL(device: UIDevice.current.model, systemVersion: UIDevice.current.systemVersion) {
+                    openURL(url)
+                }
             }
             Button("settings.info.roleNotice") { sheet = .roleNotice }
             // 출처 있는 일반 정보 카드 (D9)

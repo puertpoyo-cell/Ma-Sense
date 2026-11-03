@@ -48,3 +48,17 @@ struct MasenseSmokeTests {
         #expect(SymptomEntry(symptom: .nausea, severity: -1).severity == 0)
     }
 }
+
+// D40 의견 메일: 받는 주소·제목에 버전, 본문에 기기
+struct FeedbackMailTests {
+    @Test func feedbackMailHasAddressVersionAndDevice() throws {
+        let url = try #require(AppConfig.feedbackMailURL(device: "iPhone", systemVersion: "27.1"))
+        #expect(url.scheme == "mailto")
+        let components = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false))
+        #expect(components.path == AppConfig.feedbackEmail)
+        let subject = components.queryItems?.first { $0.name == "subject" }?.value ?? ""
+        let body = components.queryItems?.first { $0.name == "body" }?.value ?? ""
+        #expect(subject.contains(AppConfig.appVersionWithBuild))
+        #expect(body.contains("iPhone") && body.contains("27.1"))
+    }
+}

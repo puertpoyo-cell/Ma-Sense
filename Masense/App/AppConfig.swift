@@ -6,6 +6,21 @@ enum AppConfig {
     /// nil이면 설정 > 정보에 항목을 보이지 않는다
     static let privacyPolicyURL: URL? = URL(string: "https://masense-privacy.vercel.app/")
 
+    /// D40 오픈 베타 의견 이메일 (처리방침 10과 같은 주소). 설정 > 정보 "의견 보내기"
+    static let feedbackEmail = "puertpoyo@gmail.com"
+
+    /// 설정 > 정보 "의견 보내기" 메일 주소. 제목에 버전·빌드, 본문에 기기·OS를 미리 채운다 (어느 빌드인지 묻지 않게)
+    static func feedbackMailURL(device: String, systemVersion: String) -> URL? {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = feedbackEmail
+        components.queryItems = [
+            URLQueryItem(name: "subject", value: "마선생 의견 \(appVersionWithBuild)"),
+            URLQueryItem(name: "body", value: "\n\n---\n\(device) · iOS \(systemVersion) · 마선생 \(appVersionWithBuild)"),
+        ]
+        return components.url
+    }
+
     /// 단백질 권고 범위(1.2~1.6 g/kg) 출처 문구의 `Localizable` 키 (COMPLIANCE.md 2.2: 출처 명시가 허용 조건).
     /// nil이면 설정의 권고 범위 안내를 보이지 않는다. 목표 입력과 기록은 출처와 무관하게 동작한다.
     /// 2026-10-22 결정: 표시. 출처는 2025 미국 4개 학회 공동 권고문 (감량 중 1.2~1.6 g/kg/일, 지속 2 g/kg/일 초과는 피함)
