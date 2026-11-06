@@ -167,3 +167,20 @@ struct CoachRulesTests {
         #expect(CoachEntrance.for(smile, variant: -1) == CoachEntrance.for(smile, variant: 2))
     }
 }
+
+// D42 매운맛: 키 규칙, 다정해야 하는 줄은 매운맛에서도 순한 문장
+struct CoachToneTests {
+    @Test func spicyKeyOnlyForSpicyBases() {
+        #expect(CoachRules.localizedKey(base: "proteinNotYet", variant: 0, tone: .spicy) == "coach.proteinNotYet.spicy")
+        #expect(CoachRules.localizedKey(base: "proteinNotYet", variant: 2, tone: .spicy) == "coach.proteinNotYet.spicy.v3")
+        #expect(CoachRules.localizedKey(base: "proteinNotYet", variant: 1, tone: .mild) == "coach.proteinNotYet.v2")
+        #expect(CoachRules.localizedKey(base: "lowCondition", variant: 0, tone: .spicy) == "coach.lowCondition")
+        #expect(CoachRules.localizedKey(base: "askDoctor", variant: 1, tone: .spicy) == "coach.askDoctor.v2")
+    }
+
+    @Test func gentleLinesNeverSpicy() {
+        #expect(CoachRules.spicyBases.isDisjoint(with: CoachRules.alwaysMildBases))
+        #expect(CoachRules.alwaysMildBases.contains("recorded.weight"))
+        #expect(CoachTone(rawValue: "nonsense") == nil)
+    }
+}

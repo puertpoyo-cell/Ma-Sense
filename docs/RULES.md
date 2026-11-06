@@ -353,6 +353,7 @@ func line(dailyLine: DailyLine?, isLowCondition: Bool, isLowAppetite: Bool, prot
 ```
 
 - 하나만, 우선순위: R17 사실 한 줄 > R11 저컨디션 > R10 식욕 저하 > 12시 이후 오늘 단백질 기록 없음 > 주 시작부터 4일 이상 지났고 이번 주 근력 기록 없음 > 일반 한마디(1년 중 날짜 % 8)
+- D42 말투(`CoachTone` mild·spicy, 기기 설정): `localizedKey(base:variant:tone:)` = `coach.<base>` + (매운맛이고 `spicyBases`에 있으면 `.spicy`) + (`.v2`/`.v3`). `alwaysMildBases`(lowCondition·lowAppetite·askDoctor·recorded.weight)는 `spicyBases`와 겹치지 않는다(테스트). 매운맛은 과정만 재촉하고 체중 결과·의료 판단은 말하지 않는다
 - 과정만 권한다. 체중 숫자·감량을 평가하거나 칭찬하지 않는다 (COMPLIANCE.md 3.1). 다음 부위를 권하지 않는다 (R6)
 - 식욕 저하·근력, 일반 한마디 중 단백질·물·근력·수면은 건강관리 정보로 보고 "의사와 상의하세요" 고지를 붙인다 (`isHealthTip`)
 - N-F4 (2026-10-29): 다음 진료일이 오늘·어제이고 그날 진료 기록이 없으면 식욕 저하 다음 순서로 "진료 기록을 남겨 둘까요" (`clinicNeedsRecord`, 생각하는 얼굴). 진료 탭 자리·말 걸기 "진료 준비는요"에서도 먼저

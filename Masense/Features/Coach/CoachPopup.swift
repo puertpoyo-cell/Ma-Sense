@@ -239,8 +239,9 @@ extension EnvironmentValues {
 // MARK: 문구
 
 extension CoachMessage {
-    /// 말투 0은 원래 키, 1·2는 키 뒤에 ".v2"·".v3". 보간하는 줄은 키가 문자열 그대로 있어야 해서 하나씩 적는다
-    var text: Text {
+    /// 말투 0은 원래 키, 1·2는 키 뒤에 ".v2"·".v3". 보간하는 줄은 키가 문자열 그대로 있어야 해서 하나씩 적는다.
+    /// D42 매운맛(`tone`)은 `CoachRules.spicyBases`에 있는 줄만 `.spicy` 키. 보간하는 줄은 순한 문장 그대로
+    func text(tone: CoachTone) -> Text {
         switch line {
         case let .fact(.doseDay(site?)):
             let name = site.localizedName
@@ -268,45 +269,44 @@ extension CoachMessage {
             default: return Text("coach.lowDoses \(remaining)")
             }
         case .fact(.doseDay(nil)):
-            return plain("coach.doseDay.noSite")
+            return plain("doseDay.noSite", tone)
         case .fact(.noRecentWeight):
-            return plain("coach.noWeight")
+            return plain("noWeight", tone)
         case .lowCondition:
-            return plain("coach.lowCondition")
+            return plain("lowCondition", tone)
         case .lowAppetite:
-            return plain("coach.lowAppetite")
+            return plain("lowAppetite", tone)
         case .proteinNotYet:
-            return plain("coach.proteinNotYet")
+            return plain("proteinNotYet", tone)
         case .strengthNotYet:
-            return plain("coach.strengthNotYet")
+            return plain("strengthNotYet", tone)
         case let .tip(index):
-            return plain("coach.tip." + String(index))
+            return plain("tip." + String(index), tone)
         case let .place(spot):
-            return plain("coach.place." + spot.rawValue)
+            return plain("place." + spot.rawValue, tone)
         case .greeting:
-            return plain("coach.greeting")
+            return plain("greeting", tone)
         case .clinicFollowUp:
-            return plain("coach.clinicFollowUp")
+            return plain("clinicFollowUp", tone)
         case let .recorded(kind):
-            return plain("coach.recorded." + kind.rawValue)
+            return plain("recorded." + kind.rawValue, tone)
         case let .answer(topic, index):
             // 고정 대답은 말투 하나
             return Text(LocalizedStringKey("coach.answer." + topic.rawValue + "." + String(index)))
         case let .greetingAt(part):
-            return plain("coach.greeting." + part.rawValue)
+            return plain("greeting." + part.rawValue, tone)
         case .askDoctor:
-            return plain("coach.askDoctor")
+            return plain("askDoctor", tone)
         case .notUnderstood:
-            return plain("coach.notUnderstood")
+            return plain("notUnderstood", tone)
         case .savedQuestion:
-            return plain("coach.savedQuestion")
+            return plain("savedQuestion", tone)
         }
     }
 
     /// 보간 없는 키는 이어 붙인 String으로 (보간하면 키가 "%lld" 꼴이 된다)
-    private func plain(_ base: String) -> Text {
-        let suffix = variant == 0 ? "" : ".v" + String(variant + 1)
-        return Text(LocalizedStringKey(base + suffix))
+    private func plain(_ base: String, _ tone: CoachTone) -> Text {
+        Text(LocalizedStringKey(CoachRules.localizedKey(base: base, variant: variant, tone: tone)))
     }
 }
 
@@ -339,6 +339,9 @@ struct CoachPopup: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// D35 나올 때·말이 바뀔 때마다 하나씩 올려 얼굴 움직임을 다시 튼다
     @State private var entranceTick = 0
+    /// D42 말투. 매운맛이면 문장이 단호해지고 말풍선 테두리에 붉은 기
+    @AppStorage(CoachTone.key) private var toneRaw = CoachTone.mild.rawValue
+    private var tone: CoachTone { CoachTone(rawValue: toneRaw) ?? .mild }
 
     private var bubble: UnevenRoundedRectangle {
         UnevenRoundedRectangle(topLeadingRadius: 20, bottomLeadingRadius: 6, bottomTrailingRadius: 20, topTrailingRadius: 20, style: .continuous)
@@ -449,7 +452,7 @@ struct CoachPopup: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text("coach.popup.close"))
             }
-            message.text
+            message.text(tone: tone)
                 .font(Typography.body)
                 .foregroundStyle(Color.ink)
                 .fixedSize(horizontal: false, vertical: true)
@@ -479,11 +482,16 @@ struct CoachPopup: View {
         .background(Color.frost.opacity(0.6), in: bubble)
         .overlay(
             bubble.strokeBorder(
-                LinearGradient(colors: [Color.white.opacity(0.45), Color.white.opacity(0.08)], startPoint: .top, endPoint: .bottom),
-                lineWidth: 1
+                LinearGradient(
+                    colors: tone == .spicy
+                        ? [Color.ember.opacity(0.9), Color.ember.opacity(0.25)]
+                        : [Color.white.opacity(0.45), Color.white.opacity(0.08)],
+                    startPoint: .top, endPoint: .bottom
+                ),
+                lineWidth: tone == .spicy ? 1.5 : 1
             )
         )
-        .shadow(color: .black.opacity(0.4), radius: 18, y: 8)
+        .shadow(color: tone == .spicy ? Color.ember.opacity(0.35) : .black.opacity(0.4), radius: 18, y: 8)
         .contentShape(bubble)
         .onTapGesture {
             // 말 걸기 중에는 말풍선을 눌러도 닫히지 않는다 (주제 버튼을 고르는 중)
@@ -571,14 +579,17 @@ struct CoachFace: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var eyesClosed = false
+    /// D42 매운맛이면 빨간 배경 그림 (`MasenseCoachSpicy*`)
+    @AppStorage(CoachTone.key) private var toneRaw = CoachTone.mild.rawValue
 
     private var assetName: String {
+        let base = toneRaw == CoachTone.spicy.rawValue ? "MasenseCoachSpicy" : "MasenseCoach"
         switch mood {
-        case .smile: return "MasenseCoach"
-        case .happy: return "MasenseCoachHappy"
-        case .gentle: return "MasenseCoachGentle"
-        case .thinking: return "MasenseCoachThinking"
-        case .wink: return "MasenseCoachWink"
+        case .smile: return base
+        case .happy: return base + "Happy"
+        case .gentle: return base + "Gentle"
+        case .thinking: return base + "Thinking"
+        case .wink: return base + "Wink"
         }
     }
 

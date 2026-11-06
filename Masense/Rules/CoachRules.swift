@@ -104,6 +104,16 @@ enum CoachEntrance: String, CaseIterable {
     }
 }
 
+/// D42 마선생 말투 (2026-11-06 사람 요청 "약간 매운맛, 빨간 배경, 약간 채찍질"). 기기 설정(UserDefaults), 기본 순한맛.
+/// 매운맛은 과정(기록·단백질·움직임·물·잠)만 단호하게 재촉한다. 체중 결과 평가·질책, 느낌표, 의료 판단은 매운맛에도 없다 (COMPLIANCE.md 3.1).
+/// 저컨디션·식욕 저하·의사 상의·고정 대답처럼 다정해야 하는 줄은 매운맛에서도 순한 문장을 쓴다
+enum CoachTone: String, CaseIterable {
+    case mild
+    case spicy
+
+    static let key = "coach.tone"
+}
+
 /// D30 하루 때. 인사를 바꾼다
 enum CoachDayPart: String, CaseIterable {
     case morning, afternoon, evening, night
@@ -346,6 +356,26 @@ enum CoachRules {
 
     private static func answers(_ topic: CoachTopic) -> [CoachLine] {
         (0..<(answerCounts[topic] ?? 0)).map { .answer(topic, $0) }
+    }
+
+    /// D42 매운맛 문장이 있는 줄의 키 앞부분 (`coach.<base>.spicy[.v2|.v3]`). 여기 없는 줄은 매운맛에서도 순한 문장
+    static let spicyBases: Set<String> = [
+        "greeting", "greeting.morning", "greeting.afternoon", "greeting.evening", "greeting.night",
+        "proteinNotYet", "strengthNotYet", "noWeight", "doseDay.noSite", "clinicFollowUp",
+        "tip.0", "tip.1", "tip.2", "tip.3", "tip.4", "tip.5", "tip.6", "tip.7",
+        "place.pens", "place.history", "place.report", "place.clinic",
+        "recorded.dose", "recorded.condition", "recorded.exercise", "recorded.protein",
+        "notUnderstood", "savedQuestion",
+    ]
+
+    /// 매운맛에서도 순한 문장만 쓰는 줄 (다정해야 하거나 결과를 말하는 줄). `spicyBases`와 겹치면 안 된다 (테스트)
+    static let alwaysMildBases: Set<String> = ["lowCondition", "lowAppetite", "askDoctor", "recorded.weight"]
+
+    /// 문구 키: `coach.<base>` + 매운맛이면 `.spicy` + 말투 `.v2`/`.v3`. 매운맛 문장이 없는 줄은 순한 키
+    static func localizedKey(base: String, variant: Int, tone: CoachTone) -> String {
+        let suffix = variant == 0 ? "" : ".v" + String(variant + 1)
+        let spicy = tone == .spicy && spicyBases.contains(base) ? ".spicy" : ""
+        return "coach." + base + spicy + suffix
     }
 
     /// N-F4. 다음 진료일이 오늘 또는 어제이고, 그날짜의 진료 기록이 없으면 true

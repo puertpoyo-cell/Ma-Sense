@@ -33,6 +33,8 @@ extension Color {
 
     /// 테마 구매 시 `accent`만 교체한다.
     static let accentSand = Color(hex: 0xE8C9A0)
+    /// D42 마선생 매운맛 전용 (얼굴 배경·말풍선 테두리). 값의 좋고 나쁨을 가리키는 데 쓰지 않는다 (DESIGN_SYSTEM.md 빨강 금지는 판단 색 얘기)
+    static let ember = Color(hex: 0xC8403A)
     static let accentSage = Color(hex: 0xA8D5BA)
 
     // MARK: 리포트 PDF (라이트 강제, DESIGN_SYSTEM.md 2 오른쪽 열)

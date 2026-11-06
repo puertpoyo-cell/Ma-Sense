@@ -335,6 +335,8 @@ private struct SettingsForm: View {
     // MARK: 마선생 (N-G3)
 
     @AppStorage(CoachPopupCenter.frequencyKey) private var coachFrequencyRaw = CoachPopupCenter.Frequency.often.rawValue
+    /// D42 말투 (순한맛·매운맛)
+    @AppStorage(CoachTone.key) private var coachToneRaw = CoachTone.mild.rawValue
 
     private var coachSection: some View {
         Section {
@@ -343,6 +345,19 @@ private struct SettingsForm: View {
                     Text(LocalizedStringKey("settings.coach.frequency." + item.rawValue)).tag(item.rawValue)
                 }
             }
+            Picker("settings.coach.tone", selection: $coachToneRaw) {
+                ForEach(CoachTone.allCases, id: \.self) { item in
+                    Text(LocalizedStringKey("settings.coach.tone." + item.rawValue)).tag(item.rawValue)
+                }
+            }
+            HStack(spacing: Spacing.s3) {
+                CoachFace(size: 40)
+                Text(LocalizedStringKey("settings.coach.tone.preview." + coachToneRaw))
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .accessibilityElement(children: .combine)
         } header: {
             SectionHeaderText("settings.section.coach")
         } footer: {
