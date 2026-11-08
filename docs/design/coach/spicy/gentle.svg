@@ -75,6 +75,7 @@
     <ellipse cx="322" cy="470" rx="24" ry="22" fill="#F7D3B8" stroke="#E7B592" stroke-width="2"/>
     <path d="M308,462 Q318,456 330,460" fill="none" stroke="#E7B592" stroke-width="2.5" stroke-linecap="round"/>
     <!-- 반짝 -->
-    <path d="M436,300 l6,-16 l6,16 l16,6 l-16,6 l-6,16 l-6,-16 l-16,-6 Z" fill="#FFE08A" opacity="0.9"/>
+    <path d="M442,276 L447,301 L472,306 L447,311 L442,336 L437,311 L412,306 L437,301 Z" fill="#FFE9A6" opacity="0.95"/>
+    <path d="M468,268 L470,278 L480,280 L470,282 L468,292 L466,282 L456,280 L466,278 Z" fill="#FFE9A6" opacity="0.8"/>
   </g>
 </svg>
