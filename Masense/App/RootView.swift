@@ -207,6 +207,7 @@ struct RecordsTab: View {
         // 오른쪽 탭 막대가 있는 화면(iPhone Duo 접힘·펼침): 막대 위 빈 자리에 세로 버튼 3개
         // (2026-11-02 사람 결정 "오른쪽 세로로"). 그 밖의 화면: 내비게이션 바 가운데 전환
         .environment(\.recordsSegment, railWidth == nil ? $segment : nil)
+        .environment(\.inRecordsTab, true)
         .overlay(alignment: .trailing) {
             if let railWidth {
                 RecordsSegmentColumn(segment: $segment)
@@ -264,34 +265,61 @@ private struct RecordsSegmentKey: EnvironmentKey {
     static let defaultValue: Binding<RecordsSegment>? = nil
 }
 
+private struct InRecordsTabKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
 extension EnvironmentValues {
     /// 기록 탭 안에서만 값이 있다. 있으면 맨 위 화면이 내비게이션 바에 전환을 띄운다
     var recordsSegment: Binding<RecordsSegment>? {
         get { self[RecordsSegmentKey.self] }
         set { self[RecordsSegmentKey.self] = newValue }
     }
+
+    /// D43 기록 탭 안이면 true. 맨 위 화면 왼쪽 위에 마선생 말 걸기 얼굴을 띄운다
+    var inRecordsTab: Bool {
+        get { self[InRecordsTabKey.self] }
+        set { self[InRecordsTabKey.self] = newValue }
+    }
 }
 
 private struct RecordsSegmentBar: ViewModifier {
     @Environment(\.recordsSegment) private var segment
+    @Environment(\.inRecordsTab) private var inRecordsTab
+    @Environment(\.coach) private var coach
 
     func body(content: Content) -> some View {
-        if let segment {
-            content
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .principal) {
-                        Picker("records.segment.picker", selection: segment) {
-                            ForEach(RecordsSegment.allCases, id: \.self) { item in
-                                Text(item.titleKey).tag(item)
+        Group {
+            if let segment {
+                content
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .principal) {
+                            Picker("records.segment.picker", selection: segment) {
+                                ForEach(RecordsSegment.allCases, id: \.self) { item in
+                                    Text(item.titleKey).tag(item)
+                                }
                             }
+                            .pickerStyle(.segmented)
+                            .fixedSize()
                         }
-                        .pickerStyle(.segmented)
-                        .fixedSize()
                     }
+            } else {
+                content
+            }
+        }
+        .toolbar {
+            // D43 (2026-11-08 사람 요청 "기록 탭에서 마선생 띄워 주세요"): 오늘 탭처럼 왼쪽 위 얼굴을 누르면 말 걸기
+            if inRecordsTab {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        coach.talk()
+                    } label: {
+                        CoachFace(size: 30)
+                    }
+                    .accessibilityLabel(Text("coach.talk.button"))
                 }
-        } else {
-            content
+            }
         }
     }
 }
