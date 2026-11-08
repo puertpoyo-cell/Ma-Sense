@@ -8471,6 +8471,23 @@
         }
       }
     },
+    "history.day.editDose.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit date, time, sequence and site"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "날짜·시각·회차·부위를 고칩니다"
+          }
+        }
+      }
+    },
     "history.day.editSite": {
       "extractionState": "manual",
       "localizations": {
@@ -13592,6 +13609,176 @@
         }
       }
     },
+    "schedule.cell.change": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "바꾸기"
+          }
+        }
+      }
+    },
+    "schedule.cell.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes the dose weekday and time"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 요일과 시각을 바꿉니다"
+          }
+        }
+      }
+    },
+    "schedule.sheet.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Past records and pens stay as they are; reminders follow the new weekday and time from the next dose. Follow the schedule you set with your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 기록과 남은 펜 수는 그대로이고, 다음 투약부터 새 요일·시각으로 알려 드립니다. 의사와 정한 일정에 맞춰 고르세요."
+          }
+        }
+      }
+    },
+    "schedule.sheet.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change dose schedule"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 일정 바꾸기"
+          }
+        }
+      }
+    },
+    "schedule.sheet.when": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekday and time"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "요일과 시각"
+          }
+        }
+      }
+    },
+    "schedule.shift.footer.early %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is %lld day(s) before the scheduled day. Turn on to move upcoming reminders to this weekday; leave off to keep the original day. Follow the schedule you set with your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예정보다 %lld일 이른 날입니다. 켜면 다음 투약을 이 요일에 맞춰 알려 드립니다. 끄면 원래 요일 그대로입니다. 의사와 정한 일정에 맞춰 고르세요."
+          }
+        }
+      }
+    },
+    "schedule.shift.footer.late %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is %lld day(s) after the scheduled day. Turn on to move upcoming reminders to this weekday; leave off to keep the original day. Follow the schedule you set with your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예정보다 %lld일 늦은 날입니다. 켜면 다음 투약을 이 요일에 맞춰 알려 드립니다. 끄면 원래 요일 그대로입니다. 의사와 정한 일정에 맞춰 고르세요."
+          }
+        }
+      }
+    },
+    "schedule.shift.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dose day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 요일"
+          }
+        }
+      }
+    },
+    "schedule.shift.next": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next dose"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 투약"
+          }
+        }
+      }
+    },
+    "schedule.shift.toggle %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From now on, use %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음부터 %@로 맞추기"
+          }
+        }
+      }
+    },
     "segment": {
       "comment": "A string representing the segment of a week chart.",
       "isCommentAutoGenerated": true
@@ -17064,6 +17251,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "다음 투약까지"
+          }
+        }
+      }
+    },
+    "today.editLastDose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit last dose"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 투약 고치기"
           }
         }
       }

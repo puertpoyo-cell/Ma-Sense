@@ -11,6 +11,8 @@ struct DoseLogSheet: View {
     @State private var model: DoseLogModel
     @Environment(\.calendar) private var calendar
     @State private var showsTimeWheel = false
+    /// D45 다음부터 이 요일로
+    @State private var shiftsSchedule = false
 
     init(prescription: Prescription, initialDate: Date? = nil, onSaved: @escaping () -> Void = {}) {
         _model = State(initialValue: DoseLogModel(prescription: prescription, initialDate: initialDate))
@@ -70,6 +72,11 @@ struct DoseLogSheet: View {
                     Text("dose.time.footer")
                 }
                 .frostRow()
+
+                // D45 예정과 다른 날이면 바로 여기서 "다음부터 이 요일로"
+                if let offset = model.scheduleOffset {
+                    ScheduleShiftSection(offset: offset, administeredAt: model.administeredAt, preview: model.shiftPreview, isOn: $shiftsSchedule)
+                }
 
                 Section {
                     BodyMapView(selection: $model.site, history: model.history, lastUseBySite: model.lastUseBySite)
@@ -136,7 +143,14 @@ struct DoseLogSheet: View {
     }
 
     private func save() {
-        guard (try? model.save(in: context)) != nil else { return }
+        guard let saved = try? model.save(in: context) else { return }
+        if shiftsSchedule, model.scheduleOffsetAfterSave(saved) != 0 {
+            let shifted = model.shiftedSchedule()
+            model.prescription.applySchedule(shifted)
+            // 이 기록은 새 요일의 예정일로
+            saved.scheduledFor = calendar.date(bySettingHour: shifted.scheduledHour, minute: shifted.scheduledMinute, second: 0, of: saved.administeredAt) ?? saved.administeredAt
+            try? context.save()
+        }
         Task {
             // 기록했으면 미뤄 둔 투약 알림은 필요 없다
             await services.notifications.cancelSnooze()

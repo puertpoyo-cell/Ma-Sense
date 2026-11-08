@@ -404,7 +404,19 @@ struct HistoryView: View {
     private func doseAndVisitRows(_ entries: DayEntries) -> some View {
         ForEach(entries.doses) { dose in
             let detail = dose.administeredAt.formatted(.dateTime.hour().minute()) + " · " + BodySite.localizedName(dose.site)
-            dayRow(.dose, title: Text("history.day.dose \(dose.sequence)"), detail: Text(verbatim: detail))
+            // D45: 눌러서 바로 고치기 (날짜·시각·회차·부위). 길게 누르면 고치기·취소
+            Button { sheet = .site(dose) } label: {
+                dayRow(.dose, title: Text("history.day.dose \(dose.sequence)"), detail: Text(verbatim: detail))
+                    .overlay(alignment: .trailing) {
+                        Image(systemName: "pencil")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color.accent)
+                            .padding(.trailing, Spacing.cellPadding)
+                            .accessibilityHidden(true)
+                    }
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint(Text("history.day.editDose.hint"))
                 // N-E2: 길게 눌러 부위 고치기·취소 (취소는 기록을 지우지 않고 표시만, 종류별 보기에서 되돌릴 수 있다)
                 .contextMenu {
                     Button { sheet = .site(dose) } label: { Label("history.day.editSite", systemImage: "figure.stand") }

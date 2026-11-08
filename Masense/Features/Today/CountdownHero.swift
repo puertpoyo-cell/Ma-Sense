@@ -9,6 +9,10 @@ struct CountdownHero: View {
     let totalDoses: Int?
     var onLogDose: () -> Void = {}
     var onEnterPrescription: () -> Void = {}
+    /// D45 예정 시간 칸을 눌러 요일·시각 바꾸기
+    var onEditSchedule: (() -> Void)?
+    /// D45 이번 마디를 기록한 뒤 "지난 투약 고치기"
+    var onEditLastDose: (() -> Void)?
     /// D15: 카드 안 "한눈에" 줄 (체중·남은 펜·지난 부위). 있으면 회차 셀은 이 줄로 옮긴다
     var glance: AnyView?
 
@@ -125,16 +129,36 @@ struct CountdownHero: View {
 
     // MARK: 우측 보조 셀
 
+    @ViewBuilder
     private var scheduleCell: some View {
+        if let onEditSchedule {
+            // D45: 눌러서 바로 요일·시각 바꾸기
+            Button(action: onEditSchedule) { scheduleCellContent(editable: true) }
+                .buttonStyle(.plain)
+                .accessibilityHint(Text("schedule.cell.hint"))
+        } else {
+            scheduleCellContent(editable: false)
+        }
+    }
+
+    private func scheduleCellContent(editable: Bool) -> some View {
         BlueprintCell("today.cell.schedule") {
-            if let scheduleDate {
-                // "금요일 오후 8:00". 요일과 시각을 한 포맷으로 묶으면 한국어에서 "(금요일)"처럼 괄호가 붙는다
-                Text(verbatim: scheduleDate.formatted(.dateTime.weekday(.wide)) + " " + scheduleDate.formatted(date: .omitted, time: .shortened))
-                    .font(Typography.label)
-                    .foregroundStyle(Color.ink)
-                    .multilineTextAlignment(.trailing)
+            VStack(alignment: .trailing, spacing: Spacing.s1) {
+                if let scheduleDate {
+                    // "금요일 오후 8:00". 요일과 시각을 한 포맷으로 묶으면 한국어에서 "(금요일)"처럼 괄호가 붙는다
+                    Text(verbatim: scheduleDate.formatted(.dateTime.weekday(.wide)) + " " + scheduleDate.formatted(date: .omitted, time: .shortened))
+                        .font(Typography.label)
+                        .foregroundStyle(Color.ink)
+                        .multilineTextAlignment(.trailing)
+                }
+                if editable {
+                    Label("schedule.cell.change", systemImage: "calendar.badge.clock")
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.accent)
+                }
             }
         }
+        .contentShape(Rectangle())
     }
 
     private var sequenceCell: some View {
@@ -164,6 +188,13 @@ struct CountdownHero: View {
             BlueprintDivider()
             PrimaryButton("today.enterPrescription", action: onEnterPrescription)
                 .padding(Spacing.cellPadding)
+        case .done:
+            // D45: 이번 마디를 기록했으면 바로 고칠 수 있게 (날짜·시각·회차·부위)
+            if let onEditLastDose {
+                BlueprintDivider()
+                GhostButton("today.editLastDose", action: onEditLastDose)
+                    .padding(Spacing.cellPadding)
+            }
         default:
             EmptyView()
         }

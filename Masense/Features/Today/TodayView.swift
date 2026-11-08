@@ -21,10 +21,16 @@ struct TodayView: View {
         case questions
         case weightTrend
         case foodPhoto
+        /// D45 요일·시각 바꾸기
+        case schedule
+        /// D45 지난 투약 고치기
+        case editDose(UUID)
 
         var id: String {
             switch self {
             case .foodPhoto: return "foodPhoto"
+            case .schedule: return "schedule"
+            case let .editDose(id): return "editDose.\(id.uuidString)"
             case .weightTrend: return "weightTrend"
             case .backfill: return "backfill"
             case .questions: return "questions"
@@ -154,6 +160,11 @@ struct TodayView: View {
         .task { await syncHealthIfAuthorized() }
     }
 
+    /// D45 가장 최근 투약 기록 (취소 제외, 모든 처방)
+    private var lastDoseID: UUID? {
+        allPrescriptions.flatMap(\.doses).filter { !$0.isCancelled }.max { $0.administeredAt < $1.administeredAt }?.id
+    }
+
     private func makeModel(now: Date) -> TodayModel {
         TodayModel(
             prescription: prescription?.snapshot,
@@ -241,6 +252,8 @@ struct TodayView: View {
             totalDoses: model.totalDoses,
             onLogDose: { sheet = .dose },
             onEnterPrescription: { sheet = .prescription },
+            onEditSchedule: prescription == nil ? nil : { sheet = .schedule },
+            onEditLastDose: lastDoseID.map { id -> () -> Void in { sheet = .editDose(id) } },
             // D15: 체중·남은 펜·지난 부위를 카운트다운 카드 안에서 한눈에
             glance: prescription == nil ? nil : AnyView(
                 GlanceStrip(
@@ -257,7 +270,8 @@ struct TodayView: View {
                     recentSites: model.recentSites,
                     onOpenWeight: { sheet = .weightTrend },
                     onOpenPens: { sheet = .pens },
-                    onOpenSite: { sheet = .dose }
+                    // D45: 지난 부위 줄은 그 기록 고치기 (기록이 없으면 새 기록)
+                    onOpenSite: { sheet = lastDoseID.map { Sheet.editDose($0) } ?? .dose }
                 )
             )
         )
@@ -538,6 +552,14 @@ struct TodayView: View {
             }
         case .questions:
             ClinicQuestionsSheet()
+        case .schedule:
+            if let prescription {
+                ScheduleSheet(prescription: prescription) { showsToast = true }
+            }
+        case let .editDose(id):
+            if let dose = allPrescriptions.flatMap(\.doses).first(where: { $0.id == id }) {
+                SiteEditSheet(dose: dose) { showsToast = true }
+            }
         case .weightTrend:
             WeightTrendSheet()
         case .pens:

@@ -421,6 +421,19 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 - 주는 달력 firstWeekday부터 7일. 날마다 투약(취소 제외)·진료·컨디션·체중·단백질·운동 기록이 있는지만. 많고 적음·연속일 없음
 - N-E1 월 보기: `monthGrid`는 그 달을 주 단위 7칸으로, 그 달이 아닌 칸은 nil. 투약일만 표시
 
+## R31. 투약 일정 옮기기 (D45, 2026-11-08 사람 요청)
+
+```swift
+func dayOffset(administeredAt:, prescription:, doses:, calendar:) -> Int?        // 그 마디 예정일과 며칠 차이
+func shifted(_ p:, doses:, weekday:, hour:, minute:, anchor:, calendar:) -> PrescriptionSnapshot
+func isConsistent(_ p:, doses:, calendar:) -> Bool                               // 첫 마디 이후 기록이 서로 다른 마디에 하나씩
+func upcoming(_ p:, doses:, now:, calendar:) -> Date?                             // 기록 없는 다음 예정 일시
+```
+
+- 사용자가 고른다(기본 꺼짐). 앱은 옮기라고 권하지 않고 "의사와 정한 일정에 맞춰 고르세요"만
+- 요일·시각만 바꾼 처방이 `isConsistent`면 그대로, 아니면 시작일을 `anchor`(그 기록) 날 0시로 옮긴다. 시작일 전 기록은 회차만 쓴다(R1)
+- 스키마 변경 없음 (요일·시각·시작일 값만)
+
 ## R30. 마선생 기록·진료 제안 (D44, 2026-11-08 사람 요청)
 
 ```swift

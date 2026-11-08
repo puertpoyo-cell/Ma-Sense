@@ -22,7 +22,7 @@ final class DoseLogModel {
     let dosesPerPen: Int
     let totalDoses: Int
 
-    private let prescription: Prescription
+    let prescription: Prescription
     private let calendar: Calendar
 
     /// `initialDate`: 기록 탭의 누락 마디에서 열면 그 예정일로 시작한다 (R3 누락 해제)
@@ -44,6 +44,34 @@ final class DoseLogModel {
     }
 
     var canSave: Bool { site != nil && sequence >= 1 }
+
+    /// D45 예정일과 며칠 차이 (+ 늦게, - 일찍). 같은 날이거나 마디 밖이면 nil
+    var scheduleOffset: Int? {
+        let offset = ScheduleShiftRules.dayOffset(administeredAt: administeredAt, prescription: prescription.snapshot, doses: prescription.doseSnapshots, calendar: calendar)
+        return offset == 0 ? nil : offset
+    }
+
+    /// D45 이 기록을 넣고 투약 요일을 그날로 옮긴 처방 (시각은 그대로)
+    func shiftedSchedule(including dose: DoseSnapshot? = nil) -> PrescriptionSnapshot {
+        let doses = prescription.doseSnapshots + (dose.map { [$0] } ?? [])
+        return ScheduleShiftRules.shifted(
+            prescription.snapshot, doses: doses,
+            weekday: calendar.component(.weekday, from: administeredAt),
+            hour: prescription.scheduledHour, minute: prescription.scheduledMinute,
+            anchor: administeredAt, calendar: calendar
+        )
+    }
+
+    /// 저장한 뒤에도 옮길 이유가 남아 있는지 (저장 전에 계산한 차이를 그대로 쓴다)
+    func scheduleOffsetAfterSave(_ dose: Dose) -> Int {
+        calendar.component(.weekday, from: dose.administeredAt) == prescription.scheduledWeekday ? 0 : 1
+    }
+
+    /// D45 켰을 때 다음 예정 일시 (지금 기록하는 것까지 넣어서)
+    var shiftPreview: Date? {
+        let pending = DoseSnapshot(administeredAt: administeredAt, scheduledFor: administeredAt, site: site, sequence: sequence)
+        return ScheduleShiftRules.upcoming(shiftedSchedule(including: pending), doses: prescription.doseSnapshots + [pending], now: max(openedAt, administeredAt), calendar: calendar)
+    }
 
     var penPosition: (pen: Int, position: Int) {
         PrescriptionRules.penPosition(sequence: sequence, dosesPerPen: dosesPerPen)
