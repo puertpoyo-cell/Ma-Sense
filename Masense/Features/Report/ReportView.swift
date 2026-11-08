@@ -92,6 +92,7 @@ struct ReportView: View {
                     .padding(.bottom, Spacing.s6)
                 }
             }
+            .tabBarClearance()
             .readsViewportSize(into: $viewport)
         }
         .midnightBackground()
@@ -158,7 +159,10 @@ struct ReportView: View {
     private var periodPicker: some View {
         Picker("report.periodPicker", selection: Binding(get: { selectedPeriod }, set: { period = $0 })) {
             if activePrescription != nil {
-                Text("report.period.sinceClinic").tag(ReportPeriod.sinceClinic)
+                // D46 (U1 A3): 세그먼트에 다 들어가게 짧게, 화면 읽기는 전체 이름
+                Text("report.period.sinceClinic.short")
+                    .accessibilityLabel(Text("report.period.sinceClinic"))
+                    .tag(ReportPeriod.sinceClinic)
             }
             ForEach(ReportPeriod.weekChoices, id: \.self) { weeks in
                 Text("report.period.weeks \(weeks)").tag(ReportPeriod.weeks(weeks))

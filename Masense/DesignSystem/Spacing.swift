@@ -9,6 +9,10 @@ enum Spacing {
     static let s5: CGFloat = 24
     static let s6: CGFloat = 32
     static let s7: CGFloat = 48
+    /// D46 (U1 A1) 떠 있는 탭 바 높이만큼 스크롤 아래 여유
+    static let tabBarClearance: CGFloat = 72
+    /// D46 (U1 A2) 마선생 팝업이 떠 있는 동안 더하는 아래 여유
+    static let coachPopupClearance: CGFloat = 200
 
     /// 화면 좌우 여백
     static let screenHorizontal = s5

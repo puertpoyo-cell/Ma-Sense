@@ -40,6 +40,7 @@ final class StrengthLogModel {
         )
         context.insert(session)
         try context.save()
+        RecordUndo.shared.register(session)
         return session
     }
 }

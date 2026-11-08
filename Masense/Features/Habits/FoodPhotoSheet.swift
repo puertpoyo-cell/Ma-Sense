@@ -311,6 +311,7 @@ struct FoodPhotoSheet: View {
         let entry = ProteinEntry(date: calendar.startOfDay(for: .now), meal: selectedMeal, foods: foods, estimatedGrams: grams)
         context.insert(entry)
         try? context.save()
+        RecordUndo.shared.register(entry)
         dismiss()
         onSaved(grams)
     }

@@ -421,7 +421,13 @@ struct CoachPopup: View {
                         }
                     }
                     .padding(.leading, 64 + Spacing.s2)
+                    .padding(.trailing, Spacing.s6)
                 }
+                // D46 (U1 A2): 오른쪽 끝을 흐리게 해 밀어서 더 볼 수 있다는 걸 보인다
+                .mask(
+                    LinearGradient(stops: [.init(color: .black, location: 0), .init(color: .black, location: 0.86), .init(color: .clear, location: 1)],
+                                   startPoint: .leading, endPoint: .trailing)
+                )
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 // D30 직접 물어보기. 기기 안에서만 읽는다
                 HStack(spacing: Spacing.s2) {

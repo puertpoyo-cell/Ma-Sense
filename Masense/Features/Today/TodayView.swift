@@ -117,6 +117,7 @@ struct TodayView: View {
                     .padding(.bottom, Spacing.s6)
                 }
             }
+            .tabBarClearance()
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { viewport = $0 }
         }
         .midnightBackground()
@@ -360,10 +361,17 @@ struct TodayView: View {
                     .foregroundStyle(Color.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
-                Circle()
-                    .fill(done ? Color.accent : Color.clear)
-                    .frame(width: 4, height: 4)
-                    .accessibilityHidden(true)
+                // D46 (U1 A5): 점 대신 "오늘 ✓"로 뜻이 보이게 (했음만, 많고 적음 없음)
+                HStack(spacing: 2) {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 8, weight: .bold))
+                    Text("today.quick.doneMark")
+                        .font(.system(size: 9, weight: .medium))
+                }
+                .foregroundStyle(Color.accent)
+                .opacity(done ? 1 : 0)
+                .frame(height: 10)
+                .accessibilityHidden(true)
             }
             .frame(maxWidth: .infinity, minHeight: 64)
             .background(isOn ? Color.accentSoft : Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))

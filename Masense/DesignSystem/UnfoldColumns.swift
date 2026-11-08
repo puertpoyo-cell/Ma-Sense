@@ -44,4 +44,19 @@ extension View {
     func readsViewportSize(into size: Binding<CGSize>) -> some View {
         onGeometryChange(for: CGSize.self) { $0.size } action: { size.wrappedValue = $0 }
     }
+
+    /// D46 (U1 A1·A2): 탭 화면 스크롤에 붙인다. 떠 있는 탭 바와 마선생 팝업이 마지막 카드를 가리지 않게 아래 여유
+    func tabBarClearance() -> some View {
+        modifier(TabBarClearance())
+    }
+}
+
+private struct TabBarClearance: ViewModifier {
+    @Environment(\.coach) private var coach
+
+    func body(content: Content) -> some View {
+        content
+            .contentMargins(.bottom, Spacing.tabBarClearance + (coach.current == nil ? 0 : Spacing.coachPopupClearance), for: .scrollContent)
+            .animation(.easeOut(duration: 0.25), value: coach.current == nil)
+    }
 }

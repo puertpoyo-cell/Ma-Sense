@@ -102,6 +102,7 @@ final class DoseLogModel {
         context.insert(dose)
         dose.prescription = prescription
         try context.save()
+        RecordUndo.shared.register(dose)
         return dose
     }
 }

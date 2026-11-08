@@ -51,6 +51,7 @@ final class ConditionCheckModel {
         context.insert(check)
         check.dose = dose
         try context.save()
+        RecordUndo.shared.register(check)
         return check
     }
 }

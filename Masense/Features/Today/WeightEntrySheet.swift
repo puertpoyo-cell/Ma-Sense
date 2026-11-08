@@ -34,6 +34,7 @@ final class WeightEntryModel {
         let sample = WeightSample(measuredAt: measuredAt, kilograms: kilograms, source: .manual)
         context.insert(sample)
         try context.save()
+        RecordUndo.shared.register(sample)
         return sample
     }
 }

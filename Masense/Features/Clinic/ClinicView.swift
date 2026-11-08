@@ -77,6 +77,7 @@ struct ClinicView: View {
                     NoticeLine("lab.notice")
                 }
             }
+            .tabBarClearance()
             .readsViewportSize(into: $viewport)
         }
         .midnightBackground()

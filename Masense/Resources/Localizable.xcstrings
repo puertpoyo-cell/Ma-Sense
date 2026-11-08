@@ -12810,6 +12810,23 @@
         }
       }
     },
+    "report.period.sinceClinic.short": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Since visit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 이후"
+          }
+        }
+      }
+    },
     "report.period.weeks %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -16932,6 +16949,23 @@
         }
       }
     },
+    "toast.undo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "되돌리기"
+          }
+        }
+      }
+    },
     "today.cell.next": {
       "extractionState": "manual",
       "localizations": {
@@ -17319,6 +17353,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "오늘 기록함"
+          }
+        }
+      }
+    },
+    "today.quick.doneMark": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "today"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘"
           }
         }
       }

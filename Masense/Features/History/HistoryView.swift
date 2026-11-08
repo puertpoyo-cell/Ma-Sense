@@ -86,6 +86,7 @@ struct HistoryView: View {
                         collections
                     }
                 }
+                .tabBarClearance()
                 .readsViewportSize(into: $viewport)
             }
             .midnightBackground()

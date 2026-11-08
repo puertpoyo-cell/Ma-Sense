@@ -97,6 +97,7 @@ final class ProteinLogModel {
         )
         context.insert(entry)
         try context.save()
+        RecordUndo.shared.register(entry)
         return entry
     }
 }
