@@ -101,6 +101,7 @@ struct TodayModel: Equatable {
         heightCm: Double? = nil,
         allDoses: [DoseSnapshot]? = nil,
         visitDates: [Date] = [],
+        openQuestions: Int = 0,
         now: Date,
         calendar: Calendar
     ) {
@@ -161,7 +162,19 @@ struct TodayModel: Equatable {
             isLowAppetite: daily.isLowAppetite,
             proteinEntriesToday: todayProteins.count,
             strengthThisWeek: daily.week.strengthCount,
-            clinicNeedsRecord: CoachRules.clinicNeedsRecord(nextClinicDate: prescription?.nextClinicDate, visitDates: visitDates, now: now, calendar: calendar)
+            clinicNeedsRecord: CoachRules.clinicNeedsRecord(nextClinicDate: prescription?.nextClinicDate, visitDates: visitDates, now: now, calendar: calendar),
+            // D44 기록·진료 상황에 맞춘 제안의 근거
+            facts: CoachFactsRules.facts(
+                prescription: prescription,
+                doses: doses,
+                checks: checks,
+                openQuestions: openQuestions,
+                recordDates: (allDoses ?? doses).filter { !$0.isCancelled }.map(\.administeredAt)
+                    + checks.map(\.checkedAt) + weights.map(\.measuredAt) + proteins.map(\.date)
+                    + sessions.map(\.startedAt) + habits.map(\.date),
+                now: now,
+                calendar: calendar
+            )
         )
 
         latestWeight = WeightRules.latestSample(weights)

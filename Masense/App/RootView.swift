@@ -287,6 +287,8 @@ private struct RecordsSegmentBar: ViewModifier {
     @Environment(\.recordsSegment) private var segment
     @Environment(\.inRecordsTab) private var inRecordsTab
     @Environment(\.coach) private var coach
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.calendar) private var calendar
 
     func body(content: Content) -> some View {
         Group {
@@ -313,7 +315,8 @@ private struct RecordsSegmentBar: ViewModifier {
             if inRecordsTab {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        coach.talk()
+                        // D44: 기록·진료 상황을 보고 첫 인사와 주제 순서를 고른다
+                        coach.talk(context: CoachContextService.make(in: modelContext, calendar: calendar))
                     } label: {
                         CoachFace(size: 30)
                     }

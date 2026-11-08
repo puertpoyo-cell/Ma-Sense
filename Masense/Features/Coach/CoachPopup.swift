@@ -74,7 +74,8 @@ final class CoachPopupCenter {
     /// 자리에 닿았을 때. `now`는 뷰의 주입 지점에서 받는다
     @MainActor
     func reach(_ spot: CoachSpot, context: CoachContext, now: Date, calendar: Calendar) {
-        if ![.history, .report, .clinic].contains(spot) { lastContext = context }
+        // D44: 기록·진료·리포트 탭도 실제 사실을 넘기므로 말 걸기에 그대로 이어 쓴다
+        lastContext = context
         resetIfNewDay(now: now, calendar: calendar)
         guard !isPaused, current == nil, !isPending, !shownSpots.contains(spot.rawValue) else { return }
         if let lastDismissedAt, now.timeIntervalSince(lastDismissedAt) < Self.restSeconds { return }
@@ -301,6 +302,39 @@ extension CoachMessage {
             return plain("notUnderstood", tone)
         case .savedQuestion:
             return plain("savedQuestion", tone)
+        case .clinicSoon(0):
+            return plain("clinicSoon.today", tone)
+        case let .clinicSoon(days):
+            switch variant {
+            case 1: return Text("coach.clinicSoon.v2 \(days)")
+            case 2: return Text("coach.clinicSoon.v3 \(days)")
+            default: return Text("coach.clinicSoon \(days)")
+            }
+        case .questionsEmpty:
+            return plain("questionsEmpty", tone)
+        case let .repeatedSymptom(symptom, periods):
+            let name = symptom.localizedName
+            switch variant {
+            case 1: return Text("coach.repeatedSymptom.v2 \(name) \(periods)")
+            case 2: return Text("coach.repeatedSymptom.v3 \(name) \(periods)")
+            default: return Text("coach.repeatedSymptom \(name) \(periods)")
+            }
+        case .conditionMissing:
+            return plain("conditionMissing", tone)
+        case let .pensShort(lastDose, clinic):
+            let last = lastDose.formatted(.dateTime.month(.defaultDigits).day())
+            let visit = clinic.formatted(.dateTime.month(.defaultDigits).day())
+            switch variant {
+            case 1: return Text("coach.pensShort.v2 \(last) \(visit)")
+            case 2: return Text("coach.pensShort.v3 \(last) \(visit)")
+            default: return Text("coach.pensShort \(last) \(visit)")
+            }
+        case let .recordGap(days):
+            switch variant {
+            case 1: return Text("coach.recordGap.v2 \(days)")
+            case 2: return Text("coach.recordGap.v3 \(days)")
+            default: return Text("coach.recordGap \(days)")
+            }
         }
     }
 
@@ -697,7 +731,8 @@ private struct CoachPopupOverlay: ViewModifier {
 
     private func reachAppearSpot() {
         if let appearSpot {
-            coach.reach(appearSpot, context: CoachContext(), now: .now, calendar: calendar)
+            // D44: 기록·진료·리포트 탭도 실제 기록을 보고 제안한다
+            coach.reach(appearSpot, context: CoachContextService.make(in: modelContext, calendar: calendar), now: .now, calendar: calendar)
         }
     }
 }

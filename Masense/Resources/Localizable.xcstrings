@@ -2347,6 +2347,261 @@
         }
       }
     },
+    "coach.clinicSoon %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your visit is in %lld days. Making the report now keeps the visit short."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료가 %lld일 남았어요. 리포트를 미리 만들어 두면 진료 때 설명이 짧아져요."
+          }
+        }
+      }
+    },
+    "coach.clinicSoon.today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit today. Bring your report and questions."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 진료예요. 리포트와 물어볼 것을 챙겨 가요."
+          }
+        }
+      }
+    },
+    "coach.clinicSoon.today.spicy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit today. Report and questions, ready?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 진료입니다. 리포트와 물어볼 것, 챙겼습니까."
+          }
+        }
+      }
+    },
+    "coach.clinicSoon.today.spicy.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clinic day. Open the report and go."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 가는 날입니다. 리포트 열어 두고 출발하세요."
+          }
+        }
+      }
+    },
+    "coach.clinicSoon.today.spicy.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit today. Check your questions again, now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 진료. 물어볼 것 목록, 지금 다시 확인하세요."
+          }
+        }
+      }
+    },
+    "coach.clinicSoon.today.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's your clinic day. Have the report open and it goes easier."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 가는 날이에요. 리포트 한 장 열어 두고 가면 편해요."
+          }
+        }
+      }
+    },
+    "coach.clinicSoon.today.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit today. Take one more look at your questions."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 진료, 물어볼 것 목록을 한 번만 다시 봐요."
+          }
+        }
+      }
+    },
+    "coach.clinicSoon.v2 %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit in %lld days. Shall we make the one-page report in Records > Report?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld일 뒤 진료예요. 기록 탭 > 리포트에서 한 장 만들어 둘까요."
+          }
+        }
+      }
+    },
+    "coach.clinicSoon.v3 %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days to your visit. Let's skim the report and your questions today."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료까지 %lld일. 리포트와 물어볼 것을 오늘 한 번 훑어봐요."
+          }
+        }
+      }
+    },
+    "coach.conditionMissing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No condition record since the last dose. A line from memory fills in the report."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 투약 뒤 컨디션 기록이 비어 있어요. 기억나는 대로 한 줄 남겨 두면 리포트가 채워져요."
+          }
+        }
+      }
+    },
+    "coach.conditionMissing.spicy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zero condition records since the last dose. Write it from memory, now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 투약 뒤 컨디션 기록 0. 기억나는 대로 지금 적으세요."
+          }
+        }
+      }
+    },
+    "coach.conditionMissing.spicy.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The condition slot is empty. Even 'fine' gets recorded. Now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "컨디션 칸 비어 있습니다. 괜찮았어도 기록. 지금."
+          }
+        }
+      }
+    },
+    "coach.conditionMissing.spicy.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The report will have a gap. One condition line, fill it now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리포트에 빈칸이 생깁니다. 컨디션 한 줄, 지금 채우세요."
+          }
+        }
+      }
+    },
+    "coach.conditionMissing.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A few days since the dose. Shall we note briefly how you've felt?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 뒤 며칠이 지났어요. 그동안 컨디션이 어땠는지 짧게 적어 둘까요."
+          }
+        }
+      }
+    },
+    "coach.conditionMissing.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The condition slot is empty. If you felt fine, 'fine' is a record too."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "컨디션 칸이 비어 있어요. 괜찮았다면 '괜찮음'도 기록이에요."
+          }
+        }
+      }
+    },
     "coach.doseDay %@": {
       "extractionState": "manual",
       "localizations": {
@@ -3486,6 +3741,57 @@
         }
       }
     },
+    "coach.pensShort %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your pens last through the %1$@ dose. That's before your visit (%2$@), so check with the clinic ahead."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 펜으로는 %1$@ 투약까지예요. 다음 진료(%2$@)보다 먼저라 병원에 미리 확인해 두세요."
+          }
+        }
+      }
+    },
+    "coach.pensShort.v2 %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pens run out after the %1$@ dose and your visit is %2$@. Talk to the clinic about the gap ahead."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "펜이 %1$@ 투약 뒤에 떨어져요. 진료는 %2$@이라, 그 사이를 병원과 미리 이야기해 둬요."
+          }
+        }
+      }
+    },
+    "coach.pensShort.v3 %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pens left after %1$@. Contact the clinic before your %2$@ visit."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 이후 남은 펜이 없어요. 다음 진료 %2$@ 전에 병원에 연락해 확인해 보세요."
+          }
+        }
+      }
+    },
     "coach.place.clinic": {
       "extractionState": "manual",
       "localizations": {
@@ -4064,6 +4370,159 @@
         }
       }
     },
+    "coach.questionsEmpty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your visit is within a week and Questions is empty. Write just one?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료가 일주일 안이에요. 물어볼 것이 아직 비어 있어요. 한 가지만 적어 둘까요."
+          }
+        }
+      }
+    },
+    "coach.questionsEmpty.spicy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit within a week. Zero questions. Write one now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료가 일주일 안입니다. 물어볼 것 0개. 지금 하나 적으세요."
+          }
+        }
+      }
+    },
+    "coach.questionsEmpty.spicy.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questions don't come to you in the clinic. Write them now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료실에서는 질문이 안 떠오릅니다. 지금 적어 두세요."
+          }
+        }
+      }
+    },
+    "coach.questionsEmpty.spicy.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questions is empty. At least one, now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것 비어 있습니다. 하나라도 지금."
+          }
+        }
+      }
+    },
+    "coach.questionsEmpty.v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jot one question before the visit so you won't forget it in the room."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진료 전에 궁금한 것 하나만 적어 두면 진료실에서 잊지 않아요."
+          }
+        }
+      }
+    },
+    "coach.questionsEmpty.v3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questions is empty. One thing about symptoms, routine or records is enough."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "물어볼 것이 비어 있어요. 증상, 생활, 기록 중 떠오르는 것 하나면 돼요."
+          }
+        }
+      }
+    },
+    "coach.recordGap %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No records for %lld days. Pick it up again with one line today."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록이 %lld일째 비어 있어요. 오늘 한 줄부터 다시 이어 가면 돼요."
+          }
+        }
+      }
+    },
+    "coach.recordGap.v2 %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing logged for %lld days. You can tap empty days and fill them later."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld일 동안 기록이 없었어요. 빈 날은 눌러서 나중에 채워도 괜찮아요."
+          }
+        }
+      }
+    },
+    "coach.recordGap.v3 %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days off. Restart with something easy, like weight or a glass of water."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld일 쉬었어요. 체중이나 물 한 잔처럼 쉬운 것부터 다시 시작해요."
+          }
+        }
+      }
+    },
     "coach.recorded.condition": {
       "extractionState": "manual",
       "localizations": {
@@ -4519,6 +4978,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "적어 두셨어요. 같은 때 재면 비교가 쉬워요."
+          }
+        }
+      }
+    },
+    "coach.repeatedSymptom %@ %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've logged '%1$@' %2$lld weeks in a row. Add it to your questions for the visit?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "'%1$@' 기록이 최근 %2$lld주 이어졌어요. 진료 때 물어볼 것에 담아 둘까요."
+          }
+        }
+      }
+    },
+    "coach.repeatedSymptom.v2 %@ %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "'%1$@' has been logged for %2$lld weeks running. Note it in Questions to discuss with your doctor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "'%1$@' 기록이 %2$lld주째 이어지고 있어요. 의사와 상의할 수 있게 물어볼 것에 적어 둬요."
+          }
+        }
+      }
+    },
+    "coach.repeatedSymptom.v3 %@ %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "'%1$@' logged over the last %2$lld weeks. Look at Symptom flow together, then move it to Questions?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 %2$lld주 동안 '%1$@' 기록이 이어졌어요. 증상 흐름에서 함께 보고, 물어볼 것으로 옮겨 둘까요."
           }
         }
       }

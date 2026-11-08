@@ -36,6 +36,18 @@ enum CoachLine: Equatable {
     case notUnderstood
     /// D30 물어볼 것에 담음
     case savedQuestion
+    /// D44 다음 진료까지 n일 (0 = 오늘). 리포트 미리 만들기
+    case clinicSoon(Int)
+    /// D44 진료가 일주일 안인데 물어볼 것이 비어 있다
+    case questionsEmpty
+    /// D44 같은 증상을 n마디 이어서 기록했다. 물어볼 것으로
+    case repeatedSymptom(Symptom, Int)
+    /// D44 지난 투약 뒤 컨디션 기록이 비어 있다
+    case conditionMissing
+    /// D44 남은 펜으로 맞는 마지막 투약일이 다음 진료보다 한참 앞이다. 병원에 미리 확인
+    case pensShort(lastDose: Date, clinic: Date)
+    /// D44 기록이 n일째 비어 있다
+    case recordGap(Int)
 
     /// 캐릭터 표정 (D19). 말에 맞춰 얼굴만 바꾼다
     var mood: CoachMood {
@@ -43,6 +55,8 @@ enum CoachLine: Equatable {
         case .recorded, .proteinEstimate: return .happy
         case .lowCondition, .lowAppetite, .answer(.condition, _), .askDoctor: return .gentle
         case .savedQuestion: return .happy
+        case .clinicSoon, .questionsEmpty, .pensShort: return .thinking
+        case .repeatedSymptom, .recordGap: return .gentle
         case .notUnderstood: return .thinking
         case .fact(.lowSupply), .place(.pens), .place(.report), .place(.clinic), .tip(4), .answer(.clinic, _), .clinicFollowUp: return .thinking
         case .tip(0), .tip(3), .tip(7), .answer(.water, _): return .wink
@@ -69,6 +83,12 @@ enum CoachLine: Equatable {
         case .askDoctor: return "askDoctor"
         case .notUnderstood: return "notUnderstood"
         case .savedQuestion: return "savedQuestion"
+        case .clinicSoon: return "clinicSoon"
+        case .questionsEmpty: return "questionsEmpty"
+        case let .repeatedSymptom(symptom, _): return "repeatedSymptom." + symptom.rawValue
+        case .conditionMissing: return "conditionMissing"
+        case .pensShort: return "pensShort"
+        case .recordGap: return "recordGap"
         }
     }
 
@@ -184,6 +204,8 @@ struct CoachContext: Equatable {
     var strengthThisWeek = 0
     /// N-F4: 다음 진료일이 오늘이거나 어제인데 그날 진료 기록이 없다
     var clinicNeedsRecord = false
+    /// D44 기록·진료 상황 (CoachFactsRules)
+    var facts = CoachFacts()
 }
 
 enum CoachRules {
@@ -237,7 +259,7 @@ enum CoachRules {
         let isAfternoon = calendar.component(.hour, from: now) >= proteinNudgeHour
         switch spot {
         case .todayTop:
-            return [line(
+            let primary = line(
                 dailyLine: c.dailyLine,
                 isLowCondition: c.isLowCondition,
                 isLowAppetite: c.isLowAppetite,
@@ -246,10 +268,15 @@ enum CoachRules {
                 clinicNeedsRecord: c.clinicNeedsRecord,
                 now: now,
                 calendar: calendar
-            )]
+            )
+            // D44: 일반 한마디보다 기록·진료 제안이 먼저
+            let facts = factLines(c.facts, for: .todayTop)
+            if case .tip = primary { return facts + [primary] }
+            return [primary] + facts
         case .pens:
             var result: [CoachLine] = []
             if let fact = c.dailyLine, case .lowSupply = fact { result.append(.fact(fact)) }
+            result += factLines(c.facts, for: .pens)
             result.append(.place(.pens))
             return result
         case .weight:
@@ -273,11 +300,29 @@ enum CoachRules {
         case .info:
             return [.tip(4), .tip(0)]
         case .history:
-            return [.place(.history), .tip(0)]
+            return factLines(c.facts, for: .history) + [.place(.history), .tip(0)]
         case .report:
-            return [.place(.report), .tip(4)]
+            return factLines(c.facts, for: .report) + [.place(.report), .tip(4)]
         case .clinic:
-            return (c.clinicNeedsRecord ? [.clinicFollowUp] : []) + [.place(.clinic), .tip(4)]
+            return (c.clinicNeedsRecord ? [.clinicFollowUp] : []) + factLines(c.facts, for: .clinic) + [.place(.clinic), .tip(4)]
+        }
+    }
+
+    /// D44 자리별 기록·진료 제안. 급한 것(펜·진료 임박)부터
+    static func factLines(_ f: CoachFacts, for spot: CoachSpot) -> [CoachLine] {
+        let pens: [CoachLine] = f.pensLastDose.flatMap { last in f.pensClinic.map { [.pensShort(lastDose: last, clinic: $0)] } } ?? []
+        let soon: [CoachLine] = f.daysToClinic.flatMap { $0 <= CoachFactsRules.clinicSoonDays ? [.clinicSoon($0)] : nil } ?? []
+        let questions: [CoachLine] = f.daysToClinic != nil && f.openQuestions == 0 ? [.questionsEmpty] : []
+        let symptom: [CoachLine] = f.repeatedSymptom.map { [.repeatedSymptom($0, f.repeatedPeriods)] } ?? []
+        let condition: [CoachLine] = f.conditionMissing ? [.conditionMissing] : []
+        let gap: [CoachLine] = f.recordGapDays.map { [.recordGap($0)] } ?? []
+        switch spot {
+        case .todayTop: return pens + soon + condition + symptom + questions
+        case .pens: return pens
+        case .history: return gap + condition + symptom + soon
+        case .clinic: return pens + soon + questions + symptom
+        case .report: return soon + questions + condition + symptom
+        default: return []
         }
     }
 
@@ -293,7 +338,8 @@ enum CoachRules {
         let candidates: [CoachLine]
         switch topic {
         case .today:
-            candidates = lines(for: .todayTop, context: c, now: now, calendar: calendar) + [.tip(0), .tip(3)] + answers(.today)
+            let gap: [CoachLine] = c.facts.recordGapDays.map { [.recordGap($0)] } ?? []
+            candidates = lines(for: .todayTop, context: c, now: now, calendar: calendar) + gap + [.tip(0), .tip(3)] + answers(.today)
         case .protein:
             var result: [CoachLine] = []
             if c.isLowAppetite { result.append(.lowAppetite) }
@@ -315,10 +361,13 @@ enum CoachRules {
         case .condition:
             var result: [CoachLine] = []
             if c.isLowCondition { result.append(.lowCondition) }
+            if let symptom = c.facts.repeatedSymptom { result.append(.repeatedSymptom(symptom, c.facts.repeatedPeriods)) }
+            if c.facts.conditionMissing { result.append(.conditionMissing) }
             candidates = result + answers(.condition)
         case .clinic:
             var result: [CoachLine] = []
             if c.clinicNeedsRecord { result.append(.clinicFollowUp) }
+            result += factLines(c.facts, for: .clinic)
             if let fact = c.dailyLine, case .lowSupply = fact { result.append(.fact(fact)) }
             candidates = result + [.tip(4), .place(.report), .place(.history)] + answers(.clinic)
         case .more:
@@ -335,8 +384,8 @@ enum CoachRules {
         let weekday = calendar.component(.weekday, from: now)
         let daysIntoWeek = (weekday - calendar.firstWeekday + 7) % 7
         var first: [CoachTopic] = []
-        if c.clinicNeedsRecord { first.append(.clinic) }
-        if c.isLowCondition || c.isLowAppetite { first.append(.condition) }
+        if c.clinicNeedsRecord || c.facts.pensLastDose != nil || c.facts.daysToClinic != nil { first.append(.clinic) }
+        if c.isLowCondition || c.isLowAppetite || c.facts.repeatedSymptom != nil || c.facts.conditionMissing { first.append(.condition) }
         if c.proteinEntriesToday == 0, hour >= proteinNudgeHour { first.append(.protein) }
         if c.strengthThisWeek == 0, daysIntoWeek >= strengthNudgeDaysIntoWeek { first.append(.movement) }
         if c.dailyLine == .noRecentWeight { first.append(.weight) }
@@ -351,6 +400,9 @@ enum CoachRules {
     static func greeting(context c: CoachContext, now: Date, calendar: Calendar) -> CoachLine {
         if c.clinicNeedsRecord { return .clinicFollowUp }
         if c.isLowCondition { return .lowCondition }
+        // D44 진료 임박·펜 부족은 인사보다 먼저
+        if let last = c.facts.pensLastDose, let clinic = c.facts.pensClinic { return .pensShort(lastDose: last, clinic: clinic) }
+        if let days = c.facts.daysToClinic, days <= 1 { return .clinicSoon(days) }
         return .greetingAt(CoachDayPart.of(now, calendar: calendar))
     }
 
@@ -366,6 +418,7 @@ enum CoachRules {
         "place.pens", "place.history", "place.report", "place.clinic",
         "recorded.dose", "recorded.condition", "recorded.exercise", "recorded.protein",
         "notUnderstood", "savedQuestion",
+        "questionsEmpty", "conditionMissing", "clinicSoon.today",
     ]
 
     /// 매운맛에서도 순한 문장만 쓰는 줄 (다정해야 하거나 결과를 말하는 줄). `spicyBases`와 겹치면 안 된다 (테스트)

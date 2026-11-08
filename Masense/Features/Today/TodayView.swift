@@ -167,6 +167,7 @@ struct TodayView: View {
             heightCm: settingsList.first?.heightCm,
             allDoses: allPrescriptions.flatMap(\.doses).map(\.snapshot),
             visitDates: visits.map(\.visitedAt),
+            openQuestions: pendingQuestions.count,
             now: now,
             calendar: calendar
         )

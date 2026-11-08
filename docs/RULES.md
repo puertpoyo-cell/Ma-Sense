@@ -421,6 +421,20 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 - 주는 달력 firstWeekday부터 7일. 날마다 투약(취소 제외)·진료·컨디션·체중·단백질·운동 기록이 있는지만. 많고 적음·연속일 없음
 - N-E1 월 보기: `monthGrid`는 그 달을 주 단위 7칸으로, 그 달이 아닌 칸은 nil. 투약일만 표시
 
+## R30. 마선생 기록·진료 제안 (D44, 2026-11-08 사람 요청)
+
+```swift
+func facts(prescription:, doses:, checks:, openQuestions:, recordDates:, now:, calendar:) -> CoachFacts
+func factLines(_ facts: CoachFacts, for spot: CoachSpot) -> [CoachLine]   // CoachRules
+```
+
+- `daysToClinic`: 오늘 0시부터 다음 진료일 0시까지 날 수, 0~7일 때만. 3일 이하면 `clinicSoon`, 7일 이하 + 물어볼 것 0개면 `questionsEmpty`
+- `repeatedSymptom`: 최근 8마디 증상 흐름(R19)에서 끝부터 이어서 기록된 마디 수(진행 중 마디가 비면 그 앞부터). 3 이상
+- `conditionMissing`: 마지막 투약(취소 제외)에서 48시간~7일, 그 투약 id의 컨디션 기록 0
+- `pensShort`: 소진 예상(R 남은 회차의 마지막 예정일) + 7일 < 다음 진료일 0시, 그리고 그날이 오늘 이후
+- `recordGapDays`: 투약·컨디션·체중·단백질·운동·습관 기록 중 가장 최근 날에서 3일 이상
+- 사실과 할 일(리포트·물어볼 것·기록·병원 확인)만. 원인·용량·체중 결과 해석 없음
+
 ## R29. 잠 흐름 (D37, 2026-11-02 사람 결정 "잠 흐름 + 리포트")
 
 ```swift
