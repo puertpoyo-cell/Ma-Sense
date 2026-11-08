@@ -8029,6 +8029,23 @@
         }
       }
     },
+    "glance.weight.add": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add weight"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중 적기"
+          }
+        }
+      }
+    },
     "glance.weight.detailFat %@ %@": {
       "extractionState": "manual",
       "localizations": {
@@ -8212,6 +8229,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ 기록"
+          }
+        }
+      }
+    },
+    "history.bodyTrend.openDay %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See records for %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 기록 보기"
+          }
+        }
+      }
+    },
+    "history.bodyTrend.span.a11y": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chart period"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그래프 기간"
           }
         }
       }
@@ -12130,6 +12181,57 @@
         }
       }
     },
+    "protein.recent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log a recent one again"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근에 적은 것 한 번에"
+          }
+        }
+      }
+    },
+    "protein.recent.grams %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "about %lld g"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "약 %lld g"
+          }
+        }
+      }
+    },
+    "protein.recent.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logs it for today in the selected meal"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "고른 끼니로 오늘 바로 기록합니다"
+          }
+        }
+      }
+    },
     "protein.source": {
       "extractionState": "manual",
       "localizations": {
@@ -13605,6 +13707,108 @@
           "stringUnit": {
             "state": "translated",
             "value": "마선생 Masense"
+          }
+        }
+      }
+    },
+    "report.zoom.fit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면에 맞추기"
+          }
+        }
+      }
+    },
+    "report.zoom.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens full screen; pinch to zoom"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전체 화면으로 열고 두 손가락으로 키워 봅니다"
+          }
+        }
+      }
+    },
+    "report.zoom.in": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom in"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "크게"
+          }
+        }
+      }
+    },
+    "report.zoom.open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enlarge"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "크게 보기"
+          }
+        }
+      }
+    },
+    "report.zoom.out": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom out"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작게"
+          }
+        }
+      }
+    },
+    "report.zoom.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리포트 크게 보기"
           }
         }
       }
@@ -17340,6 +17544,91 @@
         }
       }
     },
+    "today.firstSteps.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do just one and Today and your report start to fill in."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "하나만 해 두면 오늘 화면과 리포트가 채워지기 시작합니다."
+          }
+        }
+      }
+    },
+    "today.firstSteps.health": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect Apple Health (weight, workouts, sleep)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "건강 앱 연결하기 (체중·운동·잠 자동)"
+          }
+        }
+      }
+    },
+    "today.firstSteps.protein": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log protein for one meal"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단백질 한 끼 적기"
+          }
+        }
+      }
+    },
+    "today.firstSteps.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start here"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처음이라면 여기부터"
+          }
+        }
+      }
+    },
+    "today.firstSteps.weight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log your weight once"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "체중 한 번 적기"
+          }
+        }
+      }
+    },
     "today.quick.done.a11y": {
       "extractionState": "manual",
       "localizations": {
@@ -18140,6 +18429,23 @@
         }
       }
     },
+    "weight.entry.minus": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minus 0.1 kg"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0.1 kg 빼기"
+          }
+        }
+      }
+    },
     "weight.entry.placeholder": {
       "extractionState": "manual",
       "localizations": {
@@ -18153,6 +18459,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "체중"
+          }
+        }
+      }
+    },
+    "weight.entry.plus": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus 0.1 kg"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0.1 kg 더하기"
+          }
+        }
+      }
+    },
+    "weight.entry.prefilled": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts from your last value"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 값에서 시작합니다"
           }
         }
       }

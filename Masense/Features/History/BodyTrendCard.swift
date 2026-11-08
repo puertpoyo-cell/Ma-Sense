@@ -11,6 +11,8 @@ struct BodyTrendCard: View {
     let samples: [WeightSampleSnapshot]
     let doses: [DoseSnapshot]
     let now: Date
+    /// D46 (U1 C1) 그래프에서 고른 날의 값 표시를 누르면 아래 하루 카드를 그날로
+    var openDay: ((Date) -> Void)?
     var openDetail: () -> Void
 
     @Environment(\.calendar) private var calendar
@@ -53,11 +55,25 @@ struct BodyTrendCard: View {
                         .font(Typography.sectionHeader)
                         .foregroundStyle(Color.ink)
                     Spacer()
-                    // 지금 가로 기간. 핀치로 바뀐다
-                    Text(spanLabel(span, maxWeeks: maxWeeks))
+                    // 지금 가로 기간. 핀치로 바뀐다. D46 (U1 C2): 눌러서 고를 수도 있다
+                    Menu {
+                        ForEach(WeightRules.zoomSteps.filter { $0 < maxWeeks } + [maxWeeks], id: \.self) { step in
+                            Button(spanLabel(step, maxWeeks: maxWeeks)) {
+                                selectedDate = nil
+                                withAnimation(.snappy(duration: 0.25)) { weeks = step }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 2) {
+                            Text(spanLabel(span, maxWeeks: maxWeeks))
+                                .contentTransition(.numericText())
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 9, weight: .semibold))
+                        }
                         .font(Typography.caption.monospacedDigit())
                         .foregroundStyle(Color.inkSecondary)
-                        .contentTransition(.numericText())
+                    }
+                    .accessibilityLabel(Text("history.bodyTrend.span.a11y"))
                     Button(action: openDetail) {
                         HStack(spacing: Spacing.s1) {
                             Text("history.bodyTrend.detail")
@@ -86,6 +102,19 @@ struct BodyTrendCard: View {
                         .frame(height: 220)
                         .simultaneousGesture(pinch(maxWeeks: maxWeeks))
                         .sensoryFeedback(.selection, trigger: weeks)
+                    // D46 (U1 C1): 고른 날의 기록으로 (아래 하루 카드)
+                    if let openDay, let day = selection(points).first?.day {
+                        Button { openDay(day) } label: {
+                            HStack(spacing: Spacing.s1) {
+                                Text("history.bodyTrend.openDay \(day.formatted(.dateTime.month(.defaultDigits).day()))")
+                                Image(systemName: "chevron.down")
+                                    .font(.caption.weight(.semibold))
+                            }
+                            .font(Typography.caption)
+                            .foregroundStyle(Color.accent)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 if end < now {
                     Text("weight.sparkline.until \(end.formatted(.dateTime.month(.defaultDigits).day()))")

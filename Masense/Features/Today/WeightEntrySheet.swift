@@ -19,6 +19,14 @@ final class WeightEntryModel {
 
     var kilograms: Double? { Self.parse(text) }
 
+    /// D46 (U1 B3) 마지막 값에서 0.1 kg씩. 비어 있으면 아무것도 하지 않는다
+    func step(_ delta: Double) {
+        guard let current = kilograms else { return }
+        let next = ((current + delta) * 10).rounded() / 10
+        guard Self.validRange.contains(next) else { return }
+        text = String(format: "%.1f", next)
+    }
+
     /// 소수 1자리로 반올림. 쉼표 소수점도 받는다. 범위를 벗어나면 nil
     static func parse(_ text: String) -> Double? {
         let normalized = text
@@ -47,6 +55,8 @@ struct WeightEntrySheet: View {
     @Environment(\.services) private var services
     @State private var model = WeightEntryModel()
     @FocusState private var fieldFocused: Bool
+    /// D46 마지막 측정값을 미리 채운다 (차이는 보이지 않는다, 평가 없음)
+    @Query(sort: \WeightSample.measuredAt, order: .reverse) private var recent: [WeightSample]
 
     var body: some View {
         NavigationStack {
@@ -66,6 +76,17 @@ struct WeightEntrySheet: View {
                         Text(verbatim: "kg")
                             .foregroundStyle(Color.inkSecondary)
                     }
+                    // D46 (U1 B3): 키패드 없이 ±0.1
+                    HStack(spacing: Spacing.s3) {
+                        stepButton("minus", label: "weight.entry.minus") { model.step(-0.1) }
+                        stepButton("plus", label: "weight.entry.plus") { model.step(0.1) }
+                        Spacer(minLength: 0)
+                        if !recent.isEmpty {
+                            Text("weight.entry.prefilled")
+                                .font(Typography.caption)
+                                .foregroundStyle(Color.inkTertiary)
+                        }
+                    }
                 }
                 .frostRow()
             }
@@ -82,11 +103,28 @@ struct WeightEntrySheet: View {
                         .disabled(model.kilograms == nil)
                 }
             }
-            .onAppear { fieldFocused = true }
+            .onAppear {
+                if model.text.isEmpty, let last = recent.first?.kilograms {
+                    model.text = String(format: "%.1f", (last * 10).rounded() / 10)
+                } else {
+                    fieldFocused = true
+                }
+            }
         }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
         .presentationBackground(Color.midnightElevated)
+    }
+
+    private func stepButton(_ systemImage: String, label: LocalizedStringKey, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.body.weight(.semibold))
+                .frame(width: 44, height: 36)
+                .background(Color.white.opacity(0.08), in: Capsule())
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(Text(label))
     }
 
     private func save() {

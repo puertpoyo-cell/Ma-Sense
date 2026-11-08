@@ -82,7 +82,8 @@ struct GlanceStrip: View {
     // MARK: 값
 
     private var weightValue: Text {
-        guard let latestWeight else { return Text("glance.none") }
+        // D46 (U1 C3): 비어 있으면 첫 행동을 바로 보인다
+        guard let latestWeight else { return Text("glance.weight.add").foregroundColor(Color.accent) }
         return Text(verbatim: latestWeight.kilograms.formatted(.number.precision(.fractionLength(1))))
             + Text(verbatim: " kg").font(Typography.caption).foregroundColor(Color.inkSecondary)
     }

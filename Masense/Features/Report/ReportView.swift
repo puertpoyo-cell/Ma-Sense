@@ -22,6 +22,8 @@ struct ReportView: View {
     @State private var overflows = false
     /// 펼침 배치용 스크롤 화면 크기 (D23)
     @State private var viewport: CGSize = .zero
+    /// D46 (U1 A4) 미리보기 크게 보기
+    @State private var zoomedReport: ClinicReport?
     /// D37 건강 앱 잠 (최근 1년, 열 때 읽음)
     @State private var sleepNights: [SleepNight] = []
 
@@ -174,10 +176,34 @@ struct ReportView: View {
     // MARK: 미리보기·내보내기
 
     private func preview(_ report: ClinicReport) -> some View {
-        ReportPreviewView(report: report, accent: accent)
-            .task(id: report) {
-                overflows = !ReportRenderer.fitsOnePage(report, calendar: calendar)
-            }
+        Button { zoomedReport = report } label: {
+            ReportPreviewView(report: report, accent: accent)
+                .overlay(alignment: .bottomTrailing) {
+                    Label("report.zoom.open", systemImage: "arrow.up.left.and.arrow.down.right")
+                        .font(Typography.caption)
+                        .foregroundStyle(Color.ink)
+                        .padding(.horizontal, Spacing.s2)
+                        .padding(.vertical, Spacing.s1)
+                        .background(.ultraThinMaterial, in: Capsule())
+                        .padding(Spacing.s2)
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint(Text("report.zoom.hint"))
+        .task(id: report) {
+            overflows = !ReportRenderer.fitsOnePage(report, calendar: calendar)
+        }
+        .fullScreenCover(item: Binding(
+            get: { zoomedReport.map(ZoomedReport.init) },
+            set: { zoomedReport = $0?.report }
+        )) { item in
+            ReportZoomView(report: item.report, accent: accent)
+        }
+    }
+
+    private struct ZoomedReport: Identifiable {
+        let report: ClinicReport
+        var id: Date { report.generatedAt }
     }
 
     private func export(_ report: ClinicReport) -> some View {

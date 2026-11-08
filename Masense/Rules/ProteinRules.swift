@@ -38,4 +38,17 @@ enum ProteinRules {
         guard let target, target > 0 else { return .noTarget(estimated: estimated) }
         return estimated >= target ? .met(estimated: estimated, target: target) : .below(estimated: estimated, target: target)
     }
+
+    /// D46 (U1 B2) 최근에 적은 조합. 새 것부터, 같은 식품 묶음·g은 한 번만, `limit`개까지 (기타 식품만 있는 기록은 뺀다)
+    static func recentCombos(_ entries: [ProteinEntrySnapshot], limit: Int = 3) -> [ProteinEntrySnapshot] {
+        var seen = Set<String>()
+        var result: [ProteinEntrySnapshot] = []
+        for entry in entries.sorted(by: { $0.date > $1.date }) where !entry.foods.isEmpty && entry.foods != [.other] {
+            let key = entry.foods.map(\.rawValue).sorted().joined(separator: ",") + "|" + String(entry.estimatedGrams)
+            guard seen.insert(key).inserted else { continue }
+            result.append(entry)
+            if result.count == limit { break }
+        }
+        return result
+    }
 }

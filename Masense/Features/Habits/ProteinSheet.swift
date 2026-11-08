@@ -11,6 +11,9 @@ struct ProteinSheet: View {
     @Environment(\.modelContext) private var context
     @State private var model: ProteinLogModel
     @State private var showsPhoto = false
+    /// D46 최근 조합 (새 기록 순)
+    @Query(sort: \ProteinEntry.createdAt, order: .reverse) private var recentEntries: [ProteinEntry]
+    @Environment(\.calendar) private var calendar
 
     init(model: ProteinLogModel, onSaved: @escaping () -> Void = {}, onPhotoSaved: @escaping (Int) -> Void = { _ in }) {
         _model = State(initialValue: model)
@@ -30,6 +33,37 @@ struct ProteinSheet: View {
                         }
                     }
                     .pickerStyle(.segmented)
+
+                    // D46 (U1 B2): 최근에 먹은 조합을 한 번에 (같은 끼니로 오늘 기록)
+                    let combos = ProteinRules.recentCombos(recentEntries.prefix(40).map(\.snapshot))
+                    if !combos.isEmpty {
+                        VStack(alignment: .leading, spacing: Spacing.s2) {
+                            sectionTitle("protein.recent")
+                            ForEach(Array(combos.enumerated()), id: \.offset) { _, combo in
+                                Button { saveAgain(combo) } label: {
+                                    HStack(spacing: Spacing.s2) {
+                                        Image(systemName: "arrow.counterclockwise")
+                                            .foregroundStyle(Color.accent)
+                                            .accessibilityHidden(true)
+                                        Text(verbatim: combo.foods.map { L10n.string($0.titleKey) }.joined(separator: " · "))
+                                            .font(Typography.label)
+                                            .foregroundStyle(Color.ink)
+                                            .lineLimit(1)
+                                        Spacer(minLength: Spacing.s2)
+                                        Text("protein.recent.grams \(combo.estimatedGrams)")
+                                            .font(Typography.caption)
+                                            .monospacedDigit()
+                                            .foregroundStyle(Color.inkSecondary)
+                                    }
+                                    .padding(Spacing.s3)
+                                    .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityHint(Text("protein.recent.hint"))
+                            }
+                        }
+                    }
 
                     // D20 사진으로 확인: 종류만 짐작하고 양은 다시 묻는다
                     Button {
@@ -195,6 +229,16 @@ struct ProteinSheet: View {
 
     private func save() {
         guard (try? model.save(in: context)) != nil else { return }
+        dismiss()
+        onSaved()
+    }
+
+    /// D46 최근 조합을 고른 끼니로 오늘 다시 기록
+    private func saveAgain(_ combo: ProteinEntrySnapshot) {
+        let entry = ProteinEntry(date: calendar.startOfDay(for: .now), meal: model.meal, foods: combo.foods, estimatedGrams: combo.estimatedGrams)
+        context.insert(entry)
+        try? context.save()
+        RecordUndo.shared.register(entry)
         dismiss()
         onSaved()
     }

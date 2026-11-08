@@ -77,7 +77,9 @@ struct HistoryView: View {
                             BodyTrendCard(
                                 samples: weights.map(\.snapshot),
                                 doses: allDoses.map(\.snapshot),
-                                now: timeline.date
+                                now: timeline.date,
+                                // D46 (U1 C1): 그래프에서 고른 날로 아래 하루 카드를
+                                openDay: { date in withAnimation { selectedDay = calendar.startOfDay(for: date) } }
                             ) { sheet = .weightTrend }
                         }
                         weekStrip(day: day, today: today)

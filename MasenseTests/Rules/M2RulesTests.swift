@@ -120,3 +120,21 @@ struct M2RulesTests {
         #expect(PaceRules.paceNotice(series: series([100, 98])) == nil)
     }
 }
+
+// D46 단백질 최근 조합
+struct ProteinRecentCombosTests {
+    @Test func recentCombosNewestFirstDistinctUpToThree() {
+        let d = { (n: Double) in Date(timeIntervalSinceReferenceDate: n * 86_400) }
+        let entries = [
+            ProteinEntrySnapshot(date: d(1), meal: .lunch, foods: [.egg], estimatedGrams: 6),
+            ProteinEntrySnapshot(date: d(5), meal: .dinner, foods: [.chickenBreast], estimatedGrams: 23),
+            ProteinEntrySnapshot(date: d(4), meal: .breakfast, foods: [.egg], estimatedGrams: 6),
+            ProteinEntrySnapshot(date: d(3), meal: .lunch, foods: [.other], estimatedGrams: 10),
+            ProteinEntrySnapshot(date: d(2), meal: .lunch, foods: [.tofu, .egg], estimatedGrams: 18),
+            ProteinEntrySnapshot(date: d(0), meal: .lunch, foods: [.fish], estimatedGrams: 20),
+        ]
+        let combos = ProteinRules.recentCombos(entries)
+        #expect(combos.map(\.foods) == [[.chickenBreast], [.egg], [.tofu, .egg]])
+        #expect(ProteinRules.recentCombos([]).isEmpty)
+    }
+}

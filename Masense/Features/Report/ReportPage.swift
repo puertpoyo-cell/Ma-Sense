@@ -580,3 +580,55 @@ struct ReportPreviewView: View {
         .accessibilityLabel(Text("report.preview.a11y"))
     }
 }
+
+/// D46 (U1 A4) 리포트 미리보기를 전체 화면으로. 두 손가락으로 키우고 밀어 본다. 공유 전에 내용을 직접 확인하는 용도
+struct ReportZoomView: View {
+    let report: ClinicReport
+    var accent: Color = .paperAccent
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var zoom: CGFloat = 1
+    @State private var baseZoom: CGFloat?
+
+    static let zoomRange: ClosedRange<CGFloat> = 0.6...3
+
+    var body: some View {
+        NavigationStack {
+            GeometryReader { geometry in
+                let fit = geometry.size.width / ReportPage.size.width
+                let scale = fit * zoom
+                ScrollView([.horizontal, .vertical]) {
+                    ReportPage(report: report, accent: accent)
+                        .scaleEffect(scale, anchor: .topLeading)
+                        .frame(width: ReportPage.size.width * scale, height: ReportPage.size.height * scale, alignment: .topLeading)
+                }
+                .simultaneousGesture(
+                    MagnifyGesture()
+                        .onChanged { value in
+                            let base = baseZoom ?? zoom
+                            if baseZoom == nil { baseZoom = zoom }
+                            zoom = min(max(base * value.magnification, Self.zoomRange.lowerBound), Self.zoomRange.upperBound)
+                        }
+                        .onEnded { _ in baseZoom = nil }
+                )
+            }
+            .background(Color.midnight)
+            .navigationTitle("report.zoom.title")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("action.done") { dismiss() }
+                }
+                ToolbarItemGroup(placement: .bottomBar) {
+                    Button { zoom = max(zoom / 1.25, Self.zoomRange.lowerBound) } label: { Image(systemName: "minus.magnifyingglass") }
+                        .accessibilityLabel(Text("report.zoom.out"))
+                    Spacer()
+                    Button { zoom = 1 } label: { Text("report.zoom.fit") }
+                    Spacer()
+                    Button { zoom = min(zoom * 1.25, Self.zoomRange.upperBound) } label: { Image(systemName: "plus.magnifyingglass") }
+                        .accessibilityLabel(Text("report.zoom.in"))
+                }
+            }
+        }
+    }
+}

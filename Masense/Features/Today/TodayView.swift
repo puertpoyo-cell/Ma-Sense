@@ -208,6 +208,10 @@ struct TodayView: View {
                 // D20: 기록 버튼을 한 줄로 위에 모은다
                 quickRecordRow(model, now: now)
                     .coachSpot(.weight, viewport: viewport, context: model.coachContext)
+                // D46 (U1 C3): 처음 쓰는 사람에게 첫 행동 몇 개
+                if needsFirstSteps {
+                    firstStepsCard
+                }
             }
         }
     }
@@ -269,7 +273,7 @@ struct TodayView: View {
                     totalDoses: model.totalDoses,
                     exhaustionDate: model.exhaustionDate,
                     recentSites: model.recentSites,
-                    onOpenWeight: { sheet = .weightTrend },
+                    onOpenWeight: { sheet = weights.isEmpty ? .weight : .weightTrend },
                     onOpenPens: { sheet = .pens },
                     // D45: 지난 부위 줄은 그 기록 고치기 (기록이 없으면 새 기록)
                     onOpenSite: { sheet = lastDoseID.map { Sheet.editDose($0) } ?? .dose }
@@ -381,6 +385,65 @@ struct TodayView: View {
         .accessibilityAddTraits(isOn ? .isSelected : [])
         .accessibilityLabel(Text(key) + Text(verbatim: " ") + Text("today.quick.record.a11y"))
         .accessibilityValue(done ? Text("today.quick.done.a11y") : Text(verbatim: ""))
+    }
+
+    // MARK: 처음 쓰는 사람의 첫 행동 (D46, U1 C3)
+
+    private var canConnectHealth: Bool {
+        services.healthKit.isAvailable && settingsList.first?.healthKitAuthorized != true
+    }
+
+    /// 체중·단백질 기록이 하나도 없거나 건강 앱을 아직 잇지 않았을 때만
+    private var needsFirstSteps: Bool {
+        weights.isEmpty || proteins.isEmpty || (canConnectHealth && weights.isEmpty)
+    }
+
+    private var firstStepsCard: some View {
+        FrostCard {
+            VStack(alignment: .leading, spacing: Spacing.s3) {
+                Text("today.firstSteps.title")
+                    .font(Typography.sectionHeader)
+                    .foregroundStyle(Color.ink)
+                Text("today.firstSteps.body")
+                    .font(Typography.caption)
+                    .foregroundStyle(Color.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if canConnectHealth && weights.isEmpty {
+                    firstStepButton("today.firstSteps.health", systemImage: "heart.text.square") {
+                        Task { await connectHealth() }
+                    }
+                }
+                if weights.isEmpty {
+                    firstStepButton("today.firstSteps.weight", systemImage: "chart.xyaxis.line") { sheet = .weight }
+                }
+                if proteins.isEmpty {
+                    firstStepButton("today.firstSteps.protein", systemImage: "fork.knife") { sheet = .protein(preselected: nil) }
+                }
+            }
+        }
+    }
+
+    private func firstStepButton(_ key: LocalizedStringKey, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.s3) {
+                Image(systemName: systemImage)
+                    .foregroundStyle(Color.accent)
+                    .frame(width: 22)
+                    .accessibilityHidden(true)
+                Text(key)
+                    .font(Typography.label)
+                    .foregroundStyle(Color.ink)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.inkTertiary)
+                    .accessibilityHidden(true)
+            }
+            .padding(Spacing.s3)
+            .background(Color.frost, in: RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: 정리·진료 한 줄 (D20)
