@@ -431,8 +431,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/Masense-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your weight, body fat percentage, lean body mass, workouts, and sleep from Apple Health to show them in your records and pre-visit report, and your sex to choose the body map figure. Nothing is written to Apple Health, and the data stays on this device.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app does not write anything to Apple Health. It only reads the data you allow, and the data stays on this device.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your weight, body fat percentage, lean body mass, workouts, and sleep from Apple Health to show them in your records and pre-visit report, and your sex to choose the body map figure. Nothing is written to Apple Health, and the data stays on this device and your own iCloud, never on our servers.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app does not write anything to Apple Health. It only reads the data you allow, and the data stays on this device and your own iCloud, never on our servers.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera only when you take a photo of a lab result sheet or a meal. Text and food types are read on this device, and meal photos are not saved.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -444,7 +444,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.3;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -467,8 +467,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/Masense-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your weight, body fat percentage, lean body mass, workouts, and sleep from Apple Health to show them in your records and pre-visit report, and your sex to choose the body map figure. Nothing is written to Apple Health, and the data stays on this device.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app does not write anything to Apple Health. It only reads the data you allow, and the data stays on this device.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your weight, body fat percentage, lean body mass, workouts, and sleep from Apple Health to show them in your records and pre-visit report, and your sex to choose the body map figure. Nothing is written to Apple Health, and the data stays on this device and your own iCloud, never on our servers.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app does not write anything to Apple Health. It only reads the data you allow, and the data stays on this device and your own iCloud, never on our servers.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera only when you take a photo of a lab result sheet or a meal. Text and food types are read on this device, and meal photos are not saved.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -480,7 +480,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.3;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -499,7 +499,7 @@
 				CURRENT_PROJECT_VERSION = 45;
 				DEVELOPMENT_TEAM = 24F957FFAD;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 0.3;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -518,7 +518,7 @@
 				CURRENT_PROJECT_VERSION = 45;
 				DEVELOPMENT_TEAM = 24F957FFAD;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 0.3;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -544,7 +544,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.3;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -571,7 +571,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.3;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
