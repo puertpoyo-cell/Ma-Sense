@@ -11110,6 +11110,108 @@
         }
       }
     },
+    "notif.coach.clinicEve": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your visit is tomorrow and Questions is empty. Write just one?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내일 진료예요. 물어볼 것이 아직 비어 있어요. 한 가지만 적어 둘까요."
+          }
+        }
+      }
+    },
+    "notif.coach.clinicEve.spicy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visit tomorrow. Zero questions. Write one now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내일 진료입니다. 물어볼 것 0개. 지금 하나 적으세요."
+          }
+        }
+      }
+    },
+    "notif.coach.pensShort": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today is the last dose from your remaining pens. Check with the clinic before your next visit."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 펜으로는 오늘이 마지막 투약이에요. 다음 진료 전에 병원에 미리 확인해 두세요."
+          }
+        }
+      }
+    },
+    "notif.coach.pensShort.spicy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today is the last dose from your pens. Contact the clinic before your next visit. Today."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 펜으로는 오늘이 마지막입니다. 다음 진료 전에 병원에 연락하세요. 오늘."
+          }
+        }
+      }
+    },
+    "notif.coach.recordGap": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No records for %lld days. Leave just one line today?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록이 %lld일째 비어 있어요. 오늘 한 줄만 남겨 둘까요."
+          }
+        }
+      }
+    },
+    "notif.coach.recordGap.spicy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No records for %lld days. It takes a minute. One line now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록이 %lld일째 비어 있습니다. 1분이면 됩니다. 지금 한 줄."
+          }
+        }
+      }
+    },
     "notif.condition.h24": {
       "extractionState": "manual",
       "localizations": {
@@ -14939,6 +15041,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "진료 알림"
+          }
+        }
+      }
+    },
+    "settings.notifications.coach": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masense nudges"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마선생 알림"
+          }
+        }
+      }
+    },
+    "settings.notifications.coach.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masense nudges come only on days with something to do, at most one a day: the evening before a visit with no questions, the day of your last dose from remaining pens, or after three days without records. None between 10 pm and 8 am."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마선생 알림은 할 일이 생긴 날에만 하루 하나 옵니다. 내일 진료인데 물어볼 것이 비어 있을 때, 남은 펜으로 맞는 마지막 날, 기록이 3일째 비어 있을 때입니다. 밤 10시부터 아침 8시 사이에는 보내지 않습니다."
           }
         }
       }

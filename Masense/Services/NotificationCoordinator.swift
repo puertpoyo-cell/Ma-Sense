@@ -30,6 +30,29 @@ final class NotificationCoordinator {
             now: now,
             calendar: calendar
         )
+        // D47 마선생 알림 (할 일이 생긴 날에만, 하루 하나, 설정에서 끄기)
+        let doses = prescription?.doseSnapshots ?? []
+        let checks = try ConditionCheck.all(in: context).compactMap(\.snapshot)
+        let openQuestions = (try? context.fetchCount(FetchDescriptor<ClinicQuestion>(predicate: #Predicate { $0.askedAt == nil }))) ?? 0
+        let facts = CoachFactsRules.facts(
+            prescription: prescription?.snapshot, doses: doses, checks: checks,
+            openQuestions: openQuestions, recordDates: [], now: now, calendar: calendar
+        )
+        let allDoses = ((try? context.fetch(FetchDescriptor<Dose>())) ?? []).filter { !$0.isCancelled }.map(\.administeredAt)
+        let records: [Date] = allDoses
+            + checks.map(\.checkedAt)
+            + ((try? WeightSample.all(in: context)) ?? []).map(\.measuredAt)
+            + ((try? context.fetch(FetchDescriptor<ProteinEntry>())) ?? []).map(\.createdAt)
+            + ((try? context.fetch(FetchDescriptor<StrengthSession>())) ?? []).map(\.startedAt)
+        plan += NotificationRules.coachReminders(
+            enabled: CoachNotificationSetting.isEnabled,
+            nextClinicDate: prescription?.nextClinicDate,
+            openQuestions: openQuestions,
+            pensLastDose: facts.pensLastDose,
+            lastRecord: records.max(),
+            now: now,
+            calendar: calendar
+        )
         if let prescription {
             plan += NotificationRules.notificationPlan(
                 p: prescription.snapshot,
@@ -41,5 +64,14 @@ final class NotificationCoordinator {
             )
         }
         return NotificationRules.sorted(plan)
+    }
+}
+
+/// D47 마선생 알림 켜기·끄기 (기기 설정, 기본 켬 — 2026-11-09 사람 결정)
+enum CoachNotificationSetting {
+    static let key = "coach.notifications"
+
+    static var isEnabled: Bool {
+        UserDefaults.standard.object(forKey: key) as? Bool ?? true
     }
 }

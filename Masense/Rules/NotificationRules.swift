@@ -4,6 +4,20 @@ enum NotificationKind: String, CaseIterable {
     case doseDue, doseEvening, conditionH24, conditionH48, clinicSoon, prescriptionLow
     /// D7 주 1회 체중 기록
     case weightDue
+    /// D47 마선생 알림: 내일 진료인데 물어볼 것이 비어 있다
+    case coachClinicEve
+    /// D47 마선생 알림: 남은 펜으로는 오늘이 마지막 투약 (다음 진료 전에 떨어짐)
+    case coachPensShort
+    /// D47 마선생 알림: 기록이 n일째 비어 있다
+    case coachRecordGap
+
+    /// 할 일이 생긴 날에만 오는 마선생 알림 (설정에서 따로 끄고 켠다)
+    var isCoach: Bool {
+        switch self {
+        case .coachClinicEve, .coachPensShort, .coachRecordGap: return true
+        default: return false
+        }
+    }
 
     /// `Localizable.xcstrings` 키. 약 이름·용량·"주사" 단어 없음 (COMPLIANCE.md 3.3)
     var bodyKey: String {
@@ -15,6 +29,9 @@ enum NotificationKind: String, CaseIterable {
         case .clinicSoon: return "notif.clinic.soon"
         case .prescriptionLow: return "notif.prescription.low"
         case .weightDue: return "notif.weight.due"
+        case .coachClinicEve: return "notif.coach.clinicEve"
+        case .coachPensShort: return "notif.coach.pensShort"
+        case .coachRecordGap: return "notif.coach.recordGap"
         }
     }
 }
@@ -165,5 +182,63 @@ enum NotificationRules {
             offset += 7
         }
         return plan
+    }
+
+    // MARK: D47 마선생 알림 (2026-11-09 사람 결정 "기본 켬")
+
+    /// 저녁 알림 시각
+    static let coachEveningHour = 20
+    /// 펜 알림 시각 (마지막 투약일 낮)
+    static let coachNoonHour = 12
+    static let coachNoonMinute = 30
+    /// 기록이 빈 지 며칠째에 알리는지, 그 뒤로는 이 간격
+    static let recordGapFirstDays = 3
+    static let recordGapRepeatDays = 7
+
+    /// 할 일이 생긴 날에만, 하루 하나. 같은 날이면 펜 > 진료 > 기록 빔. 밤 10시~아침 8시에는 없다 (시각 고정).
+    /// `lastRecord`는 투약·컨디션·체중·단백질·운동·습관 기록 중 가장 최근 시각
+    static func coachReminders(
+        enabled: Bool,
+        nextClinicDate: Date?,
+        openQuestions: Int,
+        pensLastDose: Date?,
+        lastRecord: Date?,
+        now: Date,
+        calendar: Calendar
+    ) -> [PlannedNotification] {
+        guard enabled, let horizon = calendar.date(byAdding: .day, value: horizonDays, to: now) else { return [] }
+        let inRange = { (date: Date) in date > now && date <= horizon }
+        var candidates: [(priority: Int, item: PlannedNotification)] = []
+
+        if let last = pensLastDose,
+           let fire = calendar.date(bySettingHour: coachNoonHour, minute: coachNoonMinute, second: 0, of: last), inRange(fire) {
+            candidates.append((0, PlannedNotification(id: "coach.pensShort", kind: .coachPensShort, fireDate: fire)))
+        }
+        if let clinic = nextClinicDate, openQuestions == 0,
+           let eve = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: clinic)),
+           let fire = calendar.date(bySettingHour: coachEveningHour, minute: 0, second: 0, of: eve), inRange(fire) {
+            candidates.append((1, PlannedNotification(id: "coach.clinicEve", kind: .coachClinicEve, fireDate: fire)))
+        }
+        if let last = lastRecord {
+            let lastDay = calendar.startOfDay(for: last)
+            var days = recordGapFirstDays
+            while let day = calendar.date(byAdding: .day, value: days, to: lastDay),
+                  let fire = calendar.date(bySettingHour: coachEveningHour, minute: 0, second: 0, of: day),
+                  fire <= horizon {
+                if fire > now {
+                    candidates.append((2, PlannedNotification(id: "coach.recordGap.\(days)", kind: .coachRecordGap, fireDate: fire, argument: days)))
+                }
+                days += recordGapRepeatDays
+            }
+        }
+
+        // 하루 하나
+        var byDay: [Date: (priority: Int, item: PlannedNotification)] = [:]
+        for candidate in candidates {
+            let day = calendar.startOfDay(for: candidate.item.fireDate)
+            if let existing = byDay[day], existing.priority <= candidate.priority { continue }
+            byDay[day] = candidate
+        }
+        return sorted(byDay.values.map(\.item))
     }
 }

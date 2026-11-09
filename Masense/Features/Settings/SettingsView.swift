@@ -217,6 +217,8 @@ private struct SettingsForm: View {
 
     // MARK: 알림
 
+    @AppStorage(CoachNotificationSetting.key) private var coachNotificationsOn = true
+
     private var notificationSection: some View {
         Section {
             switch notificationStatus {
@@ -272,8 +274,16 @@ private struct SettingsForm: View {
             .disabled(!settings.weightReminderEnabled)
             DatePicker("settings.notifications.weight.time", selection: weightReminderTime, displayedComponents: .hourAndMinute)
                 .disabled(!settings.weightReminderEnabled)
+
+            // D47 마선생 알림: 할 일이 생긴 날에만, 하루 하나 (기본 켬)
+            Toggle("settings.notifications.coach", isOn: $coachNotificationsOn)
+                .onChange(of: coachNotificationsOn) {
+                    Task { await services.refreshReminders(context: context) }
+                }
         } header: {
             SectionHeaderText("settings.section.notifications")
+        } footer: {
+            Text("settings.notifications.coach.footer")
         }
         .frostRow()
     }

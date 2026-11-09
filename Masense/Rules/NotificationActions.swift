@@ -39,7 +39,7 @@ enum NotificationActions {
         case .doseDue, .doseEvening: return doseCategory
         case .conditionH24, .conditionH48: return conditionCategory
         case .weightDue: return weightCategory
-        case .clinicSoon, .prescriptionLow: return nil
+        case .clinicSoon, .prescriptionLow, .coachClinicEve, .coachPensShort, .coachRecordGap: return nil
         }
     }
 

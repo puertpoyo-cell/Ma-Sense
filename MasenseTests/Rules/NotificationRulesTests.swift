@@ -140,3 +140,43 @@ struct NotificationRulesTests {
         #expect(dateOnly.filter { $0.kind == .clinicSoon }.map(\.fireDate) == [TestCalendar.date(2026, 11, 10, 9)])
     }
 }
+
+// D47 마선생 알림: 할 일이 생긴 날에만, 하루 하나
+struct CoachReminderTests {
+    private let calendar = TestCalendar.seoul
+    private func d(_ m: Int, _ day: Int, _ h: Int = 0, _ min: Int = 0) -> Date { TestCalendar.date(2026, m, day, h, min) }
+
+    private func plan(enabled: Bool = true, clinic: Date? = nil, questions: Int = 0, pens: Date? = nil, last: Date? = nil, now: Date) -> [PlannedNotification] {
+        NotificationRules.coachReminders(enabled: enabled, nextClinicDate: clinic, openQuestions: questions, pensLastDose: pens,
+                                         lastRecord: last, now: now, calendar: calendar)
+    }
+
+    @Test func clinicEveOnlyWhenQuestionsEmpty() {
+        let p = plan(clinic: d(11, 20, 10), now: d(11, 10, 9))
+        #expect(p == [PlannedNotification(id: "coach.clinicEve", kind: .coachClinicEve, fireDate: d(11, 19, 20))])
+        #expect(plan(clinic: d(11, 20, 10), questions: 1, now: d(11, 10, 9)).isEmpty)
+        #expect(plan(enabled: false, clinic: d(11, 20, 10), now: d(11, 10, 9)).isEmpty)
+    }
+
+    @Test func pensShortOnLastDoseDayNoon() {
+        let p = plan(pens: d(11, 22, 20), now: d(11, 10, 9))
+        #expect(p.map(\.id) == ["coach.pensShort"])
+        #expect(p.first?.fireDate == d(11, 22, 12, 30))
+    }
+
+    @Test func recordGapThreeDaysThenWeekly() {
+        let p = plan(last: d(11, 10, 8), now: d(11, 10, 9))
+        #expect(p.map(\.fireDate) == [d(11, 13, 20), d(11, 20, 20), d(11, 27, 20), d(12, 4, 20)])
+        #expect(p.first?.argument == 3)
+        #expect(p.dropFirst().first?.argument == 10)
+        // 이미 3일이 지났으면 다음 주기부터
+        #expect(plan(last: d(11, 1, 8), now: d(11, 10, 9)).first?.fireDate == d(11, 11, 20))
+    }
+
+    @Test func oneADayByPriority() {
+        // 11/13 저녁에 진료 전날·기록 빔이 겹치면 진료만
+        let p = plan(clinic: d(11, 14, 10), last: d(11, 10, 8), now: d(11, 10, 9))
+        #expect(p.filter { calendar.isDate($0.fireDate, inSameDayAs: d(11, 13)) }.map(\.kind) == [.coachClinicEve])
+        #expect(NotificationKind.coachRecordGap.isCoach && !NotificationKind.doseDue.isCoach)
+    }
+}

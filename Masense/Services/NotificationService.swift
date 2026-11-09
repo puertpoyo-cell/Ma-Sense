@@ -101,7 +101,9 @@ final class NotificationService: NotificationScheduling {
     static let kindKey = "kind"
 
     static func body(for item: PlannedNotification) -> String {
-        let format = String(localized: String.LocalizationValue(item.kind.bodyKey))
+        // D47 마선생 알림은 매운맛이면 단호한 문장
+        let spicy = item.kind.isCoach && UserDefaults.standard.string(forKey: CoachTone.key) == CoachTone.spicy.rawValue
+        let format = String(localized: String.LocalizationValue(item.kind.bodyKey + (spicy ? ".spicy" : "")))
         if let argument = item.argument {
             return String(format: format, locale: .current, argument)
         }

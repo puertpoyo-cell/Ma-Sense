@@ -421,6 +421,17 @@ func history(of itemKey: String, in results: [LabResultSnapshot]) -> [LabResultS
 - 주는 달력 firstWeekday부터 7일. 날마다 투약(취소 제외)·진료·컨디션·체중·단백질·운동 기록이 있는지만. 많고 적음·연속일 없음
 - N-E1 월 보기: `monthGrid`는 그 달을 주 단위 7칸으로, 그 달이 아닌 칸은 nil. 투약일만 표시
 
+## R32. 마선생 알림 (D47, 2026-11-09 사람 결정)
+
+```swift
+func coachReminders(enabled:, nextClinicDate:, openQuestions:, pensLastDose:, lastRecord:, now:, calendar:) -> [PlannedNotification]
+```
+
+- 진료 전날 20:00, 물어볼 것 0개일 때만 (`coach.clinicEve`)
+- 남은 펜 마지막 투약일(R30 `pensLastDose`) 12:30 (`coach.pensShort`)
+- 마지막 기록 날 + 3일 20:00, 그 뒤 7일마다, 앞으로 4주 안 (`coach.recordGap.<n>`, 인자 n일)
+- 같은 날 여럿이면 펜 > 진료 > 기록 빔 하나만. 끄면 없음
+
 ## R31. 투약 일정 옮기기 (D45, 2026-11-08 사람 요청)
 
 ```swift
