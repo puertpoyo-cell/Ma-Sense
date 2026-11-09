@@ -136,6 +136,14 @@ puertpoyo@gmail.com (`AppConfig.feedbackEmail`, 처리방침 10과 같음). 앱 
 - 투약 기록률, 컨디션 체크 응답률: 기기 내 집계를 테스터가 설정 화면에서 확인 (M2 이후 화면 추가 검토)
 - 리포트 생성 여부, "의사에게 보여 줬다" 사례: 테스터 설문과 TestFlight 피드백
 
+## 6-0. Apple Watch 앱 서명 (D50, 0.7 — 사람이 한 번 할 일)
+
+워치 앱(번들 ID `com.masense.app.watchkitapp`)이 새로 생겼다. 클라우드 자동 서명이 App ID를 만들 수 있지만, iCloud 컨테이너 연결은 iPhone 앱 때처럼 Mac Xcode에서 한 번 해야 할 수 있다.
+1. Mac: `cd ~/Developer/Ma-Sense && git pull origin main` → Xcode로 `Masense.xcodeproj` 열기
+2. 타깃 **MasenseWatch** > Signing & Capabilities: 팀 선택(자동 서명), **iCloud**에 CloudKit 체크와 컨테이너 `iCloud.com.puertpoyo.masense` 체크, **Push Notifications**가 있으면 그대로
+3. 한 번 워치 시뮬레이터나 실기기로 실행(또는 Product > Archive까지만)하면 App ID·프로비저닝이 만들어진다. 그 뒤 TestFlight 자동 업로드가 워치 앱까지 서명한다
+4. 업로드 로그에 `MasenseWatch` 프로비저닝 오류가 나면 그 줄을 Claude에게 보낸다
+
 ## 6. 오픈 베타 — TestFlight 공개 링크 (D40, 2026-11-03 사람 요청 "오픈 베타 할 수 있도록 준비")
 
 내부 테스트(지금까지)는 팀원만 받는다. 오픈 베타는 **외부 테스트 그룹 + 공개 링크**로, 링크를 아는 누구나(최대 10,000명) 받는다. 첫 외부 빌드는 Apple의 **베타 앱 심사**(보통 하루 안, 길면 2~3일)를 거친다.

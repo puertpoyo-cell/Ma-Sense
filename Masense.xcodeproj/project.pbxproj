@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4D4153454E53450000000021 /* MasenseWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4D4153454E5345000000001A /* MasenseWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4D4153454E5345000000003D /* MasenseWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 4D4153454E53450000000030 /* MasenseWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +26,13 @@
 			remoteGlobalIDString = 4D4153454E53450000000020;
 			remoteInfo = MasenseWidgets;
 		};
+		4D4153454E5345000000003B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4D4153454E53450000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D4153454E53450000000035;
+			remoteInfo = MasenseWatch;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -39,17 +47,146 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D4153454E5345000000003E /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				4D4153454E5345000000003D /* MasenseWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		4D4153454E5345000000000B /* Masense.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Masense.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D4153454E5345000000000C /* MasenseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MasenseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D4153454E5345000000001A /* MasenseWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MasenseWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D4153454E53450000000030 /* MasenseWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MasenseWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4D4153454E53450000000039 /* Exceptions for "Masense" folder in "MasenseWatch" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				App/AppRouter.swift,
+				App/AppServices.swift,
+				App/CloudKitSchemaInitializer.swift,
+				App/MasenseApp.swift,
+				"App/ModelContainer+Masense.swift",
+				App/RootView.swift,
+				App/SampleData.swift,
+				App/ScreenshotRoute.swift,
+				App/SplashView.swift,
+				App/StoreLocation.swift,
+				DesignSystem/AdaptiveStack.swift,
+				DesignSystem/Blueprint.swift,
+				DesignSystem/CameraPicker.swift,
+				"DesignSystem/Color+Tokens.swift",
+				DesignSystem/DimensionValue.swift,
+				DesignSystem/FormStyle.swift,
+				DesignSystem/FrostCard.swift,
+				DesignSystem/HalfHourDatePicker.swift,
+				DesignSystem/MealSlotRow.swift,
+				DesignSystem/MidnightBackground.swift,
+				DesignSystem/NoticeLine.swift,
+				DesignSystem/PrimaryButton.swift,
+				DesignSystem/RecordedToast.swift,
+				DesignSystem/Spacing.swift,
+				DesignSystem/SymptomChip.swift,
+				DesignSystem/Typography.swift,
+				DesignSystem/UnfoldColumns.swift,
+				DesignSystem/UnfoldLayout.swift,
+				DesignSystem/WeekChart.swift,
+				DesignSystem/WeekSparkline.swift,
+				Features/Clinic/AppointmentSheet.swift,
+				Features/Clinic/CalendarEventSheet.swift,
+				Features/Clinic/ClinicView.swift,
+				Features/Clinic/ClinicVisitSheet.swift,
+				Features/Clinic/PrescriptionCard.swift,
+				Features/Coach/CoachPopup.swift,
+				Features/Condition/ConditionCheckModel.swift,
+				Features/Condition/ConditionCheckSheet.swift,
+				Features/Condition/SymptomFlowView.swift,
+				Features/Dose/BackfillModel.swift,
+				Features/Dose/BackfillSheet.swift,
+				Features/Dose/BodyMapView.swift,
+				Features/Dose/DoseLogModel.swift,
+				Features/Dose/DoseLogSheet.swift,
+				Features/Dose/RefillSheet.swift,
+				Features/Dose/RemainingPensSheet.swift,
+				Features/Dose/ScheduleShiftViews.swift,
+				Features/Dose/SiteEditSheet.swift,
+				Features/Habits/FoodPhotoSheet.swift,
+				Features/Habits/ProteinLogModel.swift,
+				Features/Habits/ProteinSheet.swift,
+				Features/Habits/StrengthLogModel.swift,
+				Features/Habits/StrengthSheet.swift,
+				Features/History/BodyTrendCard.swift,
+				Features/History/HistoryListView.swift,
+				Features/History/HistoryModel.swift,
+				Features/History/HistoryView.swift,
+				Features/History/SleepFlowView.swift,
+				Features/History/WeeklySummaryListView.swift,
+				Features/Info/InfoViews.swift,
+				Features/Onboarding/OnboardingView.swift,
+				Features/Report/ClinicQuestionsSheet.swift,
+				Features/Report/ReportPage.swift,
+				Features/Report/ReportPurchaseSheet.swift,
+				Features/Report/ReportView.swift,
+				Features/Settings/DataImportModel.swift,
+				Features/Settings/ImportSheet.swift,
+				Features/Settings/PrescriptionFormModel.swift,
+				Features/Settings/PrescriptionHistory.swift,
+				Features/Settings/PrescriptionSheet.swift,
+				Features/Settings/SettingsView.swift,
+				Features/Today/CountdownHero.swift,
+				Features/Today/GlanceStrip.swift,
+				Features/Today/PenStatusCard.swift,
+				Features/Today/TodayModel.swift,
+				Features/Today/TodayView.swift,
+				Features/Today/WeeklySummaryCard.swift,
+				Features/Today/WeightEntrySheet.swift,
+				Features/Today/WeightTrendSheet.swift,
+				Resources/Assets.xcassets,
+				Resources/InfoPlist.xcstrings,
+				Resources/PrivacyInfo.xcprivacy,
+				Services/CoachContextService.swift,
+				Services/CoachIntentService.swift,
+				Services/ExportService.swift,
+				Services/FoodRecognitionService.swift,
+				Services/HealthCache.swift,
+				Services/HealthKitService.swift,
+				Services/LiveActivityService.swift,
+				Services/NotificationCoordinator.swift,
+				Services/NotificationService.swift,
+				Services/RecordUndo.swift,
+				Services/ReportRenderer.swift,
+				Services/StoreService.swift,
+				Services/SyncMergeService.swift,
+				Services/TextRecognitionService.swift,
+				Services/WeightSyncService.swift,
+				Services/WidgetService.swift,
+			);
+			target = 4D4153454E53450000000035 /* MasenseWatch */;
+		};
+		4D4153454E5345000000003A /* Exceptions for "Shared" folder in "MasenseWatch" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DoseDayActivity.swift,
+			);
+			target = 4D4153454E53450000000035 /* MasenseWatch */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		4D4153454E53450000000005 /* Masense */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4D4153454E53450000000039 /* Exceptions for "Masense" folder in "MasenseWatch" target */,
+			);
 			path = Masense;
 			sourceTree = "<group>";
 		};
@@ -65,7 +202,15 @@
 		};
 		4D4153454E5345000000001C /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4D4153454E5345000000003A /* Exceptions for "Shared" folder in "MasenseWatch" target */,
+			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		4D4153454E53450000000031 /* MasenseWatch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MasenseWatch;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -92,6 +237,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D4153454E53450000000033 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -102,6 +254,7 @@
 				4D4153454E53450000000006 /* MasenseTests */,
 				4D4153454E5345000000001B /* MasenseWidgets */,
 				4D4153454E5345000000001C /* Shared */,
+				4D4153454E53450000000031 /* MasenseWatch */,
 				4D4153454E5345000000000A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -112,6 +265,7 @@
 				4D4153454E5345000000000B /* Masense.app */,
 				4D4153454E5345000000000C /* MasenseTests.xctest */,
 				4D4153454E5345000000001A /* MasenseWidgets.appex */,
+				4D4153454E53450000000030 /* MasenseWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -127,11 +281,13 @@
 				4D4153454E53450000000007 /* Frameworks */,
 				4D4153454E5345000000000D /* Resources */,
 				4D4153454E53450000000022 /* Embed Foundation Extensions */,
+				4D4153454E5345000000003E /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				4D4153454E53450000000024 /* PBXTargetDependency */,
+				4D4153454E5345000000003C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				4D4153454E53450000000005 /* Masense */,
@@ -190,6 +346,30 @@
 			productReference = 4D4153454E5345000000001A /* MasenseWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		4D4153454E53450000000035 /* MasenseWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D4153454E53450000000036 /* Build configuration list for PBXNativeTarget "MasenseWatch" */;
+			buildPhases = (
+				4D4153454E53450000000032 /* Sources */,
+				4D4153454E53450000000033 /* Frameworks */,
+				4D4153454E53450000000034 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4D4153454E53450000000031 /* MasenseWatch */,
+				4D4153454E53450000000005 /* Masense */,
+				4D4153454E5345000000001C /* Shared */,
+			);
+			name = MasenseWatch;
+			packageProductDependencies = (
+			);
+			productName = MasenseWatch;
+			productReference = 4D4153454E53450000000030 /* MasenseWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -208,6 +388,9 @@
 						TestTargetID = 4D4153454E53450000000003;
 					};
 					4D4153454E53450000000020 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					4D4153454E53450000000035 = {
 						CreatedOnToolsVersion = 16.0;
 					};
 				};
@@ -230,6 +413,7 @@
 				4D4153454E53450000000003 /* Masense */,
 				4D4153454E53450000000004 /* MasenseTests */,
 				4D4153454E53450000000020 /* MasenseWidgets */,
+				4D4153454E53450000000035 /* MasenseWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -250,6 +434,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4D4153454E5345000000001E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4D4153454E53450000000034 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -280,6 +471,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D4153454E53450000000032 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -292,6 +490,11 @@
 			isa = PBXTargetDependency;
 			target = 4D4153454E53450000000020 /* MasenseWidgets */;
 			targetProxy = 4D4153454E53450000000023 /* PBXContainerItemProxy */;
+		};
+		4D4153454E5345000000003C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D4153454E53450000000035 /* MasenseWatch */;
+			targetProxy = 4D4153454E5345000000003B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -583,6 +786,66 @@
 			};
 			name = Release;
 		};
+		4D4153454E53450000000037 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/MasenseWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 46;
+				DEVELOPMENT_TEAM = 24F957FFAD;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.masense.app;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.6;
+				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		4D4153454E53450000000038 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/MasenseWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 46;
+				DEVELOPMENT_TEAM = 24F957FFAD;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.masense.app;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.6;
+				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -618,6 +881,15 @@
 			buildConfigurations = (
 				4D4153454E53450000000025 /* Debug */,
 				4D4153454E53450000000026 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4D4153454E53450000000036 /* Build configuration list for PBXNativeTarget "MasenseWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D4153454E53450000000037 /* Debug */,
+				4D4153454E53450000000038 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

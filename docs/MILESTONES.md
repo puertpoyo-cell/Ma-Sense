@@ -334,6 +334,13 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - 오픈 베타는 최소 4주, 1.0 날짜는 베타가 끝날 때 정함 (2026-11-09 사람 결정). 1.0 전 필수: 건강 앱 데이터 iCloud 동기화 분리(5.1.3), 계정 유형 확인(5.1.1(ix)), 인앱 구매 등록. 리스크 페이지 https://claude.ai/artifact/NdqLySw8H3kcbmsyhzMdoV
 - [x] PROPOSAL_U1 A1·A2·A3·A4·A5·B1·B2·B3·C1·C2·C3 반영 (D46, `RecordUndo`·`ProteinRules.recentCombos` + 테스트). D1·D2 남음
 
+## D50 — Apple Watch 앱 (0.7, 2026-11-09 사람 결정)
+
+- [x] watchOS 타깃 `MasenseWatch` (watchOS 10+, iPhone 앱에 포함), iCloud(CloudKit) 처방·투약·컨디션
+- [x] 다음 투약 카드, 투약 기록(부위 목록), 마선생 묻기(고정 대답, 얼굴), 알림에서 투약 기록으로
+- [ ] 사람: Mac Xcode에서 워치 타깃 서명·iCloud 한 번 (TESTFLIGHT.md 6-0), 워치 실기기 확인
+- 다음: 워치 컴플리케이션(다음 투약 D-n), 매운맛 설정 워치로 가져오기
+
 ## D49 — 건강 앱 데이터를 iCloud 동기화에서 뺌 (R1, 2026-11-09 사람 결정)
 
 - [x] `HealthCache` (메모리 + App Group 파일, 백업 제외), `HealthSyncService`가 캐시를 채우고 SwiftData의 예전 건강 앱 행을 지움 + 테스트
