@@ -336,6 +336,8 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 
 ## D50 — Apple Watch 앱 (0.7, 2026-11-09 사람 결정)
 
+- [x] 0.7 (47) 업로드 — R1·워치 앱·오픈 베타 무료. 워치 서명이 막히면 TESTFLIGHT.md 6-0
+
 - [x] watchOS 타깃 `MasenseWatch` (watchOS 10+, iPhone 앱에 포함), iCloud(CloudKit) 처방·투약·컨디션
 - [x] 다음 투약 카드, 투약 기록(부위 목록), 마선생 묻기(고정 대답, 얼굴), 알림에서 투약 기록으로
 - [ ] 사람: Mac Xcode에서 워치 타깃 서명·iCloud 한 번 (TESTFLIGHT.md 6-0), 워치 실기기 확인
