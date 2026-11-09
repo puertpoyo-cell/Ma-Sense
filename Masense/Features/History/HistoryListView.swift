@@ -335,11 +335,13 @@ struct HistoryListView: View {
 
     @ViewBuilder
     private func weightSections(now: Date) -> some View {
-        let snapshots = weights.map(\.snapshot)
+        // D49: 직접 입력(SwiftData) + 건강 앱(이 기기 캐시)
+        let snapshots = HealthCache.shared.weights(adding: weights.map(\.snapshot))
+        let rows = weightRows
         // D11: 최근 12주 기록이 없으면 마지막 기록까지로
         let end = WeightRules.seriesEnd(samples: snapshots, weeks: Self.weightWeeks, now: now, calendar: calendar)
         let series = WeightRules.weeklyWeightSeries(samples: snapshots, weeks: Self.weightWeeks, now: end, calendar: calendar)
-        if weights.isEmpty {
+        if rows.isEmpty {
             emptyRow("weight.empty")
         } else {
             Section {
@@ -356,7 +358,8 @@ struct HistoryListView: View {
             .frostRow()
 
             Section {
-                ForEach(weights) { sample in
+                ForEach(rows) { row in
+                    let sample = row.snapshot
                     AdaptiveStack {
                         VStack(alignment: .leading, spacing: Spacing.s1) {
                             Text(sample.measuredAt.formatted(.dateTime.month(.defaultDigits).day().hour().minute()))
@@ -396,9 +399,9 @@ struct HistoryListView: View {
                     .frostRow()
                     .swipeActions(edge: .trailing) {
                         // HealthKit 샘플은 Apple Health에서 관리한다. 다음 동기화에 다시 들어오므로 수동 입력만 지운다
-                        if sample.source == .manual {
+                        if let model = row.model {
                             Button("history.weight.delete") {
-                                context.delete(sample)
+                                context.delete(model)
                                 try? context.save()
                             }
                             .tint(Color.inkTertiary)
@@ -407,6 +410,23 @@ struct HistoryListView: View {
                 }
             }
         }
+    }
+
+    /// D49 체중 목록 한 줄: 직접 입력은 지울 수 있는 모델과 함께, 건강 앱은 스냅샷만 (최근 순)
+    private struct WeightRow: Identifiable {
+        let id: String
+        let snapshot: WeightSampleSnapshot
+        let model: WeightSample?
+    }
+
+    private var weightRows: [WeightRow] {
+        let manual = weights.filter { $0.source == .manual }.map {
+            WeightRow(id: "m." + $0.id.uuidString, snapshot: $0.snapshot, model: $0)
+        }
+        let health = HealthCache.shared.weights.enumerated().map {
+            WeightRow(id: "h.\($0.offset).\($0.element.measuredAt.timeIntervalSince1970)", snapshot: $0.element, model: nil)
+        }
+        return (manual + health).sorted { $0.snapshot.measuredAt > $1.snapshot.measuredAt }
     }
 
     // MARK: 습관 (M2)
@@ -418,7 +438,7 @@ struct HistoryListView: View {
         let cells = HistoryModel.habitMonth(
             containing: anchor,
             proteins: proteins.map(\.snapshot),
-            sessions: sessions.map(\.snapshot),
+            sessions: HealthCache.shared.sessions(adding: sessions.map(\.snapshot)),
             proteinTarget: target,
             calendar: calendar
         )

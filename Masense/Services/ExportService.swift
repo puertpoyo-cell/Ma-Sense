@@ -225,6 +225,8 @@ enum ExportService {
 
     /// 모든 기록과 설정을 즉시 영구 삭제한다 (COMPLIANCE.md 5).
     static func deleteAll(context: ModelContext) throws {
+        // D49 이 기기에만 둔 건강 앱 캐시도 지운다 (다음 동기화 때 건강 앱에서 다시 읽는다)
+        HealthCache.shared.clear()
         try deleteRecords(context: context)
         try context.fetch(FetchDescriptor<ClinicPhoto>()).forEach { context.delete($0) }
         try context.fetch(FetchDescriptor<UserSettings>()).forEach { context.delete($0) }

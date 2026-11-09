@@ -320,6 +320,8 @@ CloudKit은 모든 관계가 옵셔널이어야 한다. `Prescription.doses`·`D
 
 ## HealthKit 매핑
 
+> D49 (2026-11-09, App Store 가이드라인 5.1.3 "건강 정보를 iCloud에 저장하지 않음"): 건강 앱에서 읽은 체중·체성분·운동은 SwiftData(iCloud 동기화)에 넣지 않고 `HealthCache`(메모리 + App Group의 `HealthCache.json`, 백업 제외)에만 둔다. 화면·리포트·알림은 직접 입력(SwiftData) + 캐시를 합쳐 본다. 예전 빌드가 SwiftData에 넣은 `source = healthKit` 행은 건강 앱 동기화 때마다 지운다. 아래 표의 WeightSample·StrengthSession 행은 이제 직접 입력만 저장한다 (모델·스키마는 그대로, 추가만 원칙 유지)
+
 | 앱 데이터 | HKQuantityType / HKWorkoutType | 방향 |
 |---|---|---|
 | WeightSample.kilograms | `bodyMass` | 읽기 (쓰기는 v1.1) |

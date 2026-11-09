@@ -19,7 +19,7 @@ struct WeightTrendSheet: View {
     var body: some View {
         // 시트를 그리는 시각이 now 주입 지점
         let now = Date.now
-        let all = weights.map(\.snapshot)
+        let all = HealthCache.shared.weights(adding: weights.map(\.snapshot))
         let metrics = BodyMetric.allCases.filter { $0 == .weight || !WeightRules.metricSamples(all, metric: $0).isEmpty }
         let samples = WeightRules.metricSamples(all, metric: metric)
         // 고른 기간에 기록이 없으면 마지막 기록까지로 (전체는 그대로)

@@ -257,9 +257,9 @@ struct ReportView: View {
                 ReportBuilder.PrescriptionData(prescription: $0.snapshot, doses: $0.doseSnapshots, isActive: $0.isActive)
             },
             checks: checks.compactMap(\.snapshot),
-            weights: weights.map(\.snapshot),
+            weights: HealthCache.shared.weights(adding: weights.map(\.snapshot)),
             proteins: proteins.map(\.snapshot),
-            sessions: sessions.map(\.snapshot),
+            sessions: HealthCache.shared.sessions(adding: sessions.map(\.snapshot)),
             proteinTarget: settings?.proteinTargetGrams,
             heightCm: settings?.heightCm,
             questions: questions.map(\.snapshot),

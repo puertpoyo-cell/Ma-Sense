@@ -423,7 +423,7 @@ private struct SettingsForm: View {
 
     /// 안내 계산용 체중: 직접 정한 값, 없으면 최근 체중
     private var guideWeight: Double? {
-        settings.bodyWeightForGuideKg ?? weights.first?.kilograms
+        settings.bodyWeightForGuideKg ?? HealthCache.shared.weights(adding: weights.map(\.snapshot)).last?.kilograms
     }
 
     // MARK: 연동 (Info.plist 키가 있을 때만)

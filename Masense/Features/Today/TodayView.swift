@@ -171,9 +171,9 @@ struct TodayView: View {
             prescription: prescription?.snapshot,
             doses: prescription?.doseSnapshots ?? [],
             checks: checks.compactMap(\.snapshot),
-            weights: weights.map(\.snapshot),
+            weights: HealthCache.shared.weights(adding: weights.map(\.snapshot)),
             proteins: proteins.map(\.snapshot),
-            sessions: sessions.map(\.snapshot),
+            sessions: HealthCache.shared.sessions(adding: sessions.map(\.snapshot)),
             habits: habits.map(\.snapshot),
             proteinTarget: settingsList.first?.proteinTargetGrams,
             heightCm: settingsList.first?.heightCm,
@@ -273,7 +273,7 @@ struct TodayView: View {
                     totalDoses: model.totalDoses,
                     exhaustionDate: model.exhaustionDate,
                     recentSites: model.recentSites,
-                    onOpenWeight: { sheet = weights.isEmpty ? .weight : .weightTrend },
+                    onOpenWeight: { sheet = hasAnyWeight ? .weightTrend : .weight },
                     onOpenPens: { sheet = .pens },
                     // D45: 지난 부위 줄은 그 기록 고치기 (기록이 없으면 새 기록)
                     onOpenSite: { sheet = lastDoseID.map { Sheet.editDose($0) } ?? .dose }
@@ -395,7 +395,12 @@ struct TodayView: View {
 
     /// 체중·단백질 기록이 하나도 없거나 건강 앱을 아직 잇지 않았을 때만
     private var needsFirstSteps: Bool {
-        weights.isEmpty || proteins.isEmpty || (canConnectHealth && weights.isEmpty)
+        !hasAnyWeight || proteins.isEmpty
+    }
+
+    /// D49 직접 입력 또는 건강 앱(이 기기 캐시) 체중이 하나라도 있으면
+    private var hasAnyWeight: Bool {
+        !weights.isEmpty || !HealthCache.shared.weights.isEmpty
     }
 
     private var firstStepsCard: some View {
@@ -408,12 +413,12 @@ struct TodayView: View {
                     .font(Typography.caption)
                     .foregroundStyle(Color.inkSecondary)
                     .fixedSize(horizontal: false, vertical: true)
-                if canConnectHealth && weights.isEmpty {
+                if canConnectHealth && !hasAnyWeight {
                     firstStepButton("today.firstSteps.health", systemImage: "heart.text.square") {
                         Task { await connectHealth() }
                     }
                 }
-                if weights.isEmpty {
+                if !hasAnyWeight {
                     firstStepButton("today.firstSteps.weight", systemImage: "chart.xyaxis.line") { sheet = .weight }
                 }
                 if proteins.isEmpty {

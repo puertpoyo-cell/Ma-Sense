@@ -81,7 +81,7 @@ struct WeightEntrySheet: View {
                         stepButton("minus", label: "weight.entry.minus") { model.step(-0.1) }
                         stepButton("plus", label: "weight.entry.plus") { model.step(0.1) }
                         Spacer(minLength: 0)
-                        if !recent.isEmpty {
+                        if !recent.isEmpty || !HealthCache.shared.weights.isEmpty {
                             Text("weight.entry.prefilled")
                                 .font(Typography.caption)
                                 .foregroundStyle(Color.inkTertiary)
@@ -104,7 +104,7 @@ struct WeightEntrySheet: View {
                 }
             }
             .onAppear {
-                if model.text.isEmpty, let last = recent.first?.kilograms {
+                if model.text.isEmpty, let last = HealthCache.shared.weights(adding: recent.map(\.snapshot)).last?.kilograms {
                     model.text = String(format: "%.1f", (last * 10).rounded() / 10)
                 } else {
                     fieldFocused = true

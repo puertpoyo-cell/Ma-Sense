@@ -73,9 +73,9 @@ struct HistoryView: View {
                     // D23: 펼친 가로 화면은 왼쪽 몸 추이·달력·하루 카드, 오른쪽 모아 보기 2단
                     UnfoldColumns(container: viewport) {
                         // D24: 몸 추이 그래프를 맨 위에 (체중·체지방률·제지방량 겹쳐 보기)
-                        if !weights.isEmpty {
+                        if !weights.isEmpty || !HealthCache.shared.weights.isEmpty {
                             BodyTrendCard(
-                                samples: weights.map(\.snapshot),
+                                samples: HealthCache.shared.weights(adding: weights.map(\.snapshot)),
                                 doses: allDoses.map(\.snapshot),
                                 now: timeline.date,
                                 // D46 (U1 C1): 그래프에서 고른 날로 아래 하루 카드를
@@ -303,9 +303,9 @@ struct HistoryView: View {
             on: day,
             doses: allDoses.map(\.snapshot),
             checks: checks.compactMap(\.snapshot),
-            weights: weights.map(\.snapshot),
+            weights: HealthCache.shared.weights(adding: weights.map(\.snapshot)),
             proteins: proteins.map(\.snapshot),
-            sessions: sessions.map(\.snapshot),
+            sessions: HealthCache.shared.sessions(adding: sessions.map(\.snapshot)),
             visits: visits.map(\.visitedAt),
             calendar: calendar
         )
@@ -321,11 +321,15 @@ struct HistoryView: View {
         var weights: [WeightSample] = []
         var proteins: [ProteinEntry] = []
         var sessions: [StrengthSession] = []
+        /// D49 건강 앱에서 읽은 그날 체중·운동 (이 기기 캐시, 지울 수 없음)
+        var healthWeights: [WeightSampleSnapshot] = []
+        var healthSessions: [StrengthSessionSnapshot] = []
         var habitKeys: [String] = []
 
         var isEmpty: Bool {
             doses.isEmpty && visits.isEmpty && checks.isEmpty && weights.isEmpty
                 && proteins.isEmpty && sessions.isEmpty && habitKeys.isEmpty
+                && healthWeights.isEmpty && healthSessions.isEmpty
         }
     }
 
@@ -338,6 +342,8 @@ struct HistoryView: View {
         entries.weights = weights.filter { same($0.measuredAt) }
         entries.proteins = proteins.filter { same($0.date) }
         entries.sessions = sessions.filter { same($0.startedAt) }
+        entries.healthWeights = HealthCache.shared.weights.filter { same($0.measuredAt) }
+        entries.healthSessions = HealthCache.shared.workouts.filter { same($0.startedAt) }
         if let habit = habits.first(where: { same($0.date) }) {
             if habit.water { entries.habitKeys.append("habit.water") }
             if habit.fiber { entries.habitKeys.append("habit.fiber") }
@@ -440,8 +446,11 @@ struct HistoryView: View {
                     Button { delete(check) } label: { Label("history.day.delete", systemImage: "trash") }
                 }
         }
+        ForEach(Array(entries.healthWeights.enumerated()), id: \.offset) { _, sample in
+            dayRow(.weight, title: Text(verbatim: weightText(sample)), detail: Text("history.day.fromHealth"))
+        }
         ForEach(entries.weights) { sample in
-            dayRow(.weight, title: Text(verbatim: weightText(sample)), detail: sample.source == .healthKit ? Text("history.day.fromHealth") : nil)
+            dayRow(.weight, title: Text(verbatim: weightText(sample.snapshot)), detail: sample.source == .healthKit ? Text("history.day.fromHealth") : nil)
                 .contextMenu {
                     // 건강 앱에서 온 기록은 건강 앱에서 지운다
                     if sample.source == .manual {
@@ -458,6 +467,9 @@ struct HistoryView: View {
                 .contextMenu {
                     Button { delete(entry) } label: { Label("history.day.delete", systemImage: "trash") }
                 }
+        }
+        ForEach(Array(entries.healthSessions.enumerated()), id: \.offset) { _, session in
+            dayRow(.exercise, title: Text(LocalizedStringKey(session.kind.titleKey)), detail: Text("history.day.minutes \(session.durationMinutes)"))
         }
         ForEach(entries.sessions) { session in
             dayRow(.exercise, title: Text(LocalizedStringKey(session.kind.titleKey)), detail: Text("history.day.minutes \(session.durationMinutes)"))
@@ -505,7 +517,7 @@ struct HistoryView: View {
         return names.isEmpty ? Text("history.day.noSymptoms") : Text(verbatim: names.joined(separator: ", "))
     }
 
-    private func weightText(_ sample: WeightSample) -> String {
+    private func weightText(_ sample: WeightSampleSnapshot) -> String {
         var text = sample.kilograms.formatted(.number.precision(.fractionLength(1))) + " kg"
         if let fat = sample.bodyFatPercent {
             text += " · " + L10n.string("history.day.fat") + " " + fat.formatted(.number.precision(.fractionLength(1))) + "%"

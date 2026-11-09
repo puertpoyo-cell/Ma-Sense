@@ -65,6 +65,7 @@ struct M2ReportAndHealthTests {
 
     @Test func leanMassAttachesToSameDayHealthSample() async throws {
         let reader = FakeHealthKitService()
+        let cache = HealthCache(fileURL: nil)
         let now = TestCalendar.date(2026, 10, 25, 9)
         reader.samples = [
             HealthWeightSample(uuid: UUID(), measuredAt: TestCalendar.date(2026, 10, 20, 7), kilograms: 81),
@@ -74,40 +75,39 @@ struct M2ReportAndHealthTests {
         // D11: 체지방률도 같은 날에 붙는다 (0~100)
         reader.fatSamples = [HealthPercentSample(uuid: UUID(), measuredAt: TestCalendar.date(2026, 10, 22, 7, 1), percent: 22.0)]
 
-        try await HealthSyncService.syncAll(reader: reader, context: context, now: now, calendar: calendar)
-        let samples = try WeightSample.all(in: context)
-        #expect(samples.map(\.leanBodyMassKg) == [54.8, nil])
-        #expect(samples.map(\.bodyFatPercent) == [nil, 22.0])
+        try await HealthSyncService.syncAll(reader: reader, context: context, cache: cache, now: now, calendar: calendar)
+        #expect(cache.weights.map(\.leanBodyMassKg) == [54.8, nil])
+        #expect(cache.weights.map(\.bodyFatPercent) == [nil, 22.0])
+        // D49: 건강 앱 기록은 iCloud로 가는 SwiftData에 넣지 않는다
+        #expect(try WeightSample.all(in: context).isEmpty)
     }
 
-    @Test func workoutsBecomeSessionsAndFollowHealthKit() async throws {
+    @Test func workoutsGoToLocalCacheAndOldStoredHealthRecordsArePurged() async throws {
         let reader = FakeHealthKitService()
+        let cache = HealthCache(fileURL: nil)
         let now = TestCalendar.date(2026, 10, 25, 9)
-        let strengthID = UUID()
         reader.workoutSamples = [
-            HealthWorkout(uuid: strengthID, startedAt: TestCalendar.date(2026, 10, 21, 7), durationMinutes: 25, kind: .strength),
+            HealthWorkout(uuid: UUID(), startedAt: TestCalendar.date(2026, 10, 21, 7), durationMinutes: 25, kind: .strength),
             HealthWorkout(uuid: UUID(), startedAt: TestCalendar.date(2026, 10, 22, 18), durationMinutes: 40, kind: .walk),
         ]
+        // 예전 빌드가 넣어 둔 건강 앱 기록 + 직접 입력
         context.insert(StrengthSession(startedAt: TestCalendar.date(2026, 10, 23, 7), durationMinutes: 0, kind: .rest))
+        context.insert(StrengthSession(startedAt: TestCalendar.date(2026, 10, 1, 7), durationMinutes: 20, kind: .walk, source: .healthKit, healthKitUUID: UUID()))
+        context.insert(WeightSample(measuredAt: TestCalendar.date(2026, 10, 2), kilograms: 80, source: .healthKit, healthKitUUID: UUID()))
+        context.insert(WeightSample(measuredAt: TestCalendar.date(2026, 10, 3), kilograms: 79, source: .manual))
 
-        try await HealthSyncService.syncAll(reader: reader, context: context, now: now, calendar: calendar, deletesMissing: true)
-        var sessions = try context.fetch(FetchDescriptor<StrengthSession>(sortBy: [SortDescriptor(\.startedAt)]))
-        #expect(sessions.map(\.kind) == [.strength, .walk, .rest])
-        #expect(sessions.filter { $0.source == .healthKit }.count == 2)
+        try await HealthSyncService.syncAll(reader: reader, context: context, cache: cache, now: now, calendar: calendar)
+        let stored = try context.fetch(FetchDescriptor<StrengthSession>())
+        #expect(stored.map(\.kind) == [.rest])
+        #expect(try WeightSample.all(in: context).map(\.source) == [.manual])
+        #expect(cache.workouts.map(\.kind) == [.strength, .walk])
+        // 화면은 직접 입력 + 캐시를 합쳐 본다
+        #expect(cache.sessions(adding: stored.map(\.snapshot)).map(\.kind) == [.strength, .walk, .rest])
 
-        // HealthKit에서 걷기가 사라지고 근력 시간이 바뀌면 따라간다. 수동 기록은 그대로
-        reader.workoutSamples = [HealthWorkout(uuid: strengthID, startedAt: TestCalendar.date(2026, 10, 21, 7), durationMinutes: 30, kind: .strength)]
-        // D26: iCloud 동기화 중에는 이 기기 건강 앱에 없다고 지우지 않는다 (다른 기기가 가져온 기록일 수 있음)
-        try await HealthSyncService.syncAll(reader: reader, context: context, now: now, calendar: calendar, deletesMissing: false)
-        sessions = try context.fetch(FetchDescriptor<StrengthSession>(sortBy: [SortDescriptor(\.startedAt)]))
-        #expect(sessions.map(\.kind) == [.strength, .walk, .rest])
-        #expect(sessions.first?.durationMinutes == 30)
-
-        // 동기화를 끈 기기에서는 건강 앱을 따라 지운다
-        try await HealthSyncService.syncAll(reader: reader, context: context, now: now, calendar: calendar, deletesMissing: true)
-        sessions = try context.fetch(FetchDescriptor<StrengthSession>(sortBy: [SortDescriptor(\.startedAt)]))
-        #expect(sessions.map(\.kind) == [.strength, .rest])
-        #expect(sessions.first?.durationMinutes == 30)
+        // 건강 앱에서 걷기가 사라지면 캐시도 따라간다
+        reader.workoutSamples = [HealthWorkout(uuid: UUID(), startedAt: TestCalendar.date(2026, 10, 21, 7), durationMinutes: 30, kind: .strength)]
+        try await HealthSyncService.syncAll(reader: reader, context: context, cache: cache, now: now, calendar: calendar)
+        #expect(cache.workouts.map(\.durationMinutes) == [30])
     }
 
     // MARK: 테마

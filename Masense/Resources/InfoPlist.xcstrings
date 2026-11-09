@@ -51,13 +51,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This app reads your weight, body fat percentage, lean body mass, workouts, and sleep from Apple Health to show them in your records and pre-visit report, and your sex to choose the body map figure. Nothing is written to Apple Health, and the data stays on this device and your own iCloud, never on our servers."
+            "value" : "This app reads your weight, body fat percentage, lean body mass, workouts, and sleep from Apple Health to show them in your records and pre-visit report, and your sex to choose the body map figure. Nothing is written to Apple Health, and what it reads stays on this device only, not in iCloud or on our servers."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apple 건강 앱의 체중, 체지방률, 제지방량, 운동, 수면 기록을 읽어 앱의 기록과 진료 전 리포트에 함께 보여 주고, 성별은 바디맵 그림을 고르는 데만 씁니다. 건강 앱에는 아무것도 쓰지 않으며, 데이터는 이 기기와 본인 iCloud에만 저장하며 운영자 서버로 보내지 않습니다."
+            "value" : "Apple 건강 앱의 체중, 체지방률, 제지방량, 운동, 수면 기록을 읽어 앱의 기록과 진료 전 리포트에 함께 보여 주고, 성별은 바디맵 그림을 고르는 데만 씁니다. 건강 앱에는 아무것도 쓰지 않으며, 건강 앱에서 읽은 데이터는 이 기기에만 두고 iCloud나 운영자 서버로 보내지 않습니다."
           }
         }
       }
@@ -69,13 +69,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This app does not write anything to Apple Health. It only reads the data you allow, and the data stays on this device and your own iCloud, never on our servers."
+            "value" : "This app does not write anything to Apple Health. It only reads the data you allow, and what it reads stays on this device only, not in iCloud or on our servers."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "마선생은 Apple 건강 앱에 아무것도 쓰지 않습니다. 허용한 데이터를 읽기만 하며, 데이터는 이 기기와 본인 iCloud에만 저장하며 운영자 서버로 보내지 않습니다."
+            "value" : "마선생은 Apple 건강 앱에 아무것도 쓰지 않습니다. 허용한 데이터를 읽기만 하며, 건강 앱에서 읽은 데이터는 이 기기에만 두고 iCloud나 운영자 서버로 보내지 않습니다."
           }
         }
       }

@@ -26,7 +26,7 @@ final class NotificationCoordinator {
         var plan = NotificationRules.weightReminders(
             settings: settings.snapshot,
             prescriptionWeekday: prescription?.scheduledWeekday,
-            weights: try WeightSample.all(in: context).map(\.snapshot),
+            weights: HealthCache.shared.weights(adding: try WeightSample.all(in: context).map(\.snapshot)),
             now: now,
             calendar: calendar
         )
@@ -41,9 +41,9 @@ final class NotificationCoordinator {
         let allDoses = ((try? context.fetch(FetchDescriptor<Dose>())) ?? []).filter { !$0.isCancelled }.map(\.administeredAt)
         let records: [Date] = allDoses
             + checks.map(\.checkedAt)
-            + ((try? WeightSample.all(in: context)) ?? []).map(\.measuredAt)
+            + HealthCache.shared.weights(adding: ((try? WeightSample.all(in: context)) ?? []).map(\.snapshot)).map(\.measuredAt)
             + ((try? context.fetch(FetchDescriptor<ProteinEntry>())) ?? []).map(\.createdAt)
-            + ((try? context.fetch(FetchDescriptor<StrengthSession>())) ?? []).map(\.startedAt)
+            + HealthCache.shared.sessions(adding: ((try? context.fetch(FetchDescriptor<StrengthSession>())) ?? []).map(\.snapshot)).map(\.startedAt)
         plan += NotificationRules.coachReminders(
             enabled: CoachNotificationSetting.isEnabled,
             nextClinicDate: prescription?.nextClinicDate,

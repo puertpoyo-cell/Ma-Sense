@@ -128,33 +128,48 @@ struct ServiceTests {
         #expect(a.eveningReminderHour == 20)
     }
 
-    @Test func weightSyncUpsertsUpdatesAndDeletes() async throws {
+    @Test func healthCacheFollowsHealthAppAndKeepsManualInStore() async throws {
         let context = makeContext()
         let reader = FakeHealthKitService()
+        let cache = HealthCache(fileURL: nil)
         let calendar = TestCalendar.seoul
         let now = TestCalendar.date(2026, 10, 22, 12)
-        let uuid = UUID()
 
         context.insert(WeightSample(measuredAt: TestCalendar.date(2026, 10, 1), kilograms: 85, source: .manual))
 
-        reader.samples = [HealthWeightSample(uuid: uuid, measuredAt: TestCalendar.date(2026, 10, 20, 8), kilograms: 80)]
-        try await WeightSyncService.sync(reader: reader, context: context, now: now, calendar: calendar)
-        var cached = try WeightSample.all(in: context).filter { $0.source == .healthKit }
-        #expect(cached.count == 1)
-        #expect(cached.first?.healthKitUUID == uuid)
-        #expect(cached.first?.kilograms == 80)
+        reader.samples = [HealthWeightSample(uuid: UUID(), measuredAt: TestCalendar.date(2026, 10, 20, 8), kilograms: 80)]
+        try await HealthSyncService.syncAll(reader: reader, context: context, cache: cache, now: now, calendar: calendar)
+        #expect(cache.weights.map(\.kilograms) == [80])
+        #expect(cache.weights.first?.source == .healthKit)
 
-        reader.samples = [HealthWeightSample(uuid: uuid, measuredAt: TestCalendar.date(2026, 10, 20, 8), kilograms: 79.4)]
-        try await WeightSyncService.sync(reader: reader, context: context, now: now, calendar: calendar)
-        cached = try WeightSample.all(in: context).filter { $0.source == .healthKit }
-        #expect(cached.count == 1)
-        #expect(cached.first?.kilograms == 79.4)
+        reader.samples = [HealthWeightSample(uuid: UUID(), measuredAt: TestCalendar.date(2026, 10, 20, 8), kilograms: 79.4)]
+        try await HealthSyncService.syncAll(reader: reader, context: context, cache: cache, now: now, calendar: calendar)
+        #expect(cache.weights.map(\.kilograms) == [79.4])
 
         reader.samples = []
-        try await WeightSyncService.sync(reader: reader, context: context, now: now, calendar: calendar)
-        let all = try WeightSample.all(in: context)
-        #expect(all.filter { $0.source == .healthKit }.isEmpty)
-        #expect(all.filter { $0.source == .manual }.count == 1)
+        try await HealthSyncService.syncAll(reader: reader, context: context, cache: cache, now: now, calendar: calendar)
+        #expect(cache.weights.isEmpty)
+        let manual = try WeightSample.all(in: context).map(\.snapshot)
+        #expect(manual.count == 1)
+        #expect(cache.weights(adding: manual).map(\.kilograms) == [85])
+    }
+
+    @Test func healthCacheSurvivesRelaunchViaFile() throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("hc-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: url) }
+        let first = HealthCache(fileURL: url)
+        first.replace(
+            weights: [WeightSampleSnapshot(measuredAt: TestCalendar.date(2026, 10, 20), kilograms: 80, source: .healthKit, bodyFatPercent: 22)],
+            workouts: [StrengthSessionSnapshot(startedAt: TestCalendar.date(2026, 10, 21), durationMinutes: 30, kind: .strength)],
+            now: TestCalendar.date(2026, 10, 22)
+        )
+        let second = HealthCache(fileURL: url)
+        #expect(second.weights.map(\.bodyFatPercent) == [22])
+        #expect(second.workouts.map(\.kind) == [.strength])
+        let excluded = try url.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup
+        #expect(excluded == true)
+        second.clear()
+        #expect(HealthCache(fileURL: url).weights.isEmpty)
     }
 
     @Test func fakeStoreRoundTrip() async throws {

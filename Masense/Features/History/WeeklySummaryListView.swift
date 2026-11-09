@@ -97,9 +97,9 @@ struct WeeklySummaryListView: View {
         guard let prescription = activePrescriptions.first else { return [] }
         let doseSnapshots = doses.map(\.snapshot)
         let checkSnapshots = checks.compactMap(\.snapshot)
-        let weightSnapshots = weights.map(\.snapshot)
+        let weightSnapshots = HealthCache.shared.weights(adding: weights.map(\.snapshot))
         let proteinSnapshots = proteins.map(\.snapshot)
-        let sessionSnapshots = sessions.map(\.snapshot)
+        let sessionSnapshots = HealthCache.shared.sessions(adding: sessions.map(\.snapshot))
         return WeeklySummaryRules.finishedPeriods(prescription: prescription.snapshot, now: now, calendar: calendar).map { period in
             WeeklySummaryRules.summary(
                 period: period,
@@ -119,9 +119,9 @@ struct WeeklySummaryListView: View {
         guard let prescription = activePrescriptions.first else { return [] }
         let doseSnapshots = prescription.doseSnapshots
         let checkSnapshots = checks.compactMap(\.snapshot)
-        let weightSnapshots = weights.map(\.snapshot)
+        let weightSnapshots = HealthCache.shared.weights(adding: weights.map(\.snapshot))
         let proteinSnapshots = proteins.map(\.snapshot)
-        let sessionSnapshots = sessions.map(\.snapshot)
+        let sessionSnapshots = HealthCache.shared.sessions(adding: sessions.map(\.snapshot))
         return PackageSummaryRules.finishedPackages(doses: doseSnapshots, now: now, calendar: calendar).map { package in
             PackageSummaryRules.summary(
                 package: package,
