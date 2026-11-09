@@ -15487,6 +15487,23 @@
         }
       }
     },
+    "settings.purchase.openBetaFree": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "During the open beta, report PDF export and themes are free."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오픈 베타 동안 리포트 PDF 내보내기와 테마를 무료로 씁니다."
+          }
+        }
+      }
+    },
     "settings.purchase.owned": {
       "extractionState": "manual",
       "localizations": {

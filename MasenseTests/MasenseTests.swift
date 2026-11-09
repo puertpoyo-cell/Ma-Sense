@@ -63,3 +63,11 @@ struct FeedbackMailTests {
         #expect(body.contains("iPhone") && body.contains("27.1"))
     }
 }
+
+// D48 오픈 베타 동안 무료
+struct OpenBetaUnlockTests {
+    @Test func proUnlockedDuringOpenBetaOrWhenPurchased() {
+        #expect(AppConfig.isProUnlocked(hasPurchased: true))
+        #expect(AppConfig.isProUnlocked(hasPurchased: false) == AppConfig.isOpenBeta)
+    }
+}

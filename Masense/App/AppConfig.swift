@@ -50,6 +50,12 @@ enum AppConfig {
     /// 오픈 베타 동안 설정 > 정보에 안내 한 줄 (D22). 정식 출시 때 false로
     static let isOpenBeta = true
 
+    /// D48 (2026-11-09 사람 결정 "오픈 베타에는 무료"): 오픈 베타 동안은 리포트 PDF 내보내기·테마를 구매 없이 연다.
+    /// 구매 기록(`hasPurchasedPro`)은 그대로 두고 화면에서만 연다. 1.0에서 `isOpenBeta = false`면 유료로 돌아간다
+    static func isProUnlocked(hasPurchased: Bool) -> Bool {
+        hasPurchased || isOpenBeta
+    }
+
     /// D41 설정 맨 아래 관리자 이름
     static let adminName = "Hanpark"
 

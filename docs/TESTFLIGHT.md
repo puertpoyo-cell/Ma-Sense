@@ -164,6 +164,8 @@ puertpoyo@gmail.com (`AppConfig.feedbackEmail`, 처리방침 10과 같음). 앱 
 
 ### 베타 중 규칙
 
+- 오픈 베타 동안 리포트 PDF 내보내기·테마는 무료 (2026-11-09 사람 결정, `AppConfig.isProUnlocked`). 1.0 전에 `AppConfig.isOpenBeta = false`로 바꾸면 유료로 돌아간다. 베타 심사 메모에는 "During the beta, PDF export is free for testing. No purchase is needed."
+
 - 의견은 TestFlight 스크린샷 피드백(App Store Connect > TestFlight > 피드백)과 메일로 모은다. 크래시는 TestFlight > 충돌에서 본다. 분석 SDK는 넣지 않는다 (PRD 8)
 - 스키마는 추가만 (CloudKit 운영 스키마, 7절). 베타 테스터의 기록이 깨지지 않게 마이그레이션 테스트를 유지
 - 공개 베타 중에는 `MARKETING_VERSION`을 올려도 된다. 1.0 제출 전에는 올려야 한다 (사람 결정 대기: 지금 0.3)

@@ -460,7 +460,7 @@ private struct SettingsForm: View {
                     Text(LocalizedStringKey(theme.titleKey)).tag(theme.rawValue)
                 }
             }
-            .disabled(!settings.hasPurchasedPro)
+            .disabled(!AppConfig.isProUnlocked(hasPurchased: settings.hasPurchasedPro))
             LabeledContent("settings.report.accent") {
                 RoundedRectangle(cornerRadius: 3)
                     .fill(ReportPage.accent(forTheme: settings.reportTheme))
@@ -480,7 +480,7 @@ private struct SettingsForm: View {
         } footer: {
             VStack(alignment: .leading, spacing: Spacing.s1) {
                 Text("settings.report.defaultPeriod.footer")
-                if !settings.hasPurchasedPro {
+                if !AppConfig.isProUnlocked(hasPurchased: settings.hasPurchasedPro) {
                     Text("settings.report.themeLocked")
                 }
             }
@@ -506,6 +506,9 @@ private struct SettingsForm: View {
         Section {
             if settings.hasPurchasedPro {
                 Text("settings.purchase.owned")
+            } else if AppConfig.isOpenBeta {
+                // D48 오픈 베타 동안 무료
+                Text("settings.purchase.openBetaFree")
             } else if let product {
                 Button {
                     Task { await purchase() }

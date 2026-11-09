@@ -29,7 +29,7 @@ struct ReportView: View {
 
     private var activePrescription: Prescription? { prescriptions.first { $0.isActive } }
     private var settings: UserSettings? { settingsList.first }
-    private var isPurchased: Bool { settings?.hasPurchasedPro ?? false }
+    private var isPurchased: Bool { AppConfig.isProUnlocked(hasPurchased: settings?.hasPurchasedPro ?? false) }
     private var accent: Color { ReportPage.accent(forTheme: settings?.reportTheme ?? "midnight") }
 
     /// 이번에 고른 기간, 없으면 설정에 저장한 기본 기간, 없으면 R12 기본값

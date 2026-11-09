@@ -334,6 +334,10 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - 오픈 베타는 최소 4주, 1.0 날짜는 베타가 끝날 때 정함 (2026-11-09 사람 결정). 1.0 전 필수: 건강 앱 데이터 iCloud 동기화 분리(5.1.3), 계정 유형 확인(5.1.1(ix)), 인앱 구매 등록. 리스크 페이지 https://claude.ai/artifact/NdqLySw8H3kcbmsyhzMdoV
 - [x] PROPOSAL_U1 A1·A2·A3·A4·A5·B1·B2·B3·C1·C2·C3 반영 (D46, `RecordUndo`·`ProteinRules.recentCombos` + 테스트). D1·D2 남음
 
+## D48 — 오픈 베타 동안 리포트 무료 (2026-11-09 사람 결정)
+
+- [x] `AppConfig.isProUnlocked` (구매 또는 오픈 베타), 리포트 내보내기·테마, 설정 구매 칸 안내 + 테스트. 1.0에서 `isOpenBeta = false`
+
 ## D47 — 마선생 알림 (2026-11-09 사람 결정 "기본 켬")
 
 - [x] `NotificationRules.coachReminders` 진료 전날·펜 마지막 날·기록 빔, 하루 하나 + 테스트 (R32)
