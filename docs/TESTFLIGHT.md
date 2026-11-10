@@ -120,11 +120,30 @@ GitHub 러너는 매번 빈 키체인이라, 클라우드 서명이 실행마다
 5. 단백질은 식품 칩으로, 또는 "사진 확인"으로 찍어 기록해 주세요
 6. 진료 전에 기록 탭 > 리포트에서 리포트를 만들어 보고, 가능하면 진료 때 보여 주세요
 7. 진료 뒤에는 기록 탭 > 진료에 결과와 받은 펜 수를 적어 주세요
+8. Apple Watch(watchOS 10 이상)가 있으면 워치 앱에서 다음 투약일 보기, 투약 기록, 마선생 묻기를 써 보고 iPhone에 기록이 보이는지 확인해 주세요
+9. 베타 기간에는 리포트 PDF 내보내기가 무료입니다. 구매 없이 내보내 보세요
 
 알려 주시면 도움이 되는 것
 - 기록을 빠뜨린 순간과 이유
 - 리포트를 의사에게 보여 줬는지, 의사가 무엇을 봤는지
 - 헷갈린 문구나 화면
+- Apple Watch와 iPhone 사이에 기록이 전해지지 않았을 때
+```
+
+### 베타 앱 심사 메모 (Review Notes, 영어)
+
+```
+Masense is a personal logging tool for adults on a once-weekly injection prescribed by their doctor. It does not give medical advice, dose guidance, or diagnosis.
+
+No account or sign-in is needed. Onboarding can be completed without entering a prescription.
+
+During the beta, PDF export is free for testing. No purchase is needed.
+
+Apple Watch app (new in 0.7): shows the next scheduled day, logs an injection record, and shows a short coach line. It shares records with the iPhone app through the user's private iCloud database only.
+
+HealthKit: read only (weight, body fat, lean mass, workouts, sleep). HealthKit data stays on the device and is not stored in iCloud.
+
+Data is stored on the device and in the user's private iCloud. There is no server, no analytics, and no ads.
 ```
 
 ### 피드백 이메일
@@ -157,6 +176,15 @@ puertpoyo@gmail.com (`AppConfig.feedbackEmail`, 처리방침 10과 같음). 앱 
 5. 상태가 "심사 대기 중" → "테스트 중"으로 바뀌면 공개 링크(`https://testflight.apple.com/join/XXXXXXXX`)가 생긴다. 이후 빌드는 같은 그룹에 추가만 하면 되고, 보통 다시 심사하지 않는다(큰 변경이면 다시 심사)
 6. 공개 링크 `https://testflight.apple.com/join/XkVYdMBt` (그룹 "Open beta", 2026-11-03 생성). `docs/BETA_GUIDE.md`에 채워 두었다. 테스터에게 보낸다. 상표명을 넣지 않는다 (COMPLIANCE.md 2.1-5)
 
+### 0.7 (47) 오픈 베타 올리기 (2026-11-10, 업로드 끝남)
+
+1. 처리방침 재배포: `cd ~/Developer/Ma-Sense/docs/privacy && npx vercel --prod` (2026-11-09 시행본, 건강 앱 데이터는 iCloud에 두지 않음). `https://masense-privacy.vercel.app/`에서 시행일 확인
+2. App Store Connect > TestFlight > 빌드 0.7 (47)이 "제출 준비 완료"인지 확인. "수출 규정 문서 누락"이 뜨면 "아니요"
+3. 왼쪽 **테스트 정보**: 3절 베타 앱 설명 그대로, 심사 메모에 3절 "베타 앱 심사 메모" 붙여 넣기
+4. 그룹 **Open beta** > 빌드 > + > 0.7 (47) 선택 > "테스트할 내용"에 3절 "테스트해 주실 것" > 심사에 제출. 워치 앱이 새로 들어가 다시 심사할 수 있다 (보통 하루 안)
+5. "테스트 중"이 되면 `docs/BETA_GUIDE.md`를 테스터에게 보낸다. 공개 링크는 그대로 `https://testflight.apple.com/join/XkVYdMBt`
+6. 실기기 확인: iPhone에서 업데이트 → Watch 앱에서 마선생 설치 → 워치에서 투약 기록 → iPhone 기록 탭에 보이는지
+
 ### 빌드마다 (자동 업로드 뒤)
 
 - 외부 그룹에 새 빌드를 추가하려면 그룹 > 빌드 > +. **자동 배포**를 켜 두면 올라온 빌드가 바로 그룹에 들어간다 (TestFlight > 그룹 > 설정)
@@ -176,7 +204,7 @@ puertpoyo@gmail.com (`AppConfig.feedbackEmail`, 처리방침 10과 같음). 앱 
 
 - 의견은 TestFlight 스크린샷 피드백(App Store Connect > TestFlight > 피드백)과 메일로 모은다. 크래시는 TestFlight > 충돌에서 본다. 분석 SDK는 넣지 않는다 (PRD 8)
 - 스키마는 추가만 (CloudKit 운영 스키마, 7절). 베타 테스터의 기록이 깨지지 않게 마이그레이션 테스트를 유지
-- 공개 베타 중에는 `MARKETING_VERSION`을 올려도 된다. 1.0 제출 전에는 올려야 한다 (사람 결정 대기: 지금 0.3)
+- 공개 베타 중에는 `MARKETING_VERSION`을 올려도 된다. 1.0 제출 전에는 올려야 한다 (지금 0.7)
 
 ## 5. 베타 배포 후 규칙
 
