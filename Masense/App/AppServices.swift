@@ -38,6 +38,8 @@ final class AppServices {
     /// 위젯 요약을 다시 쓰고, 투약일이면 Live Activity를 띄우거나 기록 뒤 끝낸다 (D6)
     @MainActor
     func refreshReminders(context: ModelContext, now: Date = Date()) async {
+        // D51: 위젯에서 눌러 둔 투약 기록을 먼저 저장소에 넣는다
+        QuickLogService.drain(in: context, calendar: calendar)
         let snapshot = WidgetService.snapshot(context: context, now: now, calendar: calendar)
         widgets.publish(snapshot)
         // D32 (2026-11-01 사람 결정 "투약일 실시간 현황은 필요 없음, 알림 정도만"): Live Activity는 띄우지 않고, 떠 있던 것은 끈다

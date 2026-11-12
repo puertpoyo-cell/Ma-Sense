@@ -1,3 +1,4 @@
+import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -115,7 +116,17 @@ struct NextDoseWidgetView: View {
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
             }
-            if let scheduled = scheduledDate {
+            if entry.opensDoseLog {
+                // D51: 예정일이거나 지났으면 앱을 열지 않고 바로 기록 (부위는 나중에 앱에서)
+                Button(intent: QuickLogDoseIntent()) {
+                    Text("widget.action.log")
+                        .font(.caption.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(WidgetPalette.action)
+                .foregroundStyle(WidgetPalette.midnight)
+            } else if let scheduled = scheduledDate {
                 Text(scheduled.formatted(.dateTime.month(.defaultDigits).day().weekday(.abbreviated).hour().minute()))
                     .font(.caption)
                     .monospacedDigit()
@@ -245,6 +256,8 @@ enum WidgetPalette {
     static let ink = Color(red: 0xF2 / 255, green: 0xF5 / 255, blue: 0xFA / 255)
     static let inkSecondary = Color(red: 0x9A / 255, green: 0xA7 / 255, blue: 0xBD / 255)
     static let hairline = Color.white.opacity(0.12)
+    /// 기록 버튼. 판단 색(빨강·초록)이 아닌 frost 계열
+    static let action = Color(red: 0xBF / 255, green: 0xD4 / 255, blue: 0xF2 / 255)
 }
 
 #Preview(as: .systemMedium) {

@@ -51,6 +51,7 @@ Masense/
     Habits/         단백질, 근력운동, 기본 습관
     Report/         리포트 생성·미리보기·공유
     Settings/       처방 설정, 알림, HealthKit, 구매
+  Intents/          Siri·단축어 App Intents (0.8, D51). 위젯 버튼 인텐트는 `Shared/`
   Services/
     HealthKitService.swift
     NotificationService.swift

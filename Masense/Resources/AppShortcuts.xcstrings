@@ -1,0 +1,52 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Log a dose in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Log a dose in ${applicationName}",
+              "Record my dose with ${applicationName}"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName} 투약 기록",
+              "${applicationName}에서 투약 기록해 줘"
+            ]
+          }
+        }
+      }
+    },
+    "When is my next dose in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "When is my next dose in ${applicationName}",
+              "Next dose in ${applicationName}"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName} 다음 투약 언제",
+              "${applicationName} 다음 투약"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

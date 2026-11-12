@@ -72,6 +72,10 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/AppRouter.swift,
+				App/AppRuntime.swift,
+				Intents/DoseIntents.swift,
+				Resources/AppShortcuts.xcstrings,
+				Services/QuickLogService.swift,
 				App/AppServices.swift,
 				App/CloudKitSchemaInitializer.swift,
 				App/MasenseApp.swift,
@@ -176,6 +180,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				DoseDayActivity.swift,
+				QuickLogDoseIntent.swift,
 			);
 			target = 4D4153454E53450000000035 /* MasenseWatch */;
 		};

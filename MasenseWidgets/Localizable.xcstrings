@@ -69,6 +69,40 @@
         }
       }
     },
+    "intent.logDose.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log dose"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 기록"
+          }
+        }
+      }
+    },
+    "widget.action.log": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log dose"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투약 기록"
+          }
+        }
+      }
+    },
     "widget.caption.done": {
       "extractionState": "manual",
       "localizations": {

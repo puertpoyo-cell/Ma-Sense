@@ -20,10 +20,17 @@ struct MasenseApp: App {
         UNUserNotificationCenter.current().delegate = notificationResponder
 
         do {
-            container = try ModelContainer.masense()
+            // D51: Siri·단축어·위젯 버튼도 같은 저장소를 쓴다 (AppRuntime)
+            container = try AppRuntime.sharedContainer()
         } catch {
             // 온디바이스 저장소를 열지 못하면 앱이 할 수 있는 일이 없다.
             fatalError("ModelContainer could not be created: \(error)")
+        }
+        AppRuntime.services = services
+        // D51: 위젯의 "투약 기록"이 앱 프로세스에서 돌면 바로 저장소에 넣고 알림·위젯을 다시 맞춘다
+        let services = services, container = container
+        QuickLogBridge.drain = { @MainActor in
+            await services.refreshReminders(context: container.mainContext)
         }
         #if DEBUG
         // 스토어 스크린샷용: Xcode 스킴 실행 인자에 -seedSampleData를 넣으면 빈 저장소에 예시 데이터를 채운다
