@@ -178,7 +178,7 @@ puertpoyo@gmail.com (`AppConfig.feedbackEmail`, 처리방침 10과 같음). 앱 
 
 ### 0.7 (47) 오픈 베타 올리기 (2026-11-10, 업로드 끝남)
 
-1. 처리방침 재배포: `cd ~/Developer/Ma-Sense/docs/privacy && npx vercel --prod` (2026-11-09 시행본, 건강 앱 데이터는 iCloud에 두지 않음). `https://masense-privacy.vercel.app/`에서 시행일 확인
+1. 처리방침 재배포: `rm -rf ~/masense-privacy-deploy && cp -R ~/Developer/Ma-Sense/docs/privacy ~/masense-privacy-deploy && cd ~/masense-privacy-deploy && npx vercel --prod` — 저장소 안에서 바로 올리면 Vercel이 막는다(Blocked: 마지막 커밋 작성자 이메일이 GitHub 계정과 맞지 않음, 2026-11-03부터 그랬다). 저장소 밖으로 복사해 올리면 커밋 정보가 붙지 않는다. 올린 뒤 Deployments 맨 위가 Ready인지 확인 (2026-11-09 시행본, 건강 앱 데이터는 iCloud에 두지 않음). `https://masense-privacy.vercel.app/`에서 시행일 확인
 2. App Store Connect > TestFlight > 빌드 0.7 (47)이 "제출 준비 완료"인지 확인. "수출 규정 문서 누락"이 뜨면 "아니요"
 3. 왼쪽 **테스트 정보**: 3절 베타 앱 설명 그대로, 심사 메모에 3절 "베타 앱 심사 메모" 붙여 넣기
 4. 그룹 **Open beta** > 빌드 > + > 0.7 (47) 선택 > "테스트할 내용"에 3절 "테스트해 주실 것" > 심사에 제출. 워치 앱이 새로 들어가 다시 심사할 수 있다 (보통 하루 안)
