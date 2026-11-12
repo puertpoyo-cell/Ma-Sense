@@ -30,12 +30,14 @@
 - Apple 건강 앱 체중 연동 또는 직접 입력
 - 단백질과 근력운동 기록으로 감량 중 생활 습관 확인
 - 진료 전 리포트 PDF (A4 한 장)
+- 진료 기록과 진료 때 물어볼 것 메모
+- Apple Watch에서 다음 투약 확인과 기록
 
 마선생은 기록하고 정리할 뿐 판단하지 않습니다. 점수, 랭킹, 칼로리 목표, 목표 체중이 없습니다.
 마선생은 의학적 조언이나 진단, 치료를 하지 않습니다. 처방과 치료 결정은 담당 의사에게 있습니다.
 의사의 처방을 받은 만 19세 이상 성인을 위한 기록 도구입니다.
 
-모든 기록은 이 기기에만 저장되며 외부로 전송되지 않습니다. 회원가입이 없고, 분석·광고 도구를 쓰지 않습니다.
+기록은 이 기기와 본인 iCloud에만 저장되며 운영자 서버로 전송되지 않습니다. Apple 건강 앱에서 읽은 데이터는 이 기기에만 둡니다. 회원가입이 없고, 분석·광고 도구를 쓰지 않습니다.
 
 기록·알림·컨디션 체크는 모두 무료입니다. 리포트 PDF 내보내기와 리포트 테마는 한 번 구매로 쓸 수 있습니다.
 ```
@@ -100,11 +102,12 @@
 This app is a personal record-keeping tool for adults with a doctor's prescription for a once-weekly injection. It records dose dates, injection sites, post-dose symptoms, and weight, and summarizes them in a one-page PDF to show the doctor.
 
 - It gives no medical advice, diagnosis, dosage recommendation, or treatment suggestions. All health guidance ends with "consult your doctor".
-- All data stays on the device (SwiftData). No account, no server, no analytics or ad SDKs.
-- HealthKit is read-only (body mass, lean body mass, workouts) and is used only to show the user's own records and report. Nothing is written to HealthKit or shared with third parties.
+- No account, no server, no analytics or ad SDKs. Records the user enters are stored on the device and in the user's private iCloud database (CloudKit) so their own devices stay in sync. The developer cannot access them.
+- HealthKit is read-only (body mass, body fat percentage, lean body mass, workouts, sleep) and is used only to show the user's own records and report. HealthKit data stays on the device and is not stored in iCloud. Nothing is written to HealthKit or shared with third parties.
+- Apple Watch app: shows the next scheduled day, logs a dose record, and shows a short coach line. It shares records with the iPhone app through the user's private iCloud database only.
 - In-app purchase: one non-consumable unlocks report PDF export and report themes. Restore is in Settings > Purchase and on the purchase sheet. Recording, reminders, and condition checks are free.
 
-To try it: complete onboarding (role notice, age confirmation, prescription), then use "투약 기록" on the Today tab, and open the Report tab.
+To try it: complete onboarding (role notice, age confirmation, prescription), then use "투약 기록" on the Today tab, and open Records > Report. Onboarding can be completed without entering a prescription.
 ```
 
 ## 6. 제출 전 체크리스트
@@ -117,3 +120,86 @@ To try it: complete onboarding (role notice, age confirmation, prescription), th
 - [ ] 앱 아이콘 1024×1024 확정 (확정안 "네이비 유리 M" 적용됨, DESIGN_SYSTEM.md 6)
 - [ ] 오픈 베타(TESTFLIGHT.md 6) 최소 4주(2026-11-09 사람 결정 "베타 기간을 좀 더 두자"), 치명적 문제 없음, 피드백 반영. 끝나는 날은 피드백을 보고 정함
 - [ ] 연령 등급 설문, 앱 개인정보 보호 항목, 심사 메모 입력
+
+## 7. 배포 페이지 채우기 — 다른 채팅방에 붙여 넣는 안내문 (2026-11-12 사람 요청)
+
+App Store Connect 배포 탭(`https://appstoreconnect.apple.com/apps/6826698144/distribution/ios/version/inflight`)을 브라우저에 연결한 채팅방에 그대로 붙여 넣는다. 문구는 위 1·5절과 같게 유지한다. 채우기까지만 하고 심사 제출은 하지 않는다 (오픈 베타 최소 4주 뒤, 2026년 말 목표).
+
+```
+App Store Connect에서 iOS 앱 "마선생"의 1.0 버전 배포 페이지를 채우는 일을 도와줘.
+페이지: https://appstoreconnect.apple.com/apps/6826698144/distribution/ios/version/inflight
+
+[이 앱]
+주 1회 주사 치료를 받는 성인이 투약 날짜·부위, 투약 후 컨디션, 체중을 기록하고 진료 전 리포트 한 장으로 정리하는 iOS 기록 앱. 의학적 조언·판단을 하지 않는다. 지금은 TestFlight 오픈 베타(0.7) 중이고, 정식 출시는 2026년 말 목표다.
+
+[꼭 지킬 것]
+1. 채우고 "저장"까지만 한다. "심사에 추가", "심사 제출", 가격 변경, 앱 삭제, 빌드 제거는 누르지 않는다. 필요해 보이면 멈추고 나에게 묻는다.
+2. 어떤 칸에도 의약품 상표명, 약 이름, 용량 수치, 효과·감량 약속을 넣지 않는다. 느낌표와 이모지도 넣지 않는다.
+3. 아래에 없는 값(지원 URL, 저작권, 연락처 이름·전화·이메일, 카테고리, 가격)은 지어내지 말고 나에게 묻는다.
+4. 칸을 하나 채울 때마다 무엇을 넣었는지 한 줄로 알려 주고, 글자 수 제한에 걸리면 줄이지 말고 나에게 보여 준다.
+5. 로그인·2단계 인증·결제 화면이 나오면 멈추고 내가 직접 한다.
+
+[먼저 할 일]
+페이지를 읽고, 지금 비어 있는 칸과 이미 채워진 칸을 표로 정리해 보여 줘. 그다음 아래 값으로 빈칸을 채운다. 이미 채워진 값이 아래와 다르면 바꾸기 전에 묻는다.
+
+[프로모션 텍스트]
+처방은 의사가, 기록은 마선생이. 투약 날짜와 부위, 투약 후 컨디션, 체중을 담담하게 기록하고 진료 전에 한 장의 리포트로 정리합니다.
+
+[설명]
+처방은 의사가, 기록은 마선생이.
+
+주 1회 주사 치료를 받고 계신가요? 마선생은 투약 날짜와 부위, 투약 후 컨디션, 체중을 담담하게 기록하고, 진료 전 한 장의 리포트로 정리합니다.
+
+- 투약 알림과 다음 투약까지 카운트다운
+- 주사 부위 기록 (최근 사용 부위와 날짜 표시)
+- 투약 후 24·48시간 컨디션 체크
+- Apple 건강 앱 체중 연동 또는 직접 입력
+- 단백질과 근력운동 기록으로 감량 중 생활 습관 확인
+- 진료 전 리포트 PDF (A4 한 장)
+- 진료 기록과 진료 때 물어볼 것 메모
+- Apple Watch에서 다음 투약 확인과 기록
+
+마선생은 기록하고 정리할 뿐 판단하지 않습니다. 점수, 랭킹, 칼로리 목표, 목표 체중이 없습니다.
+마선생은 의학적 조언이나 진단, 치료를 하지 않습니다. 처방과 치료 결정은 담당 의사에게 있습니다.
+의사의 처방을 받은 만 19세 이상 성인을 위한 기록 도구입니다.
+
+기록은 이 기기와 본인 iCloud에만 저장되며 운영자 서버로 전송되지 않습니다. Apple 건강 앱에서 읽은 데이터는 이 기기에만 둡니다. 회원가입이 없고, 분석·광고 도구를 쓰지 않습니다.
+
+기록·알림·컨디션 체크는 모두 무료입니다. 리포트 PDF 내보내기와 리포트 테마는 한 번 구매로 쓸 수 있습니다.
+
+[키워드]
+투약기록,주사기록,투약알림,주1회,컨디션기록,부작용기록,진료리포트,체중기록,단백질,근력운동
+
+[이번 버전의 새로운 기능] (칸이 보이면)
+첫 버전입니다.
+
+[개인정보 처리방침 URL] (앱 정보 또는 앱이 수집하는 개인정보 페이지)
+https://masense-privacy.vercel.app/
+
+[앱 심사 정보]
+- 로그인 필요: 아니요 (계정이 없는 앱)
+- 연락처 이름·전화·이메일: 나에게 묻기
+- 메모:
+This app is a personal record-keeping tool for adults with a doctor's prescription for a once-weekly injection. It records dose dates, injection sites, post-dose symptoms, and weight, and summarizes them in a one-page PDF to show the doctor.
+
+- It gives no medical advice, diagnosis, dosage recommendation, or treatment suggestions. All health guidance ends with "consult your doctor".
+- No account, no server, no analytics or ad SDKs. Records the user enters are stored on the device and in the user's private iCloud database (CloudKit) so their own devices stay in sync. The developer cannot access them.
+- HealthKit is read-only (body mass, body fat percentage, lean body mass, workouts, sleep) and is used only to show the user's own records and report. HealthKit data stays on the device and is not stored in iCloud. Nothing is written to HealthKit or shared with third parties.
+- Apple Watch app: shows the next scheduled day, logs a dose record, and shows a short coach line. It shares records with the iPhone app through the user's private iCloud database only.
+- In-app purchase: one non-consumable unlocks report PDF export and report themes. Restore is in Settings > Purchase and on the purchase sheet. Recording, reminders, and condition checks are free.
+
+To try it: complete onboarding (role notice, age confirmation, prescription), then use "투약 기록" on the Today tab, and open Records > Report. Onboarding can be completed without entering a prescription.
+
+[버전 출시]
+"수동으로 이 버전 출시"를 고른다.
+
+[지금은 채우지 않고 남겨 둘 것 — 건드리지 말고 목록으로만 알려 줘]
+- 스크린샷·앱 미리보기: 아직 새로 찍는 중
+- 빌드 선택: 출시 후보 빌드가 정해지면 내가 고른다
+- 인앱 구매(상품 ID com.masense.pro, 비소모성 1종): 아직 등록 전. 등록 화면이 필요하면 어디서 하는지만 알려 줘
+- 부제: 후보는 "주 1회 투약 기록과 진료 전 리포트"이지만 확정 전이라 넣기 전에 묻는다
+- 연령 등급 설문, 앱이 수집하는 개인정보("데이터를 수집하지 않음"으로 답할 예정), 카테고리, 가격: 해당 화면으로 가기 전에 나에게 확인
+
+[끝나면]
+채운 칸, 남은 칸, 내가 정해 줘야 할 것을 표로 정리해 줘. 심사 제출 버튼은 누르지 않는다.
+```
