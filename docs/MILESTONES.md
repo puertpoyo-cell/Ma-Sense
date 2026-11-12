@@ -340,7 +340,8 @@ main에서 따로 정한 문서 변경 A~E(2026-10-21)를 이 브랜치 문서�
 - [x] 위젯에서 바로 투약 기록: 예정일·지난 뒤에 홈 위젯에 버튼. 위젯은 저장소를 열지 않고 누른 시각만 App Group에 남기고(`QuickLogQueue`), 앱이 깨어날 때 저장소에 넣음 (`QuickLogService.drain`)
 - [x] 워치에서 컨디션 체크: 24·48시간 창이 열리면 워치 첫 화면에 줄이 생기고, 증상을 누를 때마다 강도 0→3, 식욕. 컨디션 알림을 워치에서 누르면 바로 열림 (`WatchConditionView`)
 - [x] 워치 컴플리케이션: 새 타깃 `MasenseWatchWidgets`(번들 ID `com.masense.app.watchkitapp.widgets`), 워치 앱이 워치의 App Group에 요약을 쓰고 컴플리케이션이 읽음. 워치 앱·확장에 App Group Capability 추가
-- [ ] 사람: Xcode에서 MasenseWatch(App Groups 추가)와 MasenseWatchWidgets 서명 한 번 (TESTFLIGHT.md 6-0). 그 전에는 TestFlight 업로드가 서명에서 멈출 수 있음
+- [x] 사람: Xcode에서 MasenseWatch(App Groups)와 MasenseWatchWidgets 서명 (2026-11-12 화면으로 확인)
+- [ ] 0.8 (48) TestFlight 업로드
 - [ ] 실기기 확인: Siri가 한국어 문구를 알아듣는지, 위젯 버튼 뒤 알림이 다시 맞춰지는지
 
 ## B0.7 — 0.7 오픈 베타 (2026-11-10 사람 요청 "0.7 업데이트 후 오픈 베타 준비")
