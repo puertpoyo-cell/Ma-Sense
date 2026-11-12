@@ -193,6 +193,38 @@ puertpoyo@gmail.com (`AppConfig.feedbackEmail`, 처리방침 10과 같음). 앱 
 5. "테스트 중"이 되면 `docs/BETA_GUIDE.md`를 테스터에게 보낸다. 공개 링크는 그대로 `https://testflight.apple.com/join/XkVYdMBt`
 6. 실기기 확인: iPhone에서 업데이트 → Watch 앱에서 마선생 설치 → 워치에서 투약 기록 → iPhone 기록 탭에 보이는지
 
+### 0.8 (48) 오픈 베타 올리기 (2026-11-12, 업로드 끝남)
+
+1. App Store Connect > TestFlight > iOS 빌드에서 0.8 (48)이 "제출 준비 완료"인지 확인. "수출 규정 문서 누락"이 뜨면 "아니요"
+2. 내부 테스트로 먼저 받아 실기기 확인 (MILESTONES.md D51 마지막 줄). 문제가 있으면 여기서 멈춘다
+3. 왼쪽 **테스트 정보** > 심사 메모 끝에 아래 두 줄을 더한다
+4. 그룹 **Open beta** > 빌드 > + > 0.8 (48) 선택 > "테스트할 내용"에 아래 문구 > 심사에 제출. 0.7이 아직 심사 대기 중이어도 0.8을 따로 제출할 수 있다. 0.8이 통과하면 테스터는 0.8을 받는다
+5. "테스트 중"이 되면 `docs/BETA_GUIDE.md`를 테스터에게 보낸다. 공개 링크는 그대로
+
+심사 메모에 더할 줄:
+
+```
+New in 0.8: Siri and Shortcuts actions ("Log dose", "Next dose"), a home screen widget button that logs a dose record, a condition check on Apple Watch, and a watch face complication showing days until the next scheduled day. None of these give medical advice or dose guidance.
+```
+
+테스트할 내용 (0.8):
+
+```
+0.8에서 새로 생긴 것을 써 보고 알려 주세요.
+
+1. 위젯: 투약 예정일에 홈 화면 위젯의 "투약 기록" 버튼으로 기록해 보세요. 부위는 앱 기록 탭에서 넣을 수 있습니다
+2. Siri·단축어: "마선생 투약 기록", "마선생 다음 투약 언제"라고 말해 보세요. 단축어 앱에도 마선생이 보입니다
+3. Apple Watch 컨디션 체크: 투약 다음 날 워치 앱 첫 화면에서 증상을 기록해 보세요
+4. Apple Watch 시계 화면: 시계 화면 편집에서 마선생을 넣으면 다음 투약까지 남은 날이 보입니다 (워치 앱을 한 번 열어 주세요)
+5. 베타 기간에는 리포트 PDF 내보내기가 무료입니다
+
+알려 주시면 도움이 되는 것
+- Siri가 말을 알아듣지 못했을 때 무엇이라고 말했는지
+- 위젯으로 기록한 뒤에도 알림이 다시 온 경우
+- 워치에서 남긴 기록이 iPhone에 보이지 않은 경우
+- 기록을 빠뜨린 순간과 이유, 헷갈린 문구나 화면
+```
+
 ### 빌드마다 (자동 업로드 뒤)
 
 - 외부 그룹에 새 빌드를 추가하려면 그룹 > 빌드 > +. **자동 배포**를 켜 두면 올라온 빌드가 바로 그룹에 들어간다 (TestFlight > 그룹 > 설정)
