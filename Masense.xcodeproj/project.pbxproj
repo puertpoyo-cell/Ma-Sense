@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4D4153454E53450000000021 /* MasenseWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4D4153454E5345000000001A /* MasenseWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4D4153454E5345000000003D /* MasenseWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 4D4153454E53450000000030 /* MasenseWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4D4153454E53450000000049 /* MasenseWatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4D4153454E53450000000040 /* MasenseWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,6 +33,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 4D4153454E53450000000035;
 			remoteInfo = MasenseWatch;
+		};
+		4D4153454E5345000000004B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4D4153454E53450000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D4153454E53450000000045;
+			remoteInfo = MasenseWatchWidgets;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -58,6 +66,17 @@
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D4153454E5345000000004A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4D4153454E53450000000049 /* MasenseWatchWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +84,7 @@
 		4D4153454E5345000000000C /* MasenseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MasenseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D4153454E5345000000001A /* MasenseWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MasenseWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D4153454E53450000000030 /* MasenseWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MasenseWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D4153454E53450000000040 /* MasenseWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MasenseWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -184,6 +204,14 @@
 			);
 			target = 4D4153454E53450000000035 /* MasenseWatch */;
 		};
+		4D4153454E5345000000004D /* Exceptions for "Shared" folder in "MasenseWatchWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DoseDayActivity.swift,
+				QuickLogDoseIntent.swift,
+			);
+			target = 4D4153454E53450000000045 /* MasenseWatchWidgets */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -209,6 +237,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				4D4153454E5345000000003A /* Exceptions for "Shared" folder in "MasenseWatch" target */,
+				4D4153454E5345000000004D /* Exceptions for "Shared" folder in "MasenseWatchWidgets" target */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -216,6 +245,11 @@
 		4D4153454E53450000000031 /* MasenseWatch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MasenseWatch;
+			sourceTree = "<group>";
+		};
+		4D4153454E53450000000041 /* MasenseWatchWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MasenseWatchWidgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -249,6 +283,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D4153454E53450000000043 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -260,6 +301,7 @@
 				4D4153454E5345000000001B /* MasenseWidgets */,
 				4D4153454E5345000000001C /* Shared */,
 				4D4153454E53450000000031 /* MasenseWatch */,
+				4D4153454E53450000000041 /* MasenseWatchWidgets */,
 				4D4153454E5345000000000A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -271,6 +313,7 @@
 				4D4153454E5345000000000C /* MasenseTests.xctest */,
 				4D4153454E5345000000001A /* MasenseWidgets.appex */,
 				4D4153454E53450000000030 /* MasenseWatch.app */,
+				4D4153454E53450000000040 /* MasenseWatchWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -358,10 +401,12 @@
 				4D4153454E53450000000032 /* Sources */,
 				4D4153454E53450000000033 /* Frameworks */,
 				4D4153454E53450000000034 /* Resources */,
+				4D4153454E5345000000004A /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4D4153454E5345000000004C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				4D4153454E53450000000031 /* MasenseWatch */,
@@ -374,6 +419,29 @@
 			productName = MasenseWatch;
 			productReference = 4D4153454E53450000000030 /* MasenseWatch.app */;
 			productType = "com.apple.product-type.application";
+		};
+		4D4153454E53450000000045 /* MasenseWatchWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D4153454E53450000000046 /* Build configuration list for PBXNativeTarget "MasenseWatchWidgets" */;
+			buildPhases = (
+				4D4153454E53450000000042 /* Sources */,
+				4D4153454E53450000000043 /* Frameworks */,
+				4D4153454E53450000000044 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4D4153454E53450000000041 /* MasenseWatchWidgets */,
+				4D4153454E5345000000001C /* Shared */,
+			);
+			name = MasenseWatchWidgets;
+			packageProductDependencies = (
+			);
+			productName = MasenseWatchWidgets;
+			productReference = 4D4153454E53450000000040 /* MasenseWatchWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -398,6 +466,9 @@
 					4D4153454E53450000000035 = {
 						CreatedOnToolsVersion = 16.0;
 					};
+					4D4153454E53450000000045 = {
+						CreatedOnToolsVersion = 16.0;
+					};
 				};
 			};
 			buildConfigurationList = 4D4153454E53450000000011 /* Build configuration list for PBXProject "Masense" */;
@@ -419,6 +490,7 @@
 				4D4153454E53450000000004 /* MasenseTests */,
 				4D4153454E53450000000020 /* MasenseWidgets */,
 				4D4153454E53450000000035 /* MasenseWatch */,
+				4D4153454E53450000000045 /* MasenseWatchWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -446,6 +518,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4D4153454E53450000000034 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4D4153454E53450000000044 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -483,6 +562,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D4153454E53450000000042 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -500,6 +586,11 @@
 			isa = PBXTargetDependency;
 			target = 4D4153454E53450000000035 /* MasenseWatch */;
 			targetProxy = 4D4153454E5345000000003B /* PBXContainerItemProxy */;
+		};
+		4D4153454E5345000000004C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D4153454E53450000000045 /* MasenseWatchWidgets */;
+			targetProxy = 4D4153454E5345000000004B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -851,6 +942,60 @@
 			};
 			name = Release;
 		};
+		4D4153454E53450000000047 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/MasenseWatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 47;
+				DEVELOPMENT_TEAM = 24F957FFAD;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/MasenseWatchWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.7;
+				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		4D4153454E53450000000048 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/MasenseWatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 47;
+				DEVELOPMENT_TEAM = 24F957FFAD;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/MasenseWatchWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "마선생";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.7;
+				PRODUCT_BUNDLE_IDENTIFIER = com.masense.app.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -895,6 +1040,15 @@
 			buildConfigurations = (
 				4D4153454E53450000000037 /* Debug */,
 				4D4153454E53450000000038 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4D4153454E53450000000046 /* Build configuration list for PBXNativeTarget "MasenseWatchWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D4153454E53450000000047 /* Debug */,
+				4D4153454E53450000000048 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

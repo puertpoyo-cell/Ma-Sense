@@ -30,6 +30,11 @@ enum ConditionRules {
         return open
     }
 
+    /// D51 워치: 증상 줄을 누를 때마다 강도가 0 → 1 → 2 → 3 → 0으로 돈다
+    static func nextSeverity(after severity: Int) -> Int {
+        (0..<3).contains(severity) ? severity + 1 : 0
+    }
+
     /// R10·R11이 보는 기간: 최근 48시간 안의 컨디션 체크
     static let lowConditionLookback: TimeInterval = 48 * hour
 

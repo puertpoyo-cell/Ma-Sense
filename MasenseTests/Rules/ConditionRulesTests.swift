@@ -48,4 +48,10 @@ struct ConditionRulesTests {
         #expect(open.map { $0.window } == [.h24, .h48])
         #expect(open.map { $0.dose.id } == [newer.id, older.id])
     }
+
+    // D51 워치: 누를 때마다 0 → 1 → 2 → 3 → 0
+    @Test func nextSeverityCycles() {
+        #expect([0, 1, 2, 3].map { ConditionRules.nextSeverity(after: $0) } == [1, 2, 3, 0])
+        #expect(ConditionRules.nextSeverity(after: 9) == 0)
+    }
 }

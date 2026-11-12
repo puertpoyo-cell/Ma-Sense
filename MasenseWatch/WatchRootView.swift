@@ -5,6 +5,7 @@ import SwiftUI
 struct WatchRootView: View {
     @Query(filter: #Predicate<Prescription> { $0.isActive }) private var active: [Prescription]
     @Query private var allDoses: [Dose]
+    @Query private var checks: [ConditionCheck]
     @Environment(\.calendar) private var calendar
     @State private var router = WatchRouter.shared
 
@@ -18,6 +19,14 @@ struct WatchRootView: View {
                             WatchDoseLogView(prescription: prescription)
                         } label: {
                             Label("action.logDose", systemImage: "plus.circle.fill")
+                        }
+                        // D51: 투약 후 24·48시간 창이 열려 있으면 컨디션 체크
+                        if let open = openCondition(now: timeline.date) {
+                            NavigationLink {
+                                WatchConditionView(dose: open.dose, window: open.window)
+                            } label: {
+                                Label(LocalizedStringKey(open.window.titleKey), systemImage: "list.bullet.clipboard")
+                            }
                         }
                     } else {
                         Text("watch.noPrescription")
@@ -35,12 +44,44 @@ struct WatchRootView: View {
                 }
             }
             .navigationTitle("watch.title")
+            // D51: 시계 화면 컴플리케이션 요약. 열 때와 기록이 바뀔 때
+            .task(id: complicationKey) { publishComplication() }
             .navigationDestination(isPresented: $router.opensDoseLog) {
                 if let prescription = active.first {
                     WatchDoseLogView(prescription: prescription)
                 }
             }
+            .navigationDestination(isPresented: $router.opensCondition) {
+                if let open = openCondition(now: .now) {
+                    WatchConditionView(dose: open.dose, window: open.window)
+                }
+            }
         }
+    }
+}
+
+extension WatchRootView {
+    /// 기록 수와 처방이 바뀌면 달라지는 값 (iCloud로 들어온 기록 포함)
+    fileprivate var complicationKey: String {
+        "\(active.first?.id.uuidString ?? "-")-\(allDoses.count)-\(allDoses.filter(\.isCancelled).count)"
+    }
+
+    fileprivate func publishComplication() {
+        let prescription = active.first
+        WatchComplicationPublisher.publish(
+            prescription: prescription?.snapshot,
+            doses: prescription?.doseSnapshots ?? [],
+            allDoses: allDoses.map(\.snapshot),
+            now: .now,
+            calendar: calendar
+        )
+    }
+
+    /// 지금 열려 있는 컨디션 창 (R5). 24시간 창이 먼저
+    fileprivate func openCondition(now: Date) -> (dose: Dose, window: ConditionWindow)? {
+        let open = ConditionRules.openConditionWindows(doses: allDoses.map(\.snapshot), checks: checks.compactMap(\.snapshot), now: now)
+        guard let first = open.first, let dose = allDoses.first(where: { $0.id == first.dose.id }) else { return nil }
+        return (dose, first.window)
     }
 }
 

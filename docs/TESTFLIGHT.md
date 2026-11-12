@@ -163,6 +163,14 @@ puertpoyo@gmail.com (`AppConfig.feedbackEmail`, 처리방침 10과 같음). 앱 
 3. 한 번 워치 시뮬레이터나 실기기로 실행(또는 Product > Archive까지만)하면 App ID·프로비저닝이 만들어진다. 그 뒤 TestFlight 자동 업로드가 워치 앱까지 서명한다
 4. 업로드 로그에 `MasenseWatch` 프로비저닝 오류가 나면 그 줄을 Claude에게 보낸다
 
+### 0.8 워치 컴플리케이션 타깃 (D51 — 사람이 한 번 할 일)
+
+워치 위젯 확장 `MasenseWatchWidgets`(번들 ID `com.masense.app.watchkitapp.widgets`)가 새로 생겼고, 워치 앱과 이 확장이 App Group `group.com.puertpoyo.masense`를 쓴다.
+1. Mac: `cd ~/Developer/Ma-Sense && git checkout -- . && git pull origin main` → Xcode로 열기
+2. 타깃 **MasenseWatch** > Signing & Capabilities: **App Groups**에 `group.com.puertpoyo.masense` 체크가 보이는지 (없으면 + Capability > App Groups)
+3. 타깃 **MasenseWatchWidgets** > Signing & Capabilities: 팀 선택(자동 서명), **App Groups**에 같은 그룹 체크
+4. Product > Archive까지 한 번 가면 App ID·프로비저닝이 만들어진다. Xcode가 바꾼 프로젝트 파일은 커밋하지 않는다
+
 ## 6. 오픈 베타 — TestFlight 공개 링크 (D40, 2026-11-03 사람 요청 "오픈 베타 할 수 있도록 준비")
 
 내부 테스트(지금까지)는 팀원만 받는다. 오픈 베타는 **외부 테스트 그룹 + 공개 링크**로, 링크를 아는 누구나(최대 10,000명) 받는다. 첫 외부 빌드는 Apple의 **베타 앱 심사**(보통 하루 안, 길면 2~3일)를 거친다.

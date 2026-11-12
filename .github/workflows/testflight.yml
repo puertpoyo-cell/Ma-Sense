@@ -37,8 +37,10 @@ jobs:
           BEFORE: ${{ github.event.before }}
         run: |
           if [ "$EVENT" = "push" ]; then
-            if git cat-file -e "$BEFORE^{commit}" 2>/dev/null \
-               && ! git diff "$BEFORE" HEAD -- Masense.xcodeproj/project.pbxproj | grep -q '^[+-].*CURRENT_PROJECT_VERSION'; then
+            # 빌드 번호 값이 바뀌었을 때만 올린다 (타깃을 더해 같은 번호 줄이 늘어난 것은 올리지 않는다)
+            OLD=$(git show "$BEFORE:Masense.xcodeproj/project.pbxproj" 2>/dev/null | grep -m1 'CURRENT_PROJECT_VERSION = ' | sed 's/[^0-9]//g')
+            NEW=$(grep -m1 'CURRENT_PROJECT_VERSION = ' Masense.xcodeproj/project.pbxproj | sed 's/[^0-9]//g')
+            if git cat-file -e "$BEFORE^{commit}" 2>/dev/null && [ "$OLD" = "$NEW" ]; then
               echo "ready=false" >> "$GITHUB_OUTPUT"
               echo "빌드 번호가 그대로라 업로드하지 않습니다 (몇 개 모아서 빌드 번호를 올릴 때 업로드)."
               exit 0

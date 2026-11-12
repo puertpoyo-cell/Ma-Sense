@@ -42,6 +42,8 @@ enum WatchStore {
 final class WatchRouter {
     static let shared = WatchRouter()
     var opensDoseLog = false
+    /// D51 컨디션 알림에서
+    var opensCondition = false
 }
 
 final class WatchAppDelegate: NSObject, WKApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -58,8 +60,13 @@ final class WatchAppDelegate: NSObject, WKApplicationDelegate, UNUserNotificatio
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let category = response.notification.request.content.categoryIdentifier
         let action = response.actionIdentifier == UNNotificationDefaultActionIdentifier ? NotificationActions.defaultAction : response.actionIdentifier
-        if case .open(.logDose)? = NotificationActions.response(action: action, category: category) {
+        switch NotificationActions.response(action: action, category: category) {
+        case .open(.logDose)?:
             await MainActor.run { WatchRouter.shared.opensDoseLog = true }
+        case .open(.conditionCheck)?:
+            await MainActor.run { WatchRouter.shared.opensCondition = true }
+        default:
+            break
         }
     }
 }

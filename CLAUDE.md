@@ -63,6 +63,7 @@ Masense/
 Shared/             앱과 위젯 확장이 함께 쓰는 코드 (WidgetSnapshot·App Group ID는 Foundation, Live Activity 속성은 ActivityKit)
 MasenseWidgets/     위젯 확장 (WidgetKit). App Group의 요약 JSON만 읽고 SwiftData는 열지 않음
 MasenseWatch/       Apple Watch 앱 (0.7, D50). iCloud로 처방·투약·컨디션만 주고받음. `Masense/Models`·`Masense/Rules`·`App/L10n.swift`·`App/AppConfig.swift`·`Localizable.xcstrings`를 함께 컴파일
+MasenseWatchWidgets/ 워치 컴플리케이션 (0.8, D51). 워치 앱이 워치의 App Group에 써 둔 요약 JSON만 읽음
 MasenseTests/       Rules·Services 단위 테스트
 ```
 
@@ -107,7 +108,7 @@ xcodebuild -scheme Masense -destination 'platform=iOS Simulator,name=iPhone 16' 
 - **main에 직접 푸시한다** (2026-10-28 사람 결정 "main에 푸시하자, 롤백이 얼마든지 가능하니까"). 작업 브랜치·PR을 거치지 않는다. 푸시 뒤 main의 CI(테스트·금지선 점검)를 확인하고, 실패하면 바로 고쳐 다시 푸시하거나 `git revert`로 되돌린다. 사람은 Mac에서 `git checkout -- . && git pull origin main`으로 받는다
   - 이전 방식(2026-10-25~27): 작업 브랜치 → CI → PR → merge. 기록으로만 남긴다
   - CI 결과를 기다리는 건 푸시 뒤 **1분까지**만 (2026-10-29 사람 결정 "1분 이상 회신 안 되면 포기"). 그 안에 안 끝나면 백그라운드 알림에 맡기고 다음 일을 하거나 사람에게 보고한다. 실패 알림이 오면 그때 고쳐 다시 푸시한다
-- TestFlight 빌드는 앱 코드 변경이 **5개 정도 쌓이면** 올린다 (2026-11-02 사람 결정 "5개 정도 쌓이면 빌드 올리자"). 그때 빌드 번호(`CURRENT_PROJECT_VERSION`, 앱·테스트·위젯·워치 네 타깃 Debug·Release 8곳, `MARKETING_VERSION`도 워치까지 같은 값)를 1 올려 푸시하면 `testflight.yml`이 업로드한다. 빌드 번호를 안 올린 푸시는 CI만 돈다. 사람이 급히 원하면 5개 전이라도 올린다. 같은 버전에서 빌드 번호가 겹치면 업로드가 거절된다
+- TestFlight 빌드는 앱 코드 변경이 **5개 정도 쌓이면** 올린다 (2026-11-02 사람 결정 "5개 정도 쌓이면 빌드 올리자"). 그때 빌드 번호(`CURRENT_PROJECT_VERSION`, 앱·테스트·위젯·워치·워치 위젯 다섯 타깃 Debug·Release 10곳, `MARKETING_VERSION`도 워치까지 같은 값)를 1 올려 푸시하면 `testflight.yml`이 업로드한다. 빌드 번호를 안 올린 푸시는 CI만 돈다. 사람이 급히 원하면 5개 전이라도 올린다. 같은 버전에서 빌드 번호가 겹치면 업로드가 거절된다
   - 이전 방식(2026-10-27~11-02): 앱 코드 푸시마다 빌드 번호를 올려 바로 업로드. 기록으로만 남긴다
 
 ## 사람에게 꼭 묻는 것
